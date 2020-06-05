@@ -1,0 +1,839 @@
+/*
+=============================================================
+WebIntelligence(r) Report Panel
+Copyright(c) 2001-2003 Business Objects S.A.
+All rights reserved
+Use and support of this software is governed by the terms
+and conditions of the software license agreement and support
+policy of Business Objects S.A. and/or its subsidiaries. 
+The Business Objects products and technology are protected
+by the US patent number 5,555,403 and 6,247,008
+File: slider.js
+=============================================================
+*/
+_sliderMoveCursor = 'default';
+_sliderDefaultCursor = 'default';
+_sliderImgCursorWidth = 10;
+_sliderImgCursorHeight = 18;
+_sliderMarginRight=11;
+_sliderUP = 'Up';
+_sliderDOWN = 'Down';
+function new_SliderWidget(prms)
+{
+var o= new_Widget(prms);
+// Private Fields
+o.isDoubleSlider=false;
+w = o.param(prms, "w", 100+_sliderMarginRight);
+o.w=(w<_sliderMarginRight?_sliderMarginRight:w);
+o.valueMin= Number(o.param(prms, "valueMin", 0));
+o.valueMax= Number(o.param(prms, "valueMax", 100));
+o.valueMax=(o.valueMax<o.valueMin?o.valueMin:o.valueMax);
+o.value=new Array();
+value = o.param(prms, "value", null)
+value = (isNaN(value))?null:Number(value);
+o.value[_sliderUP]=(value==null?o.valueMin:value);
+o.value[_sliderDOWN]=o.valueMin;
+o.lastAppliedValue=new Array();
+o.lastAppliedValue[_sliderUP] = o.value[_sliderUP]
+o.lastAppliedValue[_sliderDOWN] = o.value[_sliderDOWN]
+o.tooltip =  o.param(prms, "tooltip", "")
+o.changeCB =  o.param(prms, "changeCB", null)
+o.resizeCB=null;
+o.sliderBar=newWidget(o.id+'_sliderBar');
+o.sliderBar.par=o;
+o.sliderCursor=new Array();
+o.sliderCursor[_sliderUP]=newSliderCursorWidget(o.id,_sliderUP,o);
+o.sliderCursor[_sliderDOWN]=newSliderCursorWidget(o.id,_sliderDOWN,o);
+o.sliderValue=new Array();
+o.sliderValue[_sliderUP]=newWidget(o.id+'_sliderValueUp');
+o.sliderValue[_sliderUP].key=_sliderUP;
+o.sliderValue[_sliderUP].par=o;
+o.sliderValue[_sliderDOWN]=newWidget(o.id+'_sliderValueDown');
+o.sliderValue[_sliderDOWN].key=_sliderDOWN;
+o.sliderValue[_sliderDOWN].par=o;
+o.minMaxBar=newWidget(o.id+'_sliderMinMax');
+o.sliderCanMove=false;
+o.sliderIsMouseDown=false;
+o.lastSelectedSliderCursor=null;
+o.sliderDx=0;
+increment = o.param(prms, "increment", null)
+o.increment=(increment==null || increment<=0)?1:increment;
+o.resolution=0;// Value/pixel
+o.step=0;// Number of pixel/increment
+o.steps=null;
+o.increment_multiple=3;
+o.decChar=o.param(prms, "decChar", '.')
+o.fixedDecimal=Slider_getFixedDecimal(o.increment);
+// private methods
+// public methods
+o.oldInit=o.init;
+o.init=Slider_init;
+o.getHTML=Slider_getHTML;
+o.resize=Slider_resize;
+o.getValue=Slider_getValue;
+o.setValue=Slider_setValue;
+o.saveLastAppliedValue=Slider_saveLastAppliedValue;
+o.setDisabled=SliderWidget_setDisabled
+return o;
+}
+function SliderWidget_setDisabled(d)
+{
+var o=this
+if (d)
+{
+o.sliderCursor[_sliderUP].layer.onmousedown=null;
+o.sliderCursor[_sliderDOWN].layer.onmousedown=null;
+}
+else
+{
+o.sliderCursor[_sliderUP].layer.onmousedown = SliderCursor_mousedown;
+o.sliderCursor[_sliderDOWN].layer.onmousedown = SliderCursor_mousedown;
+}
+}
+function newSliderWidget(id,value,valueMin,valueMax,increment,changeCB,tooltip,w,decChar)
+{
+return new_SliderWidget({
+id:id,
+value:value,
+valueMin:valueMin,
+valueMax:valueMax,
+increment:increment,
+changeCB:changeCB,
+tooltip:tooltip,
+w:w,
+decChar:decChar
+});
+}
+function Slider_mmove(e)
+{
+var o=getWidget(this);
+var par=o.par;
+eventCancelBubble(e);
+if (par.sliderCanMove && par.lastSelectedSliderCursor != null)
+{
+var newX = eventGetX(e, _curWin);
+var pos = getPosScrolled(par.layer);
+newX -= pos.x - getScrollX(_curWin) + par.sliderDx + 1;
+var type = par.lastSelectedSliderCursor.key;
+Slider_setPosXWithConstraint(newX, par, type);
+Slider_convPositionToValue(par, type);
+}
+}
+/*
+// TODO: attach mouse move & mouse up to the body like that
+if (body.addEventListener)
+{
+body.addEventListener("mousemove", MultiColumnList_titleMouseMove, true);
+body.addEventListener("mouseup", MultiColumnList_titleMouseUp, true);
+}
+else
+{
+o.oldMouseMove=body.onmousemove
+o.oldMouseUp=body.onmouseup
+body.onmousemove=MultiColumnList_titleMouseMove
+body.onmouseup=MultiColumnList_titleMouseUp
+if (body.setCapture)
+body.setCapture(true)
+}
+// TODO: detach mouse move & mouse up to the body like that
+// ----------------------------------------------------------
+if (body.removeEventListener)
+{
+body.removeEventListener("mousemove", MultiColumnList_titleMouseMove, true);
+body.removeEventListener("mouseup", MultiColumnList_titleMouseUp, true);
+}
+else
+{
+body.onmouseup=o.oldMouseUp
+body.onmousemove=o.oldMouseMove
+if (body.releaseCapture)
+body.releaseCapture()
+}
+ */
+function Slider_setPosXWithConstraint(x,o,type,w)
+{
+var sliderWidth=0;
+if ( typeof w != 'undefined'){
+sliderWidth = w ;
+}else{
+//Incident-ID: 1570448118 fix for palette color related sliders
+//sliderWidth = o.layer.offsetWidth ;
+sliderWidth = o.layer.offsetWidth?o.layer.offsetWidth:o.w ;
+}
+if (x < 0)
+x = 0;
+if (type == _sliderUP)
+{
+var maxX = sliderWidth   - _sliderMarginRight;
+if (x > maxX)
+x = maxX;
+var minX = o.sliderCursor[_sliderDOWN].cursorPosX;
+if (x < minX)
+x = minX;
+}
+else if (type == _sliderDOWN)
+{
+var maxX = o.sliderCursor[_sliderUP].cursorPosX;
+o.sliderCursor[type].css.top = +(_sliderImgCursorHeight - 4)+'px';
+if (x > maxX)
+x = maxX;
+var minX = 0;
+if (x < minX)
+x = minX;
+}
+o.sliderCursor[type].cursorPosX = x;
+o.sliderCursor[type].css.left = '' + x + 'px';
+o.sliderValue[type].css.width = '' + (x + _sliderImgCursorWidth) + 'px';
+}
+function Slider_updateStep(o,w)
+{
+//The step the value/pixel
+var barWidth = o.w;
+if ( typeof w != 'undefined'){
+barWidth = w   - _sliderMarginRight ;
+}else{
+//Incident-ID: 1570448118 fix for palette color related sliders
+//barWidth = o.layer.offsetWidth  - _sliderMarginRight;
+barWidth = (o.layer.offsetWidth?o.layer.offsetWidth:o.w)  - _sliderMarginRight;
+}
+var barValue = o.valueMax - o.valueMin;
+if (barWidth > 0 && barValue > 0 && o.increment > 0)
+{
+o.resolution = barValue / barWidth;
+var nbSteps = barValue / o.increment
+o.step = barWidth / nbSteps;
+//Warning: the step must be equal or greater than 1 pixel
+if (o.step < 1)
+{
+o.step = 1;
+o.increment = barValue / barWidth; 
+}
+//Calculate steps
+var x = 0;
+var v = o.valueMin;
+o.steps = new Array();
+while(x < (barWidth-1))
+{
+var step = new Object();
+step.minX = Math.ceil(x);
+x += o.step;
+step.maxX = Math.ceil(x);
+step.value = v;
+o.steps[o.steps.length] = step;
+v += o.increment;
+}
+//Calculate multiple for keys [ctrl]+[Arrows]
+var l = o.steps.length;
+if(l != null && l>3)
+{
+for (var i=1; i>0; i*=10)
+{
+if (i>=l)
+break;
+// for less than 10 steps, the multiple is 3 
+o.increment_multiple = i>3?i:3 
+}
+}
+}
+else
+{
+o.resolution = 0;
+o.step = 0;
+}
+}
+function Slider_getStep(o,x)
+{
+var step = null;
+if (x != null)
+{
+for(var i=0; i<o.steps.length; i++)
+{
+if (x >= o.steps[i].minX && x <= o.steps[i].maxX)
+{
+step = o.steps[i];
+break;
+}
+}
+}
+return step;
+} 
+function Slider_setDisplayValueDeltaWidth(o,type,elt,val)
+{
+var delta = 0;
+var value = val
+if (o != null)
+{
+if (_ie)
+{
+if(elt == null)
+{
+if (o.valueMax <0 ||o.valueMin<0 ) 
+{
+delta = 5;
+if(o.isDoubleSlider)
+{
+if (type == "Down")
+value = ''+o.valueMin
+else if (type == "Up")
+value = ''+o.valueMax
+}
+else
+value = ''+o.valueMin
+if (value.length>2)
+{
+if (value.length < 7)
+delta = (value.length-2)*7
+else
+delta = (value.length-2)*6.5
+}
+}
+}
+else
+{
+if (value.length>2)
+{
+if (value.length < 7)
+delta = (value.length-2)*7
+else
+delta = (value.length-2)*6.5
+}
+} 
+}
+}
+return delta;
+}
+function Slider_convPositionToValue(o,type)
+{
+if (o.sliderCursor[type].cursorPosX == ((o.layer.offsetWidth?o.layer.offsetWidth : o.w ) - _sliderMarginRight)) {
+o.value[type] = o.valueMax;
+}else if (o.sliderCursor[type].cursorPosX == 0) {
+o.value[type] = o.valueMin;
+}else {
+var oType =(type == _sliderUP)?_sliderDOWN:_sliderUP;
+var osc = o.sliderCursor[oType];
+var sc = o.sliderCursor[type];
+var x = sc.cursorPosX;
+if (sc.appliedValue != null && (x >= sc.leftRangeX && x <= sc.rightRangeX))
+o.value[type] = sc.appliedValue;
+else if (osc.appliedValue != null && (x >= osc.leftRangeX && x <= osc.rightRangeX))
+o.value[type] = osc.appliedValue;
+else
+{
+var step = Slider_getStep(o,x);
+o.value[type] = step.value;
+}
+}
+// Display current value
+var l = getLayer(o.id+'_sliderValue'+type+'Displayer');
+if (o.fixedDecimal == 0)
+l.innerHTML = ''+Math.round(o.value[type]);
+else
+l.innerHTML = ''+o.value[type].toFixed(o.fixedDecimal);
+if (_ie) // Resize width of displayer for negatives values 
+l.parentElement.parentElement.parentElement.width = ''+(_sliderImgCursorWidth+Slider_setDisplayValueDeltaWidth(o,type,l.parentElement.parentElement.parentElement,l.innerHTML))
+}
+function Slider_convValueToPosition(o,v,type,w)
+{
+v=(v==null)?o.value[type]:v;
+if (v != null && o.resolution > 0)
+{
+var x = Math.round(((v - o.valueMin) / o.resolution) + 0.49999);
+o.value[type] = v;
+var step = Slider_getStep(o,x);
+var sc = o.sliderCursor[type];
+sc.appliedValue = v;
+sc.leftRangeX = x;
+sc.rightRangeX = (step!=null)?step.maxX:x;
+// Display current value
+var l = getLayer(o.id+'_sliderValue'+type+'Displayer');
+o.value[type] = v;
+if (o.fixedDecimal == 0)
+l.innerHTML = ''+Math.round(o.value[type]);
+else
+l.innerHTML = ''+o.value[type].toFixed(o.fixedDecimal);
+if (_ie) // Resize width of displayer for negatives values
+l.parentElement.parentElement.parentElement.width = ''+(_sliderImgCursorWidth+Slider_setDisplayValueDeltaWidth(o,type,l.parentElement.parentElement.parentElement,l.innerHTML))
+Slider_setPosXWithConstraint(x,o,type,w);
+}
+}
+function Slider_mouseup(e)
+{
+var o=getWidget(this);
+var par=o.par;
+par.srcWidgetAction = "mouse"
+if (par.sliderIsMouseDown && par.lastSelectedSliderCursor != null)
+{
+par.sliderIsMouseDown = false;
+Slider_setDefaultCursor(par);
+var type = par.lastSelectedSliderCursor.key;
+Slider_convPositionToValue(par,type);
+if (par.changeCB != null)
+par.changeCB();
+}
+}
+function Slider_doc_mouseup(e)
+{
+var o=null;
+for (var i=0; i<_widgets.length; i++)
+{
+var wd=_widgets[i];
+if (wd!=null && typeof(wd.sliderIsMouseDown)!="undefined" && wd.sliderIsMouseDown)
+{
+o=wd;
+break;
+} 
+}
+if (o!=null)
+{
+o.srcWidgetAction = "mouse"
+o.sliderIsMouseDown = false;
+Slider_setDefaultCursor(o);
+var type = o.lastSelectedSliderCursor.key;
+Slider_convPositionToValue(o,type);
+if (o.changeCB != null)
+o.changeCB();
+}
+}
+function SliderCursor_mousedown(e)
+{
+var o=getWidget(this);
+var par=o.par;
+par.srcWidgetAction = "mouse"
+par.sliderIsMouseDown = true;
+var x = eventGetX(e, _curWin);
+var pos = getPosScrolled(o.layer);
+par.sliderDx = x + getScrollX() - pos.x;
+par.sliderCanMove = true;
+par.lastSelectedSliderCursor = o;
+o.css.cursor = _sliderMoveCursor;
+par.sliderBar.css.cursor = _sliderMoveCursor;
+return false;
+}
+function Slider_setDefaultCursor(o)
+{
+o.sliderCanMove = false;
+o.sliderBar.css.cursor = _sliderDefaultCursor;
+o.lastSelectedSliderCursor.css.cursor = _sliderDefaultCursor;
+}
+function Slider_applyValue(o,v,type)
+{
+if (!isNaN(v))
+{
+v = Number(v);
+var x=0;
+if (v <= o.valueMin) 
+v=o.valueMin;
+else if (v >= o.valueMax)
+{
+v=o.valueMax;
+x=(o.layer.offsetWidth?o.layer.offsetWidth:o.w)-_sliderMarginRight;
+}
+else
+{
+if (o.resolution>0)
+x=Math.floor(v/o.resolution);
+else
+x=0;
+}
+if(o.isDoubleSlider)
+{
+if (v < o.value[_sliderDOWN] && type == _sliderUP)
+v = o.value[_sliderDOWN]
+if (v > o.value[_sliderUP] && type == _sliderDOWN)
+v = o.value[_sliderUP]
+} 
+o.value[type]=v;
+Slider_convValueToPosition(o,v,type);
+}
+}
+function Slider_init()
+{
+var o=this;
+o.oldInit();
+o.sliderBar.init();
+o.sliderBar.layer.onmousemove=Slider_mmove;
+o.sliderBar.layer.onmouseup=Slider_mouseup;
+o.sliderCursor[_sliderUP].init();
+o.sliderCursor[_sliderUP].layer.onmousedown = SliderCursor_mousedown;
+o.sliderCursor[_sliderUP].layer.onmouseup = Slider_mouseup;
+o.sliderCursor[_sliderDOWN].init();
+o.sliderCursor[_sliderDOWN].layer.onmousedown = SliderCursor_mousedown;
+o.sliderCursor[_sliderDOWN].layer.onmouseup = Slider_mouseup;
+o.sliderValue[_sliderUP].init();
+o.sliderValue[_sliderDOWN].init();
+o.minMaxBar.init();
+_curDoc.onmouseup=Slider_doc_mouseup;
+// Init slider
+Slider_updateStep(o);
+if (!o.isDoubleSlider)
+o.setValue();
+o.lastAppliedValue[_sliderUP] = o.sliderCursor[_sliderUP].appliedValue
+o.lastAppliedValue[_sliderDOWN] = o.sliderCursor[_sliderDOWN].appliedValue
+}
+function Slider_resize(w)
+{
+var o=this;
+if (w!=null)
+{
+w=parseInt(w);
+w= w+ 22;
+o.w=(w<_sliderMarginRight?_sliderMarginRight:w);
+o.layer.style.width='' + ((_dtd4?-2:0)+o.w) + 'px';
+o.minMaxBar.css.width='' + (o.w) + 'px'
+o.sliderBar.css.width = '' + (o.w) + 'px'
+o.sliderCursor.Up.css.width = '' + (o.w) + 'px'
+o.sliderCursor.Down.css.width = '' + (o.w) + 'px'
+// Update step & position
+Slider_updateStep(o,w);
+Slider_convValueToPosition(o,null,_sliderUP,w);
+if (o.isDoubleSlider)
+Slider_convValueToPosition(o,null,_sliderDOWN,w);
+}
+if (o.resizeCB)
+    o.resizeCB(o,w);
+}
+function Slider_getHTML()
+{
+var o=this;
+var sliderHeight=(_sliderImgCursorHeight * 2)-5;
+var sHTML=''+
+'<table id="'+o.id+'" width="'+(o.w-(_ie?2:4))+'"' +attr('title',o.tooltip)+' border="0" cellspacing="0" cellpadding="0" onselectstart="return false;" >'+
+'<tr>'+
+'<td>'+
+'<table id="'+o.id+'_sliderValueUp" style="width:'+_sliderImgCursorWidth+'px"'+' border="0" cellspacing="0" cellpadding="0">'+
+'<tr>'+
+'<td align="right">'+
+'<table border="0" cellspacing="0" cellpadding="0" width="'+(_sliderImgCursorWidth+Slider_setDisplayValueDeltaWidth(o,_sliderUP))+'">'+
+'<tr>'+
+'<td id="'+o.id+'_sliderValueUpDisplayer" class="dialogzone" style="background-color:transparent;text-align:right;">0</td>'+
+'</tr>'+
+'</table>'+
+'</td>'+
+'</tr>'+
+'</table>'+
+'</td>'+
+'</tr>'+
+'<tr>'+
+'<td style="height:'+sliderHeight+'px;">'+
+'<div id="'+o.id+'_sliderBar" style="position:relative;background-image:url('+_skin+'slider_bar.gif);background-repeat:repeat-x;background-position:0px '+(_sliderImgCursorHeight-5)+'px;overflow:hidden;padding:0px;width:'+o.w+';height:'+sliderHeight+'px;z-index:1;" onselectstart="return false;" ondragstart="return false;">'+
+o.sliderCursor[_sliderUP].getHTML()+
+o.sliderCursor[_sliderDOWN].getHTML()+
+'<div style="position:absolute;left:0px;top:'+_sliderImgCursorHeight+'px">'+
+'<table id="'+o.id+'_sliderMinMax" width="'+(o.w-(_ie?2:4))+'" border="0" cellspacing="0" cellpadding="0">'+
+'<tr class="dialogzone" style="background-color:transparent;color:#B9B9AE;font-size:10px;">'+
+'<td id="'+o.id+'_sliderMin" align="left">'+o.valueMin+'</td>'+
+'<td id="'+o.id+'_sliderMax" align="right">'+o.valueMax+'</td>'+
+'</tr>'+
+'</table>'+
+'</div>'+
+'</div>'+
+'</td>'+
+'</tr>'+
+'<tr'+(o.isDoubleSlider?'':' style="display:none"')+'>'+
+'<td>'+
+'<table id="'+o.id+'_sliderValueDown" style="width:'+(_sliderImgCursorWidth+5)+'px"'+attr('title',o.tooltip)+' border="0" cellspacing="0" cellpadding="0">'+
+'<tr>'+
+'<td align="right">'+
+'<table border="0" cellspacing="0" cellpadding="0" width="'+(_sliderImgCursorWidth+Slider_setDisplayValueDeltaWidth(o,_sliderDOWN))+'">'+
+'<tr>'+
+'<td id="'+o.id+'_sliderValueDownDisplayer" class="dialogzone" style="background-color:transparent;text-align:right">0</td>'+
+'</tr>'+
+'</table>'+
+'</td>'+
+'</tr>'+
+'</table>'+
+'</td>'+
+'</tr>'+
+'</table>';
+return sHTML;
+}
+function Slider_getValue()
+{
+var o=this;
+return Slider_toLocaleDecimal(o.value[_sliderUP],o);
+}
+function Slider_setValue(v)
+{
+var o=this;
+if (v!= null && v>o.valueMax) 
+v=o.valueMax
+if (v != null && v<o.valueMin)
+v=o.valueMin
+v=(v==null)?o.value[_sliderUP]:Slider_toDotDecimal(v,o);
+Slider_applyValue(o,v,_sliderUP);
+}
+function Slider_saveLastAppliedValue(v)
+{
+var o=this;
+if (!isNaN(v))
+{
+v = Number(v);
+if ((v!= null && v>o.valueMax) ||(v != null && v<o.valueMin))
+return
+o.lastAppliedValue[_sliderUP] = v
+}
+} 
+function newDoubleSliderWidget(id,value1,value2,valueMin,valueMax,increment,changeCB,tooltip,w,decChar)
+{
+var o=newSliderWidget(id,value2,valueMin,valueMax,increment,changeCB,tooltip,w,decChar);
+value1=isNaN(value1)?null:Number(value1);
+o.value[_sliderDOWN]=(value1==null?o.valueMin:value1);
+// Private Fields
+o.isDoubleSlider=true;
+//private methods
+o.oldSliderInit=o.init;
+// public methods
+o.init=DoubleSlider_init;
+o.getValues=DoubleSlider_getValues;
+o.setValues=DoubleSlider_setValues;
+o.saveLastAppliedValues=DoubleSlider_saveLastAppliedValues;
+return o;
+}
+function DoubleSlider_init()
+{
+var o=this;
+o.oldSliderInit();
+o.setValues();
+}
+function DoubleSlider_getValues()
+{
+var o=this;
+var arr=new Array(2);
+arr[0]=Slider_toLocaleDecimal(o.value[_sliderDOWN],o);
+arr[1]=Slider_toLocaleDecimal(o.value[_sliderUP],o);
+return arr;
+}
+function DoubleSlider_setValues(arr)
+{
+var o=this;
+if (arr == null)
+{
+arr = new Array(2);
+arr[0] = o.value[_sliderDOWN];
+arr[1] = o.value[_sliderUP];
+}
+if (arr.length>0)
+{
+if (arr[1]!= null && arr[1]>o.valueMax)
+arr[1]=o.valueMax
+if (arr[0]!= null && arr[0]<o.valueMin)
+arr[0]=o.valueMin
+//WARNING: Don't change the order
+var v2=(arr[1]==null)?o.value[_sliderUP]:Slider_toDotDecimal(arr[1],o);
+Slider_applyValue(o,v2,_sliderUP);
+var v1=(arr[0]==null)?o.value[_sliderDOWN]:Slider_toDotDecimal(arr[0],o);
+Slider_applyValue(o,v1,_sliderDOWN);
+}
+}
+function DoubleSlider_saveLastAppliedValues(arr)
+{
+var o=this;
+if (arr == null)
+{
+arr = new Array(2);
+arr[0] = o.value[_sliderDOWN];
+arr[1] = o.value[_sliderUP];
+}
+if (arr.length>0)
+{
+if ((arr[1]!= null && arr[1]>o.valueMax) ||(arr[0]!= null && arr[0]<o.valueMin))
+return
+//WARNING: Don't change the order
+var v2=(arr[1]==null)?o.value[_sliderUP]:Slider_toDotDecimal(arr[1],o);
+o.lastAppliedValue[_sliderUP] = v2
+var v1=(arr[0]==null)?o.value[_sliderDOWN]:Slider_toDotDecimal(arr[0],o);
+o.lastAppliedValue[_sliderDOWN] = v1
+}
+}
+function newSliderCursorWidget(id, type, par)
+{
+var o=newWidget(id+'_sliderCursor'+type);
+o.key=type;
+o.cursorPosX=0;
+o.appliedValue=null;
+o.leftRangeX=0;
+o.rightRangeX=0;
+o.par=par;
+o.oldInit=o.init;
+o.init=SliderCursor_init;
+o.getHTML=SliderCursor_getHTML;
+return o;
+}
+function SliderCursor_init()
+{
+var o=this;
+o.oldInit();
+}
+function SliderCursor_getHTML()
+{
+var o=this;
+var sHTML='';
+if (o.key==_sliderUP) {
+sHTML+=''+
+'<div id="'+o.id+'" style="position:absolute;cursor:default;left:0px;top:0px;z-index:5;" onselectstart="return false;" ondragstart="return false;">'+
+'<img id="'+o.id+'_img" src="'+_skin+'slider_cursor.gif" width="'+_sliderImgCursorWidth+'" height="'+_sliderImgCursorHeight+'" tabIndex="0" key="'+_sliderUP+'"'+
+' onkeydown="'+_codeWinName+'.Slider_keyDownCB(this,event)" onblur="'+_codeWinName+'.Slider_blurCB(this,event)">'+
+'</div>';
+}
+else if (o.key==_sliderDOWN) {
+sHTML+=''+
+'<div id="'+o.id+'" style="position:absolute;cursor:default;left:0px;top:'+(_sliderImgCursorHeight-5)+';z-index:5;'+(o.par.isDoubleSlider?'':'display:none')+'" onselectstart="return false;" ondragstart="return false;">'+
+'<img id="'+o.id+'_img" src="'+_skin+'slider_cursor_inv.gif" width="'+_sliderImgCursorWidth+'" height="'+_sliderImgCursorHeight+'" tabIndex="0" key="'+_sliderDOWN+'"'+
+' onkeydown="'+_codeWinName+'.Slider_keyDownCB(this,event)" onblur="'+_codeWinName+'.Slider_blurCB(this,event)">'+
+'</div>';
+}
+return sHTML;
+}
+function Slider_keyDownCB(lay,e)
+{
+if(lay == null) return
+var slider = getWidget(lay)
+var elem = slider.par
+elem.srcWidgetAction = "key"
+elem.srcIFormId = slider.par.id
+if (elem != null)
+{
+var k=eventGetKey(e);
+var source= _ie?_curWin.event.srcElement:e.target
+switch(k)
+{
+case 107: // "+" key
+case 39:  // right arrow
+case 38: // up arrow
+if(elem.isDoubleSlider)
+{
+if (slider.key == _sliderUP)
+elem.setValues([null,elem.value[_sliderUP]+elem.increment*(e.ctrlKey==1?elem.increment_multiple:1)]);
+else if(slider.key == _sliderDOWN)
+elem.setValues([elem.value[_sliderDOWN]+elem.increment*(e.ctrlKey==1?elem.increment_multiple:1),null]);
+}
+else
+elem.setValue(elem.value[_sliderUP]+elem.increment*(e.ctrlKey==1?elem.increment_multiple:1));
+elem.triggerChangeCB = true
+break;
+case 109: // "-" key
+case 37: // Left Arrow
+case 40: // down arrow
+if(elem.isDoubleSlider)
+{
+if (slider.key == _sliderUP)
+elem.setValues([null,elem.value[_sliderUP]-elem.increment*(e.ctrlKey==1?elem.increment_multiple:1)]);
+else if(slider.key == _sliderDOWN)
+elem.setValues([elem.value[_sliderDOWN]-elem.increment*(e.ctrlKey==1?elem.increment_multiple:1),null]);
+}
+else
+elem.setValue(elem.value[_sliderUP]-elem.increment*(e.ctrlKey==1?elem.increment_multiple:1));
+elem.triggerChangeCB = true
+break;
+case 36: //home
+if(elem.isDoubleSlider)
+{
+if (slider.key == _sliderUP)
+elem.setValues([null,elem.valueMax]);
+else if(slider.key == _sliderDOWN)
+elem.setValues([elem.value[_sliderUP],null]);
+}
+else
+elem.setValue(elem.valueMax);
+elem.triggerChangeCB = true
+break;
+case 35: //end
+if(elem.isDoubleSlider)
+{
+if (slider.key == _sliderUP)
+elem.setValues([null,elem.value[_sliderDOWN]]);
+else if(slider.key == _sliderDOWN)
+elem.setValues([elem.valueMin,null]);
+}
+else
+elem.setValue(elem.valueMin);
+elem.triggerChangeCB = true
+break;
+case 27: //escape
+if(elem.isDoubleSlider)
+{
+if (slider.key == _sliderUP)
+elem.setValues([null,elem.lastAppliedValue[_sliderUP]]);
+else if(slider.key == _sliderDOWN)
+elem.setValues([elem.lastAppliedValue[_sliderDOWN],null]);
+}
+else
+elem.setValue(elem.lastAppliedValue[_sliderUP]);
+elem.triggerChangeCB = false
+break;
+case 13: //enter
+if (elem.triggerChangeCB)
+{
+elem.triggerChangeCB = false
+if (elem.changeCB != null)
+{
+elem.changeCB();
+elem.lastAppliedValue[_sliderUP] = elem.value[_sliderUP]
+elem.lastAppliedValue[_sliderDOWN] = elem.value[_sliderDOWN]
+}
+}
+break;
+default:
+return;
+}
+if (e.preventDefault)
+e.preventDefault()
+if (e.stopPropagation)
+e.stopPropagation()
+e.cancelBubble=true
+e.returnValue=false
+}
+}
+function Slider_blurCB(lay,e)
+{
+if(lay == null) return
+var slider = getWidget(lay)
+var elem = slider.par
+if (elem != null)
+{
+if (elem.triggerChangeCB)
+{
+elem.triggerChangeCB = false
+if (elem.changeCB != null)
+{
+elem.changeCB();
+elem.lastAppliedValue[_sliderUP] = elem.value[_sliderUP]
+if(elem.isDoubleSlider)
+elem.lastAppliedValue[_sliderDOWN] = elem.value[_sliderDOWN]
+}
+}
+if (e.preventDefault)
+e.preventDefault()
+if (e.stopPropagation)
+e.stopPropagation()
+e.cancelBubble=true
+e.returnValue=false
+}
+}
+function Slider_getFixedDecimal(v)
+{
+var ret=0;
+if (v!=null)
+{
+var s=''+v;
+var iPos=s.lastIndexOf('.');
+if (iPos>=0)
+{
+s=s.substring(iPos+1);
+ret=s.length;
+}
+}
+return ret;
+}
+function Slider_toLocaleDecimal(v,o)
+{
+var ret=''+v.toFixed(o.fixedDecimal);
+ret=ret.replace(/\./,o.decChar);
+return ret;
+}
+function Slider_toDotDecimal(v,o)
+{
+var ret=''+v;
+ret=(o.decChar!='.')?eval("ret.replace(/"+o.decChar+"/,'.')"):ret;
+return ret;
+}

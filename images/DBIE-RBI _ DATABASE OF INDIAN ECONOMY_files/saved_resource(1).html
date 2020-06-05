@@ -1,0 +1,204 @@
+
+<!-- saved from url=(0083)https://dbie.rbi.org.in/BOE/OpenDocument/1608101727/AnalyticalReporting/WebiView.do -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<script language="javascript" src="./_utils.js.download"></script>
+<script language="javascript" src="./callback.js(1).download"></script>
+<script language="javascript">
+
+ var helpURL='/AnalyticalReporting/help/en/webintelligence/viewing/html/default.htmhtml_report/html/default.htm';
+ if (!isPopupWindow()){
+	 if (isHyperlink() && getHyperlinkTitle()!=null){
+		 var tabName= getHyperlinkTitle();
+		 displayHeaderInfo( "View",1,tabName);
+	 }else
+		 displayHeaderInfo( "View",1,'House Price Index');
+ }else
+     window.document.title = "House Price Index";
+
+ var urlBase = getWebappRootPath("..&#x2f;AnalyticalReporting");
+
+
+_forAutosave=false
+function setForAutosave(forAutosave) {
+	_forAutosave = forAutosave
+}
+
+function isHyperlink(){
+	try
+	{
+		if (parent && parent.frameElement && parent.frameElement.src)
+			return parent.frameElement.src.toLowerCase().indexOf("hyperlink") !=-1;
+		else
+			return false;
+	}
+	catch(e)
+	{
+		return false;
+	}
+}
+
+function getHyperlinkTitle(){
+	try
+	{
+		if (parent && parent.parent && parent.parent.getActiveTab)
+			return parent.parent.getActiveTab().szTitle;
+		else
+			return null;
+	}
+	catch(e)
+	{
+		return null;
+	}
+}
+
+// Webi viewer functions
+function goEdit(strDocName, strDocID, iRepoType, strDocType, strToken, strEditor) {
+
+    var qryStr = "";
+    if(strToken != null && strToken != "")
+        qryStr = "strEntry=" + strToken;
+
+	var docID = (strDocID > 0)?strDocID:'7225'
+
+    if (!isPopupWindow())
+    {
+        if (_forAutosave) {
+    		var headerPlus = findFrame('headerPlusFrame');    		    	
+        	if (headerPlus && headerPlus.popLastActionUrlStack) headerPlus.popLastActionUrlStack()
+        }
+        //invokeAction(url, actionId, objIds, containerId, actionType, actionSetPageType, extraParams)
+        invokeAction(urlBase+'null',
+             'null',
+             docID,
+             '7161',
+             'null',
+             'null',
+             qryStr);
+    }
+    else
+    {
+         //Workaround to edit document in the same popup as the viewed document
+         editDocInPlace(urlBase+'null',
+             'null',
+             docID,
+             '7161',
+             'null',
+             'null',
+             qryStr);
+    }
+}
+
+//Deprecated ADAPT01660192
+function goSave(submitUrl, cancelUrl, sEntry, sDocId) {
+
+}
+
+function goBack() {
+	if (!isPopupWindow()) {
+		onDoneOrCancel('done', '7161');
+  	}
+  	else {
+		// needed when viewer opened in a new window
+		window.close();
+	}
+}
+
+
+function goInvalidSession() { 
+	if (!isPopupWindow()) {
+		getApplicationTopWindow().location = urlBase+"/OpenDocument/appService.do?service=timeout&objIds=7225&actId=4195&ctx=&appCtxData=&loc=en&pvl=en_US";
+		
+	} else {
+		// needed when viewer opened in a new window
+		window.close();
+	}
+}	
+
+function setHelpSystemSection(helpObj, section) {
+}
+
+function initHelpSystem(basePath) {
+    return null;
+}
+
+function goReloadViewer(docId, containerId, basePath)
+{	
+	var params = ['id','actId','pvl','loc','appKind','service','objIds','opendocTarget','containerId','kind','ViewType','entSession','lang','mode','pref'];
+	
+	//Build reload URL
+	var url = basePath + 'viewDocument.jsp?';
+	var urlParam = '';
+	
+	var form = document.webiParamForm;
+	if (form != null)
+	{
+		for (var i=0; i<form.elements.length; i++)
+		{
+			var key = form.elements[i].name;
+			if (params.indexOf(key) >= 0)
+			{
+				if (urlParam != '') urlParam += '&';
+				
+				if (key == "id" || key == "objIds")
+				{
+					urlParam += key + '=' + docId;
+				}
+				else if (key == "containerId")
+				{
+					urlParam += key + '=' + containerId;
+				}
+				else
+				{
+					urlParam += key + '=' + encodeURIComponent(form.elements[i].value);
+				}
+			}
+		}
+	}
+	
+	//Reload Viewer frame
+	webiViewFrame.location.replace(url + urlParam);
+}
+
+</script>
+</head>
+<body marginheight="0" marginwidth="0" style="overflow:hidden;margin:0px">
+<iframe id="webiViewFrame" name="webiViewFrame" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="margin:0px;position:absolute;left:0px;top:0px;width:100%;height:100%" src="./empty.html"></iframe>
+<form name="webiParamForm" target="webiViewFrame" method="post" action="https://dbie.rbi.org.in/BOE/OpenDocument/1608101727/AnalyticalReporting/webiDHTML/viewer/viewDocument.jsp">
+<input type="hidden" name="id" value="7225">
+<input type="hidden" name="bypassLatestInstance" value="true">
+<input type="hidden" name="containerId" value="7161">
+<input type="hidden" name="service" value="/OpenDocument/appService.do">
+<input type="hidden" name="bttoken" value="MDAwRFdkSVhAU1NKRkZeZWUxTUIxQVBlTlhJXEpZNjAEQ">
+<input type="hidden" name="cafWebSesInit" value="true">
+<input type="hidden" name="shareId" value="0">
+<input type="hidden" name="appCUID" value="AZXgyG8_ue9OtYITUhGG.wg">
+<input type="hidden" name="rbiApp" value="true">
+<input type="hidden" name="logonSuccessful" value="true">
+<input type="hidden" name="appKind" value="OpenDocument">
+<input type="hidden" name="actId" value="4195">
+<input type="hidden" name="objIds" value="7225">
+<input type="hidden" name="isApplication" value="true">
+<input type="hidden" name="pvl" value="en_US">
+<input type="hidden" name="pref" value="maxOpageUt=200;maxOpageC=10;tz=GMT+05:30;mUnit=inch;showFilters=true;smtpFrom=true;promptForUnsavedData=true;">
+<input type="hidden" name="sRefresh" value="Yes">
+<input type="hidden" name="loc" value="en">
+<input type="hidden" name="kind" value="Webi">
+<input type="hidden" name="iventrystore" value="widtoken">
+<input type="hidden" name="ViewType" value="H">
+<input type="hidden" name="entSession" value="CE_ENTERPRISESESSION">
+<input type="hidden" name="lang" value="en">
+</form>
+<script language="javascript">
+var frm = document.webiParamForm;
+try{
+if (parent.INFOVIEW!=null && parent.INFOVIEW.showLoadingStatus!=null)
+{parent.INFOVIEW.showLoadingStatus();}
+}
+catch(e){}
+frm.submit();
+</script>
+
+
+
+</body></html>

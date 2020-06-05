@@ -1,0 +1,2036 @@
+/*
+=============================================================
+WebIntelligence(r) Report Panel
+Copyright(c) 2001-2003 Business Objects S.A.
+All rights reserved
+Use and support of this software is governed by the terms
+and conditions of the software license agreement and support
+policy of Business Objects S.A. and/or its subsidiaries. 
+The Business Objects products and technology are protected
+by the US patent number 5,555,403 and 6,247,008
+File: dialog.js
+Dialog boxes
+=============================================================
+*/
+if (window._DHTML_LIB_DIALOG_JS_LOADED==null)
+{
+_DHTML_LIB_DIALOG_JS_LOADED=true
+DialogBoxWidget_modals=new Array;
+DialogBoxWidget_instances=new Array
+_promptDlgInfo=0
+_promptDlgWarning=1
+_promptDlgCritical=2
+_dlgTitleLBorderToTxt=10
+_dlgTitleLBorderToTxtIfIcon=5
+_dlgTitleHeight=26
+_dlgTitleMarginBottom=4
+_dlgTitleRBorderToClose=10
+    //.dlgBody (style.css)
+    _dlgTitleZoneHeight=_dlgTitleHeight+_dlgTitleMarginBottom;      //29
+_dlgBottomMargin=14 //please keep 14px (style.css .dlgResizeHandle)
+    //.dlgBody (style.css)
+    _dlgLeftRightPad=12 //2*6
+    //OK button zone: aboveBtnSpace:6px (style.css), OK button height=23px, _dlgBottomMargin:14px  
+_dlgOKButtonZoneHeight=(6+23+_dlgBottomMargin); /*43*/
+//resize zone when no Ok button  //BOEWEBI-4299   Query Panel: The window height grows at each display (DHTML)
+_dlgNoOKButtonZoneHeight=_dlgBottomMargin; /*14*/
+//close button in the title
+_dlgTitleCloseBtnImgFile='dialogtitle.png'
+_dlgTitleCloseBtnW=11
+_dlgTitleCloseBtnH=10
+_dlgTitleCloseBtnDy=26
+_dlgTitleCloseBtnHoverDy=37
+_dlgBorderToIcon=10
+_defaultFrmWidth=400
+_defaultFrmHeight=60
+_minDlgWidth=50;
+_minDlgHeight=50;
+_closeBeforeCancel = 1;
+_closeAfterCancel = 2;
+}
+function new_DialogBoxWidget(prms)
+{
+    var o = new_Widget(prms)
+    o.title = Widget_param(prms, "title", '')
+    o.width = Widget_param(prms, "width", null)
+    o.height = Widget_param(prms, "height", null)
+    o.defaultCB = Widget_param(prms, "defaultCB", null)
+    o.cancelCB = Widget_param(prms, "cancelCB", null)
+    o.noCloseButton = Widget_param(prms, "noCloseButton", false)
+    o.isFullScreen = Widget_param(prms, "isFullScreen", false)  
+    o.dlgBodyClass = Widget_param(prms, "dlgBodyClass", "dlgBody")   
+    o.iconDesc = Widget_param(prms, "iconDesc", null)
+    o.closeOption = Widget_param(prms, "closeOption", 1)
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// add help icon in the top right of the dialog if defined (by param or using a global variable)
+var helpIcon = Widget_param(prms, "helpIcon", null)
+// look for global env help icon description if exists, always overriden by iconDesc constructor parameter if given
+if (null == helpIcon) {
+var topfs = getTopFrameset()
+if (null != topfs) {
+helpIcon = (null != topfs._globalApplicationDialogHelpIcon)?topfs._globalApplicationDialogHelpIcon:null
+}
+if (null == helpIcon) {
+helpIcon = (null != _curWin._localWindowDialogHelpIcon)?_curWin._localWindowDialogHelpIcon:null
+}     
+}
+o.helpIcon = helpIcon
+if (null != helpIcon) {
+o.helpIcon.tooltip = (null != helpIcon.tooltip)?helpIcon.tooltip:'' 
+o.helpIcon.dx = (null != helpIcon.dx)?helpIcon.dx:0
+o.helpIcon.dy = (null != helpIcon.dy)?helpIcon.dy:0
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //resizeable parameters   
+o.resizeable=Widget_param(prms, "resizeable", false);
+if (o.resizeable)
+{
+    o.resizeCB=Widget_param(prms, "resizeCB", null);
+    o.minWidth=Widget_param(prms, "minWidth", _minDlgWidth);   
+    o.minHeight=Widget_param(prms, "minHeight", _minDlgHeight);
+    o.noResizeW=Widget_param(prms, "noResizeW", false);
+    o.noResizeH=Widget_param(prms, "noResizeH", false);    
+} 
+    o.oldMouseDown=null
+    o.modal=null
+    o.hiddenVis=new Array
+    o.lastLink=null
+    o.firstLink=null
+    o.titleLayer = null
+    o.defaultBtn=null
+    o.divLayer=null
+o.tableLayer=null
+o.role="dialog"
+o.ariaLabelledBy=null
+o.ariaDescribedBy=null
+    if (o.isFullScreen)
+    {
+        o.otherLayer=new Array
+        o.oldDisplay=new Array
+    }
+    o.isHTMLSet=function()
+    {
+    return _curDoc.getElementById(this.id)? true : false;
+    }
+    o.oldInit=o.init
+    o.oldShow=o.show
+    o.init=DialogBoxWidget_init
+    o.setResize=DialogBoxWidget_setResize
+    o.beginHTML=DialogBoxWidget_beginHTML
+    o.endHTML=DialogBoxWidget_endHTML
+    o.show=DialogBoxWidget_Show
+    o.center=DialogBoxWidget_center
+    o.firstFocus=Widget_param(prms, "firstFocus");
+o.focus=DialogBoxWidget_focus
+    o.setTitle=DialogBoxWidget_setTitle
+    o.getContainerWidth=DialogBoxWidget_getContainerWidth
+    o.getContainerHeight=DialogBoxWidget_getContainerHeight
+    DialogBoxWidget_instances[o.id]=o
+    o.modal=newWidget('modal_'+ o.id)
+    o.placeIframe=DialogBoxWidget_placeIframe   
+    o.oldResize=o.resize
+    o.resize=DialogBoxWidget_resize
+    o.attachDefaultButton=DialogBoxWidget_attachDefaultButton
+    o.unload=DialogBoxWidget_unload
+    o.moverCloseBtn=DialogBoxWidget_moverCloseBtn;
+    o.close=DialogBoxWidget_close;
+    o.internalClose=DialogBoxWidget_internalClose;    
+    return o
+}
+function newDialogBoxWidget(id,title,width,height,defaultCB,cancelCB,noCloseButton,isFullScreen)
+{
+return new_DialogBoxWidget({
+id:id,
+title:title,
+width:width,
+height:height,
+defaultCB:defaultCB,
+cancelCB:cancelCB,
+noCloseButton:noCloseButton,
+isFullScreen:isFullScreen
+})
+}
+function DialogBoxWidget_setResize(resizeCB,minWidth,minHeight,noResizeW,noResizeH)
+{
+var o=this;
+o.resizeable=true
+o.resizeCB=resizeCB
+o.minWidth=minWidth?minWidth:_minDlgWidth
+o.minHeight=minHeight?minHeight:_minDlgHeight
+o.noResizeW=noResizeW
+o.noResizeH=noResizeH
+}
+function DialogBoxWidget_setTitle(title)
+{
+var o=this
+o.title=title
+if (!o.isFullScreen)
+{
+if (o.titleLayer == null)
+o.titleLayer = getLayer('ariaLabelledBy_'+this.id);
+o.titleLayer.innerHTML=convStr(title)
+}
+}
+function DialogBoxWidget_beginHTML()
+{
+with (this)
+{
+var moveableCb=' onselectstart="return false" ondragstart="return false" onmousedown="'+_codeWinName+'.DialogBoxWidget_down(event,\''+id+'\',this,false);return false;" ';
+var left = _rtl ? 'right' : 'left'
+var right = _rtl ? 'left' : 'right'
+if (isFullScreen)
+{
+return '<a style="position:absolute;left:-30px;top:-30px; visibility:hidden" id="firstLink_'+this.id+'" href="javascript:void(0)" onfocus="'+_codeWinName+'.DialogBoxWidget_keepFocus(\''+this.id+'\');return false;" ></a>'+
+'<table class="dialogzone" border="0" cellspacing="0" cellpadding="0" width="100%" height="100%" cellspacing="0" cellpadding="2" id="'+id+'" style="display:none;padding:0px;visibility:'+_hide+';position:absolute;top:0px;left:0px;">'+
+'<tr><td id="td_dialog_'+id+'" valign="top" align="'+left+'"><div >'+
+'<table border="0"><tbody><tr><td class="dlgBody" id="div_dialog_'+id+'">'
+}
+else
+{
+var helpBtn = (null != helpIcon)?('<td valign="middle" align="'+left+'" style="padding-'+right+':4px;">' + simpleImgOffset(helpIcon.src,16,16,helpIcon.dx,helpIcon.dy, 'helpIcon_' + id  + '"', "", helpIcon.tooltip) + '</td>'):'';
+//var closeHandle=' onmousedown="'+_codeWinName+'.DialogBoxWidget_internalClose(\''+id+'\');return false;" ';
+var closeHandle='';
+var btn='';
+if (_dtd4)
+{
+btn='<td style="padding-'+right+':'+_dlgTitleRBorderToClose+'px"><div id="dialogClose_'+id+'" class="dlgCloseBtn" title="'+ _closeDialog+'" '+closeHandle+'></div></td>';
+}
+else
+{
+btn='<td style="padding-'+right+':'+_dlgTitleRBorderToClose+'px" '+ closeHandle+'>'+
+simpleImgOffset(_skin+_dlgTitleCloseBtnImgFile,_dlgTitleCloseBtnW,_dlgTitleCloseBtnH,0,_dlgTitleCloseBtnDy,'dialogClose_'+id, null, _closeDialog)
++'</td>';
+}
+var closeBtn='<td class="dlgCloseArea" align="'+left+'" valign="middle">'+
+'<table border="0" cellspacing="0" cellpadding="0"><tbody><tr style="height:'+_dlgTitleHeight+'px">' + helpBtn + btn +
+'</tr></tbody></table>'+
+'</td>';
+var dlgtitle='<table style="height:'+ _dlgTitleHeight+'" class="dlgTitle" width="100%"  border="0" cellspacing="0" cellpadding="0">'+
+'<tr valign="top" style="height:'+_dlgTitleHeight+'px">'+
+(iconDesc!=null?'<td style="cursor:move;padding-'+left+':'+_dlgBorderToIcon+'px;"  valign="middle" align="'+left+'">'+iconDesc.getHTML()+'</td>':'')+
+'<td '+moveableCb+' style="cursor:move;padding-'+left+':'+ (iconDesc!=null?_dlgTitleLBorderToTxtIfIcon:_dlgTitleLBorderToTxt) +'px;" width="100%" valign="middle" align="'+left+'">'+
+'<nobr><span id="ariaLabelledBy_'+id+'" class="titlezone">'+convStr(title)+'</span></nobr></td>'+
+(noCloseButton?'':closeBtn)+
+'</tr></table>';
+var s = new Array, i=0 
+s[i++] ='<div onselectstart="return false" onmouseup="'+_codeWinName+'.DialogBoxWidget_keepFocus(\''+this.id+'\');" oncontextmenu="'+_codeWinName+'.eventCancelBubble(event);return false" border="0" hspace="0" vspace="0" src="'+_skin+'../transp.gif" id="modal_'+id+'" style="position:absolute;top:0px;left:0px;width:1px;height:1px">'+(_ie?img(_skin+'../transp.gif','100%','100%',null):'')+'</div>'
+var dims = sty("width",width?(""+width+"px"):null)+sty("height",height?(""+Math.max(0,height+(_ff?-2:0))+"px"):null)
+s[i++] ='<a style="position:absolute;left:-30px;top:-30px; visibility:hidden" id="firstLink_'+this.id+'" href="javascript:void(0)" onfocus="'+_codeWinName+'.DialogBoxWidget_keepFocus(\''+this.id+'\');return false;" ></a>';
+s[i++] ='<table ' + attr("role", this.role) + attr("aria-labelledby", id) + attr("aria-describedby", this.ariaDescribedBy) + ' oncontextmenu="'+_codeWinName+'.eventCancelBubble(event);return false" border="0" cellspacing="0" cellpadding="0" id="'+id+'" style="display:none;padding:0px;visibility:'+_hide+';position:absolute;top:-2000px;left:-2000px;'+dims+'">';
+s[i++] ='<tr><td '+ ' style="'+dims+'" ' + 'class="dialogbox" id="td_dialog_'+id+'" onresize="'+_codeWinName+'.DialogBoxWidget_resizeIframeCB(\''+id+'\',this)"  valign="top">';
+s[i++] ='<table class="dlgBox2" width="100%" border="0" cellspacing="0" cellpadding="0" ><tbody>' 
+s[i++] ='<tr><td height="0" valign="top">'+dlgtitle+'</td></tr>';
+s[i++] ='<tr><td class="'+this.dlgBodyClass+'" valign="top" id="div_dialog_'+id+'" ' + attr("role", "region") + attr("aria-labelledby", 'ariaLabelledBy_'+id) + '>'
+return s.join('')
+}
+}
+}
+function DialogBoxWidget_endHTML()
+{
+var o=this, s = new Array, i=0 
+s[i++] ='</td></tr>'
+var resizeHandle = o.resizeable ? '<div onmousedown="'+_codeWinName+'.DialogBoxWidget_down(event,\''+o.id+'\',this,true);return false;" class="dlgResizeHandle" id="resizeHandle_'+o.id+'"></div>' : ''
+s[i++] ='<tr><td '+(o.resizeable?'align="'+(_rtl ? 'left' : 'right')+'" valign="bottom" ':'') +'style="height:'+_dlgBottomMargin+'px;">'+resizeHandle+'</td></tr>';
+s[i++] ='</tbody></table>';
+s[i++] ='</td></tr></table>';
+//s[i++] ='<a style="position:absolute;left:-30px;top:-30px; visibility:hidden" tabindex=0 id="lastLink_'+o.id+'" href="javascript:void(0)" onfocus="'+_codeWinName+'.DialogBoxWidget_keepFocus(\''+o.id+'\');return false;" ></a>' 
+s[i++] ='<div style="position:absolute;left:-30px;top:-30px; visibility:hidden" tabindex=0 id="lastLink_'+o.id+'" onfocus="'+_codeWinName+'.DialogBoxWidget_keepFocus(\''+o.id+'\');return false;" ></div>'
+return s.join('')
+}
+function DialogBoxWidget_getContainerWidth()
+{
+var o=this
+return o.width-(2+2)
+}
+function DialogBoxWidget_getContainerHeight() 
+{
+var o=this
+return o.height-(2+18+2+2+2)
+}
+function DialogBoxWidget_internalClose(id) 
+{  
+var o=DialogBoxWidget_instances[id]
+if (o)
+{
+if (o.closeOption != null && o.closeOption == _closeAfterCancel )
+{
+if(o.cancelCB!=null)
+{
+o.show(o.cancelCB());
+}
+}else
+{
+o.show(false)
+if(o.cancelCB!=null) o.cancelCB()
+}
+}
+}
+function DialogBoxWidget_resizeIframeCB(id,lyr)
+{
+var o=DialogBoxWidget_instances[id]
+if (o)
+o.placeIframe()
+}
+function DialogBoxWidget_placeIframe()
+{
+var o=this
+var lyr=o.td_lyr
+if (lyr==null)
+{
+o.td_lyr=lyr=getLayer("td_dialog_"+o.id)
+}
+if (o.iframe)
+{
+o.iframe.resize(lyr.offsetWidth,lyr.offsetHeight)
+var left = o.layer.offsetLeft
+if (_rtl)
+left += (o.layer.offsetWidth - o.layer.childNodes[0].offsetWidth)
+o.iframe.move(left,o.layer.offsetTop)
+}
+var l=o.fadeLayer;
+if (l)
+{
+var st=l.style
+st.top   = ""+o.layer.offsetTop+"px"
+st.left  = ""+o.layer.offsetLeft+"px"
+st.height= ""+lyr.offsetHeight+"px";
+st.width= ""+lyr.offsetWidth+"px";
+}
+}
+function DialogBoxWidget_resize(w,h)
+{
+var o=this;
+if (!o.isFullScreen)
+{
+o.oldResize(w,h);
+var td1 = o.layer.childNodes[0].childNodes[0].childNodes[0], table2=td1.childNodes[0], tr2=table2.childNodes[0].childNodes[0]
+var st1=td1.style, tr2=tr2.style
+if (w!=null)
+{
+    st1.width=""+w+"px"
+    //need to resize interior contents
+    o.width=w;
+}
+if (h!=null)
+{
+    st1.height=""+h+"px"   
+    //need to resize interior contents 
+    o.height=h;
+}
+if (o.iframe)
+{
+o.iframe.resize(w,h);
+}
+}
+}
+function DialogBoxWidget_init()
+{
+if (this.layer!=null)
+return
+var o=this
+o.oldInit();
+if (!o.isFullScreen)
+o.modal.init();
+o.lastLink=newWidget("lastLink_"+o.id)
+o.firstLink=newWidget("firstLink_"+o.id)
+o.lastLink.init()
+o.firstLink.init()
+if (!o.noCloseButton)
+{
+var bl = o.closeButton = getLayer('dialogClose_'+o.id)
+addEvent(bl, "mouseover", o.moverCloseBtn)
+addEvent(bl, "mouseout", o.moverCloseBtn)
+addEvent(bl, "click", function(){o.internalClose(o.id);})
+}
+if (null != o.helpIcon) {
+var helpIconLayer = getLayer("helpIcon_" + o.id)
+if (null != helpIconLayer) {
+addEvent(helpIconLayer, "click", o.helpIcon.clickCB)
+}
+}
+}
+function DialogBoxWidget_moverCloseBtn(evt)
+{
+var evt=getEvent(evt);
+var over=(evt && evt.type=="mouseover")?true:false;
+if (_dtd4)
+this.className=over?'dlgCloseBtnHover':'dlgCloseBtn';
+else
+changeOffset(this,0, over?_dlgTitleCloseBtnHoverDy:_dlgTitleCloseBtnDy);
+}
+function DialogBoxWidget_attachDefaultButton(btn)
+{
+var o = this
+// Customization : 
+// if there is an "old" default button, change his background color to be a "normal" button
+if (o.defaultBtn) 
+{
+if (o.defaultBtn.setDefaultButton)
+o.defaultBtn.setDefaultButton(false)
+}
+// put the "new" btn as default button
+if (btn) 
+{
+o.defaultBtn = btn;
+o.defaultBtn.setDefaultButton();
+}
+}
+_theLYR=null
+_dlgResize=null
+function DialogBoxWidget_down(e,id,obj,isResize)
+{
+_dlgResize=isResize
+var o=DialogBoxWidget_instances[id],lyr=o.layer,mod=o.modal.layer
+lyr.onmousemove=mod.onmousemove=eval('_curWin.'+_codeWinName+'.DialogBoxWidget_move')
+lyr.onmouseup=mod.onmouseup=eval('_curWin.'+_codeWinName+'.DialogBoxWidget_up')
+lyr.dlgStartPosx=mod.dlgStartPosx=parseInt(lyr.style.left)
+lyr.dlgStartPosy=mod.dlgStartPosy=parseInt(lyr.style.top)
+lyr.dlgStartx=mod.dlgStartx=eventGetX(e)
+lyr.dlgStarty=mod.dlgStarty=eventGetY(e)
+lyr.dlgStartw=mod.dlgStartw=o.getWidth()
+lyr.dlgStarth=mod.dlgStarth=o.getHeight()
+lyr._widget=mod._widget=o.widx
+_theLYR=lyr
+//eventCancelBubble(e)
+if (lyr.setCapture)
+lyr.setCapture(true)
+}
+function DialogBoxWidget_move(e)
+{
+var o=_theLYR,dlg=getWidget(o)
+if (_dlgResize)
+{
+var deltaX = _rtl ? o.dlgStartw-eventGetX(e)+o.dlgStartx : o.dlgStartw+eventGetX(e)-o.dlgStartx
+var newW=Math.max(dlg.minWidth,deltaX)
+var newH=Math.max(dlg.minHeight,o.dlgStarth+eventGetY(e)-o.dlgStarty)
+//While resizing,dialog box should not be dragged beyond the parent width.
+if((newW+o.dlgStartPosx)>(winWidth()-10))
+newW = winWidth()-(o.dlgStartPosx+10)
+//While resizing,dialog box should not be dragged beyond the parent height.
+if((newH+o.dlgStartPosy)>(winHeight()-18))
+newH = winHeight()-(o.dlgStartPosy+18)
+if (_rtl && newW > dlg.minWidth)
+{
+var x=Math.max(0,o.dlgStartPosx-o.dlgStartx+eventGetX(e))
+x = Math.min( Math.max(10,winWidth()-10), x)
+if (x>0)
+{
+if (dlg.iframe)
+dlg.iframe.move(x)
+dlg.move(x)
+dlg.resize(dlg.noResizeW?null:newW,dlg.noResizeH?null:newH)
+if (dlg.resizeCB)
+dlg.resizeCB(newW,newH)
+}
+}
+else
+{
+dlg.resize(dlg.noResizeW?null:newW,dlg.noResizeH?null:newH)
+if (dlg.resizeCB)
+dlg.resizeCB(newW,newH)
+}
+}
+else
+{
+var x=Math.max(0,o.dlgStartPosx-o.dlgStartx+eventGetX(e))
+var y=Math.max(0,o.dlgStartPosy-o.dlgStarty+eventGetY(e))
+x = Math.min( Math.max(10,winWidth()-10), x)
+y = Math.min( Math.max(10,winHeight()-18), y)
+//if (dlg.iframe)
+//dlg.iframe.move(x,y)
+dlg.move(x,y)
+dlg.placeIframe()
+}
+eventCancelBubble(e)
+return false
+}
+function DialogBoxWidget_up(e)
+{
+var o=getWidget(_theLYR),lyr=o.layer,mod=o.modal.layer;
+lyr.onmousemove=mod.onmousemove=null;
+lyr.onmouseup=mod.onmouseup=null;
+if (lyr.releaseCapture)
+lyr.releaseCapture();
+_theLYR=null
+}
+function DialogBoxWidget_keypress(e)
+{
+eventCancelBubble(e)
+var dlg=currntDlgGet()
+if (dlg!=null)
+{
+switch( eventGetKey(e))
+{
+case 13://enter
+if(dlg.yes && !dlg.no) //old code ???
+{ 
+if (dlg.defaultCB) dlg.defaultCB();return false; 
+} 
+//Behavior is different from textArea and textField with the Enter action
+if(isTextArea(_ie?_curWin.event:e)) return true;
+if(dlg.defaultBtn!=null && !dlg.defaultBtn.isDisabled())
+{
+dlg.defaultBtn.executeCB(); return false;
+}
+break;
+case 27://cancel or escape
+hideBlockWhileWaitWidget()
+//ADAPT00492378: avoid to call 2 times the method DialogBoxWidget_show
+if (dlg.cancelCB!=null) 
+    dlg.cancelCB()
+else
+    dlg.show(false)    
+return false;
+break;
+case 8: //back space
+return isTextInput(_ie?_curWin.event:e);
+break;
+}
+}
+}
+function DialogBoxWidgetResizeModals(e)
+{
+var len = DialogBoxWidget_modals.length
+for (var i=0; i < len; i++)
+{
+m_sty=DialogBoxWidget_modals[i]
+//m_sty.width='100%'
+//m_sty.height='100%'
+m_sty.width="" + window.screen.width+"px"
+m_sty.height="" + window.screen.height+"px"
+}
+}
+function DialogBoxWidget_center()
+{
+var o=this, scrY=getScrollY(),scrX=getScrollX()
+if (!o.isFullScreen)
+{
+o.height=o.layer.offsetHeight;
+o.width=o.layer.offsetWidth;
+o.move(Math.max(0,scrX+(winWidth()-o.width)/2),Math.max(0,scrY+(winHeight()-o.height)/2));
+o.placeIframe()
+}
+}
+function DialogBoxWidget_Show(sh,doNotHideWt)
+{
+var o=this
+if (!o.isFullScreen)
+o.m_sty=o.modal.css
+o.l_sty=o.css
+if (sh)
+{
+// SHOW
+if (o.isFullScreen)
+{
+var body=_curDoc.body
+// Set the body to the dialog color
+o.oldClassName=body.className
+if (_ie)
+{
+o.oldBodyLeftMargin=body.leftMargin
+o.oldBodyTopMargin=body.topMargin
+body.leftMargin=0
+body.topMargin=0
+}
+body.className="dialogzone"
+o.otherLayer.length=0
+o.oldDisplay.length=0
+// Hide all except the dialog
+var j=0, nodes=body.childNodes, nodesLen=nodes.length
+for (var i = 0; i < nodesLen; i++)
+{
+var node=nodes[i]
+if (node.nodeType != 3)
+{
+if ((node.id!=id)&&(node.id!=('firstLink_'+id))&&(node.id!=('lastLink_'+id))&&node.style)
+{
+o.otherLayer[j]=node
+o.oldDisplay[j]=node.style.display
+node.style.display="none"
+j++
+}
+}
+}
+}
+if (!o.isFullScreen && !o.iframe)
+{
+o.iframe=newWidget(getDynamicBGIFrameLayer().id)
+o.iframe.init()
+}
+// If a previous instance is still there, unregister it
+// (for instance if 2 show(true) are called)
+currntDlgUnregister(o)
+// Register and detach keyboad events
+currntDlgRegister(o)
+o.oldMouseDown=_curDoc.onmousedown
+_curDoc.onmousedown=null
+if(!doNotHideWt)
+hideBlockWhileWaitWidget();
+} else {
+// HIDE
+if (o.isFullScreen)
+{
+var body = _curDoc.body
+body.className= o.oldClassName
+if (_ie)
+{
+body.leftMargin=o.oldBodyLeftMargin
+body.topMargin=o.oldBodyTopMargin
+}
+var j=0, nodesLen=o.otherLayer.length
+for (var j=0; j < nodesLen; j++)
+{
+o.otherLayer[j].style.display = o.oldDisplay[j]
+}
+o.otherLayer.length=0
+o.oldDisplay.length=0
+}
+// Unregister and detach keyboad events
+currntDlgUnregister(o)
+_curDoc.onmousedown=o.oldMouseDown
+}
+var sameState= (o.layer.isShown == sh)
+if (sameState)
+return
+o.layer.isShown=sh
+if (sh)
+{
+// SHOW
+if (_curWin.DialogBoxWidget_zindex==null)
+_curWin.DialogBoxWidget_zindex=1000
+if (o.iframe)
+o.iframe.css.zIndex = _curWin.DialogBoxWidget_zindex++;
+if (!o.isFullScreen)
+{
+o.m_sty.zIndex=_curWin.DialogBoxWidget_zindex++;
+DialogBoxWidget_modals[DialogBoxWidget_modals.length]=o.m_sty
+o.m_sty.display=''
+}
+o.l_sty.zIndex=_curWin.DialogBoxWidget_zindex++;
+o.l_sty.display='block'
+if (o.iframe)
+o.iframe.setDisplay(true)
+DialogBoxWidgetResizeModals()
+if (_ie || _webKit || _opera)
+{
+    if (!o.height)
+    o.height = o.layer.offsetHeight;
+            if (!o.width)    
+    o.width = o.layer.offsetWidth;
+}
+else // to fix Firefox bugs regarding <table> and <td> dimensions
+{
+var lyr = o.td_lyr
+if (lyr==null)
+{
+o.td_lyr=getLayer("td_dialog_"+ o.id)
+}
+    if (!o.height)
+    o.height= o.td_lyr.offsetHeight;
+        if (!o.width)    
+    o.width= o.td_lyr.offsetWidth;
+}
+//add scroll bar for small resolution 800*600
+//do the resize action before the center
+//ADAPT01487089: to enable the resizing when parent frame dimension have changed. 
+var _small=(isSmallScreen() ||  winHeight()< o.height || winWidth()< o.width );
+if (_small && o.height)
+{
+if (o.divLayer == null)
+o.divLayer = getLayer("div_dialog_"+ o.id);
+if (o.divLayer)
+{
+o.divLayer.style.overflow = "auto";
+o.divLayer.style.height = (winHeight()< o.height)? (winHeight()-40) : o.getContainerHeight();
+o.divLayer.style.width = (winWidth()< o.width)? (winWidth()-20) : o.getContainerWidth();
+}
+o.resize(((winWidth()< o.width)? (winWidth()-10):null),((winHeight()< o.height)? (winHeight()-10):null));
+}
+else
+{
+if(o.tableLayer == null)
+o.tableLayer=getLayer("dialogzone_"+o.id);
+if(o.tableLayer)
+{
+o.resize(o.tableLayer.offsetWidth,o.tableLayer.offsetHeight);
+if(o.divLayer == null)
+o.divLayer=getLayer("div_dialog_"+o.id);
+if(o.divLayer)
+{
+o.divLayer.style.overflow="";
+o.divLayer.style.height = o.tableLayer.offsetHeight;
+o.divLayer.style.width = o.tableLayer.offsetWidth;
+}
+}
+}
+if (isHidden(o.layer))
+{
+o.center()
+}
+if (!_small && o.resizeCB)
+{
+window._currDlgResize=o
+o.resizeCB(o.width,o.height)
+}
+} else {
+// HIDE
+var l=DialogBoxWidget_modals.length=Math.max(0,DialogBoxWidget_modals.length-1)
+if (!o.isFullScreen)
+{
+o.m_sty.width='1px'
+o.m_sty.height='1px'
+o.m_sty.display='none'
+}
+o.l_sty.display='none'
+o.move(-2000,-2000);
+if (o.iframe != null) {
+o.iframe.move(-2000,-2000)
+o.iframe.setDisplay(false)
+releaseBGIFrame(o.iframe.id)
+}
+if (isSmallScreen())
+{
+if (o.divLayer == null)
+o.divLayer=getLayer("div_dialog_" + o.id);
+if (o.divLayer)
+{
+o.divLayer.style.overflow = "";
+o.divLayer.style.height = "";
+o.divLayer.style.width = "";
+}
+}
+}
+if (!o.isFullScreen)
+o.modal.show(sh);
+o.firstLink.show(sh)
+o.lastLink.show(sh)
+o.oldShow(sh);
+if (sh) {
+o.css.display="none"
+/*
+if (_curWin.createAppearEffect)
+{
+o.appearEffect = _curWin.createAppearEffect(o.layer, 0.2);
+}
+else
+{
+o.css.visibility=_show;
+o.css.display="block";
+}
+*/
+o.css.visibility=_show;
+/*if (_curWin.createFadeEffect)
+{
+if (o.fadeLayer==null)
+{
+o.fadeLayer = _curDoc.createElement('div');
+_curDoc.body.appendChild(o.fadeLayer);
+}
+var l=o.fadeLayer;
+l.className="menuTextPart";
+var st=l.style
+st.position="absolute";
+st.padding="0px"
+st.visibility=_show;
+st.zIndex = _curWin.DialogBoxWidget_zindex++;
+o.css.display="block";
+st.display="block"
+o.placeIframe();
+o.fadeEffect = _curWin.createFadeEffect(o.fadeLayer, 0.2);
+}
+else*/
+{
+o.css.display="block";
+o.placeIframe()
+}
+} else {
+/*
+if (null != o.appearEffect) {
+o.appearEffect.cancel()
+o.appearEffect = null
+o.css.display="block"
+}
+o.css.visibility=_hide
+*/
+if (null != o.fadeEffect)
+{
+o.fadeEffect.cancel()
+o.fadeEffect = null
+var st=o.fadeLayer.style;
+st.display="none"
+st.visibility=_hide;
+}
+o.css.visibility=_hide
+// Hide tooltips if any
+new_TooltipWidget().show(false)
+}
+var prevDlg=currntDlgGet()
+if (prevDlg)
+prevDlg.focus()
+}
+function DialogBoxWidget_close()
+{
+this.unload()
+this.show(false)
+}
+function DialogBoxWidget_unload()
+{
+if (this.iframe) {
+releaseBGIFrame(this.iframe.id)
+}
+currntDlgUnregister(this)
+}
+function DialogBoxWidget_keepFocus(id)
+{
+var o=DialogBoxWidget_instances[id];
+if (o)
+o.focus()
+}
+function DialogBoxWidget_focus()
+{
+var o = this
+ if (o.firstFocus) { 
+o.firstFocus()
+} else if (null != o.userData.frameZone) { // in naviframe autofocus
+o.userData.frameZone.setFocusOnSelectedTab()
+} else if (null != o.frm) { // in naviframe autofocus
+o.frm.setFocusOnSelectedTab()
+} else if (!o.isFullScreen) {
+if (o.divLayer == null) 
+o.divLayer = getLayer("div_dialog_"+ o.id);
+safeSetFocus(o.divLayer.childNodes[0])
+//setFocusOnFirstVisibleChild(o.divLayer.childNodes[0])
+}
+}
+function newAlertDialog(id,title,text,okLabel,promptType,yesCB)
+{
+return newPromptDialog(id,title,text,okLabel,null,promptType,yesCB,null,true)
+}
+function newPromptDialog(id,title,text,okLabel,cancelLabel,promptType,yesCB,noCB,noCloseButton, width, height)
+{
+var o=new_FrameDlgWidget({id:id,title:title,width:((width)?width:300),height:height,
+defaultCB:PromptDialog_defaultCB,cancelCB:PromptDialog_cancelCB,noCloseButton:noCloseButton,resizeable:true});
+// For screen reader
+o.role="alertdialog"
+o.ariaLabelledBy='ariaLabelledBy_'+o.id
+o.ariaDescribedBy="dlg_txt_"+o.id
+// Other data
+o.text=text
+o.promptType=promptType
+o.txtLayer = null
+o.imgLayer = null
+o.getPromptHTML=PromptDialog_getPromptHTML;
+o.setPromptType=PromptDialog_setPromptType
+o.setText=PromptDialog_setText
+o.getPromptIconCls=PromptDialog_getPromptIconCls;
+o.yesCB=yesCB
+o.noCB=noCB
+o.getOKBtn().par=o;
+o.getCancelBtn().par=o;
+o.setFrameHTML(o.getPromptHTML())
+return o
+}
+function PromptDialog_getPromptIconCls()
+{
+var o=this;
+var cls="infoIcon";
+switch (o.promptType)
+{
+case _promptDlgCritical:
+cls="errorIcon";
+break;
+case _promptDlgWarning:
+cls="warningIcon";
+break;
+case _promptDlgInfo:
+default:
+cls="infoIcon";
+break;
+}
+return cls;
+}
+function PromptDialog_setPromptType(promptType)
+{
+var o=this
+if (o.imgLayer == null)
+o.imgLayer = getLayer("dlg_img_"+o.id);
+o.promptType=promptType;
+var cls=o.getPromptIconCls()
+if (o.imgLayer)
+o.imgLayer.className=cls;
+}
+function PromptDialog_setText(text)
+{
+var o=this
+o.text=text
+if (o.txtLayer == null)
+o.txtLayer = getLayer("dlg_txt_"+o.id)
+if (o.txtLayer)
+o.txtLayer.innerHTML=getWordWrapDivHTMLInnerHTML(text)
+}
+function PromptDialog_getPromptHTML()
+{
+var o=this
+var text=o.text;
+var left= _rtl ? 'right' : 'left'
+    var width=Math.max(o.width-_dlgLeftRightPad, 32);
+    var txtWidth=Math.max(width-32/*icon width*/-14/*txt:padding-left*/-8 /*msgDlg:padding-left*/-19 /*msgDlg: padding-right*/, 10);
+var s='<table width="' + width + '"'+' cellpadding="0" cellspacing="0" border="0" ><tbody>'+
+'<tr><td class="msgDlg">'+
+'<table  cellpadding="0" cellspacing="0" border="0" ><tbody>'+
+'<tr><td align="'+left+'" valign="top" style="width:32px;padding:0px;" ><div id="dlg_img_'+o.id+'" class="'+o.getPromptIconCls()+'"></div></td>'+
+'<td align="'+left+'" style="padding-'+left+':14px;padding-top:5px;">'+
+getWordWrapDivHTML(text, txtWidth, "dlg_txt_"+o.id, "naviFrameTxt")+
+'</td></tr>'+
+'</tbody></table>'+
+'</td></tr>'+
+'<tr ><td class="msgDlgLine"><div style="font-size:0px;height:1px;"></div></td></tr>'+
+'</tbody></table>';
+return s;
+}
+function PromptDialog_defaultCB()
+{
+var o=this.par?this.par:this
+if (o.yesCB)
+{
+if (typeof o.yesCB!="string")
+o.yesCB()
+else
+eval(o.yesCB)
+}
+o.show(false)
+}
+function PromptDialog_cancelCB()
+{
+var o=this.par?this.par:this;
+if (o.noCB)
+{
+if (typeof o.noCB!="string")
+o.noCB()
+else
+eval(o.noCB)
+}
+o.show(false)
+}
+function debugInst(step)
+{
+return // Remove this to activate debugging
+var s=""
+if (_curWin.DialogBoxWidget_currentCount)
+{
+s="count=" + _curWin.DialogBoxWidget_currentCount+"\n"
+for (var i=0;i<_curWin.DialogBoxWidget_currentCount;i++)
+{
+s+="    " + i +"--> " + eval("_curWin.DialogBoxWidget_inst_" + i + ".id") + "\n"
+}
+}
+else
+{
+s="no instances cached"
+}
+alert(step + "\n"+s)
+}
+function currntDlgRegister(dlg)
+{
+if (dlg==null)
+return
+if (_curWin.DialogBoxWidget_currentCount==null)
+_curWin.DialogBoxWidget_currentCount=0
+if (_curWin.DialogBoxWidget_currentCount==0)
+_curWin.DialogBoxWidget_oldKeyCB=_curDoc.body.onkeydown
+eval("_curWin.DialogBoxWidget_inst_" + (_curWin.DialogBoxWidget_currentCount) + "=dlg;")
+eval("_curWin.DialogBoxWidget_keyCB_" + (_curWin.DialogBoxWidget_currentCount) + "=DialogBoxWidget_keypress;")
+_curWin.DialogBoxWidget_currentCount++
+_curDoc.body.onkeydown=DialogBoxWidget_keypress
+debugInst("register")
+}
+function currntDlgUnregister(dlg)
+{
+if (dlg==null)
+return
+debugInst("BEFORE unregister")
+// Find index
+var count = _curWin.DialogBoxWidget_currentCount
+if (count)
+{
+var idx=-1,curDlg=null
+for (var i=0;i<count;i++)
+{
+eval("curDlg=_curWin.DialogBoxWidget_inst_" + i + ";")
+if (curDlg.id==dlg.id)
+{
+idx=i
+break;
+}
+}
+if (idx>=0)
+{
+// Uregister only if the dialog is found
+eval("curDlg=_curWin.DialogBoxWidget_inst_" + idx + "=null;")
+eval("curDlg=_curWin.DialogBoxWidget_keyCB_" + idx + "=null;")
+for (var i=(idx+1);i<count;i++)
+{
+eval("_curWin.DialogBoxWidget_inst_" + (i-1) + "=_curWin.DialogBoxWidget_inst_" +i+";")
+eval("_curWin.DialogBoxWidget_keyCB_" + (i-1) + "=_curWin.DialogBoxWidget_keyCB_" +i+";")
+if (i==(count-1))
+{
+eval("_curWin.DialogBoxWidget_inst_" + i + "=null;")
+eval("_curWin.DialogBoxWidget_keyCB_" + i + "=null;")
+}
+}
+_curWin.DialogBoxWidget_currentCount--
+if (_curWin.DialogBoxWidget_currentCount == 0)
+_curDoc.body.onkeydown=_curWin.DialogBoxWidget_oldKeyCB
+else
+eval("_curDoc.body.onkeydown=_curWin.DialogBoxWidget_keyCB_" + (_curWin.DialogBoxWidget_currentCount-1) + ";")
+}
+}
+debugInst("AFTER unregister")
+}
+function currntDlgGet()
+{
+if ((_curWin.DialogBoxWidget_currentCount!=null)&&(_curWin.DialogBoxWidget_currentCount>0))
+return  eval("_curWin.DialogBoxWidget_inst_" + (_curWin.DialogBoxWidget_currentCount-1) + ";")
+else
+return null
+}
+function new_NaviFrameWidget(prms)
+{
+    var o = new_Widget(prms);
+    o.superInit=o.init;        
+o.xContentOverflow = Widget_param(prms, "xContentOverflow", "hidden")
+o.yContentOverflow = Widget_param(prms, "yContentOverflow", "hidden")
+o.contentOverflow = Widget_param(prms, "contentOverflow", null)
+if (null != o.contentOverflow) {
+o.xContentOverflow = o.contentOverflow 
+o.yContentOverflow = o.contentOverflow
+}      
+    //public API
+    o.init=NaviFrameWidget_init;
+    o.beginHTML=NaviFrameWidget_beginHTML;
+    o.endHTML=NaviFrameWidget_endHTML;
+    o.beginTabHTML=NaviFrameWidget_beginTabHTML;
+    o.endTabHTML=NaviFrameWidget_endTabHTML;
+    o.beginTab=NaviFrameWidget_beginTab
+    o.endTab=NaviFrameWidget_endTab
+    o.showTab=NaviFrameWidget_showTab
+    o.addByPrms=NaviFrameWidget_addByPrms;
+    o.add=NaviFrameWidget_add
+    o.remove=NaviFrameWidget_remove
+    o.removeAll=NaviFrameWidget_removeAll
+    o.select=NaviFrameWidget_select
+    o.getSelection=NaviFrameWidget_getSelection 
+o.getHTML=NaviFrameWidget_getHTML
+    o.setTabHTML=NaviFrameWidget_setTabHTML
+    o.setHTMLWhenEmptyBar=NaviFrameWidget_setHTMLWhenEmptyBar//only useful for _HorizTabTopWithClose
+    o.superResize=o.resize;
+    o.resize=NaviFrameWidget_resize;
+    o.getTabBar=NaviFrameWidget_getTabBar;
+    //internal usage
+    o.barType = Widget_param(prms, "naviBarType", _noNaviTab)
+    o.w = Widget_param(prms, "w", _defaultFrmWidth)
+    o.h = Widget_param(prms, "h", _defaultFrmHeight)
+    o.cb = Widget_param(prms, "cb", null)
+    o.dblclick = Widget_param(prms, "dblclick", null) 
+    o.resizeTabCB = Widget_param(prms, "resizeTabCB", null)          
+    o.autoScroll = Widget_param(prms, "autoScroll", false);
+    o.lowResolutionAdapt = Widget_param(prms, "lowResolutionAdapt", false);
+    o.getTabHTML=NaviFrameWidget_getTabHTML
+    o.getTabCSS=NaviFrameWidget_getTabCSS
+    o.getTabLayer=NaviFrameWidget_getTabLayer;
+    o.getTabID=NaviFrameWidget_getTabID;
+    o.closeTab=NaviFrameWidget_closeTab;//only useful for _HorizTabTopWithClose
+// set the visual focus for usability on the selected tab
+o.setFocusOnSelectedTab = function()
+{
+var o = this
+var tabBar = o.getTabBar()
+if (null != tabBar) {
+var idx = o.getSelection().index
+var tab = tabBar.getTab(idx);
+safeSetFocus(tab.txtLyr)
+}
+};
+    o.frmW=o.w; 
+    o.frmH=o.h;
+    o.isVertBar=(o.barType==_VertTab || o.barType==_VertTabWithIcon)?true:false;
+    if (_noNaviTab==o.barType)
+        o.navibar=null;
+    else
+    {    
+        o.navibar=new_NaviBarWidget({id:("navibar_"+ o.id), 
+naviBarType:o.barType, 
+cb:NaviFrameWidget_tabClick, 
+dblclick:o.dblclick, 
+w:((o.isVertBar)?null:o.w), 
+h:o.h, 
+beforeShowTabMenu:Widget_param(prms, "beforeShowTabMenu", null),
+beforeShowMenu:Widget_param(prms, "beforeShowMenu", null), 
+showScrollBar:Widget_param(prms, "showScrollBar", null)});
+        o.navibar.par=o;
+        if (o.isVertBar)
+        {                       
+            o.frmW=Math.max((o.w - _vertNaviPanelToFrame - o.navibar.w), _vertNaviPanelToFrame); 
+            o.h=o.frmH=o.navibar.h;
+        }
+        else
+        {                        
+            o.frmH=o.h-_naviHorzTabH;
+        }
+    }
+    o.zoneLayers=new Array
+    o.oldIndex=-1
+    o.tabid="naviFrmTab_"+o.id
+    o.html="";//for _noNaviTab in NaviFrameWidget_getHTML
+    o.frmid="naviFrmFrame_"+o.id
+    o.frmLyr=null;
+    o.LyrWhenEmptyBar=null;//only useful for _HorizTabTopWithClose
+    o.contentid="naviFrmContent_"+o.id
+    o.contentLyr=null;
+    return o;
+}
+function newNaviFrameWidget(id, naviBarType, w, h, cb, dblclick, beforeShowMenu, showScrollBar)
+{
+return new_NaviFrameWidget({
+id:id, 
+naviBarType:naviBarType, 
+w:w,
+h:h,
+cb:cb, 
+dblclick:dblclick,
+beforeShowMenu:beforeShowMenu,
+showScrollBar:showScrollBar
+})
+}
+function NaviFrameWidget_init()
+{
+var o=this;
+o.superInit();
+if (o.navibar)
+{
+o.navibar.init();
+o.contentLyr=getLayer(o.contentid);
+if (o.barType==_HorizTabTopWithClose)
+{
+o.LyrWhenEmptyBar=getLayer(o.tabid);
+o.LyrWhenEmptyBar.style.disply="none";
+}
+}
+else
+{
+o.frmLyr=getLayer(o.frmid);
+o.contentLyr=getLayer(o.contentid);
+}
+if (o.oldIndex == -1) o.select(0)
+}
+function NaviFrameWidget_getHTML()
+{
+var o = this, s = new Array(), i=0
+    s[i++] = o.beginHTML();
+    if (o.barType == _noNaviTab)  
+    {
+        s[i++] ='<table cellspacing="0" cellpadding="0" border="0" width="100%"><tbody>';    
+        s[i++] ='<tr><td id="'+o.frmid+'" class="naviFrameTxt" style="text-align:left;vertical-align:top;">';
+        s[i++] =o.html;
+        s[i++] ='</td></tr></tbody></table>';
+    }
+    else
+    {                       
+        //frame with tabs
+        if (o.barType ==_HorizTabTopWithClose)//when there is no tab in the bar, for _HorizTabTopWithClose
+        {
+ s[i++] = o.beginTabHTML() + o.html + o.endTabHTML();
+        }
+        var nc=o.getTabBar().getCount();
+        for (var j=0; j<nc; j++)
+        {
+            s[i++] = o.beginTabHTML(j) + o.getTabHTML(j) + o.endTabHTML();
+        }
+    }
+    s[i++] = o.endHTML();
+return s.join('')
+}
+function NaviFrameWidget_beginHTML()
+{
+var o=this;
+var s = new Array(), i=0
+if (o.isVertBar)
+{
+s[i++] ='<table border="0" cellspacing="0" cellpadding="0" id="'+o.id+'"><tbody>';
+s[i++] ='<tr><td style="padding-'+(_rtl ? 'left' : 'right')+':'+_vertNaviPanelToFrame+'px;" valign="top">';
+s[i++] =o.navibar.getHTML();
+s[i++] ='</td><td class="naviBarFrame dlgFrame">';  
+    s[i++] ='<div style="position:relative;overflow-x:'+o.xContentOverflow+';overflow-y:'+o.yContentOverflow+';width:'+o.frmW+'px;height:'+o.frmH+'px;" valign="top" id="'+o.contentid+'">';
+}
+else
+{
+s[i++] ='<div class="dlgFrame" id="'+o.id+'" style="overflow:'+(o.autoScroll?'auto':'hidden')+'">'
+var sty=(o.navibar)?'':('width:'+o.w+'px;');
+if(o.lowResolutionAdapt)
+s[i++] ='<table border="0" cellspacing="0" cellpadding="0"  valign="top" style="display:block; height:'+o.h+'px;'+sty+'"><tbody>'
+else
+s[i++] ='<table border="0" cellspacing="0" cellpadding="0"  valign="top" style="height:'+o.h+'px;'+sty+'"><tbody>'
+var contentH=o.h-(o.navibar?_naviHorzTabH:0);
+if (o.navibar && ((o.navibar.getBarType()==_HorizTabTop) || (o.navibar.getBarType()==_HorizTabTopWithClose)))
+{    
+    s[i++] ='<tr><td valign="top" style="height:'+_naviHorzTabH+'px;">'+o.navibar.getHTML()+'</td></tr>'       
+}
+if(o.lowResolutionAdapt)
+s[i++] ='<tr><td><div valign="top" class="naviBarFrame" id="'+o.contentid+'" style="height:'+contentH+'px;">'
+else
+s[i++] ='<tr><td><div valign="top" class="naviBarFrame" id="'+o.contentid+'" style="overflow-x:'+o.xContentOverflow+';overflow-y:'+o.yContentOverflow+';height:'+contentH+'px;">'
+}
+return s.join('')
+}
+function NaviFrameWidget_endHTML()
+{
+var o=this;
+var s = new Array(), i=0
+if (o.isVertBar)
+{    
+s[i++] ='</div></td></tr>'
+s[i++] ='</tbody></table>'
+}
+else
+{    
+s[i++] ='</div></td></tr>'
+if (o.navibar && o.navibar.getBarType()==_HorizTabBottom)
+{
+s[i++] ='<tr><td style="height:'+_naviHorzTabH+'px;" valign="bottom">'+o.navibar.getHTML()+'</td></tr>'
+}
+s[i++] ='</tbody></table></div>'
+}
+return s.join('')
+}
+function NaviFrameWidget_getTabID(index)
+{
+var o=this
+var bar = o.getTabBar();
+return bar?(o.tabid+'_'+bar.getTabID(index)):null;
+}
+function NaviFrameWidget_beginTabHTML(index)
+{
+var o=this
+var id=(index>=0)?o.getTabID(index):(o.tabid);
+return '<table border="0" cellspacing="0" cellpadding="0" width="100%"><tbody><tr><td valign="top" id="'+id+'" class="naviBarFrame">'      
+}
+function NaviFrameWidget_endTabHTML()
+{    
+return '</td></tr></tbody></table>'
+}
+function NaviFrameWidget_beginTab(index)
+{
+_curDoc.write(this.beginTabHTML(index))
+}
+function NaviFrameWidget_endTab()
+{
+_curDoc.write(this.endTabHTML())
+}
+function NaviFrameWidget_showTab(index,show)
+{    
+    var o=this;
+var tabs = o.getTabBar(),items=tabs.items, len=items.length;
+if ((index>=0) && (index<len))
+    {
+items[index].setDisplay(show);
+        var sel=o.getSelection();
+        if (sel.index==index)
+        {
+            if (show)
+                o.select(index);
+            else
+            {
+                o.select((index>0)?index-1:index+1);
+            }
+        }
+    }
+}
+function NaviFrameWidget_resize(w, h)
+{
+    var o=this;
+//debuggingLogger("NaviFrameWidget_resize: w="+(w)+" h="+(h),700,0,250,400);
+    o.superResize(w,h);       
+    var bar=o.getTabBar();
+    if (bar)
+    {
+        bar.resize(w, h);   
+        if (o.isVertBar)
+        {                       
+            if (h)
+            {
+                o.contentLyr.style.height=h+"px";                                        
+            }
+            var contentW=null;
+            if (w) 
+            {
+                contentW=Math.max(w - bar.w - _vertNaviPanelToFrame, _vertNaviPanelToFrame);  
+                o.contentLyr.style.width=contentW+"px";                                       
+            }                
+            if (o.resizeTabCB)
+                o.resizeTabCB(o.oldIndex, contentW, h);                
+        }
+        else
+        {
+            //horiz table
+            var tableLyr=o.layer.childNodes[0];
+            if (tableLyr)
+            {      
+                var contentH=null;                                           
+                if (h)
+                {
+                    tableLyr.style.height=h+"px";    
+                    contentH=Math.max((h-_naviHorzTabH), 1);   
+                    o.contentLyr.style.height=contentH+"px";  
+                }
+                if (w) 
+                {
+                    tableLyr.style.width=w+"px";   
+                }    
+                if (o.resizeTabCB)
+                    o.resizeTabCB(o.oldIndex, w, contentH);                               
+            }
+        }        
+    } 
+    else
+    {
+    if(o.contentLyr)
+    {
+    // Incident 99696 and 99728 : FrameDlgWidget of  type:_noNaviTab tried to center its content in the height and had an offsetTop to the inner dev
+    // naviFrmContent_...so that in low resolution 1024x768 the dialog had partiallt its content not accessible.
+     if (h)
+             {
+     o.frmLyr.style.height=h+"px";  
+     //1570444659 : revert previous fix for issue on low resolution : it was causing regression on custom palette dialog
+     if(!o.lowResolutionAdapt && !_ie8)
+                                o.contentLyr.style.height=h+"px";  // don't constraint  the children div contentLyr only constraint its parent frmLyr
+             }   
+             if (w) 
+             {                
+                 o.contentLyr.style.width=w+"px"; 
+                 o.frmLyr.style.width=w+"px";  
+             }      
+    }
+    }
+    //NaviFrameWidget with tab:NaviFrameWidget_select
+    if (w)
+        o.w=w;
+    if (h)
+        o.h=h;        
+}
+function NaviFrameWidget_getTabBar()
+{
+return this.navibar;
+}
+function NaviFrameWidget_add(name, value, idx, icon, iconW,iconH,iconOffX,iconOffY, tooltip, closeTabCB)
+{
+var o=this
+o.addByPrms({name:name,
+value:value,
+icon:icon,
+iconW:iconW,
+iconH:iconH,
+iconOffX:iconOffX,
+iconOffY:iconOffY,
+tooltip:tooltip,
+closeTabCB:closeTabCB
+}, idx);
+}
+function NaviFrameWidget_addByPrms(prms, idx)
+{
+var o=this
+if (!o.navibar) return;
+o.navibar.addByPrms(prms, idx);
+if (idx!=null && idx>=0)//insert in the middle
+{
+if (o.zoneLayers[idx])
+arrayAdd(o,"zoneLayers",null,idx);
+}
+else
+o.zoneLayers[o.zoneLayers.length]=null
+}
+function NaviFrameWidget_select(index)
+{
+var o=this
+var bar=o.getTabBar()
+if (!bar) return;
+var oldIndex=o.oldIndex,c
+bar.select(index)
+if (oldIndex!=-1)
+{
+c=o.getTabCSS(oldIndex)
+if (c) c.display="none"
+}
+else
+{
+var len=bar.getCount();
+for (var i=0;i<len;i++)
+{
+c=o.getTabCSS(i)
+if (c) c.display="none"
+}
+//for _HorizTabTopWithClose
+c=o.getTabCSS(null);
+if (c) c.display="none";
+}
+c=o.getTabCSS(index)
+if (c)
+{
+c.display=""
+if (o.w!=null)
+o.css.width=""+(o.w)+"px"
+if (o.h!=null)
+o.css.height=""+(o.h)+"px"
+}
+o.oldIndex=(index!=null)?index:-1;
+//resize
+if (o.resizeTabCB)
+    o.resize(o.w, o.h);
+}
+function NaviFrameWidget_getSelection()
+{
+var o=this
+var bar=o.getTabBar()
+if (!bar) return null;
+return bar.getSelection();
+}
+function NaviFrameWidget_getTabLayer(index)
+{
+var o=this;
+if (index==null) return o.LyrWhenEmptyBar;
+var ls=o.zoneLayers,l=ls[index]
+if (l==null)
+{
+l=getLayer(o.getTabID(index));
+        if (l)
+            ls[index]=l
+}
+return l;
+}
+function NaviFrameWidget_getTabCSS(index)
+{
+var o=this;
+var l=o.getTabLayer(index);
+return l?l.style:null
+}
+function NaviFrameWidget_closeTab(index)
+{
+var o=this,ls=o.zoneLayers;
+if (index >=0 && index <ls.length)
+{
+var l=ls[index];
+if (l)
+{
+o.contentLyr.removeChild(l.parentNode.parentNode.parentNode);
+arrayRemove(o,"zoneLayers",index);
+            //update index
+            if (o.zoneLayers.length==0)
+                o.oldIndex = null;
+            else               
+            if ((o.oldIndex!=null) && (o.oldIndex >0))
+{
+                if (index <= o.oldIndex)
+                    o.oldIndex--;    
+            }           
+}
+}
+}
+function NaviFrameWidget_remove(index)
+{
+    var o=this;
+    var bar=o.getTabBar()
+if (!bar) return false;
+    var nb=bar.getCount();
+    if (nb==0 || nb!=o.zoneLayers.length) return false;
+    if (typeof(index)!="undefined" && (index>=0) && (index <nb))
+    {
+        o.closeTab(index);
+        bar.remove(index);
+        return true;
+    }
+    return false;   
+}
+function NaviFrameWidget_removeAll()
+{
+    var o=this;    
+    var b;
+    while (true)
+    {
+        b=o.remove(0);
+        if (b==false) return;
+    }   
+}
+function NaviFrameWidget_tabClick(index)
+{
+if (typeof(index)=="undefined") return;
+//"this" is the bar
+var o=this.par;
+var i=(index>=0)?index:null;
+//o is NaviFrameWidget
+o.select(i)
+if (o.cb)
+o.cb(i)
+}
+function NaviFrameWidget_setTabHTML(index, s)
+{
+var o=this;
+if (!o.navibar) return;
+var len=o.navibar.getCount();
+if (len==0) return;//no tab in the bar
+if (typeof(index)=="undefined" || index==null || index==-1 || index >len)
+index=len-1;
+o.navibar.setTabHTML(index, s);
+var l=o.getTabLayer(index);
+if (l)
+l.innerHTML=s;
+else
+if (o.layer)
+{//add tab content on the fly: html like NaviFrameWidget_beginTabHTML
+var tableElt = _curDoc.createElement("table");
+o.contentLyr.appendChild(tableElt);
+tableElt.width="100%";
+tableElt.border=0;
+tableElt.cellSpacing=0;
+tableElt.cellPadding=0;
+var trElt=tableElt.insertRow(0);
+var tdElt=trElt.insertCell(0);
+tdElt.id=o.getTabID(index);
+tdElt.className="naviBarFrame";
+tdElt.innerHTML=s;
+        /*
+if ((index+1)==len)
+o.contentLyr.appendChild(tableElt);
+else
+{
+var k=(o.LyrWhenEmptyBar)?parseInt(index+1):parseInt(index);//the first one is LyrWhenEmptyBar for _HorizTabTopWithClose
+o.contentLyr.insertBefore(tableElt, o.contentLyr.childNodes[k]);
+}
+        */
+tdElt.style.display="none";
+o.getTabLayer(index);
+//update the index of the selection
+if ((o.oldIndex!=null) && (o.oldIndex >=0) && (o.oldIndex>=index))
+o.oldIndex++;
+}
+}
+function NaviFrameWidget_getTabHTML(index)
+{
+var o=this;
+if (!o.navibar) return;
+return o.navibar.getTabHTML(index);
+}
+function NaviFrameWidget_setHTMLWhenEmptyBar(html)
+{
+var o=this;
+if (_HorizTabTopWithClose==o.barType)
+{
+o.html=html;
+if (o.LyrWhenEmptyBar)
+o.LyrWhenEmptyBar.innerHTML=o.html;
+}
+}
+function new_FrameDlgWidget(prms)
+{
+    var o = new_DialogBoxWidget(prms);
+    o.superInit=o.init;
+    o.superShow=o.show;
+    //public API
+    o.init=FrameDlgWidget_init;
+    o.getHTML=FrameDlgWidget_getHTML;
+    o.getOKBtn=FrameDlgWidget_getOKBtn;
+    o.getCancelBtn=FrameDlgWidget_getCancelBtn;
+    o.getApplyBtn=FrameDlgWidget_getApplyBtn;
+    o.getFrame=FrameDlgWidget_getFrame;
+    o.displayTab=FrameDlgWidget_displayTab;
+//can be used before init() or at run time
+    o.addTabByPrms=FrameDlgWidget_addTabByPrms;//can use setTabHTML() to set html later
+    o.addTab=FrameDlgWidget_addTab;//better use addTabByPrms()
+    o.removeTab=FrameDlgWidget_removeTab;   //only useful if there is navigation bar (horizontal/vertical)
+    o.getTabIndexByName=FrameDlgWidget_getTabIndexByName;
+o.getTabIndexByValue=FrameDlgWidget_getTabIndexByValue;
+o.getTab = function(tabIndex)
+{
+    var o=this;
+    var f=o.getFrame();
+    if (f)
+    {
+        var bar=f.getTabBar();
+        if (bar)
+        {
+            return bar.getTab(tabIndex);
+        }
+    }
+    return null;
+}
+    //can be used/called before init() or at run time
+    o.setFrameHTML=FrameDlgWidget_setFrameHTML;         //for _noNaviFrame or _noNaviTab,
+    o.setTabHTML=FrameDlgWidget_setTabHTML;             //for frame with tabs, use getTabIndexByName() or getTabIndexByValue() to get tab index if necessary
+    o.setHTMLWhenEmptyBar=FrameDlgWidget_setHTMLWhenEmptyBar;//only useful for _HorizTabTopWithClose
+    o.selectTab=FrameDlgWidget_selectTab;
+    o.getSelection=FrameDlgWidget_getSelection;   
+    o.show=FrameDlgWidget_show;
+    o.getTabCount=FrameDlgWidget_getTabCount;
+    o.superResize=o.resize;
+    o.resize=FrameDlgWidget_resize;
+    o.getContentSize=FrameDlgWidget_getContentSize;       
+    //internal usage
+    o.type = Widget_param(prms, "type", _noNaviFrame)
+    if (o.type==_menuBarTab)
+o.type=_noNaviFrame;
+    o.getTabHTML=FrameDlgWidget_getTabHTML;
+o.xContentOverflow = Widget_param(prms, "xContentOverflow", "hidden")
+o.yContentOverflow = Widget_param(prms, "yContentOverflow", "hidden")
+o.contentOverflow = Widget_param(prms, "contentOverflow", null)
+if (null != o.contentOverflow) {
+o.xContentOverflow = o.contentOverflow 
+o.yContentOverflow = o.contentOverflow
+}  
+    //OK/Cancel/Apply buttons zone is optional 
+    o.noOKButtonZone=Widget_param(prms, "noOKButtonZone", false); 
+    o.getOKButtonZoneHTML=FrameDlgWidget_getOKButtonZoneHTML;              
+    if (!o.noOKButtonZone)
+    {
+        o.okBtn=newButtonWidget("OK_BTN_"+o.id, _libOkButton, Widget_param(prms, "defaultCB", null),_defaultButtonWidth, null, _libOkButton);
+        o.cancelBtn=newButtonWidget("CANCEL_BTN_"+o.id, _libCancelButton, o.cancelCB?o.cancelCB:function() {o.internalClose(o.id)}, _defaultButtonWidth, null, _libCancelButton);
+        //call ButtonWidget.setCB() to change your callback
+        //Apply Button is not visible par default, call yourDlg.getApplyBtn().setDisplay(true);
+        o.applyBtn=newButtonWidget("APPLY_BTN_"+o.id, _libApplyButton, Widget_param(prms, "defaultCB", null),_defaultButtonWidth, null, _libApplyButton);
+        o.attachDefaultButton(o.okBtn);
+    }
+    o.autoScroll = Widget_param(prms, "autoScroll", false);
+    o.lowResolutionAdapt = Widget_param(prms, "lowResolutionAdapt", false);
+    o.frm=null;
+    o.frmW = Widget_param(prms, "frmWidth", _defaultFrmWidth)
+    o.frmH = Widget_param(prms, "frmHeight", _defaultFrmHeight)
+    if (_noNaviFrame!=o.type)
+    {      
+        o.frm = new_NaviFrameWidget({id:"naviFrm_"+o.id, naviBarType:o.type, 
+                                    w:o.frmW, h:o.frmH,  
+                                    resizeTabCB:prms.resizeTabCB,
+                                    xContentOverflow:o.xContentOverflow,
+                                    yContentOverflow:o.yContentOverflow,
+                                    autoScroll:o.autoScroll,
+                                    lowResolutionAdapt:o.lowResolutionAdapt, 
+                                    cb:Widget_param(prms, "tabCB", null)});
+    }
+    o.frmid="frmdlg_"+o.id;
+    o.html="";
+    o.frmLyr=null;
+    o.canceltdid="cancel_td_id_"+o.id
+    o.applytdid="apply_td_id_"+o.id
+    o.cancelTdLyr=null;
+    o.applyTdLyr=null;
+    return o;
+}
+function newFrameDlgWidget(id,title,type, width,height,defaultCB,cancelCB, frmWidth, frmHeight, tabCB, noCloseButton,isFullScreen)
+{
+return new_FrameDlgWidget({
+id:id,
+title:title,
+type:type,
+width:width,
+height:height,
+defaultCB:defaultCB,
+cancelCB:cancelCB,
+frmWidth:frmWidth,
+frmHeight:frmHeight,
+tabCB:tabCB,
+noCloseButton:noCloseButton,
+isFullScreen:isFullScreen
+})
+}
+function FrameDlgWidget_init()
+{
+var o = this;
+if (!o.isHTMLSet()) 
+targetApp(o.getHTML());
+o.superInit();
+if (!o.noOKButtonZone)
+{
+    o.okBtn.init();
+    o.cancelBtn.init();
+    o.applyBtn.init();
+    o.cancelTdLyr = getLayer(o.canceltdid);
+    o.applyTdLyr = getLayer(o.applytdid);
+    o.applyBtn.setDisplay(false);
+}
+if (o.frm) 
+o.frm.init();
+else
+o.frmLyr = getLayer(o.frmid);//_noNaviFrame
+}
+function FrameDlgWidget_getContentSize()
+{
+    var o=this;
+    //content height: not included OK button zone height, dlgBody class contains padding info around dialog content          
+    //o.width or o.height are not specified by the user
+    var contentWidth=o.width?(Math.max(10,(o.width-_dlgLeftRightPad))):null;
+    var contentHeight=o.height?(Math.max(10, (o.height-_dlgTitleHeight-_dlgTitleMarginBottom - (o.noOKButtonZone?_dlgNoOKButtonZoneHeight:_dlgOKButtonZoneHeight)))):null;
+    return {dlgContentW:contentWidth, dlgContentH:contentHeight};
+}
+function FrameDlgWidget_getOKButtonZoneHTML()
+{
+    var o=this;
+    var s='';
+if (!o.noOKButtonZone)
+{
+    s ='<tr>' +    
+    '<td class="aboveBtnSpace" align="'+(_rtl ? 'left' : 'right')+'" valign="top">' +
+    '<table  cellspacing="0" cellpadding="0" border="0"><tbody><tr>' +
+    '<td>' +   
+    o.okBtn.getHTML() +
+    '</td>' +
+    '<td id="'+o.canceltdid+'">'+
+    o.cancelBtn.getHTML() +
+    '</td>' +
+    '<td id="'+o.applytdid+'">'+
+    o.applyBtn.getHTML() +
+    '</td>' +
+    '<td style="padding-right:8px">'+
+    '<div></div>' +
+    '</td>' +
+    '</tr></tbody></table>'+   
+    '</td>' +
+    '</tr>';
+}
+    return s;
+}
+function FrameDlgWidget_getHTML()
+{
+var o=this, s = new Array(), i=0
+s[i++] =o.beginHTML()+'<table cellspacing="0" cellpadding="0" border="0"><tbody>';
+s[i++] ='<tr><td colspan="2">'
+s[i++] ='<table cellspacing="0" cellpadding="0" border="0" width="100%"><tbody><tr>';
+if (o.frm)
+{
+s[i++] ='<td>'
+s[i++] =o.frm.getHTML();
+}
+else
+{
+//no frame, o.height is dialog box height, in case it's not set by the user
+var contentSize=o.getContentSize();
+var style_w=contentSize.dlgContentW?('width:'+contentSize.dlgContentW+'px;'):'';
+var style_h=contentSize.dlgContentH?('height:'+contentSize.dlgContentH+'px;'):'';
+    s[i++] ='<td><div id="'+o.frmid+'" class="naviFrameTxt" style="overflow:hidden;'+style_w+style_h+'" valign="top">';
+s[i++] =o.html;
+s[i++] ='</div>';
+}
+s[i++] ='</td></tr></tbody></table>';
+s[i++] ='</td></tr>';
+s[i++] =o.getOKButtonZoneHTML();
+s[i++] ='</tbody></table>'+o.endHTML();
+return s.join('');
+}
+function FrameDlgWidget_resize(w, h)
+{
+    var o=this;
+    o.superResize(w, h);    //dialog resize
+    var contentSize=o.getContentSize();
+    if (o.type==_noNaviFrame)
+    {
+    if (contentSize.dlgContentW)
+    {
+    o.frmLyr.style.width=contentSize.dlgContentW+'px';
+    }
+    if (contentSize.dlgContentH)
+    {
+    o.frmLyr.style.height=contentSize.dlgContentH+'px';
+    }
+    }
+    else
+    if (o.frm)
+    {
+        o.frm.resize(contentSize.dlgContentW, contentSize.dlgContentH);    
+    }
+}
+function FrameDlgWidget_getOKBtn()
+{
+return this.okBtn;
+}
+function FrameDlgWidget_getCancelBtn()
+{
+return this.cancelBtn;
+}
+function FrameDlgWidget_getApplyBtn()
+{
+return this.applyBtn;
+}
+function FrameDlgWidget_getFrame()
+{
+return this.frm;
+}
+function FrameDlgWidget_setFrameHTML(s)
+{
+var o=this;
+if (o.type==_noNaviFrame)
+{
+o.html=s;
+if (o.frmLyr)
+o.frmLyr.innerHTML=o.html;
+}
+else
+if (_noNaviTab==o.type)
+{
+o.frm.html=s;
+if (o.frm.frmLyr)
+o.frm.frmLyr.innerHTML=o.frm.html;
+}
+else
+return;
+}
+function FrameDlgWidget_setHTMLWhenEmptyBar(html)
+{
+var o=this;
+if (o.type==_HorizTabTopWithClose)
+{
+o.getFrame().setHTMLWhenEmptyBar(html);
+}
+}
+function FrameDlgWidget_addTab(name, value, html, idx, icon, iconW,iconH,iconOffX,iconOffY, tooltip, closeTabCB)
+{
+this.addTabByPrms({name:name,
+value:value,
+icon:icon,
+iconW:iconW,
+iconH:iconH,
+iconOffX:iconOffX,
+iconOffY:iconOffY,
+tooltip:tooltip,
+closeTabCB:closeTabCB
+}, 
+html, 
+idx);
+}
+function FrameDlgWidget_addTabByPrms(prms, html, idx)
+{
+var o=this;
+if (o.type==_noNaviFrame || _noNaviTab==o.type) return; 
+o.frm.addByPrms(prms, idx);
+if (html)
+o.frm.setTabHTML(idx, html)
+}
+function FrameDlgWidget_setTabHTML(index, s)
+{
+var o=this;
+if (o.type==_noNaviFrame || _noNaviTab==o.type) return; 
+o.frm.setTabHTML(index, s);
+}
+function FrameDlgWidget_getTabHTML(index)
+{
+var o=this;
+if (o.type==_noNaviFrame || _noNaviTab==o.type) return ""; 
+return o.frm.getTabHTML(index);
+}
+function FrameDlgWidget_selectTab(index)
+{
+var o=this;
+if (o.type==_noNaviFrame || o.type==_noNaviTab) return;
+o.frm.select(index);
+if (o.frm.cb)
+o.frm.cb(index);
+}
+function FrameDlgWidget_displayTab(index, show)
+{
+var o=this;
+if (o.type==_noNaviFrame || o.type==_noNaviTab) return;
+    o.getFrame().showTab(index,show);       
+}
+function FrameDlgWidget_getSelection()
+{
+var o=this;
+if (o.type==_noNaviFrame || o.type==_noNaviTab) return null;
+return o.frm.getSelection();
+}
+function FrameDlgWidget_show(sh,doNotHideWt)
+{
+var o=this;
+    if (!o.noOKButtonZone)
+    {
+    o.cancelTdLyr.className=(o.cancelBtn.isDisplayed())?"btn2btnSpace":"";
+    o.applyTdLyr.className=(o.applyBtn.isDisplayed())?"btn2btnSpace":"";
+}
+o.superShow(sh,doNotHideWt);
+// CM 215972 2015
+// Resize also the frame widget
+if(sh)
+{
+    var contentSize=o.getContentSize();
+    if (o.type==_noNaviFrame)
+    {
+    if (contentSize.dlgContentW)
+    {
+    o.frmLyr.style.width=contentSize.dlgContentW+'px';
+    }
+    if (contentSize.dlgContentH)
+    {
+    o.frmLyr.style.height=contentSize.dlgContentH+'px';
+    }
+    }
+    else
+    if (o.frm)
+    {
+        o.frm.resize(contentSize.dlgContentW, contentSize.dlgContentH);    
+    }
+if (o.iframe)
+{
+o.iframe.resize(o.width,o.height);
+}
+}
+}
+function FrameDlgWidget_getTabIndexByName(name)
+{
+var o=this;
+if (o.type==_noNaviFrame || o.type==_noNaviTab) return -1;
+return o.getFrame().getTabBar().getTabIndexByName(name);
+}
+function FrameDlgWidget_getTabIndexByValue(value)
+{
+var o=this;
+if (o.type==_noNaviFrame || o.type==_noNaviTab) return -1;
+return o.getFrame().getTabBar().getTabIndexByValue(value);
+}
+function FrameDlgWidget_getTabCount()
+{
+var o=this;
+if (o.type==_noNaviFrame || o.type==_noNaviTab) return 0;
+return o.getFrame().getTabBar().getCount();
+}
+function FrameDlgWidget_removeTab(index)
+{
+var o=this;
+if (o.type==_noNaviFrame || o.type==_noNaviTab) return;
+if (o.frm)
+    {
+        if (typeof(index)=="undefined" || index==null)
+            o.frm.removeAll();
+        else
+        {
+            o.frm.remove(index);
+            //selection
+            var sel=o.getFrame().getTabBar().getSelection();
+            if (sel!=null) 
+                o.selectTab(sel.index);
+        }
+    }
+}
+function new_IFrameDlgWidget(prms)
+{
+    prms.type=_noNaviFrame;
+    var o=new_FrameDlgWidget(prms);
+    // Parameters parsing       
+    o.iframeSrc = Widget_param(prms, "url", "empty.html")       
+    //
+    o.iframeid="internalIFrame_"+o.id;
+    o.iframeLyr=null;        
+    o.frmDlgInit=o.init;
+    o.frmDlgGetHTML=o.getHTML;
+    o.frmDlgResize=o.resize;
+    o.frmDlgShow=o.show;   
+o.scrollable=(prms.scrollable!=null)?prms.scrollable:false;
+    /* init */
+    o.init=function()
+{
+    var o=this;
+    o.frmDlgInit();
+    o.iframeLyr=getLayer(o.iframeid);                         
+}   
+    o.getIframeID=function()
+    {
+        return o.iframeid;
+    }
+    o.getIframeElement=function()
+    {
+        return o.iframeLyr;
+    }
+    o.resetUrl=function(url)
+    {
+        var o=this;
+        if (o.iframeLyr && url)
+    {            
+        o.iframeLyr.src=url;                             
+    }   
+    }
+    // ===========================
+// Get the widget HTML
+// return [String] the HTML
+// ===========================
+o.getHTML=function()
+{
+    var o=this;
+    var s=o.getIFrameHTML();
+    o.setFrameHTML(s);
+return o.frmDlgGetHTML();
+}   
+o.getIFrameHTML=function()
+{
+    /*       
+    var o=this;      
+    var contentSize=o.getContentSize();
+    var iframeHTML='<iframe scrolling="no"  style="overflow:hidden;left:0px;top:0px;width:'+contentSize.dlgContentW+'px;'+
+                    'height:'+contentSize.dlgContentH+'px;margin:0px;padding:0px;" '+
+                    ' id="'+o.iframeid+'" name="'+o.id+'" frameborder="0" '+                                                        
+                    ' src="'+o.iframeSrc+'"></iframe>';
+return iframeHTML;
+*/
+return "";
+}   
+    o.resize=function(w, h)
+{
+    var o=this;
+    //debuggingLogger("IFrameDlgWidget resize() w="+(w)+" h="+(h),700,0,250,400);
+    o.frmDlgResize(w,h); 
+        if (o.iframeLyr)
+        {
+            var contentSize=o.getContentSize();
+            if (w)    
+            o.iframeLyr.style.width=(contentSize.dlgContentW)+"px";  
+            if (h)            
+            o.iframeLyr.style.height=(contentSize.dlgContentH)+"px";  
+    }         
+}   
+o.createIFrame=function()
+{
+    var o=this;
+    if (!o.frmLyr) return;
+    if (o.iframeLyr) return;
+    var contentSize=o.getContentSize();
+    o.iframeLyr = _curDoc.createElement('iframe');  
+    o.frmLyr.appendChild(o.iframeLyr);
+    o.iframeLyr.id=o.iframeid;
+    o.iframeLyr.name=o.id;                      
+    o.iframeLyr.scrolling=(o.scrollable)?"auto":"no";  
+    o.iframeLyr.frameBorder="0";
+    o.iframeLyr.style.width=contentSize.dlgContentW+"px";
+    o.iframeLyr.style.height=contentSize.dlgContentH+"px";
+    o.iframeLyr.style.overflow=(o.scrollable)?"auto":"hidden";
+    o.iframeLyr.style.left="0px";
+    o.iframeLyr.style.top="0px"; 
+    o.iframeLyr.style.margin="0px"; 
+    o.iframeLyr.style.padding="0px"; 
+    o.iframeLyr.src=o.iframeSrc;
+}
+o.removeIframe=function()
+{
+    var o=this;
+    if (o.frmLyr && o.iframeLyr)
+    {
+        o.frmLyr.removeChild(o.iframeLyr);
+        o.iframeLyr=null;
+    }   
+}
+o.show=function(sh)
+{
+    var o=this;
+    if (!sh)
+    {
+        o.removeIframe();       
+    }
+    else
+    {
+        o.createIFrame();
+    }
+    //debuggingLogger("before show dlg",700,0,250,400);
+    o.frmDlgShow(sh);
+}
+    return o;
+}

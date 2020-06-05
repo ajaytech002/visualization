@@ -1,0 +1,28 @@
+/*
+©2010 - 2013 SAP AG or an SAP affiliate company.  All rights reserved.
+ 
+SAP and other SAP products and services mentioned herein as well as their respective logos are trademarks or registered trademarks of SAP AG in Germany and other countries.  Please see http://www.sap.com/corporate-en/legal/copyright/index.epx#trademark for additional trademark information and notices.
+*/
+
+if ('undefined' == typeof businessobjects ) { var businessobjects = {}; }
+businessobjects['webutil'] = businessobjects['webutil'] || {};
+businessobjects.webutil['encoder'] = businessobjects.webutil['encoder'] || {};
+
+businessobjects.webutil.encoder.Encoder = {
+    encodeHTML: function(str) {
+        if(str == null) {
+            return null;
+        }
+            
+        //ORDER IS IMPORTANT!  Need to encode & first, since other HTML encoded characters include it.
+        str = str.replace(/&/g, "&amp;");
+        str = str.replace(/</g, "&lt;");
+        str = str.replace(/>/g, "&gt;");
+        str = str.replace(/'/g, "&#39;");
+        str = str.replace(/"/g, "&quot;");
+        
+        str = str.replace(/\r?\n|\r/g, "<br />");
+        
+        return str;
+    }
+};

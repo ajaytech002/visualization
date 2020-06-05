@@ -1,0 +1,3838 @@
+/*
+=============================================================
+WebIntelligence(r) Report Panel
+Copyright(c) 2001-2003 Business Objects S.A.
+All rights reserved
+Use and support of this software is governed by the terms
+and conditions of the software license agreement and support
+policy of Business Objects S.A. and/or its subsidiaries.
+The Business Objects products and technology are protected
+by the US patent number 5,555,403 and 6,247,008
+File: treeview.js
+Custom treeview control
+=============================================================
+*/
+_trIndent=18
+_treeHeaderHeight=21;
+_multiHLCSS=0;
+_multiHMCSS=1;
+_multiHRCSS=2;
+_multiHSepCSS=3;
+_multiHDownCSS=5;
+_multiHUpCSS=4;
+_multiHCSS=['multiL', 'multiM', 'multiR', 'multiSep', 'multiArrowDown', 'multiArrowUp']
+function newIconListWidget(id,w,h,icns,clickCB,doubleClickCB,bgClass)
+{
+var o=newTreeWidget(id,w,h,icns,clickCB,doubleClickCB,bgClass)
+o.select=IconListWidget_select
+o.getSelection=IconListWidget_getSelection
+o.initialIndent=-_trIndent+3
+o.ajaxUpdater=IconListWidget_ajaxUpdater
+return o
+}
+function IconListWidget_select(pos,setFocus,ev,noSendClickCB,isFromKeyArrow)
+{
+if ((pos>=0) && (pos<this.sub.length)) {
+this.sub[pos].select(setFocus,ev,noSendClickCB,isFromKeyArrow)
+}
+}
+function IconListWidget_getSelection()
+{
+var sel=this.getSelectedItem()
+if (sel)
+{
+if (sel.elemPos==-1) this.buildElems()
+var selection=new Object
+selection.index=sel.elemPos
+selection.value=sel.userData
+return selection
+}
+return null
+}
+function IconListWidget_ajaxUpdater(updateUrl, paramsUpdaterFn, postCB)
+{
+_o=this
+_o.postCB = postCB?postCB:null
+var params = (paramsUpdaterFn)?paramsUpdaterFn(_o): new Hash()
+params.set('widx', _o.getWidgetIdx());
+new Ajax.Request( updateUrl,
+  {
+    method:'get',
+    parameters: params,
+    onComplete: function(transport){
+    var response = transport.responseText || "KO";
+var myObj = response.evalJSON();
+var widg = getWidgetFromIdx( myObj.widx ); 
+if (myObj.nodes) {
+TreeWidgetElem_updateTreeNode(widg, myObj.nodes);
+widg.rebuildHTML();
+}
+if (widg.postCB) widg.postCB(myObj);
+      //alert("Success! \n\njason:" + jason);
+    },
+    onFailure: function(t){
+    //alert( t.status + ' -- ' + t.statusText) 
+    }
+  });     
+}
+function new_TreePopupWidget(prms)//(id,w,h,icns,clickCB,doubleClickCB)
+{
+var o=new_Widget(prms)
+//(id,w,h,icns,clickCB,doubleClickCB,bgClass,expandCB,collapseCB,deleteCB)
+if (prms) {
+prms.id = "tree_" + o.id;
+prms.bgClass = "treeNoBorder";
+prms.expandCB = TreePopupWidget_cancelBubble;
+prms.collapseCB = TreePopupWidget_cancelBubble;
+prms.clickCB = TreePopupWidget_preventClosePopup;
+prms.doubleClickCB = TreePopupWidget_closePopup;
+}
+o.tree=new_TreeWidget(prms);
+o.tree.par=o;
+o.getHTML=TreePopupWidget_getHTML
+o.justInTimeInit=TreePopupWidget_justInTimeInit
+o.getShadowHTML=IconListPopupWidget_getShadowHTML
+o.show=IconListPopupWidget_show
+o.captureClicks=IconListPopupWidget_captureClicks
+o.releaseClicks=IconListPopupWidget_releaseClicks
+o.focus=function(){ 
+var o=this;
+var sel = o.parCombo.getSelection()
+var id = (null != sel)?sel.id:null
+o.parCombo.selectTreeItem(id)
+}
+o.isShown=function()
+{
+var o=this;
+if (o.layer==null)
+return false;
+else
+return getCurrentStyle(o.layer,"display") != "none";
+}
+// Click capture
+o.clickCB=new Array
+o.clickCBDocs=new Array
+//cancel
+o.cancelCB=null;
+return o
+}
+function TreePopupWidget_getHTML()
+{
+var o=this
+var keyCB=' onkeydown="'+_codeWinName+'.IconListPopupWidget_keyDown(\''+o.id+'\',event)" onkeypress=" return '+_codeWinName+'.IconListPopupWidget_keyPress(\''+o.id+'\',event)" onkeyup="'+_codeWinName+'.IconListPopupWidget_keyUp(\''+o.id+'\',event)"';
+var s=''
+s+=o.getShadowHTML()
+s+='<table id="'+o.id+'" style="display:none;" class="menuFrame" cellspacing="0" cellpadding="0" border="0" '+keyCB+'><tbody>'
+s+='<tr><td align="center">'+o.tree.getHTML()+'</td></tr>'
+s+='</tbody></table>'
+return s
+}
+function TreePopupWidget_justInTimeInit()
+{
+var o=this
+o.layer=getLayer(o.id)
+if (o.layer==null)
+{
+targetApp(o.getHTML())
+o.layer=getLayer(o.id)
+}
+o.layer._widget=o.widx
+o.css=o.layer.style
+o.css.visibility="hidden"
+o.iframeLyr=getLayer("menuIframe_"+o.id)
+o.iframeCss=o.iframeLyr.style
+o.tree.init()
+o.tree.layer.onmousedown=IconListPopupWidget_clickNoBubble
+}
+function TreePopupWidget_cancelBubble(e)
+{
+this.eventCancelBubble=true
+//var o=this.par
+//o.eventCancelBubble=true
+}
+function TreePopupWidget_preventClosePopup(data)
+{
+if (data == null || data.id == null || data.custom) 
+this.eventCancelBubble = true
+else 
+{
+var o=this.par;
+if(o && o.selectCB) //clickCB is destined to do something else so i use selectCB as name
+o.selectCB(data); //
+}
+}
+function TreePopupWidget_closePopup(data)
+{
+if (data == null || data.id == null || data.custom) 
+this.eventCancelBubble = true
+else 
+{
+var o=this.par;
+if(o && o.selectCB) {//clickCB is destined to do something else so i use selectCB as name
+o.selectCB(data); //
+var gmc=_globMenuCaptured
+if (gmc!=null)
+{
+gmc.releaseClicks()
+gmc.show(false)
+safeSetFocus(gmc.parCombo.arrow.layer)
+_globMenuCaptured=null
+}
+}
+}
+}
+function newIconListPopupWidget(id,w,h,icns,clickCB,doubleClickCB)
+{
+var o=newWidget(id)
+o.iconList=newIconListWidget("list_"+id,w,h,icns,clickCB,doubleClickCB,"treeNoBorder")
+o.getList=IconListPopupWidget_getList
+//o.init=IconListPopupWidget_init
+o.getHTML=IconListPopupWidget_getHTML
+o.justInTimeInit=IconListPopupWidget_justInTimeInit
+o.getShadowHTML=IconListPopupWidget_getShadowHTML
+o.show=IconListPopupWidget_show
+o.captureClicks=IconListPopupWidget_captureClicks
+o.releaseClicks=IconListPopupWidget_releaseClicks
+o.getSelection=IconListPopupWidget_getSelection
+// Click capture
+o.clickCB=new Array
+o.clickCBDocs=new Array
+//cancelCB
+o.cancelCB=null;
+return o
+}
+function IconListPopupWidget_init()
+{
+var o=this
+o.iconList.init();
+o.init();
+}
+function IconListPopupWidget_getList()
+{
+return this.iconList;
+}
+function IconListPopupWidget_getSelection()
+{
+}
+function IconListPopupWidget_getShadowHTML()
+{
+return getBGIframe('menuIframe_'+this.id)
+}
+function IconListPopupWidget_getHTML()
+{
+var o=this
+var keyCB=' onkeydown="'+_codeWinName+'.IconListPopupWidget_keyDown(\''+o.id+'\',event)" onkeypress=" return '+_codeWinName+'.IconListPopupWidget_keyPress(\''+o.id+'\',event)" onkeyup="'+_codeWinName+'.IconListPopupWidget_keyUp(\''+o.id+'\',event)"';
+var s=''
+s+=o.getShadowHTML()
+s+='<table id="'+o.id+'" style="display:none;" class="menuFrame" cellspacing="0" cellpadding="0" border="0" '+keyCB+'><tbody>'
+s+='<tr><td align="center">'+o.iconList.getHTML()+'</td></tr>'
+s+='</tbody></table>'
+return s
+}
+function IconListPopupWidget_justInTimeInit()
+{
+var o=this
+o.layer=getLayer(o.id)
+if (o.layer==null)
+{
+targetApp(o.getHTML())
+o.layer=getLayer(o.id)
+}
+o.layer._widget=o.widx
+o.css=o.layer.style
+o.css.visibility="hidden"
+o.iframeLyr=getLayer("menuIframe_"+o.id)
+o.iframeCss=o.iframeLyr.style
+o.iconList.init()
+o.iconList.layer.onmousedown=IconListPopupWidget_clickNoBubble
+}
+function IconListPopupWidget_show(show,x,y)
+{
+var o=this
+if (o.layer==null)
+o.justInTimeInit()
+var css=o.css,iCss=o.iframeCss
+if (show)
+{
+o.captureClicks()
+// Show and place menu
+css.display='block'
+//css.zIndex=(o.zIndex+1)
+css.zIndex=4000
+css.visibility="hidden"
+css.left="-1000px"
+css.top="-1000px"
+var w=o.getWidth()
+var h=o.getHeight()
+if (o.alignLeft)
+x-=w
+// Change coordinates if the menu is out of the window
+var x2=x+w+4,y2=y+h+4
+if (x2>winWidth())
+x=Math.max(0,x-4-w)
+if (y2>winHeight())
+y=Math.max(0,y-4-h)
+css.left=""+x+"px"
+css.top=""+y+"px"
+//hideAllInputs(x,y,w+4,h+4)
+css.visibility="visible"
+// Show and place menu shadow
+iCss.left=""+x+"px"
+iCss.top=""+y+"px"
+iCss.width=""+w+"px"
+iCss.height=""+h+"px"
+iCss.zIndex=3998
+iCss.display='block'
+if (!_dtd4)
+{
+y-=2
+x-=2
+}
+}
+else
+{
+css.display='none'
+iCss.display='none'
+o.releaseClicks()
+}
+}
+function IconListPopupWidget_captureClicks(w)
+{
+var o=this
+if (o.par==null)
+{
+if (w==null)
+{
+_globMenuCaptured=o
+o.clickCB.length=0
+o.clickCBDocs.length=0
+w=_curWin
+}
+//_excludeFromFrameScan variable is set by a frame that does not want to
+// be scaned, when the frame is used to download document for instance.
+if (canScanFrames(w))
+{
+if (_moz)
+{
+_oldErrHandler=window.onerror
+window.onerror=localErrHandler
+}
+try
+{
+d=w.document
+o.clickCB[o.clickCB.length]=d.onmousedown
+o.clickCBDocs[o.clickCBDocs.length]=d
+d.onmousedown=IconListPopupWidget_globalClick
+var fr=w.frames,len=fr.length
+for (var i=0;i<len;i++)
+o.captureClicks(fr[i])
+}
+catch(expt)
+{
+}
+if (_moz)
+window.onerror=_oldErrHandler
+}
+}
+}
+function IconListPopupWidget_globalClick(e)
+{
+var o=_globMenuCaptured
+if (o!=null)
+{
+var src=getWidget(_ie?_curWin.event.srcElement:e.target);
+if(src.eventCancelBubble) //no close popup
+{
+src.eventCancelBubble=false
+return true;
+}
+_globMenuCaptured=null
+o.releaseClicks()
+o.show(false)
+}
+}
+function IconListPopupWidget_releaseClicks()
+{
+var o=this
+if (o.par==null)
+{
+var len=o.clickCB.length
+for (var i=0;i<len;i++)
+{
+o.clickCBDocs[i].onmousedown=o.clickCB[i]
+o.clickCB[i]=null
+o.clickCBDocs[i]=null
+}
+o.clickCB.length=0
+o.clickCBDocs.length=0
+}
+}
+function IconListPopupWidget_clickNoBubble(e)
+{
+eventCancelBubble(e)
+}
+function IconListPopupWidget_keyDown(id,e)
+{
+var o=getWidget(getLayer(id))
+var key=eventGetKey(e)
+if(key == 27)
+{
+if(o && o.cancelCB)
+o.cancelCB(e)
+}
+if(key == 13)
+{
+stopEvent(e);
+return false
+}
+}
+function IconListPopupWidget_keyPress(id,e)
+{
+var o=getWidget(getLayer(id))
+var key=eventGetKey(e)
+if(key == 13 || key == 27)
+{
+//eventCancelBubble(e)
+stopEvent(e);
+return false
+}
+}
+function IconListPopupWidget_keyUp(id,e)
+{
+var key=eventGetKey(e)
+if(key == 13 || key == 27)
+{
+//eventCancelBubble(e)
+stopEvent(e);
+return false
+}
+}
+function new_TreeWidget(prms)
+{
+    if (prms)
+        prms.padding=4;
+    var o=new_ScrolledZoneWidget(prms);
+o.icns=Widget_param(prms, "icns", null)
+o.sub = new Array
+o.clickCB=Widget_param(prms, "clickCB", null) 
+o.doubleClickCB=Widget_param(prms, "doubleClickCB", null) 
+o.expandCB=Widget_param(prms, "expandCB", null)  
+o.collapseCB=Widget_param(prms, "collapseCB", null)  
+o.deleteCB=Widget_param(prms, "deleteCB", null)   
+o.sortCB=Widget_param(prms, "sortCB", null) 
+o.toggleOnDblClickTxt=Widget_param(prms, "toggleOnDblClickTxt", true) 
+    o.hasExtraTextStyle=Widget_param(prms, "hasExtraTextStyle", false) 
+   o.getTooltipCB=Widget_param(prms, "getTooltipCB", null);  
+o.selectionFollowsFocus=Widget_param(prms, "selectionFollowsFocus", true) 
+o.noHeader=Widget_param(prms, "noHeader", true);
+o.headerText=Widget_param(prms, "headerText", '');
+o.sortIcn=Widget_param(prms, "sortIcn", -1); 
+o.cancelBubbleEnter=Widget_param(prms, "cancelBubbleEnter", true);
+o.mouseOverCB=null
+o.customTooltip=null
+o.headerId="treeHeader_"+o.id;
+o.headerTxtId="treeHeaderTxt_"+o.id;
+o.headerDivLyr=null;
+o.headerTxtDivLyr=null;
+//search zone
+o.searchZone=Widget_param(prms, "searchZone", false)  
+if(o.searchZone)
+{
+o.searchWidgetH = 27;
+o.searchWidget=new_TreeSearchWidget({id:o.id+"_search",width:o.w,searchCB:TreeWidget_filterCB,resetCB:TreeWidget_resetFilterCB})
+o.searchWidget.par = o;
+o.h = o.h - o.searchWidgetH;
+}
+o.filterTreeCB=TreeWidget_filterTreeCB
+o.resetFilterTreeCB=TreeWidget_resetFilterTreeCB
+o.rightClickMenuCB=null // need to call setRightClickMenu method
+o.mouseOverTooltip=false
+o.dragDrop=null
+o.oldInit=o.init
+o.init=TreeWidget_init
+o.getHTML=TreeWidget_getHTML
+o.getHeaderHTML=TreeWidget_getHeaderHTML
+o.oldResize2 = o.resize //because o.oldResize already exists in new_ScrolledZoneWidget
+o.resize = TreeWidget_resize
+o.getSelections=TreeWidget_getSelections
+// deprecated use getSelections()
+o.getSelectedItem=TreeWidget_getSelectedItem
+o.getSelectedItems=TreeWidget_getSelectedItems
+o.getCheckedItems=TreeWidget_getCheckedItems
+o.setDragDrop=TreeWidget_setDragDrop
+o.setDDTooltip=TreeWidget_setDDTooltip
+o.setFocus=TreeWidget_setFocus
+o.add=TreeWidget_add
+o.setRightClickMenuCB=TreeWidget_setRightClickMenuCB
+o.findByData=TreeWidget_findByData
+o.findInData=TreeWidget_findInData
+o.findById=TreeWidget_findById
+o.findInName=TreeWidget_findInName
+o.selectByData=TreeWidget_selectByData
+o.selectById=TreeWidget_selectById
+o.selectInData=TreeWidget_selectInData
+o.unselect=TreeWidget_unselect
+o.search=TreeWidget_search
+o.searchEx=TreeWidget_searchEx
+o.removeChildById=TreeWidget_removeChildById
+    o.setIsEqualCB=TreeWidget_setIsEqualCB;
+    o.isEqualCB=null;   
+o.treeLyr=null
+o.elems=new Array
+o.elemCount=0
+o.selId=-1;
+o.selIds=new Array; 
+o.multiSelection=false;
+o.hlPath=false; //highlight path
+o.hlElems=new Array; 
+o.iconOrientVertical=true
+o.deleteAll=TreeWidget_deleteAll
+o.rebuildHTML=TreeWidget_rebuildHTML
+    o.clearLayers=TreeWidget_clearLayers
+o.iconW=16
+o.iconH=16
+o.initialIndent=0
+o.buildElems=TreeWidget_buildElems
+o.getCount=TreeWidget_getCount
+if (window._TreeWidgetElemInstances==null)
+window._TreeWidgetElemInstances=new Array
+o.dispIcnFuncName="dispIcn"
+o.setTooltipOnMouseOver=TreeWidget_setTooltipOnMouseOver
+o.setMouseOverCB=TreeWidget_setMouseOverCB
+o.setMultiSelection=TreeWidget_setMultiSelection
+o.setHighlightPath=TreeWidget_setHighlightPath
+o.highlightPath=TreeWidget_highlightPath
+o.unhlPath=TreeWidget_unhlPath
+o.collapseAllOfTreeItems=TreeWidget_collapseAllOfTreeItems;  
+    o.setHeaderText=function(headerText)
+    {
+        var o=this;   
+if (!headerText) return;
+        o.headerText=headerText;
+        if (o.headerTxtDivLyr)
+        {
+            o.headerTxtDivLyr.innerHTML=convStr(o.headerText);
+        }
+    }
+ o.setHeaderSort=function(sortIcn)
+    {
+        var o=this;   
+if (sortIcn==null) return;
+        o.sortIcn=sortIcn; 
+    }
+    o.updateAllOfTreeItems=function(updateCB, prms)
+    {
+        var o=this;   
+        TreeItemWidget_updateTreeItems.call(o, updateCB, prms);    
+    }
+    o.updateTreeItemsUntil=function(updateCB, prms)
+    {
+        var o=this;   
+        var sub=o.sub, len=sub.length, treeitem;    
+        for (var i=0;i<len; i++)
+        {
+            treeitem=sub[i];
+            treeitem.init();
+            updateCB(treeitem, prms);    
+            if (treeitem.updateDescendantsUntilLevel)
+            {
+                treeitem.updateDescendantsUntilLevel(updateCB, prms);
+            }        
+        } 
+    }
+    o.setCustomTooltipWidget=function(customTooltipWidget)
+    {
+        var o=this;  
+        o.customTooltip=customTooltipWidget
+    }
+o.currentFocusLayer = null
+o.setFocusable = function (item, setFocus)
+{
+var layer=null
+if (item)
+{
+item.init()
+layer=item.domElem
+}
+// Private
+// Set an item able to accept the focus
+// The current focused item must be stored in _curWin in case an hidden frame is unloaded/reloaded
+var o=this
+var currentFocusLayer = _curWin["__currentFocusLayer_"+o.id]
+if (currentFocusLayer)
+{
+try {_curWin["__currentFocusLayer_"+o.id].tabIndex=-1}
+catch(e){}
+}
+_curWin["__currentFocusLayer_"+o.id] = layer
+_curWin["__currentFocusElemt_"+o.id] = item
+if (layer!=null)
+{
+layer.tabIndex=0
+if (setFocus)
+safeSetFocus(layer)
+}
+}
+o.getFocusElem = function ()
+{
+var o=this, elem=_curWin["__currentFocusElemt_"+o.id]
+if (elem == null)
+{
+var id=o.selId;
+if (id>=0)
+elem=_TreeWidgetElemInstances[id]
+}
+return elem 
+}
+o.getColumnSortType = function ()
+{
+var o=this
+return o.sortIcn;
+}
+return o
+}
+function newTreeWidget(id,w,h,icns,clickCB,doubleClickCB,bgClass,expandCB,collapseCB,deleteCB)
+{
+    return new_TreeWidget({id:id, padding:4,w:w, h:h, bgClass:bgClass,icns:icns,
+                    clickCB:clickCB, doubleClickCB:doubleClickCB, expandCB:expandCB, collapseCB:collapseCB, deleteCB:deleteCB});        
+}
+function TreeWidget_collapseAllOfTreeItems()
+{
+var o = this;
+// TODO: Need to limit expand process
+//o._treeList.lovleftzone.toggleLovTree(); 
+var arr_items=new Array();
+TreeWidget_findExpanded(o.sub[0], arr_items)
+var len = arr_items.length - 1; 
+for (var i=len; i>=0; i--)
+{
+TreeWidget_toggleCB(arr_items[i].id);
+}
+}
+function TreeWidget_findExpanded(item,arr_items)
+{
+if (item)
+{
+if (item.expanded==true)
+arr_items[arr_items.length] = item;
+var n=item.sub;
+if (n)
+{
+for( var i=0; i<n.length;i++)
+{
+TreeWidget_findExpanded(n[i], arr_items);
+}
+}
+}
+}
+function TreeWidget_unselect()
+{
+var o=this
+if (o.selId>=0)
+{
+var prev=_TreeWidgetElemInstances[o.selId]
+if(prev)
+prev.unselect()
+o.selId=-1
+}
+if(o.multiSelection)
+{
+var len=o.selIds.length, id;
+for(var i=len-1;i>=0;i--)
+{
+var prev=_TreeWidgetElemInstances[o.selIds[i]]
+if(prev) prev.unselect()
+}
+o.selIds.length=0;
+o.layer._BOselIds="";
+}
+//unhighligh if necessary
+o.unhlPath()
+}
+function TreeWidget_selectInData(data, key, setFocus)
+{
+    var o=this,item=o.findInData(data, key)
+if (item)
+{
+item.select(setFocus)
+}
+}
+function TreeWidget_selectByData(data,setFocus)
+{
+var o=this,item=o.findByData(data)
+if (item)
+{
+item.select(setFocus)
+}
+}
+function TreeWidget_selectById(id,setFocus)
+{
+var o=this,item=o.findById(id)
+if (item)
+{
+item.select(setFocus)
+}
+}
+function TreeWidget_findByData(data)
+{
+var o=this,sub=o.sub,item=null, len=sub.length
+for (var i=0;i<len;i++)
+{
+item=sub[i].findByData(data)
+if (item)
+    return item
+}
+return null
+}
+function TreeWidget_findInData(data,key)
+{
+var o=this,sub=o.sub,item=null, len=sub.length
+for (var i=0;i<len;i++)
+{
+item=sub[i].findInData(data,key)
+if (item)
+    return item
+}
+return null
+}
+function TreeWidget_findById(id)
+{
+var o=this,sub=o.sub,item=null, len=sub.length
+for (var i=0;i<len;i++)
+{
+item=sub[i].findById(id)
+if (item)
+    return item
+}
+return null
+}
+function TreeWidget_findInName(text,matchCase,matchWholeW,startFrom,next,starWith,visible)
+{
+//safe test
+if(text=="" || text==null) return null; 
+var o=this,item=null,elem=null,hidden=false;
+var startPos=0,newPos=0;
+var bMatchCase=matchCase?matchCase:false;
+var bMatchWW=matchWholeW?matchWholeW:false;
+var bNext=(!next)?next:true;
+var bVisible=visible?visible:false;
+var len=o.elems.length;
+if(len == 0)
+{ 
+o.buildElems();
+len=o.elems.length;
+if( len == 0) return;
+}
+//get the position of the selection
+var arr = o.getSelections();
+if(arr.length>0) 
+{
+startPos=arr[0].elemPos+(bNext?1:-1);
+//verify that the start position is good
+if((startPos<0) &&! bNext )
+startPos=len-1;
+if((startPos==len) && bNext )
+startPos=0;
+}
+else if(startFrom=="begin")
+{
+startPos=0;
+}
+else if(startFrom=="end")
+{
+startPos=len-1;
+}
+newPos=startPos;
+while ((newPos>=0)&&(newPos<len))
+{
+elem=o.elems[newPos];
+hidden=elem.getHiddenParent();//not visible item
+if((bVisible && !hidden) || (!bVisible))
+                item=elem.findInName(text,bMatchCase,bMatchWW,bNext,starWith);
+if(item!=null) break;
+newPos=newPos+(bNext?1:-1);
+if((newPos<0) && !bNext )
+newPos=len-1;
+if((newPos==len) && bNext )
+newPos=0;
+if(newPos==startPos) break;
+}
+return item;
+}
+function TreeWidget_search(text,matchCase,matchWholeW,startFrom,next,notFoundCB,starWith,visible,setFocus)
+{
+this.searchEx({text:text,
+matchCase:matchCase,
+matchWholeW:matchWholeW,
+startFrom:startFrom,
+next:next,
+notFoundCB:notFoundCB,
+starWith:starWith,
+visible:visible,
+setFocus:setFocus});
+}
+function TreeWidget_searchEx(prms)
+{
+var text = Widget_param(prms, "text", null);
+var matchCase = Widget_param(prms, "matchCase", null);
+var matchWholeW = Widget_param(prms, "matchWholeW", null); 
+var startFrom = Widget_param(prms, "startFrom", null); 
+var next = Widget_param(prms, "next", "next"); 
+var notFoundCB = Widget_param(prms, "notFoundCB", null); 
+var starWith = Widget_param(prms, "starWith", false); 
+var visible = Widget_param(prms, "visible", false); 
+var setFocus  = Widget_param(prms, "setFocus", false); 
+var userData = Widget_param(prms, "userData", null); 
+var o=this,item=null;
+if ((text=="" || text==null) && (userData==null)) return ; 
+var userDataKey  = Widget_param(userData, "key", false); 
+var userDataValue = Widget_param(userData, "value", null); 
+if (userData!=null)
+{
+item = o.findInData(userDataValue,userDataKey);
+}else{
+item = o.findInName(text,matchCase,matchWholeW,startFrom,next,starWith,visible);
+}
+if(item)
+{
+o.unselect();
+item.select(setFocus);
+}
+else if(notFoundCB)
+{
+notFoundCB();
+}
+return item;
+}
+function TreeWidget_filterTreeCB(text,matchCase)
+{
+var o=this;
+//sometimes, this callback is from a child of new_TreeSearchWidget (textfield enterCB)
+if(!o.sub && o.par)
+o = o.par;
+var sub=o.sub
+if (!sub) return;
+var len=sub.length
+matchCase = matchCase?matchCase:false;
+for (var i=0;i<len;i++)
+{
+if(text == "")
+sub[i].resetFilter();
+else
+sub[i].filterInName(text,matchCase);
+}
+}
+function TreeWidget_filterCB(text,matchCase)
+{
+var o = this.par;
+//sometimes, it comes from IME, the callback is enterCB of o.searchField 
+if(!o.searchWidget && o.par)
+o=o.par;
+if(o.searchWidget)
+{
+var text = o.searchWidget.getSearchValue();
+o.filterTreeCB(text,matchCase);
+}
+}
+function TreeWidget_resetFilterTreeCB()
+{
+var o = this;
+var sub=o.sub,len=sub.length
+for (var i=0;i<len;i++)
+{
+sub[i].resetFilter();
+}
+}
+function TreeWidget_resetFilterCB()
+{
+var o = this.par;
+o.resetFilterTreeCB();
+}
+function TreeWidget_add(elem,extraIndent)
+{
+var o=this,sub=o.sub,len=sub.length
+elem.treeView=o
+sub[len]=elem
+elem.expanded=(len==0)
+if (extraIndent)
+elem.extraIndent=extraIndent
+return elem
+}
+function getTreeWidgetInnerWidth(w)
+{
+    var o=this;
+var innerW=Math.max(1,w-2);
+return innerW;
+}
+function TreeWidget_getHTML()
+{
+var o=this,sub=o.sub,len=sub.length,a=new Array(),j=0
+if(o.searchZone)
+a[j++]= '<div style="padding-bottom:2px">'+o.searchWidget.getHTML()+'</div>';
+//tree header
+if (o.noHeader==false)
+{
+a[j++]= o.getHeaderHTML();
+}
+//tree body
+a[j++]= o.beginHTML()+'<div style="font-size:1px;" id="treeCont_'+o.id+'" onkeydown="return '+_codeWinName+'.TreeWidget_keyDownCB(this,event)" onkeypress="return '+_codeWinName+'.TreeWidget_keyPressCB(this,event)">'
+for (var i=0;i<len;i++)
+a[j++]=sub[i].getHTML(o.initialIndent,i==0)
+a[j++]='</div>'+o.endHTML()
+return a.join("")
+}
+function TreeWidget_getHeaderHTML()
+{
+var o=this,a=new Array(),j=0;
+if (o.noHeader==false)
+{
+var innerW=getTreeWidgetInnerWidth.call(o, o.w);
+a[j++]='<div id="'+o.headerId+'" class="treeHeader" style="'+sty("width",""+innerW+"px")+'overflow:hidden;height:'+_treeHeaderHeight+'px">'
+a[j++]='<table height="'+_treeHeaderHeight+'" cellspacing="0" cellpadding="0" border="0" width="100%"><tbody><tr valign="middle">'
+a[j++]='<td class="multiL"><div class="multiHeader"></div></td>'
+var sortIcn='';
+if (o.sortIcn>=0)
+{
+sortIcn='<td align="center" valign="bottom" class="multiSortIcon" onclick="'+_codeWinName+'.TreeWidget_srtCB(this)">';
+// sortIcn [-1 : no icon; 0 ascending arrow; 1 : descending arrow]
+if (!_dtd4)
+{
+//non _dtd4 dont work with CSS/CSS 
+sortIcn+=imgOffset(_skin+_multiHeaderFile,_multiHeaderArrowW,_multiHeaderArrowH,0,o.sortIcn?84:87)+'</td>';
+}
+else
+sortIcn+='<div class="'+ _multiHCSS[o.sortIcn?_multiHUpCSS:_multiHDownCSS]+'"></div></td>';
+}
+else
+sortIcn='<td width="0"></td>'
+var colId=' id="0"';
+a[j++]='<td '+ colId+' class="'+ _multiHCSS[_multiHMCSS]+'" onclick="'+_codeWinName+'.TreeWidget_srtCB(this)">'
+a[j++]='<table border="0" cellspacing="0" cellpadding="0"><tbody><tr>' 
+a[j++]='<td ><div class="treeHeaderText" id="'+o.headerTxtId+'">'+o.headerText+'</div></td>'
+a[j++]=sortIcn;
+a[j++]='</tr></tbody></table>' 
+a[j++]='</td>'
+a[j++]='<td class="multiR"><div class="multiHeader"></div></td>'
+a[j++]='</tr></tbody></table>'
+a[j++]='</div>'
+return a.join("");
+}
+}
+function TreeWidget_srtCB(lay)
+{
+var lovWidget = getWidget(lay)
+if (lovWidget && lovWidget.lovTree && lovWidget.lovTree.sortCB)
+{
+lovWidget.lovTree.sortCB(0);
+}
+}
+function TreeWidget_deleteAll()
+{
+var sub=this.sub, len=sub.length
+for (var i=0;i<len;i++)
+{
+sub[i].deleteAll()
+sub[i]=null
+}
+sub.length=0
+if (this.elems)
+this.elems.length=0
+}
+function TreeWidget_rebuildHTML()
+{
+var o=this,sub=o.sub,len=sub.length,a=new Array(len),j=0,idt=o.initialIndent
+for (var i=0;i<len;i++)
+a[j++]=sub[i].getHTML(idt,i==0)
+o.treeLyr.innerHTML=a.join("")
+o.selId=-1
+o.layer._BOselId=-1
+//multi selection init
+o.selIds.length=0
+o.layer._BOselIds=""
+if (!o.noHeader)
+{
+    o.headerDivLyr.outerHTML=o.getHeaderHTML();    
+}
+this.buildElems()
+this.clearLayers();
+this.init();
+}
+function TreeWidget_init()
+{
+var o = this;
+o.oldInit();
+var l=o.treeLyr=getLayer('treeCont_'+o.id);
+if (!o.noHeader)
+{
+    o.headerDivLyr=getLayer(o.headerId);
+    o.headerTxtDivLyr=getLayer(o.headerTxtId);
+}
+//l.onkeydown=TreeWidget_keyDownCB;
+//l.onkeypress=TreeWidget_keyPressCB;
+if (o.dragDrop)
+o.dragDrop.attachCallbacks(o.layer)
+var oldSel = o.layer._BOselId
+if (oldSel!=null)
+o.selId=oldSel
+//multi selection init
+var oldArraySel = o.layer._BOselIds; //string
+if (oldArraySel!=null && oldArraySel!="")
+{
+o.selIds.length=0;
+o.selIds=oldArraySel.split(";");
+}
+var sub=o.sub
+if(o.searchZone)
+o.searchWidget.init();
+//used in customTooltip
+o.layer.onmousemove=TreeWidget_mousePos;
+o.setFocusable(o.elems[0], false)
+//508
+if(o.treeLyr)
+o.treeLyr.setAttribute("role", "tree");
+}
+function TreeWidget_resize(w,h)
+{
+var o=this;
+var treeW = w?w:o.w
+var treeH = h
+if(o.searchZone)
+{
+if(h!=null)
+treeH = Math.max(1,treeH - o.searchWidgetH); //searchWidget height
+o.searchWidget.resize(treeW,null);
+}
+if (!o.noHeader)
+{
+    treeH=Math.max(1, treeH-_treeHeaderHeight);   
+    if (o.headerDivLyr)
+    {
+        o.headerDivLyr.style.width=getTreeWidgetInnerWidth.call(o, treeW)+'px';   
+    }
+}
+o.oldResize2(treeW,treeH);
+}
+function TreeWidget_buildElems(elem)
+{
+with (this)
+{
+if (elem==null)
+elem=this;
+else
+{
+var pos=elems.length;
+elems[pos]=elem;
+elem.elemPos=pos;
+}
+var subArr=elem.sub,len=subArr.length;
+for (var i=0;i<len;i++)
+buildElems(subArr[i]);
+}
+}
+function TreeWidget_clearLayers(elem)
+{
+with (this)
+{
+if (elem==null)
+elem=this;
+        elem.layer=null
+var subArr=elem.sub,len=subArr.length;
+for (var i=0;i<len;i++)
+clearLayers(subArr[i]);
+}
+}
+function TreeWidget_getSelectedItem()
+{
+var id=this.selId
+return (id>=0)?_TreeWidgetElemInstances[id]:null
+}
+function TreeWidget_getSelections()
+{
+var o=this;
+if(o.multiSelection)
+{
+return o.getSelectedItems();
+}
+else
+{
+var sel=o.getSelectedItem(),arrSel=new Array;
+if(sel!=null) arrSel[0]=sel;
+return arrSel;
+}
+}
+function TreeWidget_setFocus(index)
+{
+var elem=_TreeWidgetElemInstances[index]
+if(elem!=null)
+{
+elem.init()
+this.setFocusable(elem, true)
+//safeSetFocus(elem.domElem)
+}
+}
+function TreeWidget_keyPressCB(lay,e)
+{
+var treeView = getWidget(lay)
+//multi selection treeview
+if (treeView.multiSelection)
+{ 
+return TreeWidget_multiSelKeyPress(lay,e);
+}
+//mono selection treeview
+var elem = treeView.getFocusElem()
+var id = elem ? elem.id : -1
+if (id>=0)
+{
+//var elem=_TreeWidgetElemInstances[id]
+//var treeView=elem.treeView
+var source =TreeIdToIdx(_ie?_curWin.event.srcElement:e.target)
+//_ie?_curWin.event.srcElement.id:e.target.id
+var k=eventGetKey(e) , ctrl=eventIsCtrl(e)
+//window.status='press touche '+k + '('+ (t) +')'; t=t+1;
+if( k==13 )
+{
+//if(source!=_codeWinName+"trLstElt"+id)//select the item if not selected
+if(source!=id)//select the item if not selected
+{
+TreeWidget_clickCB(source,false,e);
+TreeWidgetElem_UpdateTooltip(source,true);
+}
+//else if ((source==_codeWinName+"trLstElt"+id)&&(treeView.doubleClickCB))
+else if ((source==id)&&(treeView.doubleClickCB))
+treeView.doubleClickCB(elem.userData);
+}
+if((k==10) && ctrl &&(source==_codeWinName+"trLstElt"+id))
+{
+if(elem.sub.length>0)
+{
+TreeWidget_toggleCB(id);
+TreeWidgetElem_UpdateTooltip(source);
+}
+if (elem.isIncomplete&&elem.querycompleteCB)
+{
+elem.querycompleteCB(true)
+TreeWidgetElem_UpdateTooltip(source);
+}
+return false
+}
+}
+else //no selection in tree view
+{
+//var source =_ie?_curWin.event.srcElement.id:e.target.id
+var source =TreeIdToIdx(_ie?_curWin.event.srcElement:e.target)
+var k=eventGetKey(e);
+if( k==13 )
+{
+TreeWidget_clickCB(source,false,null);
+TreeWidgetElem_UpdateTooltip(source,true);
+}
+}
+}
+function TreeWidget_multiSelKeyPress(o,e)
+{
+//multi selection treeview
+var treeView = getWidget(o);
+var len = treeView.selIds.length;
+if (len>0) //already has selection
+{
+//var source =_ie?_curWin.event.srcElement.id:e.target.id
+var source =TreeIdToIdx(_ie?_curWin.event.srcElement:e.target)
+var k=eventGetKey(e) , ctrl=eventIsCtrl(e)
+//find the source in the selected items
+var elem = null;
+for(var i=0; i<len;i++)
+{
+var id = treeView.selIds[i];
+//if (source==_codeWinName+"trLstElt"+id)
+if (source==id)
+{
+elem = _TreeWidgetElemInstances[id];
+break;
+}
+}
+//IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//doubleClickCB will only send userData of the elem where the action is performed
+//code must be added by the user in the doubleClickCB to manage the action for all the selected items
+//please refer to sample treeview.html for more details
+if( k==13 )//enter
+{
+//TreeWidget_clickCB(source.slice(8+_codeWinName.length),false,null);
+if(elem == null)
+{
+//TreeWidget_clickCB(source.slice(8+_codeWinName.length),false,_ie?_curWin.event:e);
+TreeWidget_clickCB(source,false,_ie?_curWin.event:e);
+TreeWidgetElem_UpdateTooltip(source,true);
+}
+else if (elem &&(treeView.doubleClickCB))
+treeView.doubleClickCB(elem.userData);
+}
+if((k==10) && ctrl && elem) //ctrl+enter
+{
+if(elem.sub.length>0)
+{
+TreeWidget_toggleCB(id);
+TreeWidgetElem_UpdateTooltip(source);
+}
+if (elem.isIncomplete&&elem.querycompleteCB)
+{
+elem.querycompleteCB(true)
+TreeWidgetElem_UpdateTooltip(source);
+}
+return false
+}
+}
+else //no selection in tree view
+{
+//var source =_ie?_curWin.event.srcElement.id:e.target.id
+var source =TreeIdToIdx(_ie?_curWin.event.srcElement:e.target)
+var k=eventGetKey(e);
+if( k==13 )
+{
+//TreeWidget_clickCB(source.slice(8+_codeWinName.length),false,null);
+TreeWidget_clickCB(source,false,_ie?_curWin.event:e);
+TreeWidgetElem_UpdateTooltip(source,true);
+}
+}
+return true;
+}
+t=0
+function TreeWidget_keyDownCB(lay,e)
+{
+var treeView = getWidget(lay)
+//multi selection treeview
+if (treeView.multiSelection)
+{ 
+return TreeWidget_multiSelKeyDown(lay,e);
+}
+var k=eventGetKey(e);
+//mono selection treeview
+var elem = treeView.getFocusElem()
+var id = elem ? elem.id : -1
+var rightArrow = _rtl ? 37 : 39
+var leftArrow = _rtl ? 39 : 37
+if (id>=0)
+{
+//var elem=_TreeWidgetElemInstances[id]
+if (elem!=null)
+{
+var treeView=elem.treeView
+var source=TreeIdToIdx(_ie?_curWin.event.srcElement:e.target)
+switch(k)
+{
+case 107: // "+" key
+case rightArrow:  // right arrow
+if (elem.sub.length>0)
+{
+if (elem.expanded)
+{
+if (k==rightArrow)
+{
+// if right arrow and expanded, goto the first child
+if (treeView.selectionFollowsFocus){
+elem.sub[0].select(true,null,null,true);
+}
+else {
+treeView.setFocusable(elem.sub[0], true)
+}
+}
+}
+else 
+{
+TreeWidget_toggleCB(id);
+TreeWidgetElem_UpdateTooltip(source);
+}
+}
+if (elem.isIncomplete&&elem.querycompleteCB)
+{
+elem.querycompleteCB(true)
+TreeWidgetElem_UpdateTooltip(source);
+}
+break;
+case 109: // "-" key
+case leftArrow: // Left Arrow
+if (elem.expanded)
+{
+TreeWidget_toggleCB(id);
+TreeWidgetElem_UpdateTooltip(source);
+}
+else
+{
+if ((k==leftArrow)&&(elem.par))
+{
+// if left arrow and not expanded or leaf, goto the parent node
+if (treeView.selectionFollowsFocus){
+elem.par.select(true,null,null,true);
+}
+else {
+treeView.setFocusable(elem.par, true)
+}
+}
+}
+break;
+case 40: // up arrow
+case 38: // donw arrow
+var nElt=elem.getNextPrev(k==40?1:-1)
+if (nElt!=null)
+{
+if (treeView.selectionFollowsFocus){
+nElt.select(true,null,null,true);
+}
+else {
+treeView.setFocusable(nElt, true)
+}
+}
+return false
+break;
+case 46: //remove
+if (treeView.deleteCB)
+treeView.deleteCB(elem.userData)
+break;
+case 32: //space
+if (elem.isCheck) {
+elem.check(!elem.isChecked())
+if (elem.checkCB) {
+elem.checkCB()
+}
+stopEvent2(e)
+}
+else //select focus elem
+{
+elem.select(true,null,null,true);
+}
+break;
+default:
+//key is alpha numerique, select the first occurence that starts with this character from the current position
+var c = String.fromCharCode(k);
+if(c)//text,matchCase,matchWholeW,startFrom,next,notFoundCB,starWith,visible,setFocus)
+{
+if ((e.altKey!=true)&&(e.ctrlKey!=true)&&(e.metaKey!=true))
+treeView.search(c,false,false,null,true,null,true,true,true);
+}
+break
+}
+//IE 9 bug: keypress event is not fired for ENTER key  so we need to do action in keydown
+//applicable for newIconListPopupWidget when press enter to validate selection (in variableDialog autocompletion and AssignData object picker)
+if(k==13 && _ie9R && !_ie11R)
+{
+if ((source==id)&&(treeView.doubleClickCB))
+treeView.doubleClickCB(elem.userData);
+}
+}
+}
+//To implement default action in dialog box with the key Enter
+//we should cancel the bubble for treeview because Enter should not execute 
+//the default action in dialog box when it is done on a treview item.
+//cancelBubbleEnter : sometimes we want to perform the default action in dialog box (example in prompts dialog)
+if(k == 13 && treeView.cancelBubbleEnter)
+{
+eventCancelBubble(e);
+}
+}
+function TreeWidget_multiSelKeyDown(o,e)
+{
+//multi selection treeview
+var treeView = getWidget(o);
+var len = treeView.selIds.length;
+var k=eventGetKey(e);
+var focusElem = treeView.getFocusElem();
+var focusItemIsSelected=false;
+if (len>0 || focusElem!=null) //already has selection
+{
+var ctrl=eventIsCtrl(e)
+var shift=_ie?_curWin.event.shiftKey:e.shiftKey;
+//var source=_ie?_curWin.event.srcElement.id:e.target.id;
+var source=TreeIdToIdx(_ie?_curWin.event.srcElement:e.target)
+//find the source in the selected items
+var elem = focusElem, id=focusElem?focusElem.id:-1;
+for(var i=0; i<len;i++)
+{
+id = treeView.selIds[i];
+//if (source==_codeWinName+"trLstElt"+id)
+if (source==id)
+{
+elem = _TreeWidgetElemInstances[id];
+focusItemIsSelected=true;
+break;
+}
+}
+if(elem)
+{
+var rightArrow = _rtl ? 37 : 39
+var leftArrow = _rtl ? 39 : 37
+switch(k)
+{
+case 107: // "+" key
+case rightArrow: // Right arrow
+if (elem.sub.length>0)
+{
+if (elem.expanded)
+{
+if (k==rightArrow)
+{
+// if right arrow and expanded, goto the first child
+if (treeView.selectionFollowsFocus){
+elem.sub[0].select(true,_ie?_curWin.event:e,null,true);
+}
+else {
+treeView.setFocusable(elem.sub[0], true)
+}
+}
+}
+else 
+{
+TreeWidget_toggleCB(id);
+TreeWidgetElem_UpdateTooltip(source);
+}
+}
+if (elem.isIncomplete&&elem.querycompleteCB)
+{
+elem.querycompleteCB(true)
+TreeWidgetElem_UpdateTooltip(source);
+}
+break;
+case 109: // "-" key
+case leftArrow: // Left Arrow
+if (elem.expanded)
+{
+TreeWidget_toggleCB(id);
+TreeWidgetElem_UpdateTooltip(source);
+}
+else
+{
+if ((k==leftArrow)&&(elem.par))
+{
+// if left arrow and not expanded or leaf, goto the parent node
+if (treeView.selectionFollowsFocus){
+elem.par.select(true,_ie?_curWin.event:e,null,true);
+}
+else {
+treeView.setFocusable(elem.par, true)
+}
+}
+}
+break;
+case 40: //up or down arrow
+case 38:
+//var nElt=elem.getNextPrev(k==40?1:-1);if (nElt!=null){nElt.select(null,null,null,true);safeSetFocus(nElt.domElem)} return false;
+var nElt=elem.getNextPrev(k==40?1:-1);
+if (nElt!=null)
+{
+if (treeView.selectionFollowsFocus){
+nElt.select(null,_ie?_curWin.event:e,null,true);
+}
+else {
+treeView.setFocusable(nElt, true)
+}
+}
+//stopEvent(e);
+return false
+break;
+case 46: //remove
+//IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//deleteCB will only send userData of the elem where the action is performed
+//code must be added by the user in the deleteCB to manage the action for all the selected items
+//please refer to sample treeview.html for more details
+if(treeView.deleteCB)
+treeView.deleteCB(elem.userData)
+break;
+case 32: //space
+if (elem.isCheck) {
+elem.check(!elem.isChecked())
+if (elem.checkCB) {
+elem.checkCB()
+}
+stopEvent2(e)
+}
+else //select focus elem
+{
+if(!focusItemIsSelected)
+focusElem.select(null,_ie?_curWin.event:e,null,true);
+}
+break;
+default:
+//key is alpha numerique, select the first occurence that starts with this character from the current position
+var c = String.fromCharCode(k);
+if(c)//text,matchCase,matchWholeW,startFrom,next,notFoundCB,starWith,visible,setFocus)
+{
+treeView.search(c,false,false,null,true,null,true,true,true);
+}
+break
+}
+}
+}
+//To implement default action in dialog box with the key Enter
+//we should cancel the bubble for treeview because Enter should not execute 
+//the default action in dialog box when it is done on a treview item.
+if (k == 13 && treeView.cancelBubbleEnter)
+{
+eventCancelBubble(e);
+}
+}
+function TreeWidget_setDragDrop(dragCB,acceptDropCB,dropCB,dragEndCB)
+{
+this.dragCB=dragCB
+this.acceptDropCB=acceptDropCB
+this.dropCB=dropCB
+this.dragEndCB=dragEndCB
+this.dragDrop=newDragDropData(this,TreeWidget_dragStartCB,TreeWidget_dragCB,TreeWidget_dragEndCB,TreeWidget_acceptDropCB,TreeWidget_leaveDropCB,TreeWidget_dropCB)
+}
+function TreeWidget_dragStartCB(src, l, ev)
+{
+//var item=src.getSelectedItem(),vert=src.iconOrientVertical
+var items=src.getSelections(),vert=src.iconOrientVertical
+src.dragCB(src, (null != ev)?ev:null)
+    var tw= newTooltipWidget();
+if (items && items.length==1 && _ie && !_ie10R) //do not show tooltip under firefox //ADAPT01721007: no custom tooltip when IE10
+{
+var item=items[0]; //display the tooltip of one selection
+var idx=item.iconId
+var icons=item.icns?item.icns:src.icns
+tw.show(
+true,
+item.getDragTooltip(),
+idx>=0?icons:null,
+src.iconW,
+src.iconH,
+vert?0:src.iconW*idx,
+vert?src.iconH*idx:0)
+}
+else
+    tw.show(false);
+}
+function TreeWidget_setDDTooltip(src,tooltip)
+{
+    var items=src.getSelections(),vert=src.iconOrientVertical
+    var tw= newTooltipWidget();
+    if (items && items.length==1 )
+{
+if(tooltip)
+    tw.show(true,tooltip)
+    else
+    {
+        var item=items[0]; //display the tooltip of one selection
+    var idx=item.iconId
+    var icons=item.icns?item.icns:src.icns
+    tw.show(
+true,
+item.getDragTooltip(),
+idx>=0?icons:null,
+src.iconW,
+src.iconH,
+vert?0:src.iconW*idx,
+vert?src.iconH*idx:0)
+}
+}
+else 
+    tw.show(false);    
+}
+function TreeWidget_setRightClickMenuCB(rightClickMenuCB)
+{
+this.rightClickMenuCB=rightClickMenuCB
+}
+function TreeWidget_getCount()     
+{
+var o=this
+if (o.sub != null)
+return o.sub.length
+else
+return 0;
+}
+function TreeWidget_setTooltipOnMouseOver(catchMouseOver)
+{
+this.mouseOverTooltip=catchMouseOver
+}
+function TreeWidget_setMouseOverCB(mouseOverCB)
+{
+this.mouseOverCB=mouseOverCB
+}
+function TreeWidget_dragCB(src)     
+{
+/*if(_ie)
+newTooltipWidget().setPos();*/
+//no cursor position in firefox
+}
+function TreeWidget_dragEndCB(src)  {
+newTooltipWidget().show(false);
+if (src.dragEndCB) src.dragEndCB()
+}
+function TreeWidget_dragOverEnterCB(lyr,elemId,ev)
+{
+/*
+var e=_TreeWidgetElemInstances[elemId]
+if (lyr.ondrop==null)// layer
+{
+e.treeView.dragDrop.attachCallbacks(lyr,true)
+lyr.domEltID=elemId
+}
+var o=_ddData[lyr._dragDropData],e=_curWin.event
+e.dataTransfer.dropEffect=e.ctrlKey?'copy':'move'
+if (o.acceptDropCB(window._globalDDD,o.widget,e.ctrlKey,e.ctrlKey?false:e.shiftKey,lyr,false))
+e.returnValue=false
+e.cancelBubble=true
+*/
+var e=_TreeWidgetElemInstances[elemId]
+   if (lyr.ondrop==null)// layer
+   {   
+   e.treeView.dragDrop.attachCallbacks(lyr,true)
+   lyr.domEltID=elemId
+   }
+   var o=_ddData[lyr._dragDropData],e=_ie?_curWin.event:ev, dt=e.dataTransfer
+   if(dt) dt.dropEffect=e.ctrlKey?'copy':'move'
+   if (o.acceptDropCB(window._globalDDD,o.widget,e.ctrlKey,e.ctrlKey?false:e.shiftKey,lyr,false))
+   e.returnValue=false
+   if(!e.returnValue && e.preventDefault) //firefox3.5
+   e.preventDefault();
+   e.cancelBubble=true
+}
+function TreeWidget_acceptDropCB(src,target,ctrl,shift,layer) 
+{
+return target.acceptDropCB(src,target,ctrl,shift,layer)// the callback defined by the client
+}
+function TreeWidget_leaveDropCB(src,target,ctrl,shift) 
+{
+if (target.dropWidget && target.dropWidget.layer) {
+//window.status="leave: " + target.dropWidget.layer.id
+if (target.dropWidget.layer.className != target.dropWidget.nonselectedClass) {
+target.dropWidget.layer.className = target.dropWidget.nonselectedClass
+}
+//target.dropWidget = null
+}
+}
+function TreeWidget_dropCB(src,target,ctrl,shift,layer,enter)       
+{
+newTooltipWidget().show(false);
+// added for inside tree D&D
+//target.dropWidget=_TreeWidgetElemInstances[layer.domEltID]
+//target.dropWidget.layer.className = target.dropWidget.nonselectedClass
+//
+target.dropCB(src,target,ctrl,shift);
+}
+function TreeWidget_setMultiSelection(multi)
+{
+//clean the selection structure before start new selection mode
+if((!this.multiSelection && multi)||(this.multiSelection && !multi))
+this.unselect();
+//set selection mode 
+this.multiSelection = multi;
+}
+function TreeWidget_getSelectedItems()
+{
+var arrSel=new Array;
+var len = this.selIds.length, id, cpt=0;
+for(var i=0; i< len; i++)
+{
+id = this.selIds[i];
+if(id>=0)
+{
+arrSel[cpt]=_TreeWidgetElemInstances[id];
+cpt++;
+}
+//arrSel[i]= (id>=0)?_TreeWidgetElemInstances[id]:null;
+}
+return arrSel;
+}
+function TreeWidget_getCheckedItems()
+{
+var arrChecked=new Array;
+var len = _TreeWidgetElemInstances.length, cpt=0;
+for (var i=0; i < len; i++)
+{
+elem = _TreeWidgetElemInstances[i]
+if (elem.isChecked())
+{
+arrChecked[cpt]=elem;
+cpt++;
+}
+}
+return arrChecked;
+}
+function TreeWidget_setHighlightPath(hl)
+{
+this.hlPath=hl;
+if(!hl)
+this.unhlPath();
+}
+function TreeWidget_unhlPath()
+{
+var o=this, len = o.hlElems.length;
+var elem, de;
+if(len>0)//unhighlight previous elems
+{
+for(var i=0;i<len;i++)
+{
+elem = o.hlElems[i];
+elem.init();
+de =elem.domElem;
+if( de == null) return;//safe test
+if(elem.isSelected())
+de.className=elem.selectedClass;
+else
+de.className=elem.nonselectedClass;
+}
+o.hlElems.length=0;
+}
+}
+function TreeWidget_highlightPath(elemId)
+{
+var o=this;
+if(!o.hlPath) return ; //safe test
+o.unhlPath();
+var elem = _TreeWidgetElemInstances[elemId];
+//highlight and select item
+o.hlElems[o.hlElems.length]=elem;
+elem.domElem.className=elem.selectedClass;
+if(elem.elemPos == -1) o.buildElems();
+//highlight parents
+var papa = elem.par;
+while(papa)
+{
+papa.init();
+papa.domElem.className=papa.hlClass;
+o.hlElems[o.hlElems.length]=papa;
+papa = papa.par;
+}
+//highlight children
+if(elem.isNode())
+hlVisibleChildren(elem,o.hlElems);
+}
+function hlVisibleChildren(node,arr)
+{
+if(node.expanded && !node.isIncomplete)
+{
+var len = node.sub.length;
+for(var i=0;i<len;i++)
+{
+var sub = node.sub[i];
+arr[arr.length]=sub;
+sub.init();
+sub.domElem.className=sub.hlClass;
+if(sub.isNode()) 
+hlVisibleChildren(sub,arr);
+}
+}
+}
+function TreeWidget_setIsEqualCB(fnCB)
+{
+    this.isEqualCB=fnCB;
+}   
+function TreeWidget_removeChildById(childId)
+{
+var o=this, sub=o.sub, len=sub.length
+for (var i=0; i < len; i++) {
+var item=sub[i]
+if (childId == item.id)
+{
+if (item.selected)
+item.select(false)
+var l=item.layer
+if (item.htmlWritten && l==null)
+{
+item.init()
+l=item.layer
+}
+if (l) {
+l.parentNode.removeChild(l)
+}
+arrayRemove(o,"sub", i);
+break;
+} else {
+item.removeChild(item.findById(childId))
+}
+}
+elems=o.elems, lenElems=elems.length
+for (var i=0; i < lenElems; i++) {
+var elem=elems[i]
+if (childId == elem.id)
+{
+arrayRemove(o,"elems", i);
+break;
+}
+}
+o.rebuildHTML()
+}
+function newTreeWidgetElem(iconId,name,userData,help,iconSelId,tooltip,iconAlt,textClass,textSelectedClass,icns)
+{
+var o=new Object
+// Data
+o.elemPos=-1
+if (window._TreeWidgetElemInstances==null)
+window._TreeWidgetElemInstances=new Array
+o.expanded=false
+o.generated=false
+o.iconId=iconId
+o.iconSelId=iconSelId?iconSelId:iconId
+o.tooltip=tooltip
+o.iconAlt=iconAlt
+o.isHTML=false
+// Check box
+o.isCheck=false
+o.checked=false
+o.check=TreeWidgetElem_check
+o.isChecked=TreeWidgetElem_isChecked
+o.checkCB=null
+o.checkValue='on'
+o.name=name
+o.par=null
+o.userData=userData
+o.sub=new Array
+o.treeView=null
+o.id=_TreeWidgetElemInstances.length
+o.icns=icns
+// Layers
+o.layer=null
+o.plusLyr=null
+o.icnLyr=null
+o.checkElem=null
+o.domElem=null
+o.toggleLyr=null
+o.blackTxt=(textClass)?textClass:'treeNormal'
+o.grayTxt='treeGray'
+o.boldTxt='treeBold'
+// new style ItalicBoldStyle for hidden and has break/sort obj
+o.italicBoldTxt='treeItalicBold'
+o.selectedClass=(textSelectedClass)?textSelectedClass:'treeSelected'
+o.nonselectedClass=o.blackTxt
+o.feedbackDDClass='treeFeedbackDD'
+o.hlClass='treeHL' //hl=highlight
+o.help=help
+_TreeWidgetElemInstances[o.id]=o
+o.ajaxUpdateUrl = null
+o.ajaxParamsFn = null
+//for search in tree
+o.filterable = true
+o.matchFilter = true //do not show when apply a filter
+// Methods
+o.getHTML=TreeWidgetElem_getHTML
+o.init=TreeWidgetElem_init
+o.add=TreeWidgetElem_add;
+//o.addChild=TreeWidgetElem_addChild;
+o.select=TreeWidgetElem_select
+o.unselect=TreeWidgetElem_unselect
+o.getNextPrev=TreeWidgetElem_getNextPrev
+o.getHiddenParent=TreeWidgetElem_getHiddenParent
+o.nodeIndent=0
+o.getTooltip=TreeWidgetElem_getTooltip
+o.getDragTooltip=TreeWidgetElem_getDragTooltip
+o.change=TreeWidgetElem_change
+o.hide=TreeWidgetElem_hide
+o.deleteAll=TreeWidget_deleteAll
+o.removeChild=TreeWidgetElem_removeChild
+o.setGrayStyle=TreeWidgetElem_setGrayStyle
+o.isGrayStyle=TreeWidgetElem_isGrayStyle
+o.setBoldStyle=TreeWidgetElem_setBoldStyle
+o.isBoldStyle=TreeWidgetElem_isBoldStyle
+// new style ItalicBoldStyle for hidden and has break/sort obj
+o.setItalicBoldStyle=TreeWidgetElem_setItalicBoldStyle
+o.isItalicBoldStyle=TreeWidgetElem_isItalicBoldStyle
+o.findByData=TreeWidgetElem_findByData
+o.findInData=TreeWidgetElem_findInData
+o.findSimpleByData=TreeWidgetElem_findSimpleByData
+o.findById=TreeWidgetElem_findById
+o.findInName=TreeWidgetElem_findInName
+o.findInDataArr=TreeWidgetElem_findInDataArr;
+o.filterInName=TreeWidgetElem_filterInName
+o.resetFilter=TreeWidgetElem_resetFilter
+o.isIncomplete=false
+o.querycompleteCB=null
+o.setIncomplete=TreeWidgetElem_setIncomplete
+o.finishComplete=TreeWidgetElem_finishComplete
+o.setEditable=TreeWidgetElem_setEditable
+o.showEditInput=TreeWidgetElem_showEditInput
+o.isLeaf=TreeWidgetElem_isLeaf
+o.isNode=TreeWidgetElem_isNode
+o.isSelected=TreeWidgetElem_isSelected
+o.setAjaxUpdater=TreeWidgetElem_setAjaxUpdater
+o.expandParent=TreeWidgetElem_expandParent;
+//private
+o.ajaxUpdater=TreeWidgetElem_ajaxUpdater
+o.htmlWritten=false
+o.updateTreeNode=TreeWidgetElem_updateTreeNode;
+o.initLayers=TreeWidgetElem_initLayers;
+o.updateIcons=TreeWidgetElem_updateIcons;
+o.toggleid=_codeWinName+"trTog"+o.id;
+//508
+o.setRoles=TreeWidgetElem_setRoles;
+o.setAriaExpanded=TreeWidgetElem_setAriaExpanded;
+o.isShown = TreeWidgetElem_isShown;
+return o
+}
+function newTreeWidgetElemParams(params)
+{
+return newTreeWidgetElem( 
+("undefined" != params.iconId)?params.iconId:-1,
+params.name,
+params.userData,
+params.help,
+params.iconSelId,
+params.tooltip,
+params.iconAlt,
+params.textClass,
+params.textSelectedClass,
+params.iconUrl
+)
+}
+function TreeWidgetElem_checkCB(elem, id)
+{
+var o=_TreeWidgetElemInstances[id]
+o.checked=elem.checked
+if (o.checkCB)
+o.checkCB(o, id)
+}
+function TreeWidgetElem_isChecked()
+{
+var o=this
+return (o.isCheck ? o.checked : false)
+}
+function TreeWidgetElem_check(checked)
+{
+var o=this
+if (o.isCheck)
+{
+o.checked = checked
+if (o.htmlWritten)
+{
+o.init()
+o.checkElem.checked = checked
+}
+}
+}
+function TreeWidgetElem_EditNormalBehaviour(e)
+{
+eventCancelBubble(e)
+return true
+}
+function TreeWidgetElem_EditBlurCB()
+{
+setTimeout("TreeWidgetElem_EditKeyCancel("+this.widID+")",1)
+}
+_globTreeTxtvalue=""
+function TreeWidgetElem_EditKeyDown(e)
+{
+eventCancelBubble(e); //do not fire the event in TreeWidgetElem
+var k=eventGetKey(e),o=_TreeWidgetElemInstances[this.widID]
+if (k==27) // Escape
+{
+setTimeout("TreeWidgetElem_EditKeyCancel("+this.widID+")",1)
+}
+else if (k==13) // Enter
+{
+_globTreeTxtvalue=this.value
+setTimeout("TreeWidgetElem_EditKeyAccept("+this.widID+")",1)
+//fix sample problem with treeview when rename action in IE
+stopEvent2(e);
+}
+}
+function TreeWidgetElem_EditKeyCancel(id)
+{
+var o=_TreeWidgetElemInstances[id]
+o.showEditInput(false)
+}
+function TreeWidgetElem_EditKeyAccept(id)
+{
+var o=_TreeWidgetElemInstances[id]
+if (o.validChangeNameCB)
+{
+if (o.validChangeNameCB(_globTreeTxtvalue)==false)
+return
+}
+o.change(null,_globTreeTxtvalue)
+o.showEditInput(false)
+o.treeView.setFocusable(o, true);
+if (o.changeNameCB)
+o.changeNameCB()
+}
+_globTreeTxt=null
+function TreeWidgetElem_showEditInput(show)
+{
+var o=this
+o.init()
+var lyr=o.domElem,css=lyr.style
+if (show&&(css.display!="none"))
+{
+var par=lyr.parentNode,w=lyr.offsetWidth,h=lyr.offsetHeight
+css.display="none"
+var tl=_globTreeTxt=_curDoc.createElement("INPUT");
+tl.type="text"
+tl.className="textinputs"
+tl.value=o.name
+tl.ondragstart=TreeWidgetElem_EditNormalBehaviour
+tl.onselectstart=TreeWidgetElem_EditNormalBehaviour
+tl.onblur=TreeWidgetElem_EditBlurCB
+tl.onkeydown=TreeWidgetElem_EditKeyDown
+tl.widID=o.id
+var tc=tl.style
+tc.width=""+(w+20)+"px"
+par.appendChild(tl);
+tl.focus()
+tl.select()
+}
+if ((show!=true)&&(css.display=="none"))
+{
+var tl=_globTreeTxt
+if (tl)
+{
+tl.parentNode.removeChild(tl)
+css.display=""
+_globTreeTxt=null
+}
+}
+}
+function TreeWidgetElem_setEditable(isEditable, changeNameCB,validChangeNameCB)
+{
+var o=this
+if (isEditable)
+{
+o.changeNameCB=changeNameCB
+o.validChangeNameCB=validChangeNameCB
+}
+o.isEditable=isEditable
+}
+function TreeWidgetElem_triggerDD(e)
+{
+var o=_treeWClickedW
+//BOEWEBI-11146 -[DHTML]Drag and drop from side panel is not working anymore in Internet Explorer
+//The event object passed to an event handler and the event object referred to by the window.event property are different in Internet Explorer from version 9 (except if the event handler is registered with the attachEvent method). //from dottoro  
+if (_ie)
+e=_curWin.event
+if (o&&(o.clicked)&&(e.button==_leftBtn))
+{
+if (o.initialX!=null)
+{
+var x=eventGetX(e),y=eventGetY(e),threshold=3
+//console.log(x+ "  "+ o.initialX+ " " + y +" "+ o.initialY)
+if ((x<(o.initialX-threshold))||(x>(o.initialX+threshold))||(y<(o.initialY-threshold))||(y>(o.initialY+threshold)))
+{
+this.dragDrop()
+o.clicked=false
+}
+}
+}
+}
+function TreeWidget_mousePos(e)
+{
+var o=getWidget(this);
+e=getEvent(e);
+o.mousePos={x:eventGetX(e,_curWin),y:eventGetY(e,_curWin)};
+}
+function TreeWidgetElem_mouseUp(e)
+{
+var o=_treeWClickedW,ev=_ie?_curWin.event:e
+o.select(null,ev)
+o.domElem.onmouseup=null
+}
+function TreeWidgetElem_initLayers()
+{
+    var o=this
+    var sub=o.sub,len=sub.length,exp=(len>0)||o.isIncomplete
+    var cNodes=o.layer.childNodes,cLen=cNodes.length
+o.plusLyr=exp?cNodes[0]:null
+o.icnLyr=(o.iconId>-1)?cNodes[exp?1:0]:null
+o.checkElem=o.isCheck?cNodes[cLen-2]:null
+o.domElem=cNodes[cLen-1]
+o.toggleLyr=getLayer(o.toggleid);
+}
+function TreeWidgetElem_init()
+{
+var o=this
+if (o.layer==null)
+{
+var sub=o.sub,len=sub.length,exp=(len>0)||o.isIncomplete
+// Init Widgets
+if (o.treeView) {
+o.layer=getLayer(_codeWinName+o.treeView.id+'TWe_'+o.id);
+}
+if (o.layer==null)
+return;
+        o.initLayers();
+        if(o.treeView.userData.unxDisplayMode && updateUnxDisplayOptionInTree)
+    updateUnxDisplayOptionInTree(o,o.treeView.userData.unxDisplayMode);
+// Init Callbacks
+if(o.treeView.mouseOverTooltip||o.treeView.mouseOverCB)
+o.domElem.onmouseout=TreeFuncMouseout
+if (exp)
+{
+addDblClickCB(o.plusLyr,_tpdb)
+}
+if (exp&&o.generated)
+{
+var len=sub.length
+for (var i=0;i<len;i++)
+sub[i].init()
+}
+addDblClickCB(o.domElem,_tpdb)
+//firefox 3.5 dragNdrop
+if(o.treeView.dragDrop && o.domElem)
+{
+o.domElem.draggable=true
+}
+//508
+o.setRoles();
+if(exp) 
+o.setAriaExpanded(o.expanded);
+}
+}
+function TreeWidgetElem_setRoles()
+{
+var o=this
+//Could be done with params if needed
+o.role="treeitem";
+o.rolePresentation="presentation";
+o.roleGroup="group";
+//508
+if (o.layer) 
+o.layer.setAttribute("role", o.rolePresentation);
+if(o.plusLyr)
+o.plusLyr.setAttribute("role", o.rolePresentation);
+if(o.domElem)
+o.domElem.setAttribute("role", o.role);
+if(o.toggleLyr)
+o.toggleLyr.setAttribute("role", o.roleGroup);
+}
+function TreeWidgetElem_setAriaExpanded(bAriaExpanded)
+{
+var o=this;
+if (o.domElem) 
+o.domElem.setAttribute("aria-expanded", bAriaExpanded);
+}
+function TreeWidgetElem_removeChild(child)
+{
+var o=this, sub=o.sub, len=sub.length
+for(var i=0;i<len;i++)
+{
+var item=sub[i]
+if(child.id == item.id)
+{
+if (item.selected)
+item.select(false)
+var l=item.layer
+if (item.htmlWritten && l==null)
+{
+item.init()
+l=item.layer
+}
+if(l)
+l.parentNode.removeChild(l)
+arrayRemove(o,"sub",i);
+return;
+}
+}
+}
+function TreeWidgetElem_addChild(child,idx)
+{
+var o=this 
+idx=arrayAdd(o,"sub",child,idx)
+var sub=o.sub, len=sub.length
+child.treeView=treeView;
+child.par=o;
+if (o.layer)
+{
+if ((idx==-1)||(idx==(sub.length-1)))
+{   
+append(o.layer,child.getHTML())
+        }
+else
+{
+//TODO
+}
+child.init()
+}
+return child;
+}
+function TreeIdToIdx(l)
+{
+if (l)
+{
+var id=l.id
+if (id)
+{
+var idx=id.lastIndexOf("TWe_")
+if (idx>=0)
+return parseInt(id.slice(idx+4))
+else
+return -1
+}
+else
+return TreeIdToIdx(l.parentNode)
+}
+return -1
+}
+function TreeFuncMouseout(e)
+{
+_tmoc(this,TreeIdToIdx(this),false,e)
+}
+function _tmvc(l,ev)
+{
+_tmoc(l,TreeIdToIdx(l),true,ev)
+}
+function _tpl(l,event)
+{
+TreeWidget_clickCB(TreeIdToIdx(l),true,event,true);
+return _webKit ? true : false
+}
+function _tpt(l,event)
+{
+TreeWidget_clickCB(TreeIdToIdx(l),false,event,true);
+return (_webKit || _ffDD || _google || _ie11R) ? true : false
+}
+function _tpdb(e)
+{
+    var idx=TreeIdToIdx(this);
+    if (this.id.indexOf('text')==0)
+    {
+        treeDblClickTextCB(idx,_ie?_curWin.event:e);
+    }
+    else
+    {
+    treeDblClickCB(idx,_ie?_curWin.event:e);
+    }    
+return false
+}
+function _tfcc(l,e)
+{
+treeFCCB(l,TreeIdToIdx(l),true,e)
+l.onblur=_tblc
+}
+function _tblc(e)
+{
+treeFCCB(this,TreeIdToIdx(this),false,e)
+}
+function TreeWidgetElem_getHTML(indent,isFirst)
+{
+with (this)
+{
+htmlWritten=true,isRoot=(par==null)
+var len=sub.length,exp=(len>0)||isIncomplete,a=new Array,i=0
+if (this.extraIndent)
+    indent+=_trIndent*extraIndent
+var mouseCB='onfocus="'+_codeWinName+'._tfcc(this,event)" onmousedown="return '+_codeWinName+'._tpt(this,event)" '
+if(treeView.mouseOverTooltip || treeView.mouseOverCB)
+mouseCB+='onmouseover="'+_codeWinName+'._tmvc(this,event)" '
+var contextMenu=''
+if (treeView.rightClickMenuCB != null)
+{
+contextMenu= ' oncontextmenu="' + _codeWinName + '.treeContextMenuCB(\''+ id + '\', event);return false" '
+}
+var acceptDD=''
+//if ((treeView.acceptDropCB != null) && _ie)
+if ((treeView.acceptDropCB != null))
+{
+acceptDD= ' ondragenter="' + _codeWinName + '.TreeWidget_dragOverEnterCB(this,\''+id+'\',event);" '
+acceptDD += ' ondragover="' + _codeWinName + '.TreeWidget_dragOverEnterCB(this,\''+id+'\',event);" '
+}
+//search in tree
+var styVisible="display:"+(matchFilter?"":"none")
+// begin container
+a[i++]='<div id="'+(_codeWinName+treeView.id+'TWe_'+id)+'"'+contextMenu+' class=trElt style="'+styVisible+'">'
+var mouseDown='onmousedown="'+_codeWinName+'._tpl(this,event)" ' //+ - icon
+var mouseDown2='onmousedown="'+_codeWinName+'._tpt(this,event)" '//kind icon
+if (exp)
+a[i++]='<img '+mouseDown+'class=trPlus src="'+_skin+'../'+(expanded?'min':'plus')+(_mac?'mac':'')+'.gif"/>'
+var icons=icns?icns:treeView.icns
+if (iconId>-1)
+a[i++]='<img '+mouseDown2+'class=trIcn'+(exp||isRoot?'Plus':'')+' '+attr('src', _skin+'../transp.gif')+attr('title',iconAlt)+' align=top style="'+backImgOffset(icons,(treeView.iconOrientVertical?0:treeView.iconW*(expanded?iconSelId:iconId)),(treeView.iconOrientVertical?treeView.iconH*(expanded?iconSelId:iconId):0))+'" />'
+else if (!exp&&!isRoot)
+a[i++]='<img class=trSep '+attr('src', _skin+'../transp.gif')+'/>'
+//BOEWEBI-10579
+if (isCheck)
+a[i++]='<input type=checkbox tabindex="-1" value="'+((checkValue!=null)?checkValue:'on')+'" onclick="'+_codeWinName+'.TreeWidgetElem_checkCB(this,\''+id+'\')"'+(this.checked?' checked':'')+'>'
+//a[i++]='<span '+mouseCB+'tabindex=1'+acceptDD+' class='+nonselectedClass+'>'
+a[i++]='<span '+mouseCB+acceptDD+' class='+nonselectedClass+'>'
+a[i++]=(isHTML?name:convStr(name))
+a[i++]='</span>'
+a[i++]='</div>'
+// end container
+// Sub tree container
+if (exp) a[i++]='<div id="'+toggleid+'" style="margin-'+(_rtl ? 'right' : 'left')+':18px;display:'+(expanded?'':'none')+'">'
+// Generate child HTML if needed
+if (expanded)
+{
+generated=true
+//var idt=indent+_trIndent
+//for (var j=0;j<len;j++) a[i++]=sub[j].getHTML(idt,j==0);
+for (var j=0;j<len;j++) a[i++]=sub[j].getHTML(0,j==0);
+}
+if (exp)
+{
+nodeIndent=indent
+a[i++]="</div>"
+}
+}
+return a.join("");
+}
+function TreeWidgetElem_setGrayStyle(isGray)
+{
+var o=this,cls=isGray?o.grayTxt:o.blackTxt
+if (cls!=o.nonselectedClass)
+{
+o.nonselectedClass=cls
+o.init()
+}
+if (o.domElem&&(o.domElem.className!=o.selectedClass))
+o.domElem.className=cls
+}
+function TreeWidgetElem_isGrayStyle()
+{
+return this.nonselectedClass==this.grayTxt
+}
+function TreeWidgetElem_setBoldStyle(isBold)
+{
+var o=this,cls=isBold?o.boldTxt:o.blackTxt
+if (cls!=o.nonselectedClass)
+{
+o.nonselectedClass=cls
+o.init()
+}
+if (o.domElem&&(o.domElem.className!=o.selectedClass))
+o.domElem.className=cls
+}
+function TreeWidgetElem_isBoldStyle()
+{
+return this.nonselectedClass==this.boldTxt
+}
+function TreeWidgetElem_setItalicBoldStyle(isGrayBold)
+{
+var o=this,cls=isGrayBold?o.italicBoldTxt:o.blackTxt
+if (cls!=o.nonselectedClass)
+{
+o.nonselectedClass=cls
+o.init()
+}
+if (o.domElem&&(o.domElem.className!=o.selectedClass))
+o.domElem.className=cls
+}
+function TreeWidgetElem_isItalicBoldStyle()
+{
+return this.nonselectedClass==this.italicBoldTxt
+}
+function TreeWidgetElem_setIncomplete(querycompleteCB)
+{
+this.isIncomplete=true
+this.querycompleteCB=querycompleteCB
+}
+function TreeWidgetElem_setAjaxUpdater(updateUrl, paramsUpdaterFn, xtraNodeInfoCB, postCB)
+{
+o=this
+o.ajaxUpdateUrl = updateUrl
+o.ajaxParamsFn = paramsUpdaterFn
+if (xtraNodeInfoCB) o.xtraNodeInfoCB = xtraNodeInfoCB
+if (postCB) o.postCB = postCB
+o.setIncomplete(o.ajaxUpdater)
+}
+function TreeWidgetElem_ajaxUpdater()
+{
+_o=this
+_o.plusLyr.src = _skin+'../loading.gif'
+var params = _o.ajaxParamsFn(_o)
+if (params.set)
+{
+    params.set('widx', _o.id);
+    }
+    else
+    {
+        params.widx= _o.id;
+    }
+new Ajax.Request( _o.ajaxUpdateUrl ,
+  {
+    method:'get',
+    parameters: params,
+    onComplete: function(transport){
+    var response = transport.responseText || "KO";
+ //alert("response:" + response);
+var myObj = response.evalJSON();
+var widg = _TreeWidgetElemInstances[ myObj.widx ]; 
+if (myObj.nodes) { 
+_o.updateTreeNode(widg, myObj.nodes);
+ }
+widg.finishComplete()
+if (widg.postCB) widg.postCB(myObj.xtraData)
+      //alert("Success! \n\njason:" + jason);
+    }
+    //onFailure: function(t){alert( t.status + ' -- ' + t.statusText) }
+  });
+}
+function TreeWidgetElem_updateTreeNode(o, nodes) {
+var l = nodes.length
+for (var i=0; i < l; i++) {
+node = o.add( newTreeWidgetElemParams(nodes[i]))
+if (o.xtraNodeInfoCB) {
+o.xtraNodeInfoCB(node)
+}
+if (nodes[i].child) {
+// TreeWidgetElem_updateTreeNode(node, nodes[i].children) NO
+node.setAjaxUpdater(o.ajaxUpdateUrl, o.ajaxParamsFn, o.xtraNodeInfoCB, o.postCB)
+}
+}
+}
+function TreeWidgetElem_finishComplete()
+{
+this.isIncomplete=false
+TreeWidget_toggleCB(this.id)
+this.treeView.buildElems()
+}
+function TreeWidgetElem_findByData(data)
+{
+var o=this
+if (o.userData==data)
+return o
+var sub=o.sub, len=sub.length
+for (var i=0;i<len;i++)
+{
+var item=sub[i].findByData(data)
+if (item!=null)
+    return item
+}
+return null
+}
+function TreeWidgetElem_findInData(data,key)
+{
+if(key==null ||  key=="")
+this.findByData(data);
+var o=this
+if (o.userData!=null && o.userData[key]==data)
+return o
+var sub=o.sub, len=sub.length
+for (var i=0;i<len;i++)
+{
+var item=sub[i].findInData(data,key)
+if (item!=null)
+    return item
+}
+return null
+}
+function TreeWidgetElem_findInDataArr(dataArr,key, down)
+{
+if(key==null ||  key=="")
+{
+return null;
+}
+var o=this;
+if (o.userData!=null && dataArr.indexOf(o.userData[key])>=0)
+{
+return o;
+}
+if (down)
+{
+    //go down
+    var sub=o.sub, len=sub.length
+    for (var i=0;i<len;i++)
+    {
+    var item=sub[i].findInDataArr(dataArr,key, down)
+    if (item!=null)
+        return item
+    }
+}
+else
+{
+    //go up
+    var par=o.par;
+    if (par)
+    {
+        return par.findInDataArr(dataArr,key, down);    
+    }
+}
+return null
+}
+function TreeWidgetElem_findSimpleByData(data)
+{
+var o=this
+var sub=o.sub, len=sub.length
+for (var i=0;i<len;i++)
+      {
+            var item=sub[i]
+            if (item.userData==data)
+                return item
+      }
+      return null
+}
+function TreeWidgetElem_findInName(text,matchCase,matchWholeW,next,starWith)
+{
+var o=this, name=o.name
+if(text=="" || text==null) return; //safe test
+if(!matchCase || (matchCase == null))//ignore case
+{
+name=name.toLowerCase();
+text=text.toLowerCase();
+}
+if(matchWholeW)//match word
+{
+var arrWords = name.split(" ");//to improve later
+for(var i = 0; i<arrWords.length; i++)
+{
+if(arrWords[i] == text)
+return o;
+}
+}
+else
+{
+var idx = name.indexOf(text); // search occurence
+if (starWith == true ) 
+{
+if(idx == 0) return o;
+}
+else
+{
+if(idx>-1) return o;
+}
+}
+return null
+}
+function TreeWidgetElem_filterInName(text,matchCase)
+{
+var o=this, name=o.name
+if(text=="" || text==null) return; //safe test
+var sub=o.sub, len=sub.length
+var hasChildVisible = false; //if one child is visible then we need to show the parent even if it does not match filter
+var isVisible
+for (var i=0;i<len;i++)
+{
+isVisible = sub[i].filterInName(text,matchCase);
+hasChildVisible=(hasChildVisible ||isVisible);
+}
+if(hasChildVisible || !o.filterable)
+{
+o.matchFilter=true;
+o.hide(false);
+if (hasChildVisible && !o.expanded) {
+    TreeWidget_toggleCB(o.id,true/*noTimeOut*/);   
+}
+}
+else
+{
+if(!matchCase || (matchCase == null))//ignore case
+{
+name=name.toLowerCase();
+text=text.toLowerCase();
+}
+var idx = name.indexOf(text); // search occurence
+o.matchFilter=(idx>-1);
+o.hide(idx==-1);
+}
+return o.matchFilter; //return false if the item is hidden
+}
+function TreeWidgetElem_resetFilter()
+{
+var o=this
+var sub=o.sub, len=sub.length
+for (var i=0;i<len;i++)
+sub[i].resetFilter();
+o.matchFilter=true;
+o.hide(false);
+}
+function TreeWidgetElem_findById(id)
+{
+var o=this
+if (o.id==id)
+return o
+var sub=o.sub, len=sub.length
+for (var i=0;i<len;i++)
+{
+var item=sub[i].findById(id)
+if (item!=null)
+    return item
+}
+return null
+}
+function TreeWidgetElem_hide(hidden)
+{
+var o=this
+o.init()
+if(o.layer) o.layer.style.display=hidden?"none":""
+}
+function TreeWidgetElem_isShown()
+{
+//The node is shown if its all parents are expanded
+var o=this;
+var shown=true;
+var iCpt=0;
+while (o.par!=null && iCpt<1000)
+{
+if (!o.par.expanded)
+{
+shown=false;
+break;
+}
+else
+{
+o=o.par;
+iCpt++;
+}
+}
+return shown;
+}
+function TreeWidgetElem_change(iconId, name, userData, help,iconSelId,tooltip)
+{
+var o=this,treeView=o.treeView
+if (iconId!=null) o.iconId=iconId
+if (name!=null) o.name=name
+o.userData=userData
+if (help!=null) o.help=help
+o.iconSelId=(iconSelId!=null)?iconSelId:o.iconId
+if (tooltip!=null) o.tooltip=tooltip
+o.init()
+if (o.domElem)
+o.domElem.innerHTML=(o.isHTML?o.name:convStr(o.name))
+if (o.icnLyr)
+{
+changeOffset(o.icnLyr,
+             treeView.iconOrientVertical?0:o.treeView.iconW*(o.expanded?o.iconSelId:o.iconId),
+             treeView.iconOrientVertical?o.treeView.iconH*(o.expanded?o.iconSelId:o.iconId):0)
+}
+}
+function treeInitDropFunc(lyr,elemId)
+{
+var e=_TreeWidgetElemInstances[elemId]
+if (lyr.ondrop==null)// lyr
+{
+e.treeView.dragDrop.attachCallbacks(lyr,true)
+lyr.domEltID=elemId
+}
+}
+function TreeWidget_toggleCB(elemId,noTimeOut)
+{
+var elem=_TreeWidgetElemInstances[elemId]
+// if no children the + disappear
+if (elem.sub.length==0) {
+    if(elem.plusLyr)
+elem.plusLyr.style.visibility='hidden'
+return
+}
+elem.expanded=!elem.expanded
+elem.setAriaExpanded(elem.expanded); //508
+elem.init();
+if (noTimeOut) {
+dispIcn(elemId);
+} else {
+setTimeout(elem.treeView.dispIcnFuncName+'('+elemId+')',1)
+}
+var tree=elem.treeView
+if (elem.expanded&&tree.expandCB)
+tree.expandCB(elem.userData)
+if (!elem.expanded&&tree.collapseCB)
+tree.collapseCB(elem.userData)
+if(tree.userData.unxDisplayMode && elem.sub){
+var arrSub= elem.sub;
+    var len = arrSub.length;
+    for (var i=0; i<len; i++)
+    {
+    arrSub[i].init();
+}
+    tree.rebuildHTML();
+}
+}
+function TreeWidgetElem_updateIcons()
+{
+    var o=this;
+    o.plusLyr.src=_skin+'../'+(o.expanded?'min':'plus')+(_mac?'mac':'')+'.gif'
+o.plusLyr.title=o.expanded?_expandedLab:_collapsedLab
+if(o.icnLyr)
+{    
+    changeOffset(o.icnLyr,
+o.treeView.iconOrientVertical?0:o.treeView.iconW*(o.expanded?o.iconSelId:o.iconId),
+o.treeView.iconOrientVertical?o.treeView.iconH*(o.expanded?o.iconSelId:o.iconId):0)
+}
+}
+function dispIcn(eId)
+{
+var e=_TreeWidgetElemInstances[eId]
+with (e)
+{
+        if (toggleLyr) 
+        {
+if (expanded&&!generated)
+{
+generated=true;
+var a=new Array,i=0,len=sub.length,newInd=nodeIndent+_trIndent
+for (var j=0;j<len;j++) a[i++]=sub[j].getHTML(newInd,j==0);
+toggleLyr.innerHTML=a.join('');
+}
+toggleLyr.style.display=expanded?'block':'none'
+updateIcons();
+}
+}
+}
+function TreeWidgetElem_add(elem)
+{
+with (this)
+{
+elem.treeView=treeView;
+elem.par=this;
+sub[sub.length]=elem;
+}
+return elem
+}
+function TreeWidgetElem_getHiddenParent()
+{
+var par=this.par
+if (par==null) return null
+if (!par.expanded)
+return par
+return
+par.getHiddenParent()
+}
+function TreeWidgetElem_getNextPrev(delta, pos)
+{
+with (this)
+{
+if (elemPos==-1) treeView.buildElems()
+var newPos=elemPos+delta
+if ((newPos>=0)&&(newPos<treeView.elems.length))
+{
+var ret=treeView.elems[newPos]
+var hidden=ret.getHiddenParent()
+if (hidden!=null) return ret.getNextPrev(delta)
+else return ret
+}
+else return null;
+}
+}
+function TreeWidgetElem_scroll(elemLyr,treeLyr)
+{
+var scrollH = Math.max(0,treeLyr.offsetHeight-20), scrollY = treeLyr.scrollTop
+var elPos = getPos(elemLyr,treeLyr)
+var y = elPos.offsetTop, h = elemLyr.offsetHeight
+if ((y-scrollY+h) > scrollH ) {
+treeLyr.scrollTop=y+h-scrollH
+}
+if ((y-scrollY) < 0) {
+treeLyr.scrollTop= y
+}
+}
+function TreeWidgetElem_unselect()
+{
+var o=this
+with(o)
+{
+init()
+if (domElem) {
+domElem.className=o.nonselectedClass
+}
+treeView.selId=-1
+if(treeView.multiSelection)
+{
+var idx = arrayFind(treeView,'selIds',id)
+if(idx>-1)
+{
+//update array selIds
+arrayRemove(treeView,'selIds',idx);
+//update _BOselIds
+treeView.layer._BOselIds=""
+var len = treeView.selIds.length;
+for(var i=0;i<len;i++)
+{
+if(treeView.layer._BOselIds == "")
+treeView.layer._BOselIds=""+treeView.selIds[i];
+else
+treeView.layer._BOselIds+=";"+treeView.selIds[i];
+}
+}
+}
+}
+}
+function TreeWidgetElem_expandParent()
+{
+// If some parents are collapsed, expand them before
+var coll=new Array
+var par=this.par
+while (par)
+{
+if (!par.expanded)
+coll[coll.length]=par
+par=par.par
+}
+// Expand parent nodes if needed
+var cLen=coll.length
+if (cLen>0)
+{
+    for (var i=cLen-1;i>=0;i--)
+    {
+    TreeWidget_toggleCB(coll[i].id,true)//direct construction of the HTML of children
+    }
+}
+return cLen;
+}
+function TreeWidgetElem_select(setFocus,ev,noSendClickCB,isFromKeybArrow)
+{
+if (this.expandParent()>0)
+    this.select(setFocus,ev,noSendClickCB,isFromKeybArrow);
+//multi selection treeview
+if(this.treeView.multiSelection)
+{ 
+TreeWidgetElem_multiSelect(this,setFocus,ev,noSendClickCB,isFromKeybArrow);
+return;
+}
+//mono selection treeview
+if (noSendClickCB==null)
+noSendClickCB=false
+with (this)
+{
+if (treeView.selId!=id)
+{
+if (treeView.selId>=0)
+{
+var prev=_TreeWidgetElemInstances[treeView.selId]
+prev.init()
+if (prev.domElem) {
+prev.domElem.className=prev.nonselectedClass
+}
+//window.status=prev.nonselectedClass
+}
+treeView.selId=id;
+init()
+treeView.layer._BOselId=id
+var de=domElem
+if (de == null) return
+//highlight path
+if(treeView.hlPath)
+treeView.highlightPath(id);
+else
+de.className=selectedClass
+//window.status=prev.selectedClass
+/*if (setFocus) {
+safeSetFocus(de)
+}*/
+TreeWidgetElem_scroll(de,treeView.layer)
+//if ((treeView.clickCB)&&(!noSendClickCB)) treeView.clickCB(userData)
+//window.status= "Normal Elem_select=" + id
+}
+treeView.setFocusable(this, setFocus)
+if ((treeView.clickCB)&&(!noSendClickCB)) treeView.clickCB(userData,isFromKeybArrow!=null?isFromKeybArrow:false)
+}
+// stop propagating event to the other link
+/*if (ev)
+eventCancelBubble(ev)*/ //DOESN'T WORK WITH NETSCAPE
+}
+_startShift=null;
+function TreeWidgetElem_multiSelect(o,setFocus,ev,noSendClickCB,isFromKeybArrow)
+{
+if (noSendClickCB==null)
+noSendClickCB=false
+with (o) // o instanceof TreeWidgetElem
+{
+init();
+var de=domElem
+if (de == null) return
+//reset highlight items
+if(treeView.hlPath) treeView.unhlPath();
+if(ev == null)
+{
+var idx = arrayFind(treeView,'selIds',id);
+if(idx == -1)//not yet selected
+{
+//add item to selected item list
+treeView.selIds[treeView.selIds.length]=id;
+if(treeView.layer._BOselIds == "")
+treeView.layer._BOselIds=""+id;
+else
+treeView.layer._BOselIds+=";"+id;
+de.className=selectedClass
+}
+//need to reset here ?
+_startShift=null;
+}
+else //from event, use ctl and shift to define the action to do
+{
+var idx = arrayFind(treeView,'selIds',id);
+var ctrl=eventIsCtrl(ev)
+var shift=_ie?_curWin.event.shiftKey:ev.shiftKey
+var typeEvt=_ie?_curWin.event.type:ev.type
+var leftBtn = eventIsLeftButton(ev,_curWin);
+if(ctrl && !shift) //select or deselect
+{
+if(idx == -1)//select item
+{   
+// don't select if there's a grayed item
+//if (o.isGrayStyle()) return
+treeView.selIds[treeView.selIds.length]=id;
+if(treeView.layer._BOselIds == "")
+treeView.layer._BOselIds=""+id;
+else
+treeView.layer._BOselIds+=";"+id;
+de.className=selectedClass
+}
+else //deselect item
+{
+unselect();
+}
+_startShift= o;
+}
+if(shift) //select block items
+{
+var lastSelId=-1,lastSel=null;
+if(treeView.selIds.length>0)
+{
+lastSelId = treeView.selIds[treeView.selIds.length-1];
+lastSel = _TreeWidgetElemInstances[lastSelId];
+if(_startShift == null)
+_startShift = lastSel;
+if(!ctrl) //do not clear selection if we want to continue shift selection after a ctrl action
+treeView.unselect();
+TreeWidgetElem_multiSelectShift(_startShift.id,id);
+}
+else //select only this item
+{
+treeView.unselect();
+treeView.selIds[0]=id;
+treeView.layer._BOselIds=""+id;
+if(treeView.hlPath)
+treeView.highlightPath(id);
+else
+de.className=selectedClass;
+_startShift=null;
+}
+}
+if(!ctrl && !shift) //simple click
+{
+//be carefull, sometimes we want to drag and drop so don't deselecttreeview
+var idx = arrayFind(treeView,'selIds',id);
+//if(_ie &&typeEvt=="mousedown" && idx>-1)
+if(typeEvt=="mousedown" && idx>-1)
+{
+window._treeWClickedW=o
+de.onmouseup=TreeWidgetElem_mouseUp
+}
+else
+{
+//allow contextual menu on multiselection => do not unselect other items
+//if right click on unselected item then unselect others otherwise, keep everyone selected
+if(leftBtn || idx==-1)
+{
+treeView.unselect();
+treeView.selIds[treeView.selIds.length]=id;
+treeView.layer._BOselIds=""+id;
+if(treeView.hlPath)
+treeView.highlightPath(id);
+else
+de.className=selectedClass
+}
+_startShift=null;
+}
+}
+}
+/*if (setFocus) {
+safeSetFocus(de)
+}*/
+treeView.setFocusable(o, true)
+TreeWidgetElem_scroll(de,treeView.layer)
+if ((treeView.clickCB)&&(!noSendClickCB)) treeView.clickCB(userData,isFromKeybArrow!=null?isFromKeybArrow:false)
+}
+}
+function TreeWidgetElem_multiSelectCtrl()
+{
+}
+function TreeWidgetElem_multiSelectShift(id1,id2)
+{
+var elem1=_TreeWidgetElemInstances[id1];
+var elem2=_TreeWidgetElemInstances[id2];
+var treeView = elem1?elem1.treeView:null;
+if(treeView == null) return;//safe test
+if (elem1.elemPos==-1 || elem2.elemPos==-1 ) treeView.buildElems()
+var startPos= (elem1.elemPos<elem2.elemPos)?elem1.elemPos:elem2.elemPos
+var endPos= (elem1.elemPos>elem2.elemPos)?elem1.elemPos:elem2.elemPos
+if ((startPos>=0)&&(endPos<treeView.elems.length))
+{
+for(var j=startPos;j<=endPos;j++)
+{
+var elem = treeView.elems[j];
+// don't select if there's a grayed item
+//if (elem.isGrayStyle()) return
+var hidden=elem.getHiddenParent();//not visible item
+if((hidden == null)&&(arrayFind(treeView,'selIds',elem.id) == -1)&& elem.isShown())//safe test
+{
+//add to selected items array
+treeView.selIds[treeView.selIds.length]=elem.id;
+if(treeView.layer._BOselIds == "")
+treeView.layer._BOselIds=""+elem.id;
+else
+treeView.layer._BOselIds+=";"+elem.id;
+elem.init();
+if(elem.domElem)
+elem.domElem.className=elem.selectedClass;
+}
+}
+}
+}
+function TreeWidget_clickCB(elemId,isIcon,ev,isDown)
+{
+stopEvent(ev)
+var e=_TreeWidgetElemInstances[elemId]
+if (e==null)
+return
+if (e.treeView.layer == null)
+return
+e.init()
+if (isIcon&&(e.sub.length>0)) TreeWidget_toggleCB(elemId)
+else if (isIcon&&e.isIncomplete&&e.querycompleteCB)
+e.querycompleteCB(true)
+else e.select(null,ev)
+if (_curDoc.onmousedown)
+_curDoc.onmousedown(ev)
+if (isDown&&_ie)
+{
+window._treeWClickedW=e
+e.init()
+e.clicked=true
+e.initialX=eventGetX(ev)
+e.initialY=eventGetY(ev)
+if (_ie && e.domElem)
+e.domElem.onmousemove=TreeWidgetElem_triggerDD
+}
+if (_moz&&e.domElem)
+{
+window._treeWClickedW=e
+setTimeout("_TreeWidgetElemInstances["+elemId+"].domElem.focus()",1)
+}
+return false
+}
+function handleTreeDblClickCB(elemId,ev, onText)
+{
+    eventCancelBubble(ev)
+var e=_TreeWidgetElemInstances[elemId],treeView=e.treeView;
+    if (!onText || treeView.toggleOnDblClickTxt)
+    {
+    if (e.sub.length>0) 
+        TreeWidget_toggleCB(elemId)
+    else 
+    if (e.isIncomplete && e.querycompleteCB)
+    {
+        if (treeView.doubleClickCB) 
+    {
+        if (_webKit)
+        setTimeout("delayedTreeDblClickCB("+elemId+")",1)
+        else
+        treeView.doubleClickCB(e.userData);
+            }
+    e.querycompleteCB(true);
+    return
+    }
+    }
+if (e.isEditable)
+e.showEditInput(true)
+else
+{
+if (treeView.doubleClickCB) 
+{
+    if (_webKit)
+    setTimeout("delayedTreeDblClickCB("+elemId+")",1)
+    else
+    treeView.doubleClickCB(e.userData);
+        }
+}
+}
+function treeDblClickCB(elemId,ev)
+{
+    handleTreeDblClickCB(elemId,ev, false);
+}
+function treeDblClickTextCB(elemId,ev)
+{
+    handleTreeDblClickCB(elemId,ev, true);       
+}
+function delayedTreeDblClickCB(elemId)
+{
+var e=_TreeWidgetElemInstances[elemId],treeView=e.treeView;
+treeView.doubleClickCB(e.userData);
+}
+function TreeWidgetElem_UpdateTooltip(newId,forceSelect)
+{
+var elem=_TreeWidgetElemInstances[newId];
+if(elem)
+{
+elem.init();
+if(elem.domElem != null)
+elem.domElem.title = elem.getTooltip(forceSelect);
+}
+}
+function TreeWidgetElem_getDragTooltip()
+{
+var o=this
+if (o.obj && o.obj.getDragTooltip) return o.obj.getDragTooltip()
+return o.name
+}
+function TreeWidgetElem_getTooltip(forceSelect)
+{
+var tooltip='',o=this
+var itemSelected=false;
+//multi selection
+if(o.treeView.multiSelection)
+{
+itemSelected = (arrayFind(o.treeView,'selIds',o.id) > -1);
+}
+else//mono selection
+{
+itemSelected = (o.treeView.selId == o.id);
+}
+//selection
+if (forceSelect || itemSelected)
+tooltip = _selectedLab + ' ';
+/*
+if(o.tooltip)
+tooltip+=o.tooltip+' ';
+*/
+//name
+tooltip+=o.name;
+//expanded or collapsed
+if((o.sub.length > 0) || (o.isIncomplete))
+{
+if(o.expanded)
+tooltip += ' '+ _expandedLab + ' ';
+else
+tooltip += ' '+ _collapsedLab + ' ';
+}
+//case prompt and context selection
+if(o.advTooltip)
+{
+tooltip+=' ('+o.advTooltip+')'
+}
+/*
+if(o.help)
+tooltip +=' - ' + o.help;
+*/
+return tooltip;
+}
+function treeFCCB(e,elemId,focus,ev)
+{
+var elem =_TreeWidgetElemInstances[elemId];
+var treeView=elem.treeView;
+if ((elem==null) || treeView.mouseOverTooltip)
+return
+if(focus)
+{
+if (treeView.customTooltip != null)
+{
+elem.init()
+var tooltip;
+if (treeView.getTooltipCB)
+{
+    tooltip=treeView.getTooltipCB(elem);
+}
+else
+{
+    tooltip=elem.tooltip?elem.tooltip:{title:elem.name, text:(elem.desc?elem.desc:"")};
+        if(tooltip.title==null)
+        tooltip={title:elem.name, text:tooltip}; 
+}
+    treeView.customTooltip.showCustomTooltip(ev,treeView, tooltip, elem.id);
+}
+else
+e.title = elem.getTooltip();
+}
+else
+{
+if (treeView.customTooltip != null)
+treeView.customTooltip.hideCustomTooltip() 
+else 
+e.title = ""; 
+}
+}
+function _tmoc(e,elemId,over,ev)
+{
+//e.style.cursor=_hand
+var elem =_TreeWidgetElemInstances[elemId];
+if(elem==null)
+return
+    var treeView=elem.treeView;
+//1: normal tooltip - mouse over callback
+if(treeView.mouseOverTooltip)
+{
+if(over)
+{
+if (treeView.customTooltip != null)
+{
+elem.init()
+var tooltip;
+tooltip=elem.tooltip?elem.tooltip:{title:elem.name, text:(elem.desc?elem.desc:"")};
+            if(tooltip.title==null)
+            tooltip={title:elem.name, text:tooltip};
+            var tooltipCB;
+    if (treeView.getTooltipCB)
+    {
+    tooltipCB=treeView.getTooltipCB(elem);
+    }
+    if (tooltipCB)
+    tooltip = tooltipCB;
+    treeView.customTooltip.showCustomTooltip(ev,treeView, tooltip, elem.id)
+}
+else
+e.title = elem.tooltip?elem.tooltip:''
+}
+else
+{
+if (treeView.customTooltip != null)
+treeView.customTooltip.hideCustomTooltip()
+else
+e.title =''
+}
+}
+//we can also do the mouseover action, it does not interfere with the tooltip action
+//asked by Bruno Rassamy for Mediance
+if(treeView.mouseOverCB)
+treeView.mouseOverCB(elem)
+}
+function treeContextMenuCB(elemId,ev)
+{
+var elem =_TreeWidgetElemInstances[elemId];
+if(elem)
+{
+elem.treeView.rightClickMenuCB(elemId, _ie?_curWin.event:ev)
+//hide customTooltip if necessary
+if (elem.treeView.customTooltip != null)
+elem.treeView.customTooltip.hideCustomTooltip()
+}
+}
+function TreeWidgetElem_isLeaf()
+{
+return (this.sub.length==0 && !this.isIncomplete);
+}
+function TreeWidgetElem_isNode()
+{
+return (!this.isLeaf());
+}
+function TreeWidgetElem_isSelected()
+{
+var o=this;
+if(o.treeView.multi)//multi selection
+{
+var idx = arrayFind(o.treeView,'selIds',o.id);
+return (idx>=0);
+}
+else
+{
+return (o.id == o.treeView.selId);
+}
+}
+function newTreeWidgetHTMLElem(iconID, name, obj, userData, help)
+{
+var o=newTreeWidgetElem(iconID, name, userData, help);
+o.obj=obj
+o.getHTML=TreeWidgetHTMLElem_getHTML;
+o.selectedClass='filterBoxSelected';
+o.nonselectedClass='filterBox';
+o.feedbackDDClass='filterBoxFeedbackDD'
+o.init=TreeWidgetHTMLElem_init
+return o;
+}
+function TreeWidgetHTMLElem_init()
+{
+this.domElem=getLayer(_codeWinName+'trLstElt' + this.id)
+}
+function TreeWidgetHTMLElem_getHTML(indent,isFirst)
+{
+with (this)
+{
+len=sub.length,exp=(len>0),a=new Array,i=0
+// ADAPT00799144 : 
+var mouseDownCB='onmousedown="'+_codeWinName+'.TreeWidget_clickCB(\''+ id + '\', false, event, true);return false" '
+var contextMenu=''
+if (treeView.rightClickMenuCB != null)
+{
+contextMenu= ' oncontextmenu="' + _codeWinName + '.treeContextMenuCB(\''+ id + '\', event);return false" '
+}
+var acceptDD=''
+if ((treeView.acceptDropCB != null) && _ie)
+{
+acceptDD= ' ondragenter="' + _codeWinName + '.TreeWidget_dragOverEnterCB(this,\''+id+'\');" '
+acceptDD += ' ondragover="' + _codeWinName + '.TreeWidget_dragOverEnterCB(this,\''+id+'\');" '
+}
+var icons=icns?icns:treeView.icns
+a[i++] = '<table border="0" cellspacing="0" cellpadding="0"><tbody><tr>'
+a[i++] = '<td>' + getSpace(indent + 16, 16) + '</td>'
+a[i++] = '<td>'
+// ADAPT00799144 : 
+// Use onmousedown evt to select the element befor a RightClick
+// And stop to use onclick to don't do the same thing 2 time
+a[i++] ='<table id="'+_codeWinName+'trLstElt' + id + '" class="filterBox" ondblclick="'+_codeWinName+'.treeDblClickCB('+id+',event);if(_saf||_ie) return false" ' + contextMenu + acceptDD + mouseDownCB + ' border="0" cellspacing="0" cellpadding="0">'
+a[i++] ='<tbody><tr>'
+a[i++] ='<td width="20">'
+a[i++] ='<span style="padding:2px">'
+a[i++] =(iconId>-1?imgOffset(icons,treeView.iconW,treeView.iconH, treeView.iconW * iconId, treeView.iconH * iconId,null,null,null,'','top'):'')
+a[i++] ='</span>'
+a[i++] ='</td>'
+//seeBOFilterNode_getHTML in CommonWom.js
+//BOFilterNode_getHTML(treeView, filterID)
+a[i++] ='<td>' + obj.getHTML(treeView, userData) + '</td>'
+a[i++] ='</tr></tbody></table>'
+a[i++] = '</td></tr></tbody></table>'
+}
+return  a.join("");
+}
+function newTreeWidgetVoidElem(iconID, name, obj, userData, help)
+{
+var o=newTreeWidgetElem(iconID, name, userData, help);
+o.obj=obj
+o.getHTML=TreeWidgetVoidElem_getHTML;
+o.selectedClass='filterTextSelected';
+o.nonselectedClass='filterText';
+o.feedbackDDClass='filterTextFeedbackDD '
+o.init=TreeWidgetVoidElem_init
+return o;
+}
+function TreeWidgetVoidElem_init()
+{
+this.domElem=getLayer(_codeWinName+'trLstElt' + this.id)
+}
+function TreeWidgetVoidElem_getHTML(indent,isFirst)
+{
+return  ""
+}
+function newStaticTreeWidget(id, originalTree)
+{
+var o = newWidget(id);
+o.sub = originalTree.sub;
+return o;
+}
+function newFolderWidget(id, exp)
+{
+var o=newWidget(id)
+o.expanded= (exp)? exp : false
+o.getCross=FolderWidget_getCross
+o.getCrossWithMenuIcon=FolderWidget_getCrossWithMenuIcon 
+return o;
+}
+function FolderWidget_getCross()
+{
+//ADAPT00855241 : In Print mode, keep the same indentation when the image of tree is not displayed
+if (_printDoc)
+    return imgOffset(_skin+'../transp.gif', 1, 1, null, null, null, null, null,null,null,'top')
+//getSep(12,12)
+with(this)
+{
+return '<span style="cursor:'+_hand+'" id="icn'+id+'" '+(_moz?'onclick':'onmousedown')+'="'+_codeWinName+'.clickCrossCB('+id+'); if (_ie) return false" ondblclick="'+_codeWinName+'.clickCrossCB('+id+'); if (_ie) return false">' +
+imgOffset(_skin +(_mac?'../treemac.gif':'../tree.gif'), 13, 9, expanded?0:13, _mac?2:3, 'img'+ id, null, expanded?_expandedLab:_collapsedLab,null,null,'top') +
+'</span>'
+}
+}
+function FolderWidget_getCrossWithMenuIcon()
+{
+//ADAPT00855241 : In Print mode, keep the same indentation when the image of tree is not displayed
+if (_printDoc)
+    return imgOffset(_skin+'../transp.gif', 1, 1, null, null, null, null, null,null,null,'top')
+//getSep(12,12)
+with(this)
+{
+return '<span style="cursor:'+_hand+'" id="icn'+id+'" '+(_moz?'onclick':'onmousedown')+'="'+_codeWinName+'.clickCrossCB('+id+'); if (_ie) return false" ondblclick="'+_codeWinName+'.clickCrossCB('+id+'); if (_ie) return false">' +
+imgOffset('../../../images/main/taskPane.png', 13, 9, 0, expanded?51:60, 'img'+ id, null,null,null,null,'top') +
+'</span>'
+}
+}
+function new_TreeItemWidget(prms)
+{
+    var o=newTreeWidgetElem(Widget_param(prms, "iconId", -1), prms.name, prms.userData, prms.help, 
+                            prms.iconSelId,prms.tooltip,prms.iconAlt,prms.textClass,prms.textSelectedClass,prms.icns);
+o.getHTML=TreeItemWidget_getHTML;
+o.setInitCB=TreeItemWidget_setInitCB;
+    o.checkChildren=TreeItemWidget_checkChildren;
+    o.checkDescendants=TreeItemWidget_checkDescendants; 
+    o.checkSiblings=TreeItemWidget_checkSiblings;
+    o.checkParent=TreeItemWidget_checkParent;
+    o.checkAncestors=TreeItemWidget_checkAncestors;
+    o.updateAllOfTreeItems=TreeItemWidget_updateAllOfTreeItems;      
+    o.updateTreeItems=TreeItemWidget_updateTreeItems;
+    o.findByData=TreeItemWidget_findByData;   
+    o.finishComplete=TreeItemWidget_finishComplete;
+    o.checkDescendantsUntilLevel=function(check, level, cb)
+    {
+        var o=this;                  
+        var depth=o.getDepthFrom(0);
+        if ( depth>= level) return;
+        var sub=o.sub, len=sub.length;
+        var item;
+        for (var i=0;i<len; i++)
+        {        
+            item= sub[i];
+            var b=true;
+            if (cb)
+            {
+                b=cb(item, check);
+            }    
+            if (b)
+            {
+                item.check(check);                  
+            }                
+            item.checkDescendantsUntilLevel(check, level, cb);
+        }    
+    }
+    //all children checked:1, unchecked:0, some children checked/unchecked:2
+    o.getChildrenCheckState=function()
+    {
+        var o=this;         
+        var sub=o.sub, len=sub.length;
+        var n=0;
+        for (var i=0;i<len; i++)
+        {             
+            n+=(sub[i].isChecked())?1:0;
+            //mixture of check & uncheck
+            if ((n!=0) && (n!=(i+1))) return 2;                      
+        }
+        return (n==0)?0:((n==len)?1:2);
+    }
+    o.updateDescendantsUntilLevel=function(updateCB, prms)
+    {
+        var o=this;                                              
+        var depth=o.getDepthFrom(0);
+        if ( depth>= prms.descendantsUntilLevel) return;
+        var sub=o.sub, len=sub.length;
+        var item;
+        for (var i=0;i<len; i++)
+        {        
+            item= sub[i];
+            item.init();                                        
+            updateCB(item, prms);              
+            item.updateDescendantsUntilLevel(updateCB, prms);
+        }    
+    }
+    o.updateChildren=function(updateCB, prms)
+    {
+        var o=this;  
+        var sub=o.sub, len=sub.length;
+        for (var i=0;i<len; i++)
+        {     
+            sub[i].init();          
+            updateCB(sub[i], prms);        
+        }
+    }
+    o.updateDescendants=function(updateCB, prms)
+    {
+        var o=this;         
+        var sub=o.sub, len=sub.length;
+        for (var i=0;i<len; i++)
+        {
+            sub[i].init();               
+            updateCB(sub[i], prms);                 
+            sub[i].updateDescendants(updateCB, prms);
+        }
+    }
+    o.updateParent=function(updateCB, prms)
+    {
+        var o=this;      
+        if (o.par)    
+        {
+            updateCB(o.par, prms);                    
+        }
+    }
+    o.updateAncestors=function(updateCB, prms)
+    {
+        var o=this;      
+        while (o)
+        {            
+            o.updateParent(updateCB, prms);
+            o=o.par;
+        }
+    }
+    o.updateSiblings=function(updateCB, prms)
+    {
+        var o=this;      
+        if (o.par)           
+            o.par.updateChildren(updateCB, prms);   
+        else
+        {
+            o.updateChildren.call(o.treeView, updateCB, prms);                       
+        }            
+    }
+//internal usage
+o.initLayers=TreeItemWidget_initLayers;
+o.initCB=null;
+o.setUserUpdateTreeNodeCB=function(userUpdateTreeNodeCB)
+{
+    var o=this;
+    o.userUpdateTreeNodeCB=userUpdateTreeNodeCB;    
+}
+o.ajaxUpdater=TreeItemWidget_ajaxUpdater
+o.updateTreeNode=TreeItemWidget_updateTreeNode;
+o.isEqual=TreeItemWidget_isEqual;
+o.plusid="plus_TWe_"+o.id;
+//o.plusLyr
+o.checkid="check_TWe_"+o.id;
+//o.checkElem
+o.iconid="icon_TWe_"+o.id;
+//o.icnLyr
+o.textid="text_TWe_"+o.id
+//domElem
+o.extraHTML=null;      
+//get depth from the parent tillParentId
+//if tillParentId is null, until the root
+o.getDepthFrom=function(depth, tillParentId)
+{
+    var o=this;       
+    if (o.par)
+    {
+        //until the root
+        if (tillParentId==null)
+        {
+            depth++;
+            return o.getDepthFrom.call(o.par, depth, tillParentId);
+        }
+        else
+        if (o.par.id==tillParentId)
+        {
+            return depth;
+        }      
+    }  
+    else
+    {
+        return depth;
+    }  
+}
+// Indeterminate mode
+o.allChildrenChecked=false;
+o.allDescendantsChecked=false;
+o.indeterminateMode=false;
+o.isIndeterminate=false;
+o.setIndeterminate=TreeItemWidget_setIndeterminate;
+o.updateLayer=TreeItemWidget_updateLayer;
+return o
+}
+function TreeItemWidget_updateLayer()
+{
+    var o=this;
+    var sub=o.sub;
+    if(sub && o.indeterminateMode)
+    {
+    var len=sub.length;
+    var atLeastOneIsCheck = false
+    var allChecked = true
+    for (var i=0;i<len; i++)
+    {    
+    if(sub[i].checked||sub[i].isIndeterminate)
+    atLeastOneIsCheck = true
+    if(!sub[i].checked)
+    allChecked = false
+    }
+// BOEWEBI-19047
+// Use indeterminate state to highlight Ancestors
+if (o.setIndIfAllChecked)
+allChecked = false;
+    var isInd = atLeastOneIsCheck?(allChecked?false:true):false
+    o.setIndeterminate(isInd)
+    }
+}
+function TreeItemWidget_setIndeterminate(isInd)
+{
+var o=this
+if (o.isCheck)
+{
+o.isIndeterminate = isInd
+if (o.htmlWritten)
+{
+o.init()
+// CM 279970 2015
+if(!o.checked)
+o.checkElem.indeterminate = isInd
+}
+}
+}
+function TreeItemWidget_updateTreeNode(o, nodes) 
+{
+var l = nodes.length
+for (var i=0; i < l; i++) 
+{
+node = o.add( new_TreeItemWidget(nodes[i]))
+if (o.xtraNodeInfoCB) {
+o.xtraNodeInfoCB(node)
+}
+if (nodes[i].child) {
+node.setAjaxUpdater(o.ajaxUpdateUrl, o.ajaxParamsFn, o.xtraNodeInfoCB, o.postCB)
+}
+}
+}
+function TreeItemWidget_ajaxUpdater(userAction)
+{
+var o=this;
+if (userAction) {
+o.userAction = true
+}
+o.plusLyr.src = _skin+'../loading.gif';
+var params = o.ajaxParamsFn(o);    
+    params.widx= o.id;    
+    params.ajaxErrorCB = null;
+new Ajax.Request( o.ajaxUpdateUrl ,
+{
+    method:'post',
+    parameters: params,
+    onComplete: function(transport)
+    {
+            var response = transport.responseText || "KO";      
+            var jsObj = response.evalJSON();
+            var treeItemWidg = _TreeWidgetElemInstances[ jsObj.widx ]; 
+          if (jsObj.nodes) 
+          { 
+o.updateTreeNode(treeItemWidg, jsObj.nodes);
+} 
+else
+if (o.userUpdateTreeNodeCB)
+{
+            o.userUpdateTreeNodeCB(treeItemWidg, jsObj);             
+            }
+            treeItemWidg.finishComplete();
+            if (treeItemWidg.postCB) treeItemWidg.postCB(jsObj.xtraData)
+            //ADAPT01715119
+            if(treeItemWidg.allChildrenChecked || treeItemWidg.par.allDescendantsChecked)
+            {
+            //ADAPT01717072-ADAPT01717079
+            if(treeItemWidg.par.allDescendantsChecked)
+            treeItemWidg.checkDescendants(true);
+            else
+            treeItemWidg.checkChildren(true);
+            var treeview = treeItemWidg.par.treeView;
+            if(treeview)
+            {
+            var lovzoneinfo = treeview.par.userData.lovZoneInfo
+            if(lovzoneinfo)
+            {
+            var treelist = lovzoneinfo.treeList;
+            if(treelist && treelist.updateExpressionListForChildren)
+            treelist.updateExpressionListForChildren(treeItemWidg,true);
+            }
+            }
+            }     
+    }
+    });
+}
+function TreeItemWidget_getHTML(indent,isFirst)
+{        
+with (this)
+{
+htmlWritten=true,isRoot=(par==null)
+var len=sub.length,exp=(len>0)||isIncomplete;
+var a=new Array,i=0
+if (this.extraIndent)
+    indent+=_trIndent*extraIndent
+var mouseCB='onfocus="'+_codeWinName+'._tfcc(this,event)" onmousedown="return '+_codeWinName+'._tpt(this,event)" '
+if(treeView.mouseOverTooltip || treeView.mouseOverCB)
+mouseCB+='onmouseover="'+_codeWinName+'._tmvc(this,event)" '
+var contextMenu=''
+if (treeView.rightClickMenuCB != null)
+{
+contextMenu= ' oncontextmenu="' + _codeWinName + '.treeContextMenuCB(\''+ id + '\', event);return false" '
+}
+var acceptDD=''
+if ((treeView.acceptDropCB != null) && _ie)
+{
+acceptDD= ' ondragenter="' + _codeWinName + '.TreeWidget_dragOverEnterCB(this,\''+id+'\');" '
+acceptDD += ' ondragover="' + _codeWinName + '.TreeWidget_dragOverEnterCB(this,\''+id+'\');" '
+}
+//search in tree
+var styVisible="display:"+(matchFilter?"":"none")
+// begin container
+a[i++]='<div id="'+(_codeWinName+treeView.id+'TWe_'+id)+'"'+contextMenu+' class="trElt"  style="'+styVisible+'">'
+        a[i++] = '<table cellpadding="0" cellspacing="0" border="0"><tbody><tr>'
+var mouseDown='onmousedown="'+_codeWinName+'._tpl(this,event)" ' //+ -  icon
+var mouseDown2='onmousedown="'+_codeWinName+'._tpt(this,event)" '//kind icon
+//plus/minus sign
+if (exp)
+{         
+    a[i++]='<td><img id="'+(_codeWinName+treeView.id+plusid)+'" '+mouseDown+' class="trPlus" src="'+_skin+'../'+(expanded?'min':'plus')+(_mac?'mac':'')+'.gif"/></td>' 
+}else //ADAPT01692844
+a[i++]='<td><div class="trPlus">&nbsp;</div></td>'
+//check
+if (isCheck)
+{
+    a[i++]='<td valign="bottom"><input id="'+(_codeWinName+treeView.id+checkid)+'" type=checkbox tabindex="-1" class="treeCheck" onclick="'+_codeWinName+'.TreeWidgetElem_checkCB(this,\''+id+'\')" '+(checked?"checked":"")+'></td>'
+}
+//icon
+    var icons=icns?icns:treeView.icns
+    if (iconId>-1)
+    {      
+        a[i++]='<td class="trPlusIcon" valign="middle" '+mouseDown2+'>';
+var dx=treeView.iconOrientVertical?0:treeView.iconW*(expanded?iconSelId:iconId);
+var dy=treeView.iconOrientVertical?treeView.iconH*(expanded?iconSelId:iconId):0;
+a[i++]=imgOffset(icons, 16,16, dx, dy, (_codeWinName+treeView.id+iconid));
+a[i++]='</td>'
+        }
+    //text                     
+       if (treeView.hasExtraTextStyle)
+       {   
+           a[i++]='<td id="'+(_codeWinName+treeView.id+textid)+'" valign="middle" '+mouseCB+' '+acceptDD+' class='+nonselectedClass+'>'
+            if (treeView.getTextSegmentHTMLCB)
+            {
+                var k=0;                
+                var segmentHtml=null;
+                do {
+                    segmentHtml=treeView.getTextSegmentHTMLCB(this, k++);
+                    if (segmentHtml)
+                    {
+                        a[i++]=segmentHtml;
+                    }
+                } while (segmentHtml!=null);                
+            }
+            else
+            {
+                a[i++]='<span class="wsNoWrap">';                
+                a[i++]=(isHTML?name:convStr(name));                
+                a[i++]='</span>';                               
+            }                        
+       }
+       else
+       {
+           a[i++]='<td  valign="middle" '+mouseCB+' '+acceptDD+'>'
+           a[i++]='<nobr id="'+(_codeWinName+treeView.id+textid)+'" class='+nonselectedClass+'>'+(isHTML?name:convStr(name))+'</nobr>';
+       }           
+       a[i++]='</td>';
+    //extra content if there is
+    if (extraHTML)
+{   
+    a[i++] = '<td>'+extraHTML+'</td>'    
+}
+a[i++] ='</tr></tbody></table>'    
+a[i++]='</div>'
+// end container
+// Sub tree container
+if (exp) a[i++]='<div id="'+toggleid+'" style="margin-'+(_rtl ? 'right' : 'left')+':18px;display:'+(expanded?'':'none')+'">'
+// Generate child HTML if needed
+if (expanded)
+{
+generated=true
+for (var j=0;j<len;j++) a[i++]=sub[j].getHTML(0,j==0);    
+}
+if (exp)
+{
+nodeIndent=indent
+a[i++]="</div>"
+}
+/*
+debuggingLogger("name="+name,700,50,250,400);
+    */
+}
+return a.join("");        
+}
+function TreeItemWidget_setInitCB(cb)
+{
+    this.initCB=cb
+}
+function TreeItemWidget_initLayers()
+{  
+    var o=this;  
+o.plusLyr=getLayer(_codeWinName+o.treeView.id+o.plusid)
+o.checkElem=o.isCheck?getLayer(_codeWinName+o.treeView.id+o.checkid):null
+o.icnLyr=(o.iconId>-1)?getLayer(_codeWinName+o.treeView.id+o.iconid):null
+o.domElem=getLayer(_codeWinName+o.treeView.id+o.textid);
+o.toggleLyr=getLayer(o.toggleid);
+if (o.initCB)
+    o.initCB();
+}
+function TreeItemWidget_finishComplete()
+{
+    var o=this;
+    o.isIncomplete=false
+TreeWidget_toggleCB(o.id, true)
+o.treeView.buildElems()
+}
+function TreeItemWidget_checkChildren(check, cb)
+{
+    var o=this;  
+    var sub=o.sub, len=sub.length;
+    for (var i=0;i<len; i++)
+    {               
+        var b=true;
+        var item=sub[i];
+        if (cb)
+        {
+            b=cb(item, check);
+        }
+        if (b)
+        {
+            item.check(check);       
+        }            
+    }
+o.allChildrenChecked=check;
+}
+function TreeItemWidget_checkDescendants(check, cb)
+{
+    var o=this;         
+    var sub=o.sub, len=sub.length;
+    for (var i=0;i<len; i++)
+    {       
+        var item=sub[i];   
+        var b=true;
+        if (cb)
+        {
+            b=cb(item, check);
+        }
+        if (b)
+        {   
+            item.check(check);                  
+            item.checkDescendants(check, cb);
+        }
+    }
+o.allDescendantsChecked=check;
+}
+function TreeItemWidget_checkSiblings(check, cb)
+{
+    var o=this;      
+    if (o.par)           
+        o.par.checkChildren(check, cb);   
+    else
+    {
+        o.checkChildren.call(o.treeView, check, cb);                       
+    }            
+}
+function TreeItemWidget_checkParent(check, cb)
+{
+    var o=this;      
+    if (o.par)    
+    {
+        var b=true;
+        var par=o.par;
+        if (cb)
+        {
+            b=cb(par, check);
+        }
+        if (b)
+        {
+            par.check(check);    
+        }            
+    }
+}
+function TreeItemWidget_checkAncestors(check, cb)
+{
+    var o=this;      
+    while (o)
+    {
+        o.checkParent(check, cb);
+        o=o.par;
+    }
+}
+function TreeItemWidget_updateAllOfTreeItems(updateCB, prms)
+{
+    var o=this;   
+    TreeItemWidget_updateTreeItems.call(this.treeView, updateCB, prms);    
+}
+function TreeItemWidget_updateTreeItems(updateCB, prms)
+{
+    var o=this;    
+    var sub=o.sub, len=sub.length, treeitem;    
+    for (var i=0;i<len; i++)
+    {
+        treeitem=sub[i];
+        treeitem.init();        
+        updateCB(treeitem, prms); 
+        if (treeitem.updateTreeItems)
+        {
+            treeitem.updateTreeItems(updateCB, prms);      
+        }            
+    }
+}
+function TreeItemWidget_isEqual(lookFor, v2)
+{
+    var o=this;
+    var found=false;
+    if (o.treeView.isEqualCB)
+    {
+        found=o.treeView.isEqualCB(lookFor, v2);
+    }
+    else
+    found=(lookFor==v2)?true:false;
+    return found;    
+}
+function TreeItemWidget_findByData(data)
+{
+var o=this
+if (o.isEqual(data, o.userData))
+return o;
+var sub=o.sub, len=sub.length
+for (var i=0;i<len;i++)
+{
+var item=sub[i].findByData(data)
+if (item!=null)
+    return item
+}
+return null
+}

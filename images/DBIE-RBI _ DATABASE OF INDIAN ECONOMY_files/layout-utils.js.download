@@ -1,0 +1,184 @@
+/*
+©2010 - 2013 SAP AG or an SAP affiliate company.  All rights reserved.
+ 
+SAP and other SAP products and services mentioned herein as well as their respective logos are trademarks or registered trademarks of SAP AG in Germany and other countries.  Please see http://www.sap.com/corporate-en/legal/copyright/index.epx#trademark for additional trademark information and notices.
+*/
+
+/**
+ * @method createLayout
+ * @param {String/HTMLElement} parent The parent element the Layout is to be attached to
+ * @param {Object} layoutConfig The config for the Layout that you want to add, including the following:
+ *                 top: The top positioning of the layout relative to the viewport
+ *                 docId: id of the layout, usually composite of "<actionId>-<objectId>-<currentDateTime>"
+ *                 allowRightPanel: Whether this layout can have a right panel
+ *                 ttOpenRightPanel: Tooltip for the button to open the Right Panel
+ *                 ttCloseRightPanel: Tooltip for the button to close the Right Panel
+ *                 customCenterIframeId: (Optional) id and name attribute of the center iframe. This is for backward compatibility of OpenDoc where its viewer frame has had a hard-coded name
+ * @param {String} centerIframeURL The initial URL for the iframe embedded in the center unit
+ * @param {Function} showLoadingStatusFunc (Optional) The function to call to show the loading spinner
+ * @param {Object} workspace: the workspace object in which layout is a property
+ * @description Create a layout and append it to the parent element 
+ * @return {businessobjects.webutil.layout.Layout} The Layout instance
+ */
+function createLayout(parent, layoutConfig, centerIframeURL, showLoadingStatusFunc, workspace) {
+    if (YAHOO.lang.isString(parent)) {
+        parent = YAHOO.util.Dom.get(parent);
+    }
+    if (!parent) {
+        parent = document.body;
+    }
+
+    layoutConfig.top = layoutConfig.top || 0;
+    
+    var viewportWidth = YAHOO.util.Dom.getViewportWidth();
+    var viewportHeight = YAHOO.util.Dom.getViewportHeight();
+    var height = Math.max(1, viewportHeight - layoutConfig.top);
+
+    var outerDiv = document.createElement('div');
+    outerDiv.id = "div" + layoutConfig.docId;
+    YAHOO.util.Dom.setStyle(outerDiv, 'position', 'absolute');
+    YAHOO.util.Dom.setStyle(outerDiv, 'visibility', "hidden");
+    YAHOO.util.Dom.setStyle(outerDiv, 'left', "-10000px");
+    YAHOO.util.Dom.setStyle(outerDiv, 'width', viewportWidth + 'px');
+    YAHOO.util.Dom.setStyle(outerDiv, 'height', height + 'px');
+    YAHOO.util.Dom.setStyle(outerDiv, 'top', Math.max(0, layoutConfig.top - 3) + 'px');
+    
+    parent.appendChild(outerDiv);
+    
+    var innerDiv = document.createElement('div');
+    innerDiv.id = "innerDiv" + layoutConfig.docId;
+    
+    layoutConfig.units = [{position: 'center', body: innerDiv}];
+    var layout = new businessobjects.webutil.layout.Layout(outerDiv, layoutConfig);
+    
+    // configure iframe properties
+    var newFrame = document.createElement('iframe');
+    newFrame.frameBorder = "0";
+    if (layout.get("customCenterIframeId")) {
+        // For legacy OpenDoc code. OpenDoc has been given its viewer frame a fix name of "openDocChildFrame". Changing it may break some domain team's code if they interact with the iframe
+        newFrame.id = layout.get("customCenterIframeId");
+        newFrame.name = layout.get("customCenterIframeId");
+    } else {
+        newFrame.id = "iframe" + layout.get("docId");
+    }
+    newFrame.role = "presentation";
+    newFrame.tabIndex = "-1";
+
+    if (typeof showLoadingStatusFunc == "function") {
+        showLoadingStatusFunc(newFrame);
+    }
+    
+    if (centerIframeURL) {
+        newFrame.src = centerIframeURL;
+    }
+    
+    YAHOO.util.Dom.setStyle(newFrame, 'width', viewportWidth + 'px');
+    YAHOO.util.Dom.setStyle(newFrame, 'height', height + 'px');
+    innerDiv.appendChild(newFrame);
+    
+    layout.centerIframe = newFrame;
+    layout.outerDiv = outerDiv;
+
+    layout.set('width', viewportWidth);
+    layout.set('height', height);
+    
+    layout.on('resize', onResizeLayout, layout, true);
+    
+    // assigne layout back to workpsace before render(); otherwise onResize() event will be fired leading to null pointer exception
+    if (workspace && workspace.layout) {
+        workspace.layout = layout;
+    }
+    
+    layout.render();
+
+    // show the new layout
+    YAHOO.util.Dom.setStyle(layout.outerDiv, "visibility", "visible");
+    YAHOO.util.Dom.setStyle(layout.outerDiv, "left", "0px");
+
+    return layout;
+}
+
+/**
+ * @method resizeLayoutToViewport Helper to resize the layout to occupy the entire viewport, except for the top banner area defined by the layout's Config.top
+ * @param {businessobjects.webutil.layout.Layout} The layout to resize
+ */
+function resizeLayoutToViewport(layout) {
+    var viewportHeight = YAHOO.util.Dom.getViewportHeight();
+    var viewportWidth = YAHOO.util.Dom.getViewportWidth();
+	
+	   if (navigator.appName == 'Microsoft Internet Explorer' && layout=='toBeDefined'){
+	       return;
+        }
+
+    var outerDivId = layout.outerDiv.id;
+
+    if (YAHOO.env.ua.ie < 10) {
+        // hack for IE to do layout resize, must hide the layout, manipulate it, then show it again
+        YAHOO.util.Dom.setStyle(outerDivId, 'display', 'none');
+    }
+
+    var height = Math.max(1, viewportHeight - layout.get("top"));
+    // update the outer panel dimensions
+    YAHOO.util.Dom.setStyle(outerDivId, 'height', height + "px");
+    YAHOO.util.Dom.setStyle(outerDivId, 'width', viewportWidth + "px");
+
+    // update the layout dimensions and resize it
+    layout.set('height', height);
+    layout.set('width', viewportWidth);
+
+    if (YAHOO.env.ua.ie < 10) {
+        YAHOO.util.Dom.setStyle(outerDivId, 'display', 'block');
+    }
+    
+    layout.resize();
+}
+
+/**
+ * onResize Event handler of businessobjects.webutil.layout.Layout, to adjust the elements (innerDiv, iframe, right-unit, etc) within the layout 
+ * @param eventArgs
+ */
+function onResizeLayout(eventArgs) {
+    
+    var layout = eventArgs.target;
+    
+    var viewportHeight = YAHOO.util.Dom.getViewportHeight();
+
+    var innerDiv = YAHOO.util.Dom.get("innerDiv" + layout.get("docId"));
+    var iframe = layout.centerIframe;
+
+    // adjust element heights
+    var height = Math.max(1, viewportHeight - layout.get("top"));
+    YAHOO.util.Dom.setStyle(innerDiv, 'height', height + "px");
+    YAHOO.util.Dom.setStyle(iframe, 'height', height + "px");
+
+    if (layout.getUnitByPosition) {
+        var right = layout.getUnitByPosition('right');
+        if (right) {
+            var centerW;
+            if (businessobjects.core.isRtl()) {
+                centerW = eventArgs.sizes.doc.w - eventArgs.sizes.right.w;
+            } else {
+                centerW = eventArgs.sizes.right.l;
+            }
+            YAHOO.util.Dom.setStyle(innerDiv, 'width', centerW + "px");
+            YAHOO.util.Dom.setStyle(iframe, 'width', centerW + "px");
+            
+            // get the height of right unit header
+            // resize the attached Right Panel if needed
+            var iframeID = "iframeRightUnit" + layout.get("docId");
+            var rightFrame = YAHOO.util.Dom.get(iframeID);
+            if (rightFrame) {
+                var layoutHdHeight = right.header.clientHeight;
+                YAHOO.util.Dom.setStyle(rightFrame, 'height', Math.max(1, viewportHeight - layout.get("top") - layoutHdHeight) + "px");
+            }
+            return;
+        }
+    }
+
+    var width = YAHOO.util.Dom.getViewportWidth();
+    YAHOO.util.Dom.setStyle(innerDiv, 'width', width + "px");
+    if (layout.get("allowRightPanel") && layout.needsResizeForEmbeddedPlugin) {
+        width -= 14;
+    }
+    YAHOO.util.Dom.setStyle(iframe, 'width', width + "px");
+}

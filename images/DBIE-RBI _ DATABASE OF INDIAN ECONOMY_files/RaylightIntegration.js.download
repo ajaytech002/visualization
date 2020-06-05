@@ -1,0 +1,1356 @@
+/*
+=============================================================
+WebIntelligence(r) Report Panel
+Copyright(c) 2001-2005 Business Objects S.A.
+All rights reserved
+
+Use and support of this software is governed by the terms
+and conditions of the software license agreement and support
+policy of Business Objects S.A. and/or its subsidiaries. 
+The Business Objects products and technology are protected
+by the US patent number 5,555,403 and 6,247,008
+
+=============================================================
+*/function raylight_getBase()
+{
+var raylightRoot = raylight_getRoot();
+raylightRoot += '/documents/'+ DS.strDocID +'/occurrences/'+ DS.raylightDocOccurrenceID;
+return raylightRoot;
+}
+function raylight_getRoot()
+{
+var raylightRoot;
+var iPos = _root.indexOf('AnalyticalReporting');
+if (iPos >= 0) {
+raylightRoot = _root.substring(0, iPos) + 'raylight/sdk/raylight/v1';
+}
+return raylightRoot;
+}
+function hasParam(url)
+{
+return (url.match(/[?]/g) != null) ? true : false; 
+}
+function raylight_addIdToUrl(url)
+{
+var random = 'random=' + new Date().getTime();
+url += hasParam(url) ? '&' + random : '?' + random;
+return url;
+}
+function raylight_processRequest(xmlhttp, method, url, requestBody, acceptContent, contentType, isAsync, callback)
+{
+xmlhttp.onreadystatechange = callback;
+url = raylight_addIdToUrl(url);
+xmlhttp.open(method, url, isAsync);
+xmlhttp.setRequestHeader('x-sap-logontoken', DS.raylightSessionID);
+if (acceptContent != null) {
+xmlhttp.setRequestHeader('Accept', acceptContent);
+} else {
+xmlhttp.setRequestHeader('Accept', 'application/json');
+}
+if (contentType != null) {
+xmlhttp.setRequestHeader('Content-Type', contentType);
+}
+else if (method == 'POST' || method == 'PUT') {
+xmlhttp.setRequestHeader('Content-Type', 'application/json');
+}
+var p = null;
+if (requestBody != null)
+{
+if (contentType != null && contentType != 'application/json') {
+p = requestBody;
+}
+else
+{
+var arrayFunct;
+if (window.Prototype) 
+{
+arrayFunct = Array.prototype.toJSON;
+delete Array.prototype.toJSON;
+}
+p = JSON.stringify(requestBody);
+if (arrayFunct) 
+{
+Array.prototype.toJSON = arrayFunct;
+}
+}
+}
+xmlhttp.send(p);
+}
+function raylight_sendRequest(method, url, requestBody, acceptContent, contentType, args)
+{
+var cb = raylight_getAsyncCallback(args);
+var isAsync = (cb != null);
+var response = null;
+var xmlhttp = new XMLHttpRequest();
+raylight_processRequest(xmlhttp, method, url, requestBody, acceptContent, contentType, isAsync, function()
+{
+if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+if ( (xmlhttp.responseText != null && xmlhttp.responseText != '') || xmlhttp.responseXML != null ) {
+switch (acceptContent) {
+case 'text/css':
+case 'text/plain':
+case 'text/html':
+response = xmlhttp.responseText;
+break;
+case 'text/xml':
+var xmlDoc = xmlhttp.responseXML;
+if (xmlDoc.xml) {
+response = xmlDoc.xml;
+}
+else {
+response = new XMLSerializer().serializeToString(xmlDoc);
+}
+break;
+default:
+response = JSON.parse(xmlhttp.responseText) ;
+}
+if (cb != null) cb(response);
+}
+} 
+else if (xmlhttp.readyState == 4 && xmlhttp.status != 200) 
+{
+try 
+{
+response = JSON.parse(xmlhttp.responseText);
+} 
+catch (err) 
+{
+}
+if (!response || !response.error)
+{
+response =  {
+error: {
+error_code: xmlhttp.status,
+message: xmlhttp.responseText
+}
+};
+}
+if (cb != null) cb(response);
+}
+});
+return response;
+}
+function impl_isReady(args)
+{
+var isReday = (WS._webiServicesReady);
+var cb = raylight_getAsyncCallback(args);
+if (cb != null)
+cb(isReady);
+else
+return isReady;
+}
+function impl_refreshDocument(args)
+{
+var requestBody, lovInfo = true;
+if (args && args.length > 0)
+{
+  var obj = args[0];
+      if (obj.requestBody) 
+      {
+         requestBody = obj.requestBody;
+   if (obj.lovInfo != undefined)
+     lovInfo = obj.lovInfo;
+      }
+      else
+      requestBody = obj;
+}
+if (typeof(args[1]) == "function")
+{
+var cb = args[1];
+args[1] = function(response) {
+raylight_sendRefreshNotification(response);
+cb(response);
+}
+}
+var url = raylight_getBase() + '/parameters?lovInfo=' + lovInfo;
+var response = raylight_sendRequest('PUT', url, requestBody, null, null, args);
+raylight_sendRefreshNotification(response);
+return response;
+}
+function impl_getParameters(args)
+{
+var url = raylight_getBase() + '/parameters';
+if (args && args.length > 0) 
+{
+var obj = args[0], lovInfo = (obj.lovInfo == undefined) ? true : obj.lovInfo;
+url += "?lovInfo=" + lovInfo;
+}
+return raylight_sendRequest('GET', url, null, null, null, args);
+}
+function raylight_sendRefreshNotification(response)
+{
+if (response != null && response.success != null)
+{
+application_notifyEvent(_EVT_REFRESH_DATA);
+}
+}
+function impl_getReports(args)
+{
+var url = raylight_getBase() + '/reports';
+var response = raylight_sendRequest('GET', url, null, null, null, args);
+return response;
+}
+function impl_createReport(args)
+{
+var requestBody = null;
+var url = null;
+var response = null;
+if (args && args.length > 0) {
+requestBody = args[0];
+}
+url = raylight_getBase() + '/reports';
+response = raylight_sendRequest('POST', url, requestBody, null, null, args);
+return response;
+}
+function impl_updateReport(args)
+{
+var url = null;
+var response = null;
+var obj = (args && args.length > 0) ? args[0] : {};
+var requestBody = obj.requestBody;
+var reportId = raylight_getReportId(obj);
+if(reportId) {
+url = raylight_getBase() + '/reports/' + reportId;
+response = raylight_sendRequest('PUT', url, requestBody, null, null, args);
+}
+return response;
+}
+function impl_getReportSpecification(args)
+{
+var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj);
+var url = raylight_getBase() + '/reports/' + reportId + '/specification';
+var xmlResponse = raylight_sendRequest('GET', url, null, 'text/xml', null, args);
+return xmlResponse;
+}
+function impl_updateReportSpecification(args)
+{
+var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj);
+var url = raylight_getBase() + '/reports/' + reportId + '/specification';
+var response = raylight_sendRequest('PUT', url, obj.requestBody, 'application/json', 'text/xml', args);
+return response;
+}
+function impl_getReportMap(args)
+{
+var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj);
+   var url = raylight_getBase() + '/reports/' + reportId + '/map';
+if (obj.reference)
+url += '?reference=' + obj.reference;
+   var response = raylight_sendRequest('GET', url, null, null, null, args);
+return response;
+}
+function impl_exportReportListingMode(args)
+{
+var dpi = null;
+var chartOutputFormat = null;
+var url = null;
+var response = null;
+var suffixUrl = null;
+var urlParams = '';
+var mimeType = 'text/html';
+var obj = (args && args.length > 0) ? args[0] : {};
+var reportId = raylight_getReportId(obj); 
+if(obj.dpi != null){
+dpi = obj.dpi; 
+urlParams += '?dpi='+dpi;
+}
+if(obj.chartOutputFormat != null && obj.chartOutputFormat != ""){
+chartOutputFormat = obj.chartOutputFormat; 
+urlParams += hasParam(urlParams) ? '&chartOutputFormat='+chartOutputFormat : '?chartOutputFormat='+chartOutputFormat;
+}
+if(obj.xmlOutput){
+mimeType = 'text/xml';
+}
+url = raylight_getBase() + '/reports/' + reportId + urlParams;
+response = raylight_sendRequest('GET', url, null, mimeType, null, args);
+return response;
+}
+function impl_exportReportAsZip(args)
+{
+var obj = (args && args.length > 0) ? args[0] : {};
+    var reportId = raylight_getReportId(obj);
+    var params = [];
+    if (obj.dpi)
+        params.push('dpi=' + obj.dpi);
+    if (obj.chartOutputFormat && obj.chartOutputFormat != "")
+        params.push('chartOutputFormat=' + obj.chartOutputFormat);
+    params.push("X-SAP-LogonToken=" + DS.raylightSessionID);
+    params.push("_type=application/zip");
+     if (obj.filename)
+        params.push('fileName=' + encodeURIComponent(obj.filename));
+    var urlParams = "?" + params.join("&");
+var response = raylight_getBase() + '/reports/' + reportId + urlParams;
+return response;
+}
+function impl_saveDocumentAs(args)
+{
+var obj = (args && args.length > 0) ? args[0] : {};
+var document = { name: "" , folderId: -1 };
+if (obj.filename != null)
+document.name = obj.filename;
+if (obj.folderId != null)
+document.folderId = obj.folderId;
+var url = raylight_getBase();
+var response = null;
+var cb = raylight_getAsyncCallback(args);
+if (cb != null)
+{
+args[args.length-1] = function(res) {
+if (res.success)
+{
+application_updateAfterSaveAs(res.success.id, function() {
+cb(res);
+});
+}
+else
+cb(res);
+};
+response = raylight_sendRequest('POST', url, {document: document}, null, null, args);
+}
+else
+{
+response = raylight_sendRequest('POST', url, {document: document}, null, null, args);
+if (response.success)
+application_updateAfterSaveAs(response.success.id);
+}
+return response;
+}
+function impl_exportDocumentAsZip(args)
+{
+    var obj = (args && args.length > 0) ? args[0] : {};
+    var params = [];
+    if (obj.reportIds)
+        params.push('reportIds=' + obj.reportIds);
+    if (obj.dpi)
+        params.push('dpi=' + obj.dpi);
+    if (obj.chartOutputFormat && obj.chartOutputFormat.length > 0)
+        params.push('chartOutputFormat=' + obj.chartOutputFormat);
+    var requestBody = null;
+    if (obj.requestBody)
+        requestBody = obj.requestBody;
+    var urlParams = (params.length > 0) ? "?" + params.join("&") : "";
+var url = raylight_getBase() + "/zips" + urlParams;
+var updateResponse = function(res) {
+if (res.success)
+{
+var id = res.success.id;
+params = [ "X-SAP-LogonToken=" + DS.raylightSessionID ];
+    if (obj.filename)
+    {
+        var filename = encodeURIComponent(obj.filename);
+        params.push('fileName=' + filename);
+    }
+    urlParams = "?" + params.join("&"); 
+res = raylight_getBase() + "/zips/" + id + urlParams; 
+}
+};
+var response = null;
+var cb = raylight_getAsyncCallback(args);
+if (cb != null)
+{
+args[args.length-1] = function(res) {
+updateResponse(res);
+cb(res);
+};
+response = raylight_sendRequest('POST', url, requestBody, 'application/json', null, args);
+}
+else
+{
+response = raylight_sendRequest('POST', url, requestBody, 'application/json', null, args);
+updateResponse(response);
+}
+return response;
+}
+function impl_getReportOutput(args)
+{
+if (args && args.length > 0) {
+args[0].xmlOutput = true;
+}
+return impl_exportReportListingMode(args);
+}
+function impl_getReportElements(args)
+{  
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj); 
+   var url = raylight_getBase() + '/reports/' + reportId + '/elements';
+   var response = raylight_sendRequest('GET', url, null, null, null, args);
+   return response;
+}
+function impl_getReportElement(args)
+{  
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj); 
+   var elementId = obj.elementId; 
+   var reference = obj.reference;
+   var url = raylight_getBase() + '/reports/' + reportId + '/elements/' + elementId;
+   if (reference)
+      url += "?reference=" + reference;
+   var response = raylight_sendRequest('GET', url, null, null, null, args);
+   return response;
+}
+function impl_getReportElement(args)
+{
+var obj = (args && args.length > 0) ? args[0] : {};
+var reportId = raylight_getReportId(obj); 
+var elementId = obj.elementId; 
+var reference = obj.reference;
+var url = raylight_getBase() + '/reports/' + reportId + '/elements/' + elementId;
+   if (reference)
+      url += "?reference=" + reference;
+var response = raylight_sendRequest('GET', url, null, null, null, args);
+return response;
+}
+function impl_exportReportElement(args)
+{
+var url = buildExportReportElementUrl(args);
+var response = raylight_sendRequest('GET', url, null, "text/html", "text/html", arg);
+return response;
+}
+function impl_exportReportElementAsImage(args)
+{
+var url = buildExportReportElementUrl(args);
+var prefix = hasParam(url) ? "&" : "?";
+url += prefix + "X-SAP-LogonToken=" + encodeURIComponent(DS.raylightSessionID);
+url += "&_type=image/png";
+return url;
+}
+function buildExportReportElementUrl(args)
+{
+var params = [];
+var obj = (args && args.length > 0) ? args[0] : {};
+var reportId = raylight_getReportId(obj); 
+var elementId = obj.elementId; 
+if (obj.datapath && obj.datapath != "")
+params.push("datapath=" + encodeURIComponent(obj.datapath));
+if (obj.reference && obj.reference != "")
+      params.push("reference=" + obj.reference);
+if (obj.dpi)
+      params.push("dpi=" + obj.dpi);
+if(obj.chartOutputFormat)
+      params.push("chartOutputFormat=" + obj.chartOutputFormat);
+var urlParams = "";
+if (params.length > 0)
+      urlParams = "?" + params.join("&");
+var url = raylight_getBase() + '/reports/' + reportId + '/elements/' + elementId + urlParams;
+return url;
+}
+function impl_getDataProviders(args)
+{
+var url = raylight_getBase() + '/dataproviders';
+var response = raylight_sendRequest('GET', url, null, null, null, args);
+return response;
+}
+function impl_getDPDetails(args)
+{
+var obj = null;
+var dpId = null;
+var url = null;
+var response = null;
+if (args && args.length > 0) {
+obj = args[0];
+}
+if (obj != null) {
+if(obj.dpId != null){
+dpId = obj.dpId; 
+}
+}
+url = raylight_getBase() + '/dataproviders/' + dpId;
+response = raylight_sendRequest('GET', url, null, null, null, args);
+return response;
+}
+function impl_addDataProvider(args)
+{
+var obj = null;
+var requestBody = null;
+var url = null;
+var response = null;
+if (args && args.length > 0) {
+obj = args[0];
+}
+if (obj != null) {
+requestBody = obj; 
+}
+if (typeof(args[1]) == "function")
+{
+var cb = args[1];
+args[1] = function(response) {
+raylight_sendNotification(_EVT_DOC_UPDATE, response);
+cb(response);
+}
+}
+url = raylight_getBase() + '/dataproviders/';
+response = raylight_sendRequest('POST', url, requestBody, null, null, args);
+raylight_sendNotification(_EVT_DOC_UPDATE, response);
+return response;
+}
+function impl_updateDataProvider(args)
+{
+var obj = null;
+var dpId = null;
+var requestBody = null
+var purge = null;
+var purgeOptions = null;
+var url = null;
+var response = null;
+var urlParams = '';
+if (args && args.length > 0) {
+obj = args[0];
+}
+if (obj != null) {
+if(obj.dpId != null){
+dpId = obj.dpId; 
+}
+if(obj.requestBody != null){
+requestBody = obj.requestBody; 
+}
+if(obj.purge != null){
+purge = obj.purge; 
+urlParams += '?purge='+purge;
+}
+if(obj.purgeOptions != null){
+purgeOptions = obj.purgeOptions; 
+urlParams += hasParam(urlParams) ? '&purgeOptions='+purgeOptions : '?purgeOptions='+purgeOptions; 
+}
+}
+if (typeof(args[1]) == "function")
+{
+var cb = args[1];
+args[1] = function(response) {
+raylight_sendNotification(_EVT_DOC_UPDATE, response);
+cb(response);
+}
+}
+url = raylight_getBase() + '/dataproviders/' + dpId + urlParams;
+response = raylight_sendRequest('PUT', url, requestBody, null, null, args);
+raylight_sendNotification(_EVT_DOC_UPDATE, response);
+return response;
+}
+function impl_getDPQuerySpec(args)
+{
+var obj = null;
+var dpId = null;
+var url = null;
+var response = null;
+if (args && args.length > 0) {
+obj = args[0];
+}
+if (obj != null) {
+if(obj.dpId != null){
+dpId = obj.dpId; 
+}
+}
+url = raylight_getBase() + '/dataproviders/' + dpId + '/specification';
+response = raylight_sendRequest('GET', url, null, 'text/xml', null, args);
+return response;
+}
+function impl_updateDPQuerySpec(args)
+{
+var obj = null;
+var dpId = null;
+var requestBody = null;
+var url = null;
+var response = null;
+if (args && args.length > 0) {
+obj = args[0];
+}
+if (obj != null) {
+if(obj.dpId != null){
+dpId = obj.dpId; 
+}
+if(obj.requestBody != null){
+requestBody = obj.requestBody; 
+}
+}
+if (typeof(args[1]) == "function")
+{
+var cb = args[1];
+args[1] = function(response) {
+raylight_sendNotification(_EVT_DOC_UPDATE, response);
+cb(response);
+}
+}
+url = raylight_getBase() + '/dataproviders/' + dpId + '/specification';
+response = raylight_sendRequest('PUT', url, requestBody, 'application/json', 'text/xml', args);
+raylight_sendNotification(_EVT_DOC_UPDATE, response);
+return response;
+}
+function impl_getDPNbFlows(args)
+{
+var obj = null;
+var dpId = null;
+var url = null;
+var response = null;
+if (args && args.length > 0) {
+obj = args[0];
+}
+if (obj != null) {
+if(obj.dpId != null){
+dpId = obj.dpId; 
+}
+}
+url = raylight_getBase() + '/dataproviders/' + dpId + '/flows/count';
+response = raylight_sendRequest('GET', url, null, 'text/plain', null, args);
+return response;
+}
+function impl_getDPFlowDetails(args) 
+{
+var obj = null;
+var dpId = null;
+var flowId = null;
+var url = null;
+var response = null;
+if (args && args.length > 0) {
+obj = args[0];
+}
+if (obj != null) {
+if(obj.dpId != null){
+dpId = obj.dpId; 
+}
+if(obj.flowId != null){
+flowId = obj.flowId; 
+}
+}
+url = raylight_getBase() + '/dataproviders/' + dpId + '/flows/' + flowId;
+response = raylight_sendRequest('GET', url, null, 'text/plain', null, args);
+return response;
+}
+function impl_addVariable(args)
+{
+var requestBody = null;
+if (args && args.length > 0) {
+requestBody = args[0];
+}
+if (typeof(args[1]) == "function")
+{
+var cb = args[1];
+args[1] = function(response) {
+raylight_sendNotification(_EVT_VARS_UPDATE, response);
+cb(response);
+}
+}
+var url = raylight_getBase() + '/variables';
+var response = raylight_sendRequest('POST', url, requestBody, null, null, args);
+raylight_sendNotification(_EVT_VARS_UPDATE, response);
+return response;
+}
+function impl_updateVariable(args)
+{
+var obj = null;
+var variableId = null;
+var requestBody = null;
+var url = null;
+var response = null;
+if (args && args.length > 0) {
+obj = args[0];
+}
+if (obj != null) {
+if(obj.variableId != null){
+variableId = obj.variableId; 
+}
+if(obj.requestBody != null){
+requestBody = obj.requestBody; 
+}
+}
+if (typeof(args[1]) == "function")
+{
+var cb = args[1];
+args[1] = function(response) {
+raylight_sendNotification(_EVT_VARS_UPDATE, response);
+cb(response);
+}
+}
+var url = raylight_getBase() + '/variables/' + variableId;
+var response = raylight_sendRequest('PUT', url, requestBody, null, null, args);
+raylight_sendNotification(_EVT_VARS_UPDATE, response);
+return response;
+}
+function impl_getVariables(args)
+{
+var url = raylight_getBase() + '/variables';
+return raylight_sendRequest('GET', url, null, null, null, args);
+}
+function impl_getVariableDefinition(args)
+{
+var obj = null;
+var variableId = null;
+var url = null;
+if (args && args.length > 0) {
+obj = args[0];
+}
+if(obj != null) {
+if(obj.variableId != null){
+variableId = obj.variableId;
+}
+}
+url = raylight_getBase() + '/variables/' + variableId; 
+response = raylight_sendRequest('GET', url, null, null, null, args);
+return response;
+}
+function impl_deleteVariable(args)
+{
+var obj = null;
+var variableId = null;
+var url = null;
+var response = null;
+if (args && args.length > 0) {
+obj = args[0];
+}
+if (obj != null) {
+if(obj.variableId != null){
+variableId = obj.variableId; 
+}
+}
+if (typeof(args[1]) == "function")
+{
+var cb = args[1];
+args[1] = function(response) {
+raylight_sendNotification(_EVT_VARS_UPDATE, response);
+cb(response);
+}
+}
+var url = raylight_getBase() + '/variables/' + variableId;
+var response = raylight_sendRequest('DELETE', url, null, null, null, args);
+raylight_sendNotification(_EVT_VARS_UPDATE, response);
+return response;
+}
+function impl_getReportDataFilter(args)
+{
+var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = services_raylight_getReportId(obj);
+var url = raylight_getBase() + '/reports/' + reportId + '/datafilter';
+var response = raylight_sendRequest('GET', url, null, null, null, args);
+return response;
+}
+function impl_deleteReportDataFilter(args)
+{
+var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj);
+var url = raylight_getBase() + '/reports/' + reportId + '/datafilter';
+var response = raylight_sendRequest('DELETE', url, null, null, null, args);
+return response;
+}
+function impl_createReportDataFilter(args)
+{
+return setReportDataFilter(args, true);
+}
+function impl_updateReportDataFilter(args)
+{
+return setReportDataFilter(args, false);
+}
+function setReportDataFilter(args, create)
+{
+var obj = (args && args.length > 0) ? args[0] : {};
+var reportId = raylight_getReportId(obj);
+var requestBody = obj.requestBody;
+var url = raylight_getBase() + '/reports/' + reportId + '/datafilter';
+var response = raylight_sendRequest((create ? 'POST' : 'PUT'), url, requestBody, null, null, args);
+return response;
+}
+function impl_getReportElementDataFilter(args)
+{
+var obj = (args && args.length > 0) ? args[0] : {};
+var reportId = raylight_getReportId(obj);
+var elementId = obj.elementId;
+var url = raylight_getBase() + '/reports/' + reportId + '/elements/' + elementId + '/datafilter';
+var response = raylight_sendRequest('GET', url, null, null, null, args);
+return response;
+}
+function impl_deleteReportElementDataFilter(args)
+{
+var obj = (args && args.length > 0) ? args[0] : {};
+var reportId = raylight_getReportId(obj);
+var elementId = obj.elementId;
+var url = raylight_getBase() + '/reports/' + reportId + '/elements/' + elementId + '/datafilter';
+var response = raylight_sendRequest('DELETE', url, null, null, null, args);
+return response;
+}
+function impl_updateReportElementDataFilter(args)
+{
+return setReportElementDataFilter(args, false);
+}
+function impl_createReportElementDataFilter(args)
+{
+return setReportElementDataFilter(args, true);
+}
+function setReportElementDataFilter(args, create)
+{
+var obj = (args && args.length > 0) ? args[0] : {};
+var reportId = raylight_getReportId(obj);
+var elementId = obj.elementId;
+var requestBody = obj.requestBody;
+var url = raylight_getBase() + '/reports/' + reportId + '/elements/' + elementId + '/datafilter';
+var response = raylight_sendRequest((create ? 'POST' : 'PUT'), url, requestBody, null, null, args);
+return response;
+}
+function impl_getDrillerFilters(args) 
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj);
+   var url = raylight_getBase() + '/reports/' + reportId + '/driller/filters';
+   var response = raylight_sendRequest("GET", url, null, null, null, args);
+   return response;
+}
+function impl_getDrillerFilter(args) 
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj);
+   var filterId = obj.filterId;
+   var url = raylight_getBase() + '/reports/' + reportId + '/driller/filters/' + filterId;
+   var response = raylight_sendRequest("GET", url, null, null, null, args);
+   return response;
+}
+function impl_updateDrillerFilter(args) 
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj);
+   var filterId = obj.filterId;
+   var requestBody = obj.requestBody;
+   var url = raylight_getBase() + '/reports/' + reportId + '/driller/filters/' + filterId;
+   var response = raylight_sendRequest("PUT", url, requestBody, null, null, args);
+   return response;
+}
+function impl_createDrillerFilter(args) 
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj);
+   var requestBody = obj.requestBody;
+   var url = raylight_getBase() + '/reports/' + reportId + '/driller/filters/';
+   var response = raylight_sendRequest("POST", url, requestBody, null, null, args);
+   return response;
+}
+function impl_deleteDrillerFilter(args) 
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj);
+   var filterId = obj.filterId;
+   var url = raylight_getBase() + '/reports/' + reportId + '/driller/filters/' + filterId;
+   var response = raylight_sendRequest("DELETE", url, null, null, null, args);
+   return response;
+}
+function impl_getReportElementDatapaths(args)
+{
+var obj = (args && args.length > 0) ? args[0] : {};
+var reportId = raylight_getReportId(obj); 
+var elementId = obj.elementId; 
+var datapath = obj.datapath;
+   var reference = obj.reference;
+var url = raylight_getBase() + '/reports/' + reportId + '/elements/' + elementId + "/datapaths";
+if (datapath)
+url += "?datapath=" + encodeURIComponent(datapath);
+   else if (reference)
+      url += "?reference=" + reference;
+var response = raylight_sendRequest('GET', url, null, null, null, args);
+return response;
+}
+function impl_getReportElementDataset(args)
+{
+var obj = (args && args.length > 0) ? args[0] : {};
+var reportId = raylight_getReportId(obj); 
+var elementId = obj.elementId; 
+var datapath = obj.datapath;
+var reference = obj.reference;
+var url = raylight_getBase() + '/reports/' + reportId + '/elements/' + elementId + "/dataset";
+if (datapath) 
+{
+url += "?datapath=" + encodeURIComponent(datapath);
+}
+else if (reference) 
+{
+url += "?reference=" + reference;
+}
+var response = raylight_sendRequest('GET', url, null, null, null, args);
+return response;
+}
+function impl_getDocumentAlerters(args)
+{
+var url = raylight_getBase() + "/alerters";
+var response = raylight_sendRequest('GET', url, null, null, null, args);
+return response;
+}
+function impl_getDocumentAlerter(args)
+{
+var alerterId; 
+if (args && args.length > 0)
+{
+var obj = args[0];
+alerterId = obj.alerterId; 
+}
+var url = raylight_getBase() + "/alerters/" + alerterId;
+var response = raylight_sendRequest('GET', url, null, null, null, args);
+return response;
+}
+function impl_addDocumentAlerter(args)
+{
+var requestBody; 
+if (args && args.length > 0)
+{
+var obj = args[0];
+requestBody = obj.requestBody; 
+}
+var url = raylight_getBase() + "/alerters";
+var response = raylight_sendRequest('POST', url, requestBody, null, null, args);
+return response;
+}
+function impl_updateDocumentAlerter(args)
+{
+var requestBody, alerterId; 
+if (args && args.length > 0)
+{
+var obj = args[0];
+requestBody = obj.requestBody; 
+alerterId = obj.alerterId; 
+}
+var url = raylight_getBase() + "/alerters/" + alerterId;
+var response = raylight_sendRequest('PUT', url, requestBody, null, null, args);
+return response;
+}
+function impl_deleteDocumentAlerter(args) 
+{
+var alerterId; 
+if (args && args.length > 0)
+{
+var obj = args[0];
+alerterId = obj.alerterId; 
+}
+var url = raylight_getBase() + "/alerters/" + alerterId;
+var response = raylight_sendRequest('DELETE', url, null, null, null, args);
+return response;
+}
+function impl_getDocumentCss(args)
+{
+var url = raylight_getBase() + "/css";
+var response = raylight_sendRequest('GET', url, null, "text/css", null, args);
+return response;
+}
+function impl_updateDocumentCss(args)
+{
+var css; 
+if (args && args.length > 0)
+{
+var obj = args[0];
+css = obj.cssContent; 
+}
+var url = raylight_getBase() + "/css";
+var response = raylight_sendRequest('PUT', url, css, "application/json", "text/css", args);
+return response;
+}
+function impl_getDocumentStyles(args)
+{
+var url = raylight_getBase() + "/styles";
+var response = raylight_sendRequest('GET', url, null, null, null, args);
+return response;
+}
+function impl_getDocumentStyle(args)
+{
+var id; 
+if (args && args.length > 0)
+{
+var obj = args[0];
+id = obj.styleId; 
+}
+var url = raylight_getBase() + "/styles/" + id;
+var response = raylight_sendRequest('GET', url, null, null, null, args);
+return response;
+}
+function impl_addDocumentStyle(args)
+{
+var requestBody; 
+if (args && args.length > 0)
+{
+var obj = args[0];
+requestBody = obj.requestBody; 
+}
+var url = raylight_getBase() + "/styles";
+var response = raylight_sendRequest('POST', url, requestBody, null, null, args);
+return response;
+}
+function impl_updateDocumentStyle(args)
+{
+var requestBody, id; 
+if (args && args.length > 0)
+{
+var obj = args[0];
+requestBody = obj.requestBody; 
+id = obj.styleId; 
+}
+var url = raylight_getBase() + "/styles/" + id;
+var response = raylight_sendRequest('PUT', url, requestBody, null, null, args);
+return response;
+}
+function impl_deleteDocumentStyle(args) 
+{
+var id; 
+if (args && args.length > 0)
+{
+var obj = args[0];
+id = obj.alerterId; 
+}
+var url = raylight_getBase() + "/styles/" + id;
+var response = raylight_sendRequest('DELETE', url, null, null, null, args);
+return response;
+}
+function impl_getDocumentAttachments(args) 
+{
+var url = raylight_getBase() + "/attachments";
+var response = raylight_sendRequest('GET', url, null, null, null, args);
+return response;
+}
+function impl_getReportElementProperties(args)
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj); 
+   var elementId = obj.elementId; 
+   var url = raylight_getBase() + '/reports/' + reportId + '/elements/' + elementId + "/properties";
+   var response = raylight_sendRequest('GET', url, null, null, null, args);
+   return response;
+}
+function impl_getReportElementProperty(args) 
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj); 
+   var elementId = obj.elementId; 
+   var propertyKey = obj.propertyKey;
+   var url = raylight_getBase() + '/reports/' + reportId + '/elements/' + elementId + "/properties/" + propertyKey;
+   var response = raylight_sendRequest('GET', url, null, null, null, args);
+   return response;
+}
+function impl_addReportElementProperty(args) 
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj); 
+   var elementId = obj.elementId; 
+   var requestBody = obj.requestBody;
+   var url = raylight_getBase() + '/reports/' + reportId + '/elements/' + elementId + "/properties";
+   var response = raylight_sendRequest('POST', url, requestBody, null, null, args);
+   return response;
+}
+function impl_updateReportElementProperty(args)
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj); 
+   var elementId = obj.elementId; 
+   var requestBody = obj.requestBody;
+   var url = raylight_getBase() + '/reports/' + reportId + '/elements/' + elementId + "/properties";
+   var response = raylight_sendRequest('PUT', url, requestBody, null, null, args);
+   return response;
+}
+function impl_deleteReportElementProperty(args)
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj); 
+   var elementId = obj.elementId; 
+   var propertyKey = obj.propertyKey;
+   var url = raylight_getBase() + '/reports/' + reportId + '/elements/' + elementId + "/properties/" + propertyKey;
+   var response = raylight_sendRequest('DELETE', url, null, null, null, args);
+   return response;
+}
+function impl_createReportElement(args)
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj); 
+   var body = obj.requestBody;
+   var url = raylight_getBase() + '/reports/' + reportId + '/elements';
+   var response = raylight_sendRequest('POST', url, body, null, null, args);
+   return response;
+}
+function impl_updateReportElement(args)
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj); 
+   var elementId = obj.elementId; 
+   var body = obj.requestBody;
+   var url = raylight_getBase() + '/reports/' + reportId + '/elements/' + elementId;
+   var response = raylight_sendRequest('PUT', url, body, null, null, args);
+   return response;
+}
+function impl_deleteReportElement(args)
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj); 
+   var elementId = obj.elementId; 
+   var url = raylight_getBase() + '/reports/' + reportId + '/elements/' + elementId;
+   var response = raylight_sendRequest('DELETE', url, null, null, null, args);
+   return response;
+}
+function impl_updateAxisExpression(args)
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj); 
+   var elementId = obj.elementId; 
+   var axis = obj.axis;
+   var body = obj.requestBody;
+   var url = raylight_getBase() + '/reports/' + reportId + '/elements/' + elementId + "/axes/" + axis + "/expressions";
+   var response = raylight_sendRequest('PUT', url, body, null, null, args);
+   return response;
+}
+function impl_deleteAxisExpression(args)
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj); 
+   var elementId = obj.elementId; 
+   var axis = obj.axis;
+   var url = raylight_getBase() + '/reports/' + reportId + '/elements/' + elementId + "/axes/" + axis + "/expressions";
+   var response = raylight_sendRequest('DELETE', url, null, null, null, args);
+   return response;
+}
+function impl_createBreakOnAxis(args)
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj); 
+   var elementId = obj.elementId; 
+   var axis = obj.axis;
+   var body = obj.requestBody;
+   var url = raylight_getBase() + '/reports/' + reportId + '/elements/' + elementId + "/axes/" + axis + "/breaks";
+   var response = raylight_sendRequest('POST', url, body, null, null, args);
+   return response;
+}
+function impl_updateBreakOnAxis(args)
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj); 
+   var elementId = obj.elementId; 
+   var axis = obj.axis;
+   var breakId = obj.breakId;
+   var body = obj.requestBody;
+   var url = raylight_getBase() + '/reports/' + reportId + '/elements/' + elementId + "/axes/" + axis + "/breaks/" + breakId;
+   var response = raylight_sendRequest('PUT', url, body, null, null, args);
+   return response;
+}
+function impl_deleteBreakOnAxis(args)
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj); 
+   var elementId = obj.elementId; 
+   var axis = obj.axis;
+   var breakId = obj.breakId;
+   var url = raylight_getBase() + '/reports/' + reportId + '/elements/' + elementId + "/axes/" + axis + "/breaks/" + breakId;
+   var response = raylight_sendRequest('DELETE', url, null, null, null, args);
+   return response;
+}
+function impl_setAxisSorts(args)
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj); 
+   var elementId = obj.elementId; 
+   var axis = obj.axis;
+   var body = obj.requestBody;
+   var url = raylight_getBase() + '/reports/' + reportId + '/elements/' + elementId + "/axes/" + axis + "/sorts";
+   var response = raylight_sendRequest('PUT', url, body, null, null, args);
+   return response;
+}
+function impl_deleteAxisSorts(args)
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj); 
+   var elementId = obj.elementId; 
+   var axis = obj.axis;
+   var url = raylight_getBase() + '/reports/' + reportId + '/elements/' + elementId + "/axes/" + axis + "/sorts";
+   var response = raylight_sendRequest('DELETE', url, null, null, null, args);
+   return response;
+}
+function impl_getInputControls(args)
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj); 
+   var url = raylight_getBase() + '/reports/' + reportId + '/inputcontrols';
+   var response = raylight_sendRequest('GET', url, null, null, null, args);
+   return response;
+}
+function impl_getInputControl(args)
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj); 
+   var inputId = obj.inputId;
+   var url = raylight_getBase() + '/reports/' + reportId + '/inputcontrols/' + inputId;
+   var response = raylight_sendRequest('GET', url, null, null, null, args);
+   return response;
+}
+function impl_createInputControl(args)
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj); 
+   var body = obj.requestBody;
+   var url = raylight_getBase() + '/reports/' + reportId + '/inputcontrols';
+   var response = raylight_sendRequest('POST', url, body, null, null, args);
+   return response;
+}
+function impl_updateInputControl(args)
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj); 
+   var inputId = obj.inputId;
+   var body = obj.requestBody;
+   var url = raylight_getBase() + '/reports/' + reportId + '/inputcontrols/' + inputId;
+   var response = raylight_sendRequest('PUT', url, body, null, null, args);
+   return response;
+}
+function impl_deleteInputControl(args)
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj); 
+   var inputId = obj.inputId;
+   var url = raylight_getBase() + '/reports/' + reportId + '/inputcontrols/' + inputId;
+   var response = raylight_sendRequest('DELETE', url, null, null, null, args);
+   return response;
+}
+function impl_getInputControlSelection(args)
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj); 
+   var inputId = obj.inputId;
+   var url = raylight_getBase() + '/reports/' + reportId + '/inputcontrols/' + inputId + "/selection";
+   var response = raylight_sendRequest('GET', url, null, null, null, args);
+   return response;
+}
+function impl_setInputControlSelection(args)
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj); 
+   var inputId = obj.inputId;
+   var body = obj.requestBody;
+   var url = raylight_getBase() + '/reports/' + reportId + '/inputcontrols/' + inputId + "/selection";
+   var response = raylight_sendRequest('PUT', url, body, null, null, args);
+   return response;
+}
+function impl_deleteInputControlSelection(args)
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var reportId = raylight_getReportId(obj); 
+   var inputId = obj.inputId;
+   var url = raylight_getBase() + '/reports/' + reportId + '/inputcontrols/' + inputId + "/selection";
+   var response = raylight_sendRequest('DELETE', url, null, null, null, args);
+   return response;
+}
+function impl_getDocumentDataObjectLov(args)
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var id = obj.dataObjectId;
+   var url = raylight_getBase() + '/dataobjects/' + id + '/lov';
+   var response = raylight_sendRequest('GET', url, null, null, null, args);
+   return response;
+}
+function impl_addDocumentAttachment(args) 
+{
+if (args == null || args.length == 0)
+return;
+var obj = obj[0];
+var cb = raylight_getAsyncCallback(args);
+var isAsync = (cb != null);
+var response = null;
+var url = raylight_getBase() + "/attachments";
+url = raylight_addIdToUrl(url);
+var xhr = new XMLHttpRequest();
+xhr.open( 'POST', url, isAsync);
+xhr.setRequestHeader('x-sap-logontoken', DS.raylightSessionID);
+xhr.setRequestHeader('Accept', 'application/json');
+    xhr.onreadystatechange = function ()
+{
+if (xhr.readyState == 4) 
+{
+try
+{
+response = JSON.parse(xhr.responseText) ;
+}
+catch (err) 
+{
+response = xhr.responseText;
+}
+if (cb != null) cb(response);
+}
+};
+var infos = "<attachment>";
+infos += "<name>" + obj.name + "</name>";
+infos += "<size>" + obj.size + "</size>";
+infos += "<mimeType>" + obj.mimeType + "</mimeType>";
+infos += "</attachment>";
+var data = new FormData();
+data.append('attachmentInfos', infos);
+var blob = new Blob([ obj.content ], { type: obj.mimeType });
+data.append('attachmentContent', blob);
+    xhr.send(data);
+return response;
+}
+function impl_getSpreadsheets(args)
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var params = [];
+   var limit = raylight_getLimit(obj);
+   params.push("limit=" + limit);
+   var offset = obj.offset || 0;
+   params.push("offset=" + offset);
+   var url = raylight_getRoot() + "/spreadsheets";
+   if (params.length > 0)
+      url += "?" + params.join("&");
+   var response = raylight_sendRequest('GET', url, null, null, null, args);
+   return response;
+}
+function impl_getSpreadsheet(args)
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var id = obj.spreadsheetId;
+   var url =  raylight_getRoot() + '/spreadsheets/' + id;
+   var response = raylight_sendRequest('GET', url, null, null, null, args);
+   return response;
+}
+function impl_getConnections(args)
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var params = [];
+   var limit = raylight_getLimit(obj);
+   params.push("limit=" + limit);
+   var offset = obj.offset;
+   if (offset)
+      params.push("offset=" + offset);
+   var type = obj.type;
+   if (type)
+      params.push("type=" + type);
+   var url = raylight_getRoot() + "/connections";
+   if (params.length > 0)
+      url += "?" + params.join("&");
+   var response = raylight_sendRequest('GET', url, null, null, null, args);
+   return response;
+}
+function impl_getConnection(args)
+{
+   var obj = (args && args.length > 0) ? args[0] : {};
+   var id = obj.connectionId;
+   var url =  raylight_getRoot() + '/connections/' + id;
+   var response = raylight_sendRequest('GET', url, null, null, null, args);
+   return response;
+}
+function raylight_getReportId(obj)
+{
+   if (obj && obj.reportId)
+      return obj.reportId;
+   return application_getSelectedReportId();
+}
+function raylight_getLimit(obj)
+{
+   var limit = obj.limit;
+   if (!limit || limit < 0)
+      limit = 10;
+   return limit;
+}
+function raylight_getAsyncCallback(args)
+{
+var cb = null;
+if (args != null && args.length > 0)
+{
+var obj = args[args.length-1];
+if (obj != null && typeof(obj) == 'function')
+{
+cb = obj;
+}
+}
+return cb;
+}
+function raylight_sendNotification(evt, response)
+{
+if (response != null && response.success != null)
+{
+application_setCachePageEnabled(false);
+application_notifyEvent(evt);
+}
+}

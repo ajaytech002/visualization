@@ -1,0 +1,268 @@
+/*
+=============================================================
+WebIntelligence(r) Report Panel
+Copyright(c) 2001-2005 Business Objects S.A.
+All rights reserved
+
+Use and support of this software is governed by the terms
+and conditions of the software license agreement and support
+policy of Business Objects S.A. and/or its subsidiaries. 
+The Business Objects products and technology are protected
+by the US patent number 5,555,403 and 6,247,008
+
+=============================================================
+*/var extension_applicationPath = null;
+var extension_action_prefix = "extAction_";
+var extension_contributionTypes = 
+{
+BUTTON:'button',
+TOGGLE_BUTTON:'toggle_button'
+};
+function apply_extension_uielement(webiElem, workbenchArea, extraParams)
+{
+if (!extension_hasExtensions())
+return;
+if (webiElem == null)
+return;
+if (workbenchArea == null)
+return;
+if (extension_applicationPath == null)
+{
+extension_applicationPath = _root;
+var iPos = _root.indexOf('webiDHTML');
+if (iPos >= 0)
+extension_applicationPath = _root.substring(0, iPos);
+}
+var ctbIdx = 0;
+for (var i=0; i<WS._customization.extensions.length; i++)
+{
+var ext = WS._customization.extensions[i];
+if (ext.rootPath == null)
+{
+ext.rootPath = extension_applicationPath + "extension/" + encodeURIComponent(ext.provider) + "/" + encodeURIComponent(ext.name) + "/";
+}
+if (ext.contribs != null)
+{
+for (var j=0; j<ext.contribs.length; j++)
+{
+var contrib = ext.contribs[j];
+if (contrib != null)
+{
+contrib.par = ext;
+if (contrib.container == null)
+continue;
+if (contrib.container == workbenchArea)
+{
+switch(workbenchArea)
+{
+case "leftpane":
+if (extraParams == null)
+{
+var wdgIcon = leftPaneImg(0);
+wdgIcon.src = ext.rootPath + contrib.iconURL;
+var iPos = extension_leftpane_getInsertPoisition(webiElem);
+contrib.id = extension_build_identifier("customButton", ctbIdx++);
+webiElem.splice(iPos, 0, { value:contrib.id
+  ,text:contrib.title
+  ,url:ext.rootPath + contrib.targetPage
+  ,icon:wdgIcon
+    });
+}
+else
+{
+var isInList = false;
+if (contrib.perspectives != null)
+{
+for (var k=0; k<contrib.perspectives.length; k++)
+{
+var pers = contrib.perspectives[k];
+if (pers == 'Reading' && extraParams == "viewingPers")
+{
+isInList = true;
+}
+else if (pers == 'PDF' && extraParams == "pdfPers")
+{
+isInList = true;
+}
+else if ((pers == 'Design' || pers == 'Structure') && extraParams == "interactivePers")
+{
+isInList = true;
+}
+}
+}
+webiElem.valueShow(contrib.id, isInList);
+}
+break;
+case "statusbar":
+var wdgText = (contrib.text == null)?'':contrib.text;
+var tooltip = extension_statusbar_getTooltip(contrib);
+var iPos = extension_statusbar_getInsertPoisition(webiElem);
+if (contrib.type == extension_contributionTypes.BUTTON)
+{
+webiElem.splice(iPos, 0, { actionId:extension_getContribAction(contrib.id)
+  ,text:wdgText
+  ,customTooltip:tooltip
+  ,type:'icon'
+  ,src:ext.rootPath + contrib.iconURL
+  ,dx:0
+  ,disDy:16
+    });
+}
+else if (contrib.type == extension_contributionTypes.TOGGLE_BUTTON)
+{
+webiElem.splice(iPos, 0, { actionId:extension_getContribAction(contrib.id)
+  ,text:wdgText
+  ,customTooltip:tooltip
+  ,type:'check'
+  ,src:ext.rootPath + contrib.iconURL
+  ,dx:0
+  ,disDy:16
+    });
+}
+break;
+}
+}
+}
+}
+}
+}
+}
+function apply_extension_action(actionId, srcWidget)
+{
+if (!extension_hasExtensions())
+return;
+if (startsWithIgnoreCase(actionId, extension_action_prefix))
+{
+var iPos = actionId.indexOf('_');
+var id = actionId.substring(iPos + 1);
+var contrib = extension_getContribById(id);
+if (contrib != null)
+{
+bar_dispatchAction(contrib, srcWidget);
+}
+}
+}
+function write_extension_bar_contributions()
+{
+if (!extension_hasExtensions())
+return;
+for (var i=0; i<WS._customization.extensions.length; i++)
+{
+var ext = WS._customization.extensions[i];
+if (ext.contribs != null)
+{
+for (var j=0; j<ext.contribs.length; j++)
+{
+var contrib = ext.contribs[j];
+if (contrib != null && contrib.container == "statusbar" && contrib.created == null)
+{
+contrib.frame = 'frame_' + contrib.id + '_' + WS.iViewerID;
+wr('<iframe tabIndex="-1" style="position:absolute;left:-100px;top:-100px;width:10px;height:10px;" id="' + contrib.frame +'" name="' + contrib.frame + '" contributionid="' + contrib.id + '" frameborder="0" src="../dhtmllib/empty.html"></iframe>');
+contrib.created = true;
+}
+}
+}
+}
+}
+function load_extension_bar_contributions()
+{
+if (!extension_hasExtensions())
+return;
+for (var i=0; i<WS._customization.extensions.length; i++)
+{
+var ext = WS._customization.extensions[i];
+if (ext.contribs != null)
+{
+for (var j=0; j<ext.contribs.length; j++)
+{
+var contrib = ext.contribs[j];
+if (contrib != null && contrib.container == "statusbar" && contrib.created)
+{
+var contribSrc = ext.rootPath + contrib.targetPage;
+frameNav(contrib.frame, contribSrc);
+}
+}
+}
+}
+}
+function extension_getContribById(id)
+{
+var contrib = null;
+for (var i=0; i<WS._customization.extensions.length; i++)
+{
+var ext = WS._customization.extensions[i];
+for (var j=0; j<ext.contribs.length; j++)
+{
+var ctb = ext.contribs[j];
+if (ctb != null && ctb.id == id)
+{
+contrib = ctb;
+break;
+}
+}
+if (contrib != null)
+{
+break;
+}
+}
+return contrib;
+}
+function extension_getContribAction(id)
+{
+return extension_action_prefix + id;
+}
+function extension_hasExtensions()
+{
+if (!WS._customization.enabled)
+return false;
+if (WS._customization.extensions == null)
+return false;
+return true;
+}
+function extension_build_identifier(s, idx)
+{
+var alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZYXWVUTSRQPONMLKJIHGFEDCBACEGIKMOQSUWYWUSQOMKIGECACEGIKMOQSUWZYWTRPNLJHFDB";
+var id = s + alpha.substring(idx, idx+2);
+return id;
+}
+function extension_leftpane_getInsertPoisition(arr)
+{
+var iPos = 0;
+if (arr)
+{
+for (var i=0; i<arr.length; i++)
+{
+var item = arr[i];
+if (item.value == "debugWOM")
+break;
+iPos++;
+}
+}
+return iPos;
+}
+function extension_statusbar_getInsertPoisition(arr)
+{
+var iPos = 0;
+if (arr)
+{
+for (var i=0; i<arr.length; i++)
+{
+var item = arr[i];
+if (item.type == "rightZone")
+break;
+iPos++;
+}
+}
+return iPos;
+}
+function extension_statusbar_getTooltip(contrib)
+{
+var tooltip = null;
+if (contrib.title != null || contrib.description != null || contrib.text != null)
+{
+tooltip = {title:'',text:''};
+tooltip.text = (contrib.title == null)?contrib.text:contrib.title;
+tooltip.title = (contrib.description == null)?'':contrib.description;
+}
+return tooltip;
+}

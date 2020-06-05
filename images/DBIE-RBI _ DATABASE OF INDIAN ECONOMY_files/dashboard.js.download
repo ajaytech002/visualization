@@ -1,0 +1,904 @@
+/*
+=============================================================
+WebIntelligence(r) Report Panel
+Copyright(c) 2001-2003 Business Objects S.A.
+All rights reserved
+Use and support of this software is governed by the terms
+and conditions of the software license agreement and support
+policy of Business Objects S.A. and/or its subsidiaries. 
+The Business Objects products and technology are protected
+by the US patent number 5,555,403 and 6,247,008
+File: dashboard.js
+=============================================================
+*/
+_dbNobord="3px solid #FFFFFF"
+_dbBord="3px solid #C00000"
+_dbNullbord="0px solid #FFFFFF"
+_dropFeebackWidget=null
+_dropPosition=-1
+function newDashboardWidget(id,value,name,tooltip,w,h,x,y)
+{
+var o=newWidget(id)
+// Private Fields
+o.w=(w==null?200:w)
+o.h=(h==null?150:h)
+o.x=x
+o.y=y
+o.name=name
+o.value=value //usefull for search 
+o.tooltip=tooltip
+o.innerHTML=""
+o.initCB=null
+o.resizeCB=null
+o.contextCB=null
+o.pal = newPaletteWidget("dbPalette_"+id);
+o.pal.vertPadding=0
+o.panes = new Array;
+o.selection=-1
+o.topH=_dtd4?26:27
+o.widgets=new Array; //used to store the inner elements and fill by the customer
+o.top=newWidget("dbTop_"+o.id)
+o.body=newWidget("dbBody_"+o.id)
+o.expanded=true
+o.selected=false
+o.moving=false
+//o.collapsable=(collapsable!=null)?collapsable:true
+// Methods
+o.add = Dashboard_add
+o.remove = Dashboard_remove
+o.collapse = Dashboard_collapse
+o.expand = Dashboard_expand
+o.select = Dashboard_select
+o.moveAbs=Dashboard_moveAbs
+o.getIndex=Dashboard_getIndex
+// Standard widget methods
+o.beginHTML=Dashboard_beginHTML
+o.endHTML=Dashboard_endHTML
+o.oldInit=o.init
+o.init=Dashboard_init
+o.oldResize=o.resize
+o.resize=Dashboard_resize
+o.setInsertFeedback=Dashboard_setInsertFeedback
+o.setCallback=Dashboard_setCallback
+o.showPaletteIcons=Dashboard_showPaletteIcons
+o.showHidePaletteIconsIfNeeded=Dashboard_showHidePaletteIconsIfNeeded
+o.container=null
+return o
+}
+function Dashboard_init()
+{
+var o=this
+o.oldInit()
+o.pal.init()
+o.top.init()
+o.body.init()
+var l=o.layer
+l.onmouseover=Dashboard_OverCB
+l.onmouseout=Dashboard_OutCB
+l.onmousedown=Dashboard_ClickCB
+o.titleLyr=getLayer("dbTopTitle_"+o.id)
+o.titleLyr.par=o
+o.titleLyr.onmouseover=DashboardTitle_OverCB
+o.titleLyr.onmouseout=DashboardTitle_OutCB
+o.titleLyr.onmousedown=DashboardTitle_DownCB
+o.titleLyr.onmouseup=DashboardTitle_UpCB
+o.titleLyr.ondblclick=Dashboard_collapseExtend
+o.iconsLyr=getLayer("dbTopIcons_"+o.id)
+if(o.initCB)
+    o.initCB(o);
+o.showPaletteIcons(false);
+var dd=o.container.dragDrop
+if (_ie && dd)
+{
+l.onmousemove=Dashboard_triggerDD
+dd.attachCallbacks(o.layer)
+}
+//TODO: use custom tooltip of widget
+/*
+if(o.tooltip)
+o.setCustomTooltip({title:o.name,text:o.tooltip});*/
+}
+function Dashboard_beginHTML()
+{
+var o=this,pal=o.pal;
+var s=new Array,i=0;
+//default action: collapsable always visible
+if(o.expanded)
+o.add("colapse",_collapseLab,_skin+'collapse_expand.gif',0,16*1,Dashboard_collapseExtend,true)
+else
+o.add("colapse",_expandLab,_skin+'collapse_expand.gif',0,16*0,Dashboard_collapseExtend,true)
+var absSty = ((o.x!=null)&&(o.y!=null)) ? "position:absolute;left:"+o.x+"px;top:"+o.y+"px;" : ""
+var contextMenu=''
+if (o.container.contextCB != null)
+contextMenu= ' oncontextmenu="' + _codeWinName + '.Dashboard_ContextMenuCB(\''+ o.id + '\', event);return false" '
+//feedback drag and drop
+s[i++]='<div style="overflow:hidden;visibility:hidden;background-color:black;height:3px;width:'+(o.w+(_dtd4?-4:0))+'px"></div>'
+//input form div
+s[i++]='<div id="'+o.id+'" title="'+(o.tooltip!=null?convStr(o.tooltip):"")+'" class="treeZone" style="'+absSty+'overflow:hidden;width:'+(o.w+(_dtd4?-4:0))+'px" onselectstart="return false" '+contextMenu+'>'
+//s[i++]='<div id="'+o.id+'" class="treeZone" style="'+absSty+'overflow:hidden;width:'+(o.w+(_dtd4?-2:0))+'px" onselectstart="return false" '+contextMenu+'>'
+//input form title zone = title + icons panel
+s[i++]='<div id="dbTop_'+o.id+'" class="titleInputForm" style="overflow:hidden;width:'+(o.w+(_dtd4?-4:0))+'px">'
+s[i++]='<table cellspacing=0 cellpadding=0 border=0 width="100%"><tbody><tr>'
+//title
+s[i++]='<td id="dbTopTitle_'+o.id+'" valign="center"><div class="titleTextInputForm" style="white-space:nowrap;text-overflow:ellipsis;overflow:hidden">'+convStr(o.name)+'</b></div></td>'
+//icons
+s[i++]='<td id="dbTopIcons_'+o.id+'" valign="top" align="right"><table cellspacing=0 cellpadding=0 border=0><tr><td>'+pal.getHTML()+'</td></tr></table></td>'
+//end title zone
+s[i++]='</tr></tbody></table></div>'
+//input form boby
+s[i++]='<div id="dbBody_'+o.id+'" class="bodyInputForm" style="display:'+(o.expanded?'':'none')+';overflow:auto;border-width:0px">'
+return s.join("");
+}
+function Dashboard_endHTML()
+{
+var o=this
+//end input form div + feedback drag and drop
+return '</div></div><div style="overflow:hidden;visibility:hidden;background-color:black;height:3px;width:'+(o.w+(_dtd4?-2:0))+'px"></div>'
+}
+function Dashboard_resize(w,h)
+{
+var o=this
+var dtd4 = (_dtd4?-4:0);
+o.oldResize((w!=null?Math.max(0,w+dtd4):null),(h!=null?Math.max(0,h+dtd4):null))
+if(w!=null)
+{
+o.w=w
+o.top.css.width = ''+(o.w+dtd4)+'px'
+o.titleLyr.childNodes[0].style.width=''+(Math.max(0,(o.w-o.pal.getWidth()+dtd4)))+'px'
+var parLayer = o.layer.parentNode
+parLayer.childNodes[0].style.width = ''+(o.w+dtd4)+'px'
+parLayer.childNodes[2].style.width = ''+(o.w+dtd4)+'px'
+}
+if(h!=null)
+{
+o.h=h
+o.body.css.heigth = ''+Math.max(0,o.h-o.topH-2)+'px'
+}
+if(o.resizeCB)
+    o.resizeCB(o,w,h);
+}
+function Dashboard_add(value,name,icon,dx,dy,cb,visible)
+{
+return newDashBoardAction(this,this.id+"_action_"+value,value,name,icon,dx,dy,cb,visible)
+}
+function Dashboard_remove()
+{
+var o=this
+var l=o.layer   
+    if (l)
+    {
+        var p=l.parentNode        
+        p.removeChild(l)
+    } 
+}
+function Dashboard_collapse()
+{
+var o = this
+//o.body.show(false)
+//o.css.height=""+o.topH+"px"
+o.expanded=false
+o.body.setDisplay(false)
+}
+function Dashboard_expand()
+{
+var o=this
+//o.body.show(true)
+//o.css.height=""+o.h+"px"
+o.expanded=true
+o.body.setDisplay(true)
+}
+function Dashboard_OverCB()
+{
+var o=getWidget(this)
+o.__hasMouseOver = true;
+o.showHidePaletteIconsIfNeeded();
+}
+function Dashboard_OutCB()
+{
+var o=getWidget(this)
+o.__hasMouseOver = false;
+o.showHidePaletteIconsIfNeeded();
+}
+function Dashboard_ClickCB(e)
+{
+var o=getWidget(this)
+var source =_ie?_curWin.event.srcElement:e.target
+if(!o.selected)
+{
+    if(o.container)
+    {
+        o.container.select(o)
+        if(o.container.changeCB)
+        o.container.changeCB("select");
+    }
+    else
+     o.select(true);
+}
+else
+{
+ if(o.container && o.container.changeCB)
+ {
+ o.container.changeCB("forceselect"); 
+ }
+}
+}
+function Dashboard_select(sel)
+{
+var o=this,items = o.pal.items, len=items.length
+o.selected=sel
+if(sel) //select
+{
+    o.top.layer.className="titleInputFormSel"    
+    /*for(var i=0;i<len;i++)
+    {
+    items[i].setClasses("iconnocheck2", "iconcheck", "iconhover2", "iconcheckhover")     
+    }   */
+}
+else //unselect
+{
+    o.top.layer.className="titleInputForm"  
+   /* for(var i=0;i<len;i++)
+    {
+    items[i].setClasses("iconnochecknobg", "iconchecknobg", "iconhovernobg", "iconcheckhovernobg")
+    }*/   
+}
+}
+function Dashboard_moveAbs(x,y)
+{
+var o=this
+o.css.position="absolute"
+if(x!=null)
+{
+o.x=x
+o.css.left=""+o.x+"px"
+}
+if(y!=null)
+{
+o.y=y
+o.css.top=""+o.y+"px"
+}
+}
+function Dashboard_collapseExtend(e)
+{
+var o,icn;
+if(this.paneElement) //from icn
+{
+icn=this;
+o=icn.paneElement.par
+}
+else if(this.par) //from dbclick
+{
+o=this.par
+icn=o.panes[o.panes.length-1].button
+}
+    if(o.expanded)
+{
+o.collapse();
+icn.changeTooltip(_expandLab);
+icn.changeImg(0,16*0,_skin+'collapse_expand.gif');
+}
+else
+{
+o.expand();
+icn.changeTooltip(_collapseLab);
+icn.changeImg(0,16*1,_skin+'collapse_expand.gif');
+}   
+}
+function Dashboard_setCallback(innerHTML,initCB,resizeCB,contextCB)
+{
+var o=this
+o.innerHTML=(innerHTML!=null)?innerHTML:""
+o.initCB=initCB
+o.resizeCB=resizeCB
+o.contextCB=contextCB
+}
+function Dashboard_showPaletteIcons(b)
+{
+var o=this
+var items=o.pal.items
+var len=items.length
+for(i=0;i<len;i++)
+{
+items[i].setDisplay((b==true)?b:items[i].paneElement.shown);
+}
+}
+function Dashboard_showHidePaletteIconsIfNeeded(b)
+{
+var o=this
+// If the mouse is over the title, must show icons
+var show = o.__hasMouseOver
+if (!show)
+{
+// Otherwise, show if an item have the focus
+var items=o.pal.items
+var len=items.length
+for(i=0;i<len;i++)
+{
+if (items[i].__hasFocus)
+{
+show=true
+break
+}
+}
+}
+o.showPaletteIcons(show)
+o.titleLyr.childNodes[0].style.width=''+(Math.max(0,(o.w-o.pal.getWidth()+(_dtd4?-2:0))))+'px'
+}
+function DashboardTitle_OverCB()
+{
+var o=this //titleLyr
+if(_ie )
+{
+if(o.par.container && (typeof(o.par.container.dragDrop)!="undefined")) //set a drag and drop cb
+o.style.cursor="move"
+}
+}
+function DashboardTitle_OutCB()
+{
+var o=this //titleLyr
+if(!o.par.moving)
+o.style.cursor="default"
+}
+function DashboardTitle_DownCB(e)
+{
+var o=this //titleLyr
+if(!o.par.selected) o.par.select();
+if (_ie)
+e=_curWin.event
+var isLeftButton=false
+if (_saf)
+isLeftButton=eventIsLeftButton(e)&&(e.button == _leftBtn)
+else
+isLeftButton=eventIsLeftButton(e)
+if(isLeftButton)
+o.par.moving=true
+o.par.initialX=eventGetX(e)
+o.par.initialY=eventGetY(e)
+return false; //firefox: do not select when dbclick
+}
+function DashboardTitle_UpCB(e)
+{
+var o=this //titleLyr
+/*
+if (_ie)
+e=_curWin.event
+var x = eventGetX(E)
+var y = eventGetY(e)
+o.par.moveAbs(x,y);*/
+o.par.moving=false
+return false; //firefox: do not select when dbclick
+}
+function Dashboard_ContextMenuCB(id,e)
+{
+var o=getWidgetFromID(id);
+if(o == null) return;
+if(o.contextCB) 
+o.contextCB(_ie?_curWin.event:e)
+else if(o.container && o.container.contextCB)
+o.container.contextCB(_ie?_curWin.event:e)
+}
+function Dashboard_getIndex()
+{
+    var o=this
+    if(!o.container) return -1;
+    else
+    {
+        var items = o.container.items
+        for(var i=0;i<items.length;i++)
+        {
+            if(items[i].value == o.value) 
+                return i
+        }
+        return -1;
+    }
+}
+function Dashboard_triggerDD(e)
+{
+var o=getWidget(this)
+if (o.moving)
+{
+if (o.initialX!=null)
+{
+var x=eventGetX(e),y=eventGetY(e),threshold=3
+if ((x<(o.initialX-threshold))||(x>(o.initialX+threshold))||(y<(o.initialY-threshold))||(y>(o.initialY+threshold)))
+{
+this.dragDrop()
+}
+}
+}
+}
+function Dashboard_setInsertFeedback(show)
+{
+var o=this,isTop=(_dropPosition!=-1);
+var parLayer=o.layer.parentNode;
+var top=parLayer.childNodes[0];
+var bottom=parLayer.childNodes[2];
+//reset
+top.style.visibility="hidden"
+bottom.style.visibility="hidden"
+if(show)
+{
+if (isTop)
+{
+top.style.visibility="visible"
+//st.borderTopColor=b
+//st.borderTopWidth=bs
+}
+else
+{
+bottom.style.visibility="visible"
+//st.borderBottomColor=b
+//st.borderBottomWidth=bs
+}
+}
+}
+function DashboardContainer_setDragDrop(dragCB,acceptDropCB,dropCB)
+{
+var o=this
+o.dragCB=dragCB
+o.acceptDropCB=acceptDropCB
+o.dropCB=dropCB
+o.dragDrop=newDragDropData(o,DCWidget_dragStartCB,DCWidget_dragCB,DCWidget_dragEndCB,DCWidget_acceptDropCB,DCWidget_leaveDropCB,DCWidget_dropCB)
+}
+function DCWidget_getDropInfo(layer)
+{
+var o=getWidget(layer)
+if(o.isContainer)
+{
+_dropFeebackWidget=o.getLastItem()
+_dropPosition = -1
+}
+else
+{
+_dropFeebackWidget=o
+_dropPosition=o.getIndex()
+//insert top or bottom if it is the last item
+if(_dropPosition == o.container.items.length-1) //last item
+{
+var cursorX=xpos(o.layer,event);
+var cursorY=ypos(o.layer,event);
+var h = o.layer.offsetHeight;
+var w = o.layer.offsetWidth;
+if(0<cursorX && cursorX<w && cursorY<h && cursorY>h/2)//half below part of the widget
+{
+_dropPosition = -1
+}
+}
+     }
+return _dropFeebackWidget
+}
+function DCWidget_dragStartCB(source,layer)
+{
+var o=getWidget(layer)
+_curWin.event.cancelBubble=true
+if (o)
+{
+source.dragCB(source)
+//newTooltipWidget().show(true)
+}
+}
+function DCWidget_dragCB(source,layer)
+{
+//newTooltipWidget().setPos(false);
+}
+function DCWidget_dragEndCB(source)
+{
+//newTooltipWidget().show(false)
+}
+function DCWidget_acceptDropCB(source,target,ctrl,shift,layer,enter)
+{
+var o=DCWidget_getDropInfo(layer)
+target.dropIndex=_dropPosition
+var accepted=target.acceptDropCB(layer)
+if (accepted&&o)
+{
+if (source&&(source.id==target.id))
+{
+var s=source.selection
+if (!ctrl&&s&&(s.id==o.id))
+{
+o.setInsertFeedback(false)
+return false
+}
+var srcIdx=s.getIndex()
+if (srcIdx==(_dropPosition-1))
+{
+o.setInsertFeedback(false)
+return false
+}
+}
+o.setInsertFeedback(true)
+}
+else if(o)
+o.setInsertFeedback(false)
+return accepted;
+}
+function DCWidget_leaveDropCB(source,target,ctrl,shift,layer)
+{
+var o=DCWidget_getDropInfo(layer)
+if (o)
+o.setInsertFeedback(false)
+}
+function DCWidget_dropCB(source,target,ctrl,shift,layer)
+{
+//newTooltipWidget().show(false);
+var o=DCWidget_getDropInfo(layer)
+if (o)
+o.setInsertFeedback(false)
+DCWidget_leaveDropCB(source,target,ctrl,shift,layer)
+target.dropIndex=_dropPosition
+target.dropCB(source,target)
+}
+function newDashBoardAction(par,id,value,name,icon,dx,dy,cb,shown)
+{
+var o=new Object
+o.par=par
+par.panes[par.panes.length]=o
+o.value=value
+o.name=name
+o.icon=icon
+o.button=newIconWidgetWithParentDiv(id,icon,cb,name,16,16,dx,dy);
+//o.button.setClasses("iconnochecknobg", "iconchecknobg", "iconhovernobg", "iconcheckhovernobg");
+o.button.setClasses(null, null, null, null);
+o.button.paneElement=o
+par.pal.add(o.button)
+o.button.par=par
+o.shown=(shown!=null)?shown:true; //always visible
+return o;
+}
+function newIconWidgetWithParentDiv(id,icon,cb,name,w,h,dx,dy)
+{
+var o=newIconWidget(id,icon,cb,null,name,w,h,dx,dy)
+o.iconGetHTML = o.getHTML
+o.iconInit    = o.init
+o.__displayed = true
+o.__hasFocus = false
+o.getHTML = function()
+{
+var o=this
+return '<div style="padding-left:0px" id="' + o.id + '_parentDiv">' + o.iconGetHTML() + '</div>'
+}
+o.init = function()
+{
+var o=this
+var l = o.parentDivLayer=getLayer(o.id + "_parentDiv")
+o.iconInit(l.childNodes[0])
+o.layer.onfocus=IconWidgetWithParentDiv_focus
+o.layer.onblur=IconWidgetWithParentDiv_blur
+}
+o.setDisplay = function(d)
+{
+var o=this
+if (o.layer)
+{
+o.__displayed = d
+var css = o.parentDivLayer.style
+if (d)
+{
+css.width=""
+css.overflow="visible"
+}
+else
+{
+css.width="0px"
+css.overflow="hidden"
+}
+}
+}
+o.delayedBlur = function()
+{
+o.par.showHidePaletteIconsIfNeeded();
+}
+return o
+}
+function IconWidgetWithParentDiv_focus()
+{
+var o=getWidget(this)
+o.__hasFocus = true
+o.par.showHidePaletteIconsIfNeeded();
+}
+function IconWidgetWithParentDiv_blur()
+{
+var o=getWidget(this)
+o.__hasFocus = false
+o.setTimeout("delayedBlur", 100)
+}
+function newDasboardContainerWidget(id,w,h,layout,changeCB,isRoot,hasBorder)
+{  
+    var o=newWidget(id)
+    o.w=(w==null?210:w)
+o.h=(h==null?600:h)      
+    o.items = new Array;
+    o.layout=layout
+    o.selection=null
+    o.counter=0
+    o.isContainer=true;
+    o.isRootContainer=(isRoot==null)?true:isRoot;
+    o.hasBorder=(hasBorder==null)?true:hasBorder;
+    o.changeCB=changeCB;
+    o.contextCB=null;
+    // Methods
+o.add = DashboardContainer_add
+o.remove = DashboardContainer_remove
+o.move = DashboardContainer_move
+o.select = DashboardContainer_select
+o.unselect = DashboardContainer_unselect
+o.unselectOther = DashboardContainer_unselectOther
+o.getSelection = DashboardContainer_getSelection
+o.getLastItem = DashboardContainer_getLastItem
+o.getItemByValue = DashboardContainer_getItemByValue
+o.getHTML=DashboardContainer_getHTML;
+o.beginHTML=DashboardContainer_beginHTML;
+o.endHTML=DashboardContainer_endHTML;
+o.innerHTML='';
+o.oldInit=o.init
+o.init=DashboardContainer_init
+o.oldResize=o.resize
+o.resize=DashboardContainer_resize
+o.setDragDrop=DashboardContainer_setDragDrop
+return o;
+}
+function DashboardContainer_init()
+{
+    var o = this, items=o.items;
+    o.oldInit();    
+    for (var j=0; j<items.length;j++) 
+    {        
+        items[j].init();
+    }
+    var dd=o.dragDrop
+    if (_ie&&dd)
+    {
+dd.attachCallbacks(o.layer)
+    }
+}
+function DashboardContainer_getHTML(o)
+{
+    var o=(o==null)?this:o;
+    var items=o.items,len=items.length;
+    var s=new Array,i=0
+    s[i++]='<div id="'+o.id+'" style="padding-top:'+(o.hasBorder?4:0)+'px; width:'+(o.w+(_dtd4?-4:0))+'px;height:'+(o.h+(_dtd4?-4:0))+'px;overflow:auto;padding-left:'+(o.hasBorder?5:0)+'px;"><table cellspacing=0 cellpadding=0 border=0><tbody>'  
+    //if len = 0 then write an empty table, and it will be fill later dynamically
+    if(len>0) 
+        s[i++]='<tr><td>';
+    for (var j=0; j<items.length;j++)
+    {
+        if(j>0)
+            s[i++]='</td></tr><tr><td>';
+        s[i++]=items[j].beginHTML()+ items[j].innerHTML + items[j].endHTML();
+    }
+    if(len>0) 
+        s[i++]='</td></tr>';
+    s[i++]='</tbody></table></div>';
+    return s.join("");    
+}
+function DashboardContainer_beginHTML()
+{
+return DashboardContainer_getHTML(this);
+}
+function DashboardContainer_endHTML()
+{
+return '';
+}
+function DashboardContainer_resize(w,h)
+{
+    var o=this, items=o.items, marge=4
+    o.w=(w==null?o.w:w)
+o.h=(h==null?o.h:h)
+if (o.isRootContainer)
+{
+//if vertical scrollbar then reduce the width of the items to have nice display
+var scrollH = o.layer.scrollHeight;
+    if(scrollH>h)
+    w = w-15;
+    var d=(o.hasBorder && _dtd4)?-4:0;
+    o.oldResize(o.w+d,o.h+d);
+}
+else
+{
+var d=(o.hasBorder && _dtd4)?-1:0;
+o.oldResize(o.w+d); //-1 because padding-left=5. 4-5=-1
+}
+    for (var j=0; j<items.length;j++) 
+    {        
+        //not take account of parameter h for the moment
+    items[j].resize(w-marge,null);     
+    }
+}
+function DashboardContainer_remove(item)
+{
+    var o=this,items=o.items
+    if(item.selected) 
+        o.selection=null
+    var l=item.layer   
+    if (l)
+    {
+        var p=l.parentNode.parentNode.parentNode        
+        p.removeChild(l.parentNode.parentNode)
+    } 
+    for(var i=0;i<items.length;i++)
+    { 
+        if(item.id == items[i].id)
+        {
+            arrayRemove(o,"items",i);
+            return;
+        }
+    }
+}
+function DashboardContainer_add(item,idx)
+{
+    var o=this, marge=8;
+    item.container=o;
+    idx=arrayAdd(o,"items",item,idx);   
+    var items=o.items //After the arrayAdd
+    if (o.layer)
+    {
+        var parNode=o.layer.childNodes[0].childNodes[0];            
+        var theTR=_curDoc.createElement('tr');        
+        var theTD=_curDoc.createElement('td');                
+        theTD.innerHTML=item.beginHTML()+item.innerHTML+item.endHTML();        
+        theTR.appendChild(theTD);
+        if (idx==(items.length-1))
+            parNode.appendChild(theTR);
+        else
+        {
+        //parNode = parNode.childNodes[0];
+            parNode.insertBefore(theTR,parNode.childNodes[idx]);
+        }
+       item.init();
+       item.resize(o.w-marge,null);       
+   }        
+    return item
+}
+function DashboardContainer_move(item,i)
+{
+    var o=this,items=o.items, len=items.length        
+    var newItem=newDashboardWidget(item.value+"_"+o.counter++,item.value,item.name,item.tooltip,item.w,item.h,null,null);
+    newItem.setCallback(item.innerHTML,item.initCB,item.resizeCB);
+    newItem.expanded=item.expanded;
+    //copy dashboard actions except the last one that is the default
+    for(var j=0;j<item.panes.length-1;j++)
+    {
+        var pane=item.panes[j]
+        newItem.add(pane.value,pane.name,pane.icon,pane.button.dx,pane.button.dy,pane.button.clickCB,pane.shown);
+    }    
+    //copy inner widgets
+    newItem.widgets=item.widgets;
+    // we should find an another way to copy extra information
+if (item.warningzone)
+newItem.warningzone = item.warningzone;
+    o.remove(item);
+    o.add(newItem,i);    
+    o.select(newItem);            
+}
+function DashboardContainer_select(item)
+{
+    var o=this
+    o.unselect();   
+    item.select(true);
+    o.selection=item;
+    if (!o.isRootContainer && o.par != null)
+       o.par.unselectOther(o.id);
+}
+function DashboardContainer_unselectOther(id)
+{
+    var o=this;
+    if (o.isRootContainer)
+    {
+       var it=o.items;
+       for(var i=0;i<it.length;i++)
+       { 
+            if (it[i].id != id && it[i].unselect)
+              it[i].unselect();
+        }
+    }
+}
+function DashboardContainer_unselect()
+{
+    var o=this
+    if(o.selection)
+    {
+        o.selection.select(false)    
+        o.selection=null;
+    }
+}
+function DashboardContainer_getSelection()
+{
+    return this.selection
+}
+function DashboardContainer_getLastItem()
+{
+var it= this.items
+if(it!=null && (it.length>0))
+{
+return it[it.length-1];
+}
+return null;
+}
+function DashboardContainer_getItemByValue(v)
+{
+var it= this.items
+for(var i=0;i<it.length;i++)
+{ 
+        if(v == it[i].value)
+        {
+        return it[i];
+        }
+    }
+return null;
+}
+function newDasboardGroupSeparator(id,text,expandCB,collapseCB,type)
+{  
+var o=newWidget(id);
+o.text=(text==null)?'':text;
+o.type=(type==null)?'local':type;
+o.expanded=true;
+    o.expandCB=expandCB;
+    o.collapseCB=collapseCB;
+    // Standard widget methods
+    o.beginHTML=DasboardGroupSeparator_beginHTML;
+    o.endHTML=DasboardGroupSeparator_endHTML;
+    o.innerHTML='';
+o.oldInit=o.init;
+o.init=DasboardGroupSeparator_init;
+o.oldResize=o.resize;
+o.resize=DasboardGroupSeparator_resize;
+return o;
+}
+function DasboardGroupSeparator_init()
+{
+var o=this;
+o.oldInit();
+}
+function DasboardGroupSeparator_beginHTML()
+{
+    //Build HTML
+    var o=this;
+    o.imgUrl='../../../images/main/taskPane.png';
+    var blockStyle = 'inline-block' + (_ie8CompView?';zoom:1;*display:inline':'');
+    var s=new Array,i=0;
+    s[i++]='<table id="'+o.id+'" cellspacing="0" cellpadding="0" style="border:0px;height:17px;width:100%;background-image:url(\''+o.imgUrl+'\');background-position:0px 0px;margin-top:4px;">';  
+    s[i++]= '<tr>';
+    s[i++]=  '<td><div style="background-image:url(\''+o.imgUrl+'\');background-position:0px -17px;height:17px;width:7px;"></div></td>';
+    s[i++]=   '<td style="vertical-align:middle;width:100%" nowrap>';
+    s[i++]=    '<div style="width:13px;height:9px;cursor:'+_hand+';display:'+blockStyle+';background-image:url(\''+o.imgUrl+'\');background-position:0px -51px;"';
+    s[i++]=    ' id="icn'+o.id+'" '+(_moz?'onclick':'onmousedown')+'="'+_codeWinName+'.DasboardGroupSeparator_click(this); if (_ie) return false;" ondblclick="'+_codeWinName+'.DasboardGroupSeparator_click(this); if (_ie) return false;"';
+    s[i++]=    ' onkeydown="'+_codeWinName+'.DasboardGroupSeparator_click(this); if (_ie) return false;" title="'+_expandedLab+'"></div>';
+    s[i++]=    '<div style="display:'+blockStyle+';padding-left:2px;text-overflow:ellipsis;white-space:nowrap;">'+o.text+'</div>';
+    s[i++]=    '<div id="'+o.id+'count" style="display:'+blockStyle+';padding-left:4px;text-overflow:ellipsis;white-space:nowrap;"></div>';
+    s[i++]=   '</td>';
+    s[i++]=  '<td><div style="background-image:url(\''+o.imgUrl+'\');background-position:0px -34px;height:17px;width:7px;"></div></td>';
+    s[i++]= '</tr>';
+s[i++]='</table>';
+return s.join('');
+}
+function DasboardGroupSeparator_endHTML()
+{
+return '';
+}
+function DasboardGroupSeparator_resize(w,h)
+{
+var o=this;
+var marge=4;
+//because this resize is called with a marge==4   items[j].resize(w-marge,null);
+o.oldResize(w+marge);
+}
+function DasboardGroupSeparator_click(lyr)
+{
+var id=lyr.id.substring(3);
+var o=getWidgetFromID(id);
+if (o.expanded)
+{
+o.expanded=false;
+lyr.style.backgroundPosition="0px -60px";
+if (o.collapseCB)
+o.collapseCB(id);
+}
+else
+{
+o.expanded=true;
+lyr.style.backgroundPosition="0px -51px";
+if (o.expandCB)
+o.expandCB(id);
+}
+}

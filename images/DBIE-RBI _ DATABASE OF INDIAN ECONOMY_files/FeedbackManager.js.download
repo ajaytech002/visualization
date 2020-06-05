@@ -1,0 +1,807 @@
+/*
+=============================================================
+WebIntelligence(r) Report Panel
+Copyright(c) 2001-2005 Business Objects S.A.
+All rights reserved
+
+Use and support of this software is governed by the terms
+and conditions of the software license agreement and support
+policy of Business Objects S.A. and/or its subsidiaries. 
+The Business Objects products and technology are protected
+by the US patent number 5,555,403 and 6,247,008
+
+=============================================================
+*/_overColor = {r:17, g:17, b:17} 
+_selectColor = {r:87, g:114, b:167}
+_selectInstanceColor = {r:0, g:0, b:255}
+_overInstanceColor = {r:17, g:17, b:17}
+_selectTableCellInstanceColor = {r:20, g:35, b:72}
+_overTableCellColor = {r:155, g:168, b:181}
+MoveLayer = { "topLeftPoint":0,
+"topMiddlePoint":1,
+"topRightPoint":2,
+"bottomLeftPoint":3,
+"bottomMiddlePoint":4,
+"bottomRightPoint":5,
+"middleLeftPoint":6,
+"middleRightPoint":7,
+"lines1":8,
+"lines2":9,
+"lines3":10,
+"lines4":11
+}
+function feedbackManager() 
+{
+var o=new Object;
+o.dpi = null
+o.zoom = 100
+o.rWin = null
+o.rDoc = null
+o.pageContainer = null
+o.containerPos = null 
+o.startPos = null 
+o.deltaHandle = null 
+o.moveLayerObjects = null 
+o.currentFeedbackLayer = null
+o.currentSelection = null
+o.currentShow = null
+o.currentMoveZone = null
+o.startMoveLayer = null
+o.subRegion = null 
+o.resizeObj = null
+o.init = function(rWin, rDoc, zoom, dpi)
+{
+var o=this
+o.dpi = dpi
+o.zoom = zoom
+o.rWin = rWin
+o.rDoc = rDoc
+o.startPos = {x:0, y:0}
+o.deltaHandle = {x:0, y:0}
+o.updateContainerPos()
+o.moveLayerObjects=null 
+o.currentFeedbackLayer=null
+o.currentShow = new Hash
+}
+o.setZoom = function(zoom)
+{
+this.zoom = zoom
+}
+o.getZoom = function()
+{
+return this.zoom
+}
+o.updateContainerPos = function() {
+var o = this
+var l = o.rDoc.getElementById("pageContainer")
+o.pageContainer = l = l ? l : o.rDoc.body
+o.containerPos = getPos(l);
+}
+o.getAbsolutePos = function (layer)
+{
+var o = this
+var pos = getPos(layer, o.pageContainer)
+var containerPos = o.containerPos
+if(containerPos)
+{
+return {x:containerPos.x + parseInt(pos.x * o.getZoom()), y:containerPos.y + parseInt(pos.y * o.getZoom())}
+}
+}
+o.getMousePos = function(e)
+{
+var o=this
+return {x:eventGetX(e,o.rWin), y:eventGetY(e,o.rWin)}
+}
+o.getStartPos = function(e)
+{
+return this.startPos;
+}
+o.getDelta = function(pos1, pos2) {
+return {x:pos1.x-pos2.x, y:pos1.y-pos2.y}
+}
+o.createFeedbackObjects = feedbackManager_createFeedbackObjects;
+o.hideFeedbackObjects = feedbackManager_hideFeedbackObjects
+o.showVignette = feedbackManager_showVignette
+o.showSectionVignette = feedbackManager_showSectionVignette;
+o.hideSectionVignette = feedbackManager_hideSectionVignette;
+o.getBlockIdref = feedbackManager_getBlockIdref;
+o.show = feedbackManager_show;
+o.showMoveZone = feedbackManager_showMoveZone
+o.select = feedbackManager_select
+o.unselect = feedbackManager_unselect
+o.unselectElt = feedbackManager_unselectElt
+o.drawFeedArea = feedbackManager_drawFeedArea
+o.beginMove = function (e) {
+var o = this
+o.bIsMoving = true
+o.startPos = o.getMousePos(e)  
+o.deltaHandle = o.getDelta(o.startPos, o.getAbsolutePos(o.currentMoveLayer))
+o.startMoveLayer = o.currentMoveLayer
+}
+o.unload = feedbackManager_unload
+o.boresizediv=null
+o.boresizediv2=null
+o.deltaHandleX=null
+o.deltaHandleY=null
+o.bIsMoving = false
+o.isMoving = function() {
+return this.bIsMoving && (null != this.currentMoveLayer);
+}
+o.bIsResizing = false
+o.isResizing = function() {
+return this.bIsResizing
+}
+o.getResizeZoneX = function() {
+return this.deltaHandleX
+}
+o.getResizeZoneY = function() {
+return this.deltaHandleY
+}
+o.currentMoveLayer=null
+o.setCurrentMoveLayer = function(layer) {
+this.currentMoveLayer = layer;
+}
+o.getCurrentMoveLayer = function() {
+return this.currentMoveLayer;
+}
+o.setResizeObj = function(layer) {
+this.resizeObj = layer;
+}
+o.getResizeObj = function() {
+return this.resizeObj;
+}
+o.globMoveTarget=null
+o.updateMoveTarget = feedbackManager_updateMoveTarget 
+o.showMoveTarget = feedbackManager_showMoveTarget
+o.getFr = function() {
+return this.rWin ;
+}
+o.getDoc = function() {
+return this.rDoc ;
+}
+o.getDpi = function() {
+return this.dpi ;
+}
+o.getRegionDefId = function() {
+if (this.subRegion) {
+return this.subRegion.id
+} else {
+return null
+}
+}
+o.setSubRegion = feedbackManager_setSubRegion
+o.getSubRegion = function() {
+return this.subRegion
+}
+o.setDynArea = function(area) {
+this.dynArea = area;
+}
+o.getDynArea = function() {
+return this.dynArea
+}
+o.clearSubRegion = feedbackManager_clearSubRegion
+o.draw = feedbackManager_draw
+o.drawMoveZone = feedbackManager_drawMoveZone
+return o;
+}
+function feedbackManager_unload()
+{
+var o = this
+o.unselect()
+o.boresizediv=null
+o.boresizediv2=null
+o.currentMoveLayer=null
+o.globMoveTarget=null
+o.currentFeedbackLayer=null
+o.resizeObj=null
+o.currentMoveZone=null
+o.startMoveLayer=null 
+clearMoutTimer()
+}
+function new_FeedbackBehavior(prms) {
+var o = prms = (prms == null)?{}:prms
+o.resizable = Widget_param(prms, "resizable", true)
+o.resizableH = Widget_param(prms, "resizableH", o.resizable)
+o.resizableW = Widget_param(prms, "resizableW", o.resizable)
+o.resizableT = Widget_param(prms, "resizableT", true)
+o.resizableB = Widget_param(prms, "resizableB", true)
+o.movable = Widget_param(prms, "movable", true)
+o.select = Widget_param(prms, "select", false)
+o.isSelectedInstance = Widget_param(prms, "isSelectedInstance", false)
+o.blockIdref = Widget_param(prms, "blockIdref", null)
+return o
+}
+function feedbackManager_show(bShow, layer, e, fr, points, behavior) {
+var o = this
+behavior = behavior?behavior:new_FeedbackBehavior()
+behavior.select = false
+if (isWOMLoaded!=true) return
+if (o.moveLayerObjects == null) {
+o.createFeedbackObjects()
+}
+if (bShow)
+{
+if (null != layer) { 
+o.currentMoveLayer = layer
+var bid = layer?layer.getAttribute("bid"):null
+var idref = null, lastIdref = null
+idref = isStructure?getElementOrParentBid(layer):getElementOrParentIdref(layer)
+lastIdref = isStructure?getElementOrParentBid(o.currentFeedbackLayer):getElementOrParentIdref(o.currentFeedbackLayer)
+var origin = o.getAbsolutePos(layer)
+var doExist = false
+var showObj = {"bid": bid }
+if ((o.getRegionDefId() != null) && (points != null)){
+showObj.regionDefId = o.getRegionDefId()
+o.currentShow.each( function (pair) {
+var currentShow = pair.value
+if (_feedbackManager.getRegionDefId() && currentShow.regionDefId && (_feedbackManager.getRegionDefId() == currentShow.regionDefId)){
+doExist = true
+} else if ((behavior.blockIdref != null) && (behavior.blockIdref == currentShow.blockIdref)) {
+} else {
+Draw.clear(currentShow.idShow)
+_feedbackManager.currentShow.unset(pair.key)
+}
+})
+} else if (behavior.blockIdref && (behavior.blockIdref == idref)) {
+showObj.blockIdref = behavior.blockIdref
+showObj.idref = behavior.blockIdref 
+o.currentShow.each( function (pair) {
+var currentShow = pair.value
+if ((currentShow.blockIdref) && (behavior.blockIdref == currentShow.blockIdref)) {
+doExist = true
+} else {
+Draw.clear(currentShow.idShow)
+_feedbackManager.currentShow.unset(pair.key)
+}
+})
+} else if (idref != lastIdref) { 
+if (behavior.blockIdref == null) { 
+o.currentShow.each( function (pair) {
+var currentShow = pair.value
+Draw.clear(currentShow.idShow)
+_feedbackManager.currentShow.unset(pair.key)
+})
+} 
+o.currentFeedbackLayer = layer
+showObj.idref = idref
+o.currentShow.each( function (pair) {
+var currentShow = pair.value
+if (idref && currentShow.idref && (currentShow.idref == idref)) {
+doExist = true
+} else if (behavior.blockIdref && (behavior.blockIdref == currentShow.blockIdref)) {
+} else {
+Draw.clear(currentShow.idShow)
+_feedbackManager.currentShow.unset(pair.key)
+}
+})
+} else {
+clearMoutTimer() 
+if (behavior.blockIdref == null) { 
+o.currentShow.each( function (pair) {
+var currentShow = pair.value
+if (idref && currentShow.idref && (currentShow.idref == idref)) {
+doExist = true
+} else {
+Draw.clear(currentShow.idShow)
+_feedbackManager.currentShow.unset(pair.key)
+}
+})
+} 
+showObj.idref =  idref
+layer = o.currentFeedbackLayer
+}
+}
+if (!doExist) {
+if (bid != _bidBody) {
+if (!origin) return
+showObj.idShow = o.draw(origin, fr, points, layer, behavior)
+var showKey = o.getRegionDefId()?o.getRegionDefId():showObj.idref
+var prevShow = o.currentShow.get(showKey)
+if (prevShow){
+Draw.clear(prevShow.idShow)
+o.currentShow.unset(prevShow.key)
+}
+o.currentShow.set(showKey, showObj)
+}
+}
+} else {
+if (o.currentShow != null) {
+var prevIdref = isStructure?getElementOrParentBid(o.currentMoveLayer):getElementOrParentIdref(o.currentMoveLayer) 
+o.currentShow.each( function (pair) {
+var currentShow = pair.value
+var curIdref = currentShow.idref
+if (o.getRegionDefId()) {
+if (currentShow.regionDefId && (o.getRegionDefId() == currentShow.regionDefId)) {
+} else if (!(currentShow.blockIdref)) { 
+Draw.clear(currentShow.idShow)
+_feedbackManager.currentShow.unset(pair.key)
+}
+} else {
+var blockIdref = o.getBlockIdref()
+var sameIdref = (prevIdref == curIdref)
+var sameBlockIdref = (blockIdref == curIdref)
+if (!(currentShow.regionDefId) && (sameIdref || sameBlockIdref)) {
+} else {
+Draw.clear(currentShow.idShow)
+_feedbackManager.currentShow.unset(pair.key)
+}
+}
+})
+}
+}
+}
+function feedbackManager_showMoveZone(bShow, layer, e, fr) {
+var o = this
+if (bShow)
+{
+if (null == o.currentMoveZone) {
+if (!o.startMoveLayer)  return
+var origin = o.getAbsolutePos(o.startMoveLayer)
+o.currentMoveZone = o.drawMoveZone(origin, fr, o.startMoveLayer) 
+}
+var d = o.getDelta(o.getMousePos(e), o.getStartPos())
+Draw.move(o.currentMoveZone, d.x, d.y)
+} else {
+if (null != o.currentMoveZone) {
+Draw.clear(o.currentMoveZone)
+o.currentMoveZone = null
+}
+}
+}
+_currentDrawnFeedsIdref = null
+function feedbackManager_drawFeedArea(fr, color, layer, points, z, desc) {
+var o = this
+var origin = o.getAbsolutePos(layer)
+Draw.setOrigin(origin.x, origin.y)
+Draw.setPattern(null)
+Draw.setOpacity(0.15)
+Draw.setColor(color)
+if (points.x != null) {
+x1= doZoom(points.x, z), x2=doZoom(points.x2, z), y1=doZoom(points.y, z), y2=doZoom(points.y2, z)
+Draw.fillRect(x1, y1, (x2 - x1), (y2 - y1))
+Draw.setZIndex(2000);
+Draw.transpArea(x1, y1, (x2 - x1), (y2 - y1), desc)
+} else {
+var zp = new Array
+for (var pi=0; pi < points.length; pi++) {
+zp[pi] = {'x':doZoom(points[pi].x, z), 'y':doZoom(points[pi].y, z)}
+}
+Draw.fillPoly(zp, true)
+}
+return Draw.render(fr)
+}
+function displayCurrentShow(showAr) {
+showAr.each (function(pair) {
+var curShow = pair.value
+traceLog("key:" + pair.key +  ", idShow:" + curShow.idShow + ", idref:"+ curShow.idref +", RegionDefId:" +  curShow.regionDefId)
+})
+}
+function feedbackManager_getBlockIdref() {
+var o=this
+if (null == o.currentShow) return null
+var locBlockIdref = null
+o.currentShow.each( function(pair) {
+var curShow = pair.value
+if (curShow.blockIdref != null) {
+locBlockIdref = curShow.blockIdref
+}
+})
+return locBlockIdref
+}
+function feedbackManager_clearSubRegion() {
+var o = this
+o.subRegion = null
+o.regiondefid = null
+}
+function feedbackManager_setSubRegion(m) {
+if (!m)return
+var o = this
+o.clearSubRegion()
+var curRegionCoords = _curChartRegionCoords.keys()
+var subRegionCoords = new Array
+for (var i = 0; i < curRegionCoords.length; i++) {
+var id = curRegionCoords[i]
+if (id == "idref") continue                         
+var c = _curChartRegionCoords.get(id).coords
+if (pointInShape(m, c, (_curChartRegionCoords.get(id).shape == "P"))) {
+subRegionCoords[subRegionCoords.length] = _curChartRegionCoords.get(id)
+}
+}
+for (var i = 0; i < subRegionCoords.length; i++) {
+var c = subRegionCoords[i].coords
+if (pointInShape(m, c, (subRegionCoords[i].shape == "P"))) {
+if (null == o.subRegion) {
+o.subRegion = subRegionCoords[i]
+} else if (subRegionCoords[i].id.length > o.subRegion.id.length) { 
+o.subRegion = subRegionCoords[i]
+}
+}
+}
+}
+function feedbackManager_select(layer, fr, points, behavior) {
+var o=this
+behavior = behavior?behavior:new_FeedbackBehavior()
+behavior.select = true
+var origin = o.getAbsolutePos(layer)
+if (null == o.currentSelection) {
+o.currentSelection = new Array
+}
+var bDraw = true;
+for (var i=0; i < o.currentSelection.length;i++) {
+if (o.currentSelection[i].layer && typeof(o.currentSelection[i].layer.getAttribute)!="undefined" 
+&& o.currentSelection[i].layer.getAttribute
+&& typeof(layer.getAttribute)!="undefined" 
+&& layer.getAttribute
+&& o.currentSelection[i].layer.getAttribute("idref") == layer.getAttribute("idref")
+&& !isStructure)
+{
+bDraw = false;
+break; 
+}
+}
+if (bDraw )
+{
+var newSelection = new Object();
+newSelection.id = o.draw(origin, fr, points, layer, behavior);
+newSelection.layer = layer;
+o.currentSelection[o.currentSelection.length] = newSelection;
+}
+}
+function feedbackManager_draw(origin, fr, points, layer, behavior) {
+if(origin)
+Draw.setOrigin(origin.x, origin.y)
+Draw.setPattern(null)
+if (behavior.select) {
+Draw.setZIndex(4)
+Draw.setColor(behavior.isSelectedInstance?behavior.isTableCell?_selectTableCellInstanceColor:_selectInstanceColor:_selectColor)
+} else {
+Draw.setZIndex(3)
+if (behavior.isSelectedInstance) {
+Draw.setColor(behavior.isTableCell?_overTableCellColor:_overInstanceColor)
+} else {
+Draw.setPattern(_img+"preselectionPattern.png")
+}
+}
+Draw.setOpacity(1)
+if (points) {
+var sz = behavior.zoom?behavior.zoom:1
+if (points.x != null) {
+x1= doZoom(points.x,sz), x2=doZoom(points.x2,sz), y1=doZoom(points.y,sz), y2=doZoom(points.y2,sz)
+Draw.strokeRect(x1, y1, (x2 - x1), (y2 - y1))
+Draw.drawImages([{x:x1, y:y1}, {x:x1, y:y2}, {x:x2, y:y1}, {x:x2, y:y2} ], 
+{src:_img+"bullet.png", w:6, h:6, dx:0, dy:0, cursor:"default"})
+} else {
+var zp = new Array
+for (var pi=0; pi < points.length; pi++) {
+zp[pi] = {'x':doZoom(points[pi].x,sz), 'y':doZoom(points[pi].y,sz)}
+}
+Draw.strokePoly(zp, true)
+}
+} else {
+x1=0, y1=0
+var z = this.getZoom()
+w = layer.offsetWidth * z
+h = layer.offsetHeight * z
+x2 = x1+w, y2 = y1+h
+Draw.strokeRect(x1, y1, w, h)
+if (behavior.movable) {
+var icnTransp = { 
+dx:0, dy:0, 
+bid:getElementOrParentBid(layer),
+idref:getElementOrParentIdref(layer),
+mouseDownCB:beginMoveCB, 
+mouseUpCB:feedbackManager_moveLineMup,
+contextMenuCB:blockFeedback_ContextMenu,
+mouseOverCB:mover,
+"feedbackOutside":true,
+mouseOutCB:mout
+}
+lineW = 6
+Draw.transpRectangle(x1, y1, w, h, lineW, icnTransp)
+}
+var icn = { src:_img+"corner.png", w:8, h:8, dx:0, dy:0, 
+mouseDownCB:feedbackManager_mouseDown,
+dblclickCB:viewDblClickCB,
+bid:getElementOrParentBid(layer),
+idref:getElementOrParentIdref(layer)
+}
+if (behavior.resizableW && behavior.resizableH) {
+icn.zone = _cellTopLeft
+icn.cursor="nw-resize"
+Draw.drawImages([{x:x1, y:y1}], icn)
+icn.zone = _cellBottomLeft
+icn.cursor="sw-resize"
+Draw.drawImages([{x:x1, y:y2}], icn)
+icn.zone = _cellTopRight
+icn.cursor="ne-resize"
+Draw.drawImages([{x:x2, y:y1}], icn)
+icn.zone = _cellBottomRight
+icn.cursor="se-resize"
+Draw.drawImages([{x:x2, y:y2}], icn)
+}
+var icn2 = Object.clone(icn);
+icn2.cursor=_resizeW, icn2.src=_img+"square.png", icn2.zone = _cellRight
+if (behavior.resizableW) {
+Draw.drawImages([{x:w, y:(h/2)}], icn2)
+var icn3 = Object.clone(icn2);
+icn3.zone = _cellLeft
+Draw.drawImages([{x:0, y:(h/2)} ], icn3)
+}
+if (behavior.resizableH) {
+var icn4 = Object.clone(icn2);
+icn4.cursor=_resizeH
+if (behavior.resizableT) {
+icn4.zone = _cellTop
+Draw.drawImages([{x:(w/2), y:0}], icn4)
+}
+if (behavior.resizableB) {
+var icn5 = Object.clone(icn4);
+icn5.zone = _cellBottom
+Draw.drawImages([{x:(w/2), y:h} ], icn5)
+}
+} 
+}
+return Draw.render(fr)
+}
+function feedbackManager_drawMoveZone(origin, fr, layer) {
+Draw.setOrigin(origin.x, origin.y)
+Draw.setPattern(_img+"preselectionPattern.png")
+Draw.setOpacity(1)
+var z = this.getZoom()
+w = layer.offsetWidth * z
+h = layer.offsetHeight * z
+Draw.strokeRect(0, 0, w, h)
+return Draw.render(fr)
+}
+function doZoom(p,sz) {
+return parseInt((parseInt(p)*sz)/100)
+}
+function feedbackManager_unselect() {
+var o=this
+if (o.currentSelection) {
+for (var i=0; i < o.currentSelection.length;i++) {
+Draw.clear(o.currentSelection[i].id)
+o.currentSelection[i] = null
+}
+o.currentSelection=null
+}
+}
+function feedbackManager_unselectElt(idref) {
+var o=this
+if (typeof(idref)=="undefined") return;
+if (o.currentSelection) {
+for (var i=0; i < o.currentSelection.length;i++) {
+if (o.currentSelection[i].layer && typeof(o.currentSelection[i].layer.getAttribute)!="undefined" 
+&& o.currentSelection[i].layer.getAttribute
+&& o.currentSelection[i].layer.getAttribute("idref") == idref )
+{
+Draw.clear(o.currentSelection[i].id);
+o.currentSelection[i] = null;
+o.currentSelection.splice(i,1);
+break;
+}
+}
+}
+}
+function feedbackManager_createFeedbackObjects() {
+var o = this, d = o.rDoc, body = d.body 
+var s = '<div id="boresizediv" style="overflow:hidden;z-index:10000;position:absolute;display:none;background-image:url('+_img+'line.png);"></div>'
+append(d.body, s, d)
+s=null
+var s2 = '<div id="boresizediv2" style="overflow:hidden;z-index:10000;position:absolute;display:none;background-image:url('+_img+'line.png);"></div>'
+append(d.body, s2, d)
+s2=null
+o.boresizediv = d.getElementById("boresizediv")
+o.boresizediv2 = d.getElementById("boresizediv2")
+}
+function feedbackManager_hideFeedbackObjects() {
+var o = this
+if (o.boresizediv) {
+o.boresizediv.style.display = "none"
+}
+if (o.boresizediv2) {
+o.boresizediv2.style.display = "none"
+}
+}
+function feedbackManager_showVignette(layer, txt){
+if (layer == null) return
+if ((null == txt) || ("" == txt)) return
+var o = this 
+var d = o.rDoc
+var newVignette = d.getElementById("_sectionVignetteUnicId")
+if (newVignette == null) {
+var url = _img+ 'vignette.png'
+var s = '<table cellspacing="0" cellpadding="0" border="0">'
+s += '<tr><td width="2"><div style="overflow:hidden;width:2px;height:22px;' + backImgOffset(url,0,0) + '"></div></td>'
+s += '<td width="80">'
+s += '<div id="_unicVignetteTxtId" style="overflow:hidden;width:80px;height:22px;font-family:Tahoma,sans-serif;color:black;font-size:10px;font-style:italic;' + backImgOffset(url,0,22) + '">'
+s += txt + '</div></td>'
+s += '<td width="2"><div style="overflow:hidden;width:2px;height:22px;' + backImgOffset(url,0,44) + '"></div></td></tr>'
+s += '</table>'
+var newVignette=d.createElement('div')
+newVignette.id= "_sectionVignetteUnicId"
+var vignetteSt=newVignette.style
+vignetteSt.position="absolute"
+vignetteSt.zIndex=100
+vignetteSt.width="28px"
+vignetteSt.height="22px"
+newVignette.innerHTML=s
+d.body.appendChild(newVignette)
+s=null
+} 
+d.getElementById("_unicVignetteTxtId").innerHTML = txt 
+var xy = getPos(layer)
+newVignette.style.top = parseInt(xy.y * o.getZoom())
+newVignette.style.left = xy.x + 20
+}
+function feedbackManager_showSectionVignette(sectionLayer){
+if (sectionLayer == null) return
+var sectionName = sectionLayer.getAttribute("index")
+this.showVignette(sectionLayer, sectionName)
+}
+function feedbackManager_hideSectionVignette() {
+var divLayer = null
+if (this.rDoc)divLayer = this.rDoc.getElementById("_sectionVignetteUnicId")
+if (divLayer == null)  return
+divLayer.style.top = -1000
+divLayer.style.left = -1000
+}
+function feedbackManager_mouseDown(e) {
+traceLog("feedbackManager_mouseDown")
+var o=this,bid=o.getAttribute("bid"), fr=getReportFrame(), zone = o.getAttribute("zone");
+if (fr==null) return
+var d=fr.document
+if (_ie)
+e = fr.event 
+if (!_webKit)
+fr.focus();
+o = isStructure?getLayerByBid(bid):getLayerByIdRef(getElementOrParentIdref(o))
+o.downZone = zone 
+e.cancelBubble=true
+_feedbackManager.setResizeObj(o)
+_feedbackManager.unselect()
+_feedbackManager.clearSubRegion()
+var elt=findByBID(doc, bid)
+var cn=elt?elt.className:""
+cn = isTableCell(elt)?"tableCell":cn
+canSelectBid(bid, cn, e, o, fr)
+if (_ie && o.resizeObj)
+o.setCapture(true)
+simulateClick(e)
+if (!_webKit)
+return false
+}
+function feedbackManager_moveLineMup(e) {
+if (!_feedbackManager.isMoving()) return
+var fr = _feedbackManager.getFr()
+if (fr == null) return
+e=_ie?fr.event:e
+var d = fr.document
+var o=this,bid=o.getAttribute("bid")
+o = isStructure?getLayerByBid(bid):getLayerByIdRef(getElementOrParentIdref(o))
+if (_ie) {
+try{
+o.releaseCapture()
+} catch(e) {}
+}
+var pscale = getPScale(o); 
+var elt = findByBID(doc, bid)
+if (isTableCell(elt)) {
+var tableBid = getTableCellParentBID(elt)
+bid = tableBid?tableBid:bid
+}
+var parentElt = getParentContainer(elt); 
+var targetBID = parentElt.bid 
+if ((o.resizeObj == null) && (_feedbackManager.getCurrentMoveLayer() == null)) {
+e.cancelBubble=true
+}
+var pos = _feedbackManager.getDelta(_feedbackManager.getMousePos(e), _feedbackManager.deltaHandle) 
+var z=_feedbackManager.getZoom()
+var pageContainer = getPageContainer()
+var pos2=
+{
+x:((- getPos(o,pageContainer).x*z - pageContainer.offsetLeft + pos.x) / z),
+y:((- getPos(o,pageContainer).y*z - pageContainer.offsetTop  + pos.y) / z)
+}
+var xybid = getClickCoordinates(o, pos2) 
+var relativePos = _feedbackManager.getDelta(_feedbackManager.getMousePos(e), _feedbackManager.getStartPos())
+var adx = Math.abs(parseInt(relativePos.x)), ady = Math.abs(parseInt(relativePos.y))
+traceLog("adx:" + adx + ", ady:" + ady)
+if ((adx-_deltaFoldPanelWidth <= 2) && (ady-_deltaFoldPanelHeight <= 2)) {
+return 
+}
+_feedbackManager.bIsMoving = false
+relativePos={x:relativePos.x/z, y:relativePos.y/z}
+var dpi = _feedbackManager.getDpi()
+var dX = pixelToMetrics(relativePos.x, dpi)
+var dY = pixelToMetrics(relativePos.y, dpi)
+var url = _root + "processMoveElement"+_appExt
+url += urlParamsNoBID() + "&sBid=" + escape(bid) + "&sTargetBid="+escape(targetBID) 
+url += "&sX=" + pixelToMetrics(xybid.x, dpi) + "&sY=" + pixelToMetrics(xybid.y, dpi) 
+url += "&sRow=" + xybid.row + "&sStartRow=" + _MoveStartRow 
+url += "&sDx=" + dX + "&sDy=" + dY
+url += "&pScale="+pscale;
+if (isEnableUserRight(WS._usrInsertDuplicate))
+url += "&sDup=" + (_mac?(e.metaKey) : (e.ctrlKey))
+_triggerMoveURL = url;
+var attach = elt.attach
+if (attach) {
+if (attach.toH) {
+var posX = elt.x 
+if ((posX + relativePos.x) < 0) {
+_triggerMoveURL+="&bKeepAttach=false";
+showPromptDialog("$LOC_VIEWER_RESIZE_ELEM_DISABLE_RELATIVE_POS$", "$LOC_VIEWER_RESIZE_ELEM_DISABLE_RELATIVE_POS_CONFIRM$", _promptDlgWarning, triggerMoveYesCB, null)
+return
+}
+}
+if (attach.toV) {
+var posY = elt.y 
+if ((posY + relativePos.y) < 0) {
+_triggerMoveURL+="&bKeepAttach=false";
+showPromptDialog("$LOC_VIEWER_RESIZE_ELEM_DISABLE_RELATIVE_POS$", "$LOC_VIEWER_RESIZE_ELEM_DISABLE_RELATIVE_POS_CONFIRM$", _promptDlgWarning, triggerMoveYesCB, null)
+return
+}
+}
+_triggerMoveURL+="&bKeepAttach=true";
+}
+e.cancelBubble=true
+_feedbackManager.currentFeedbackLayer=null 
+clearMoutTimer()
+wt()
+setReportUrl(_triggerMoveURL,true,null,true) 
+}
+function feedbackManager_updateMoveTarget(cn, layer) {
+var o=this
+if (o.globMoveTarget == null)
+{
+if (isContainer(cn)) {
+o.globMoveTarget=layer
+}
+}
+}
+function feedbackManager_showMoveTarget() {
+var o=this
+if (o.globMoveTarget != null)
+{
+bid= o.globMoveTarget.getAttribute("bid")
+var fr = o.rWin
+deselectAll(fr, bid)
+var elt = findByBID(o.rDoc, bid)
+if (elt && elt.className == "block" && elt.children[0]) 
+{            
+var c= elt.children[0].children
+var cLen = c.length
+for (var i = 0; i < cLen; i++)
+{
+var cc=c[i].children
+var ccLen = cc.length
+              for (var j = 0; j < ccLen; j++)
+selectSingle(fr, cc[j].bid)
+}
+} else {
+selectSingle(fr, bid)
+}
+o.globMoveTarget=null
+}
+}
+function pointInPolygon(point, points) {
+var len = points.length, j = len-1, cond=false  
+var px = point.x, py = point.y
+for (var i=0; i < len; i++) {
+var pi=points[i], pj=points[j], piy=pi.y, pix=pi.x, pjy=pj.y
+if ((piy < py) && (pjy >= py) || ((pjy < py) && (piy >= py))) {
+if (pix + (py - piy)/(pjy - piy) * (pj.x - pix) < px) {
+cond = !cond; 
+}
+}
+j = i; 
+}
+return cond; 
+}
+function pointInShape(point, points, isPoly) {
+if (isPoly) {
+return pointInPolygon(point, points)
+} else {
+return (point.x > points.x) && (point.y > points.y) && (point.x < points.x2) && (point.y < points.y2)
+}
+}

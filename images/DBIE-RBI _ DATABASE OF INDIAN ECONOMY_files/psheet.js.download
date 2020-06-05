@@ -1,0 +1,2983 @@
+/*
+=============================================================
+WebIntelligence(r) Report Panel
+Copyright(c) 2001-2003 Business Objects S.A.
+All rights reserved
+Use and support of this software is governed by the terms
+and conditions of the software license agreement and support
+policy of Business Objects S.A. and/or its subsidiaries. 
+The Business Objects products and technology are protected
+by the US patent number 5,555,403 and 6,247,008
+File: tabs.js
+=============================================================
+*/
+if (window._DHTML_LIB_PSHEET_JS_LOADED==null)
+{
+_DHTML_LIB_PSHEET_JS_LOADED=true
+_boAllTabs=new Array
+//
+_vertTabImgW=3;
+_vertTabLBorderToTxt=20-_vertTabImgW-1;
+_vertTabLBorderToIcon=12-_vertTabImgW-1;
+_vertTabIconToTxt=8;
+_vertTabIconSize=16;//icon:16px x 16px
+//used in _horizTabCSS & _horizBottomTabCSS
+_tabImgLeft=0;
+_tabImgMid=1;
+_tabImgRight=2;
+_tabTxt=3;
+_tabScrollBar=4;
+_tabList=5;
+//menu.png: 4 menu states for vertical navigation panel
+_vertTabHover=0;
+_vertTabSelected=1;
+_vertTabPressed=2;
+_vertTabNormal=3;
+_vertTabCSS=[['menuLeftMostSel', 'naviVTabLSelected', 'naviVTabLPressed', 'naviVTabNormal'],//left
+['menuLeftPartSel', 'naviVTabMSelected', 'naviVTabMPressed', 'naviVTabNormal'],//middle
+['menuRightMostSel', 'naviVTabRSelected', 'naviVTabRPressed', 'naviVTabNormal']//right
+]
+_vertNaviPanelMinW=120
+_vertNaviPanelMaxW=180
+_vertNaviPanelWithIconW=150
+_vertNaviPanelH=23*8//8 links x 23px
+_naviHorzTabH=24;
+//used in _horizTabCSS & _horizBottomTabCSS
+_horizTabSelected=0;
+_horizTabNormal=1;
+_horizTabHover=2;//hover on no selected
+_horizTabSelHover=3;//hover on selected
+_horizTabPressed=4;
+//scroll bar in horizontal bar (width=4+4x16+4=72)
+_scrollBarWidth=72;
+//scroll bar in horizontal bar used in _horizTabCSS & _horizBottomTabCSS
+_scrollbarL=0;
+_scrollbarM=1;
+_scrollbarR=2;
+_scrollbarFirst=3;
+_scrollbarPrev=4;
+_scrollbarNext=5;
+_scrollbarLast=6;
+_scrollbarHover=7;
+_scrollbarPressed=8;
+_scrollbarDisabled=9;
+_scrollbarFirstDis=10;
+_scrollbarPrevDis=11;
+_scrollbarNextDis=12;
+_scrollbarLastDis=13;
+//tab list icon state in horizontal bar used in _horizTabCSS & _horizBottomTabCSS
+_tabListNormal=0;
+_tabListHover=1;
+_tabListPressed=2;
+//horizontal bar at top
+_horizTabCSS=[['naviHTabLSelected', 'naviHTabLNormal', 'naviHTabLHover', 'naviHTabLSelHover', 'naviHTabLNormal'],//left
+['naviHTabMSelected', 'naviHTabMNormal', 'naviHTabMHover', 'naviHTabMSelHover', 'naviHTabMNormal'],//middle
+['naviHTabRSelected', 'naviHTabRNormal', 'naviHTabRHover', 'naviHTabRSelHover', 'naviHTabRNormal'],//right
+['naviHTabTextSel',  'naviHTabText',    'naviHTabTextHover','naviHTabTextSelHover', 'naviHTabText'],//text
+//scroll bar
+['naviHScrollBarL', 'naviHScrollBarM', 'naviHScrollBarR', 
+'naviHScrlBarFirstArrow naviHScrlBarArrowPos', 'naviHScrlBarPrevArrow naviHScrlBarArrowPos',
+'naviHScrlBarNextArrow naviHScrlBarArrowPos', 'naviHScrlBarLastArrow naviHScrlBarArrowPos',
+'naviHScrlBarHover', 'naviHScrlBarPressed',
+//scroll bar disabled
+'naviHScrlBarDisabled',
+'naviHScrlBarFirstDis naviHScrlBarArrowPos', 'naviHScrlBarPrevDis naviHScrlBarArrowPos',
+'naviHScrlBarNextDis naviHScrlBarArrowPos', 'naviHScrlBarLastDis naviHScrlBarArrowPos'
+],
+//tab list
+['tabListTop','tabListTopHover','tabListTopPressed']
+ ]
+//horizontal bar at top with close icon
+_horizTabWithCloseCSS=[
+['naviHTabLSelected', 'naviHTabLNormal', 'naviHTabLHover', 'naviHTabLSelHover', 'naviHTabLNormal'],//left
+['naviHTabMSelected', 'naviHTabMNormal', 'naviHTabMHover', 'naviHTabMSelHover', 'naviHTabMNormal'],//middle
+['naviHTabWithCloseRSel', 'naviHTabRWithCloseNormal', 'naviHTabWithCloseRHover', 'naviHTabWithCloseRSelHover', 'naviHTabRWithCloseNormal'],//right
+['naviHTabTextSel',  'naviHTabText',    'naviHTabTextHover','naviHTabTextSelHover', 'naviHTabText'],//text
+//scroll bar
+['naviHScrollBarL', 'naviHScrollBarM', 'naviHScrollBarR', 
+'naviHScrlBarFirstArrow naviHScrlBarArrowPos', 'naviHScrlBarPrevArrow naviHScrlBarArrowPos',
+'naviHScrlBarNextArrow naviHScrlBarArrowPos', 'naviHScrlBarLastArrow naviHScrlBarArrowPos',
+'naviHScrlBarHover', 'naviHScrlBarPressed',
+//scroll bar disabled
+'naviHScrlBarDisabled',
+'naviHScrlBarFirstDis naviHScrlBarArrowPos', 'naviHScrlBarPrevDis naviHScrlBarArrowPos',
+'naviHScrlBarNextDis naviHScrlBarArrowPos', 'naviHScrlBarLastDis naviHScrlBarArrowPos'
+]
+ ]
+_horizTabImgL=4;
+_horizTabImgR=23;
+_horizTabTxtPaddingL=15;
+_horizTabTxtPaddingR=3;
+_horizTabTxtPaddingB=5;
+_horizTabImgPadL=8;
+_horizTabImgToTxt=6;
+_horizBottomTabTxtPadB=7;
+//for close icon
+_horizTabTxtToClose=5;
+_horizTabClosePadR=1;
+//horizontal bar at bottom
+_horizBottomTabCSS=[['naviHBottomTabLSelected', 'naviHBottomTabLNormal', 'naviHBottomTabLHover', 'naviHBottomTabLSelHover', 'naviHBottomTabLNormal'],//left
+['naviHBottomTabMSelected', 'naviHBottomTabMNormal', 'naviHBottomTabMHover', 'naviHBottomTabMSelHover', 'naviHBottomTabMNormal'],//middle
+['naviHBottomTabRSelected', 'naviHBottomTabRNormal', 'naviHBottomTabRHover', 'naviHBottomTabRSelHover', 'naviHBottomTabRNormal'],//right
+['naviHTabTextSel',    'naviHTabText',          'naviHTabTextHover',     'naviHTabTextSelHover','naviHTabText'],//text
+//scroll bar
+['naviHBScrollBarL', 'naviHBScrollBarM', 'naviHBScrollBarR', 
+'naviHScrlBarFirstArrow naviHBScrlBarArrowPos', 'naviHScrlBarPrevArrow naviHBScrlBarArrowPos',
+'naviHScrlBarNextArrow naviHBScrlBarArrowPos', 'naviHScrlBarLastArrow naviHBScrlBarArrowPos',
+'naviHBScrlBarHover', 'naviHBScrlBarPressed',
+//scroll bar disabled
+'naviHBScrlBarDisabled',
+'naviHScrlBarFirstDis naviHBScrlBarArrowPos', 'naviHScrlBarPrevDis naviHBScrlBarArrowPos',
+'naviHScrlBarNextDis naviHBScrlBarArrowPos', 'naviHScrlBarLastDis naviHBScrlBarArrowPos'
+],
+['tabListBottom','tabListBottomHover','tabListBottomPressed']
+   ]
+//scroll bar in horizontal navigation bar
+_noScrollBar=0;
+_ScrollBarAtBegin=1;
+_ScrollBarAtEnd=2;
+_horizBarWidth=100//not include scroll bar
+//menu bar's height is the same as that of the tool bar
+_defaultMenuBarWidth=200;
+_menuBarTabHeight=22;
+//_menuBarTabCSS's row indexed by _tabImgLeft, _tabImgMid, _tabImgRight
+//_menuBarTabCSS's colonne indexed by _menuBarHover, _menuBarPressed, _menuBarNormal
+_menuBarHover=0;
+_menuBarPressed=1;
+_menuBarNormal=2;
+_menuBarTabCSS=[['iconHoverL','iconPressedL',''],
+['iconHoverM','iconPressedM',''],
+['iconHoverR','iconPressedR','']
+]
+_spaceBetweenInMenuBar=7;//space between the menus in menu bar
+//tab list icon for horizontal bar
+_tabListIconWidth=19;
+}
+function newTabWidget(id,isTop,name,cb,value,icon,iconW,iconH,iconOffX,iconOffY,dblclick,alt)
+{
+// Parent class
+var o=newWidget(id)
+// Members
+o.isTop=isTop
+o.isSelected=false
+// Other layers
+o.lnkLayer=null
+o.leftImgLayer=null
+o.rightImgLayer=null
+o.midImgLayer=null
+o.imgImgLayer=null
+o.iconLayer=null
+o.tabBar=null
+// Methods
+o.getHTML=TabWidget_getHTML
+o.select=TabWidget_select
+o.change=TabWidget_change
+o.changeContent=TabWidget_changeContent
+// Set content
+o.change(name,cb,value,icon,iconW,iconH,iconOffX,iconOffY,dblclick,alt)
+// For further retrieval
+_boAllTabs[id]=o
+return o
+}
+function TabWidget_getHTML()
+{
+var o=this
+var y=o.isSelected?0:72
+if (!o.isTop)
+y+=144
+var cls="thumbtxt"+(o.isSelected?"sel":"")
+var cb=_codeWinName+".TabWidget_clickCB('"+o.id+"');return false"
+var dblcb=_codeWinName+".TabWidget_dblclickCB('"+o.id+"');return false"
+var keycb=_codeWinName+".TabWidget_keyDownCB('"+o.id+"',event);"
+var menu=_codeWinName+".TabWidget_contextMenuCB('"+o.id+"',event);return false"
+var icon=o.icon?o.icon:_skin+"../transp.gif"
+var iconTDWidth=o.icon?3:0
+return '<table onmouseover="return true" onclick="'+cb+'" id="'+this.id+'" ondblclick="'+dblcb+'" onkeydown="'+keycb+'" oncontextmenu="'+menu+'" id="'+this.id+'" style="cursor:'+_hand+'" cellspacing="0" cellpadding="0" border="0"><tbody><tr valign="middle" height="24">'+
+'<td width="15">'+imgOffset(_skin+'tabs.gif',15,24,0,(y + (_rtl?48:0)),"tabWidgetLeft_"+o.id)+'</td>'+
+'<td id="tabWidgetImg_'+o.id+'" style="' +(o.isTop?'padding-top:2px;':'padding-bottom:2px;')+ 'padding-right:'+iconTDWidth+'px; '+ 'padding-left:'+iconTDWidth+'px; '+backImgOffset(_skin+"tabs.gif",0,y+24)+'" width="'+(o.iconW+iconTDWidth)+'">'+imgOffset(icon,o.iconW,o.iconH,o.iconOffX,o.iconOffY,"tabWidgetIcon_"+o.id,null,o.iconAlt)+'</td>'+
+'<td width="50" id="tabWidgetMid_'+o.id+'" style="' +(o.isTop?'padding-top:3px;':'padding-bottom:3px;') +backImgOffset(_skin+"tabs.gif",0,y+24)+'"><span style="white-space:nowrap">'+lnk(convStr(o.name,true),null,cls,"tabWidgetLnk_"+o.id)+'</span></td>'+
+'<td width="15">'+imgOffset(_skin+'tabs.gif',15,24,0,(y + (_rtl?0:48)),"tabWidgetRight_"+o.id)+'</td>'+
+'</tr></tbody></table>'
+}
+function TabWidget_clickCB(id)
+{
+setTimeout("TabWidget_delayedClickCB('"+id+"')",1)
+}
+function TabWidget_dblclickCB(id)
+{
+setTimeout("TabWidget_delayedDblClickCB('"+id+"')",1)
+}
+function TabWidget_keyDownCB(id,e)
+{
+var k=eventGetKey(e);
+//be careful ! usefull for dialog box close by Enter ou Escape keypressed
+if(eventGetKey(e) == 13)//Enter
+{
+eventCancelBubble(e);
+}
+}
+function TabWidget_contextMenuCB(id,e)
+{
+if (_ie)
+e=_curWin.event
+var tab=_boAllTabs[id], tabbar = tab.tabBar
+if ((tab)&&(tab.cb))
+tab.cb()
+if ((tabbar)&& (tabbar.showMenu))
+tabbar.showMenu(e)
+}
+function TabWidget_delayedClickCB(id)
+{
+var tab=_boAllTabs[id]
+if ((tab)&&(tab.cb))
+tab.cb()
+}
+function TabWidget_delayedDblClickCB(id)
+{
+var tab=_boAllTabs[id]
+if ((tab)&& (tab.dblclick))
+tab.dblclick()
+}
+function TabWidget_changeContent(changeOnlySelection)
+{
+var o=this
+// Get layers
+if (o.lnkLayer==null)
+{
+o.lnkLayer=getLayer("tabWidgetLnk_"+o.id)
+o.leftImgLayer=getLayer("tabWidgetLeft_"+o.id)
+o.rightImgLayer=getLayer("tabWidgetRight_"+o.id)
+o.midImgLayer=getLayer("tabWidgetMid_"+o.id)
+o.imgImgLayer=getLayer("tabWidgetImg_"+o.id)
+o.iconLayer=getLayer("tabWidgetIcon_"+o.id)
+}
+// Change icon and text
+if (!changeOnlySelection)
+{
+o.lnkLayer.innerHTML=convStr(o.name,true)
+changeOffset(o.iconLayer,o.iconOffX,o.iconOffY,o.icon?o.icon:_skin+"../transp.gif")
+o.iconLayer.alt=o.iconAlt
+//var parSty=o.iconLayer.parentNode.style
+o.iconLayer.style.width=""+o.iconW+"px"
+o.iconLayer.style.height=""+o.iconH+"px"
+var iconTDWidth=o.icon?3:0,imgL=o.imgImgLayer
+imgL.style.paddingRight=""+iconTDWidth+"px"
+imgL.style.paddingLeft=""+iconTDWidth+"px"
+imgL.style.width=""+(iconTDWidth+(((o.icon!=null)&&(o.iconW!=null))?o.iconW:0))+"px"
+if (_moz&&!_saf)
+imgL.width=(iconTDWidth+(((o.icon!=null)&&(o.iconW!=null))?o.iconW:0))
+}
+// Calculate positions
+var y=o.isSelected?0:72
+if (!o.isTop)
+y+=144
+changeOffset(o.leftImgLayer,0,(y + (_rtl?48:0)))
+changeOffset(o.midImgLayer,0,y+24)
+changeOffset(o.imgImgLayer,0,y+24)
+changeOffset(o.rightImgLayer,0,(y + (_rtl?0:48)))
+o.lnkLayer.className="thumbtxt"+(o.isSelected?"sel":"")
+}
+function TabWidget_select(sel)
+{
+var o=this
+o.isSelected=sel
+if (o.layer!=null)
+o.changeContent(true)
+}
+function TabWidget_change(name,cb,value,icon,iconW,iconH,iconOffX,iconOffY,dblclick,alt)
+{
+var o=this
+// Set new values
+if (name!=null)
+o.name=name
+if (cb!=null)
+o.cb=cb
+if (dblclick!=null)
+o.dblclick=dblclick
+if (value!=null)
+o.value=value
+if (icon!=null)
+o.icon=icon
+o.iconW=iconW?iconW:0
+o.iconH=iconH?iconH:0
+o.iconOffX=iconOffX?iconOffX:0
+o.iconOffY=iconOffY?iconOffY:0
+if (alt!=null)
+o.iconAlt=alt
+// If the widget is initialized, update it
+if (o.layer!=null)
+o.changeContent(false)
+}
+function newTabBarWidget(id,isTop,cb,st,dblclick,beforeShowMenu,showIcn)
+{
+// Parent class
+var o=newWidget(id)
+var t
+// Members
+o.isTop=isTop
+o.cb=cb
+o.dblclick=dblclick
+o.menu=newMenuWidget("menu_"+id,null,beforeShowMenu)
+o.st=st
+o.counter=0
+o.items=new Array
+o.selIndex=-1
+o.leftLimit=0
+o.trLayer=null
+o.showIcn=showIcn==null?false:showIcn
+t=o.firstIcn=newIconWidget("firstIcn_"+id,_skin+"scroll_icon.gif",TabBarWidget_firstCB,null,_scroll_first_tab,5,8,0,0,0,8)
+t.par=o
+t.margin=0
+t.allowDblClick=true
+t=o.previousIcn=newIconWidget("previousIcn_"+id,_skin+"scroll_icon.gif",TabBarWidget_prevCB,null,_scroll_previous_tab,5,8,7,0,7,8)
+t.par=o
+t.margin=0
+t.allowDblClick=true
+t=o.nextIcn=newIconWidget("nextIcn_"+id,_skin+"scroll_icon.gif",TabBarWidget_nextCB,null,_scroll_next_tab,5,8,13,0,13,8)
+t.par=o
+t.margin=0
+t.allowDblClick=true
+t=o.lastIcn=newIconWidget("lastIcn_"+id,_skin+"scroll_icon.gif",TabBarWidget_lastCB,null,_scroll_last_tab,5,8,21,0,21,8)
+t.par=o
+t.margin=0
+t.allowDblClick=true
+o.showContextMenuAllowed=true
+// Methods
+o.oldInit=o.init
+o.init=TabBarWidget_init
+o.getHTML=TabBarWidget_getHTML
+o.add=TabBarWidget_add
+o.remove=TabBarWidget_remove
+o.removeAll=TabBarWidget_removeAll
+o.select=TabBarWidget_select
+o.getSelection=TabBarWidget_getSelection
+o.getMenu=TabBarWidget_getMenu
+o.showMenu=TabBarWidget_showMenu
+o.showTab=TabBarWidget_showTab
+o.getCount=TabBarWidget_getCount
+o.oldResize=o.resize
+o.resize=TabBarWidget_resize
+o.getItemXPos=TabBarWidget_getItemXPos
+o.scroll=TabBarWidget_scroll
+o.setIconState=TabBarWidget_setIconState
+o.setShowContextMenuAllowed=TabBarWidget_setShowContextMenuAllowed
+return o
+}
+function TabBarWidget_init()
+{
+var o=this,items=o.items
+o.oldInit()
+if (o.showIcn)
+{
+o.firstIcn.init()
+o.previousIcn.init()
+o.nextIcn.init()
+o.lastIcn.init()
+}
+o.trLayer=getLayer("tr_"+o.id)
+o.tabsLayer=getLayer("tabs_"+o.id)
+var len = items.length
+for (var i=0;i<len;i++)
+{
+var it=items[i]
+it.init()
+it.select(i==o.selIndex)
+}
+}
+function TabBarWidget_getSelection()
+{
+var o=this,index=o.selIndex
+if (index>=0)
+{
+var obj=new Object
+obj.index=index
+obj.value=o.items[index].value
+obj.name=o.items[index].name
+return obj
+}
+else
+return null
+}
+function TabBarWidget_getHTML()
+{
+var o=this,items=o.items,len=items.length
+var s = new Array, si = 0
+s[si++] = '<div id="'+this.id+'" style="height:24px;overflow:hidden;'+(o.st?o.st:'')+'">'
+s[si++] = '<table cellspacing="0" cellpadding="0" border="0"><tbody><tr valign="top" height="24">'
+if (o.showIcn)
+{
+s[si++] = '<td><table class="palette" cellspacing="0" cellpadding="0" border="0"><tbody><tr>'
+s[si++] = '<td>'+o.firstIcn.getHTML()+'</td>'
+s[si++] = '<td>'+o.previousIcn.getHTML()+'</td>'
+s[si++] = '<td>'+o.nextIcn.getHTML()+'</td>'
+s[si++] = '<td>'+o.lastIcn.getHTML()+'</td>'
+s[si++] = '</tr></tbody></table></td>'
+}
+s[si++] = '<td><div style="overflow:'+(true?'hidden':'scroll')+'" id="tabs_'+this.id +'"><table cellspacing="0" cellpadding="0" border="0"><tbody><tr id="tr_'+this.id +'">'
+for (var i=0;i<len;i++)
+s[si++] = '<td>'+items[i].getHTML()+'</td>'
+s[si++] = '</tr></tbody></table></div></td>'
+s[si++] = '</tr></tbody></table></div>'
+return s.join('')
+}
+function TabBarWidget_select(index)
+{
+var o=this,items=o.items,len=items.length
+if (index==-1) index=len-1
+if ((index>=0)&&(index<len))
+{
+if ((o.selIndex>=0)&&(o.selIndex!=index)&&(o.selIndex<len))
+items[o.selIndex].select(false)
+o.selIndex=index
+items[index].select(true)
+o.scroll(null,o.selIndex)
+}
+}
+function TabBarWidget_resize(w,h)
+{
+var o=this
+var d=isHidden(o.layer)
+if (d&_moz&&!_saf)
+o.setDisplay(false)
+o.oldResize(w,h)
+if (w!=null)
+o.tabsLayer.style.width=""+Math.max(0,w-54)
+if (d&_moz&&!_saf)
+o.setDisplay(true)
+o.setIconState()
+}
+function TabBarWidget_showTab(index,show)
+{
+var o=this,items=o.items,len=items.length
+if ((index>=0)||(index<len))
+items[index].setDisplay(show)
+}
+function TabBarWidget_add(name, value, idx, icon, iconW,iconH,iconOffX,iconOffY,alt)
+{
+var o=this,counter=o.counter++
+var obj=newTabWidget(o.id+"_tab"+counter,o.isTop,name,TabBarWidget_itemClick,value,icon,iconW,iconH,iconOffX,iconOffY,TabBarWidget_itemDblClick,alt)
+obj.tabBar=o
+obj.idx=counter
+arrayAdd(o,"items",obj,idx)
+var l=o.trLayer
+if(l!=null)
+{
+var node=_curDoc.createElement("td")
+l.appendChild(node)
+node.innerHTML=obj.getHTML()
+obj.init()
+}
+return obj
+}
+function TabBarWidget_remove(idx)
+{
+var o=this,items=o.items,len=items.length
+if ((idx>=0)&&(idx<len))
+{
+var elem=items[idx]
+var l=elem.layer
+arrayRemove(o,"items",idx)
+items=o.items
+len=items.length
+if (l!=null)
+{
+l=l.parentNode
+l.parentNode.removeChild(l)
+}
+if (o.selIndex>idx) o.select(o.selIndex-1)
+else if ((o.selIndex==idx) && (len>0))
+o.select(Math.min(idx,len-1))
+}
+}
+function TabBarWidget_removeAll()
+{
+var o=this,items=o.items, len= items.length
+for (var i=len-1;i>=0;i--)
+o.remove(i)
+}
+function TabBarWidget_itemClick()
+{
+var o=this.tabBar,items=o.items,len=items.length,index=-1
+for (var i=0;i<len;i++)
+{
+if (items[i].idx==this.idx)
+{
+o.select(i)
+index=i
+break
+}
+}
+if (o.cb)
+o.cb(index)
+}
+function TabBarWidget_itemDblClick()
+{
+var o=this.tabBar,items=o.items,len=items.length,index=-1
+for (var i=0;i<len;i++)
+{
+if (items[i].idx==this.idx)
+{
+index=i
+break
+}
+}
+if (o.dblclick)
+o.dblclick(index)
+}
+function TabBarWidget_getMenu()
+{
+return this.menu
+}
+function TabBarWidget_setShowContextMenuAllowed(b)
+{
+this.showContextMenuAllowed=b
+}
+function TabBarWidget_showMenu(e)
+{
+if (this.showContextMenuAllowed==false)
+return
+if (_ie)
+e=event
+this.menu.show(true,eventGetX(e),eventGetY(e))
+}
+function TabBarWidget_getCount()
+{
+return this.items.length
+}
+function TabBarWidget_scroll(step,destItem)
+{
+var o=this
+if (o.tabsLayer==null)
+return
+var tabsl=o.tabsLayer
+var tabsSL=tabsl.scrollLeft,tabsOW=tabsl.offsetWidth,tabsSW=tabsl.scrollWidth,SLMax=tabsSW-tabsOW
+//alert("AVANT scroll\nstep="+step+"\no.leftLimit="+o.leftLimit+"\ntabsSL="+tabsSL+"\nSLMax="+SLMax)
+// Scroll
+if (step=='first')// go to first tab
+{
+tabsl.scrollLeft=tabsSL=0
+o.leftLimit=0
+}
+else
+if (step=='previous')// go to previous tab
+{
+o.leftLimit=o.leftLimit-1
+var x=o.getItemXPos(o.leftLimit)
+tabsl.scrollLeft=tabsSL=x
+}
+else
+if (step=='next')// go to next tab
+{
+if (o.leftLimit>o.getCount()-1)
+return
+o.leftLimit+=1
+var x=o.getItemXPos(o.leftLimit)
+if (x<SLMax)
+tabsl.scrollLeft=tabsSL=x
+else
+tabsl.scrollLeft=tabsSL=SLMax
+}
+else
+if (step=='last')// go to last tab
+{
+for (var i=0;i<o.getCount();i++)
+{
+var x=o.getItemXPos(i);
+if (x>SLMax)
+break;
+}
+tabsl.scrollLeft=tabsSL=Math.max(0,SLMax)
+o.leftLimit=i
+}
+else
+if (step==null)// go to the specified <destItem>
+{
+var x=o.getItemXPos(destItem);
+if (x<SLMax)
+tabsl.scrollLeft=tabsSL=x
+else
+tabsl.scrollLeft=tabsSL=SLMax
+for (var i=0;i<o.getCount();i++)
+{
+var x=o.getItemXPos(i)
+if (x>SLMax)
+break;
+}
+o.leftLimit=i
+}
+o.setIconState()
+//alert("AVANT scroll\nstep="+step+"\no.leftLimit="+o.leftLimit+"\ntabsSL="+tabsSL+"\nSLMax="+SLMax)
+}
+function TabBarWidget_getItemXPos(index)
+{
+var o=this
+var x=0
+for (var i=0;i<index;i++)
+x+=parseInt(o.items[i].getWidth())
+return x
+}
+function TabBarWidget_setIconState()
+{
+var o=this
+if (o.tabsLayer==null)
+return
+var tabsl=o.tabsLayer
+var tabsSL=tabsl.scrollLeft,tabsOW=tabsl.offsetWidth,tabsSW=tabsl.scrollWidth,SLMax=tabsSW-tabsOW
+// Enable or disable the navigation icons if no scroll is possible on the
+// right
+if (tabsSL==SLMax)
+{
+o.nextIcn.setDisabled(true)
+o.lastIcn.setDisabled(true)
+}
+else
+{
+o.nextIcn.setDisabled(false)
+o.lastIcn.setDisabled(false)
+}
+// Enable or disable the navigation icons if no scroll is possible on the
+// left
+if (tabsSL == 0)
+{
+o.firstIcn.setDisabled(true)
+o.previousIcn.setDisabled(true)
+}
+else
+{
+o.firstIcn.setDisabled(false)
+o.previousIcn.setDisabled(false)
+}
+}
+function TabBarWidget_firstCB()
+{
+var p=this.par
+p.scroll('first')
+}
+function TabBarWidget_prevCB()
+{
+var p=this.par
+p.scroll('previous')
+}
+function TabBarWidget_nextCB()
+{
+var p=this.par
+p.scroll('next')
+}
+function TabBarWidget_lastCB()
+{
+var p=this.par
+p.scroll('last')
+}
+function newTabbedZone(id,cb,w,h)
+{
+var o=newFrameZoneWidget(id,w,h)
+o.w=w
+o.h=h
+o.cb=cb
+o.zoneLayers=new Array
+o.oldIndex=-1
+o.tzOldInit=o.init
+o.add=TabbedZoneWidget_add
+o.select=TabbedZoneWidget_select
+o.getTabCSS=TabbedZoneWidget_getTabCSS
+o.init=TabbedZoneWidget_init
+o.beginHTML=TabbedZoneWidget_beginHTML
+o.oldFrameZoneEndHTML=o.endHTML
+o.endHTML=TabbedZoneWidget_endHTML
+o.tabs=newTabBarWidget("tzone_tabs_"+id,true,TabbedZone_itemClick)
+o.tabs.parentTabbedZone=o
+o.beginTabHTML=TabbedZoneWidget_beginTabHTML
+o.endTabHTML=TabbedZoneWidget_endTabHTML
+o.beginTab=TabbedZoneWidget_beginTab
+o.endTab=TabbedZoneWidget_endTab
+o.showTab=TabbedZoneWidget_showTab
+return o
+}
+function TabbedZone_itemClick()
+{
+var o=this.parentTabbedZone,i=this.getSelection().index
+o.select(i)
+if (o.cb)
+o.cb(i)
+}
+function TabbedZoneWidget_add(name, value, icon, iconW,iconH,iconOffX,iconOffY)
+{
+var o=this
+o.tabs.add(name, value, -1, icon, iconW,iconH,iconOffX,iconOffY)
+o.zoneLayers[o.zoneLayers.length]=null
+}
+function TabbedZoneWidget_init()
+{
+var o=this
+o.tzOldInit()
+o.tabs.init()
+o.select(0)
+}
+function TabbedZoneWidget_getTabCSS(index)
+{
+var o=this,ls=o.zoneLayers,l=ls[index]
+if (l==null)
+l=ls[index]=getLayer('tzone_tab_'+index+'_'+o.id)
+return l?l.style:null
+}
+function TabbedZoneWidget_showTab(index,show)
+{
+var tab=this.tabs.items[index]
+if (tab)
+tab.setDisplay(show)
+}
+function TabbedZoneWidget_select(index)
+{
+var o=this,tabs=o.tabs,sel=tabs.getSelection(),oldIndex=o.oldIndex,c
+o.tabs.select(index)
+if (oldIndex!=-1)
+{
+c=o.getTabCSS(oldIndex)
+if (c) c.display="none"
+}
+else
+{
+var len=o.zoneLayers.length
+for (var i=0;i<len;i++)
+{
+c=o.getTabCSS(i)
+if (c) c.display="none"
+}
+}
+c=o.getTabCSS(index)
+if (c)
+{
+c.display=""
+if (o.w!=null)
+o.css.width=""+(o.w+10)+"px"
+if (o.h!=null)
+o.css.height=""+(o.h+33)+"px"
+}
+o.oldIndex=index
+}
+function TabbedZoneWidget_beginHTML()
+{
+var o=this
+return '<table id="'+this.id+'" cellspacing="0" cellpadding="0" border="0"><tbody><tr valign="bottom" height="28">'+
+'<td>'+imgOffset(_skin+'dialogframe.gif',5,5,0,0)+'</td>'+
+'<td valign="top" align="left" style="'+backImgOffset(_skin+"tabs.gif",0,288)+'">'+o.tabs.getHTML()+'</td>'+
+'<td>'+imgOffset(_skin+'dialogframe.gif',5,5,5,0)+'</td></tr>'+
+'<tr><td style="'+backImgOffset(_skin+"dialogframeleftright.gif",0,0)+'"></td><td class="dialogzone"><div style="'+sty("width",o.w)+sty("height",o.h)+'">'
+}
+function TabbedZoneWidget_endHTML()
+{
+return '</div>'+this.oldFrameZoneEndHTML()
+}
+function TabbedZoneWidget_beginTabHTML(index)
+{
+var o=this
+return '<div id="tzone_tab_'+index+'_'+o.id+'" style="display:none;'+sty("width",o.w)+sty("height",o.h)+'">'
+}
+function TabbedZoneWidget_endTabHTML()
+{
+return '</div>'
+}
+function TabbedZoneWidget_beginTab(index)
+{
+_curDoc.write(this.beginTabHTML(index))
+}
+function TabbedZoneWidget_endTab()
+{
+_curDoc.write(this.endTabHTML())
+}
+function newNaviTabWidget(id, name, value, tabType, cb,dblClick, tooltip, icon,iconW,iconH,iconOffX,iconOffY, closeTabCB)
+{
+return new_NaviTabWidget({id:id,
+name:name,
+value:value,
+tabType:tabType,
+clickCB:cb,
+dblclickCB:dblClick,
+tooltip:tooltip,
+icon:{src:icon, w:iconW, h: iconH, dx:iconOffX, dy:iconOffY},
+closeTabCB:closeTabCB
+});
+}
+function new_NaviTabWidget(prms)
+{
+var o = new_Widget(prms);
+o.superInit=o.init;
+//public API
+o.init=NaviTabWidget_init;
+o.getHTML=NaviTabWidget_getHTML;
+o.select=NaviTabWidget_select;
+o.setUserData=NaviTabWidget_setUserData;
+o.getUserData=NaviTabWidget_getUserData;
+o.setMenu=NaviTabWidget_setMenu;
+o.getMenu=NaviTabWidget_getMenu;
+o.setHtml=NaviTabWidget_setHtml;
+o.getHtml=NaviTabWidget_getHtml;
+o.change=NaviTabWidget_change;
+//internal usage
+o.tabType=Widget_param(prms, "tabType", _HorizTabTop);  
+o.name=Widget_param(prms, "name", "Tab");
+o.value=Widget_param(prms, "value", 0); 
+o.cb=Widget_param(prms, "clickCB", null);  
+o.dblClick=Widget_param(prms, "dblclickCB", null); 
+    o.disabled=Widget_param(prms, "disabled", false);  
+    if (typeof(prms.icon)=="object")
+    {
+        var icon=prms.icon;
+        o.icon=Widget_param(icon, "src", null);  
+    o.iconW=Widget_param(icon, "w", (o.icon?_vertTabIconSize:1));  
+    o.iconH=Widget_param(icon, "h", (o.icon?_vertTabIconSize:1));   
+    o.iconOffX=Widget_param(icon, "dx", 0);    
+    o.iconOffY=Widget_param(icon, "dy", 0); 
+    o.iconOffDisX=Widget_param(icon, "disDx", o.iconOffX);    
+    o.iconOffDisY=Widget_param(icon, "disDy", o.iconOffY); 
+    }
+    else
+    {
+    o.icon=Widget_param(prms, "icon", null);  
+    o.iconW=Widget_param(prms, "iconW", (o.icon?_vertTabIconSize:1));  
+    o.iconH=Widget_param(prms, "iconH", (o.icon?_vertTabIconSize:1));   
+    o.iconOffX=Widget_param(prms, "iconOffX", 0);    
+    o.iconOffY=Widget_param(prms, "iconOffY", 0); 
+    o.iconOffDisX=Widget_param(prms, "disDx", o.iconOffX);    
+    o.iconOffDisY=Widget_param(prms, "disDy", o.iconOffY); 
+}
+o.tooltip=Widget_param(prms, "tooltip", null);  
+o.closeTabCB=Widget_param(prms, "closeTabCB", null);  
+o.isSelected=false;
+o.leftimgid="naviTabL_"+o.id
+o.midimgid="naviTabM_"+o.id
+o.rightimgid="naviTabR_"+o.id
+o.txtid="naviTabTxt_"+o.id
+o.sepid="naviTabSep_"+o.id
+o.closeid="naviTabClose_"+o.id
+o.iconid="naviTabIcon_"+o.id
+switch (o.tabType)
+{
+case _VertTab:
+case _VertTabWithIcon:
+o.tabCSSTable=_vertTabCSS;
+break;
+case _HorizTabBottom:
+o.tabCSSTable=_horizBottomTabCSS;
+break;
+case _HorizTabTopWithClose:
+o.tabCSSTable=_horizTabWithCloseCSS;
+break;
+case _HorizTabTop:
+default:
+o.tabCSSTable=_horizTabCSS;
+break;
+case _menuBarTab:
+o.tabCSSTable=_menuBarTabCSS;
+break;
+}
+o.mover=NaviTabWidget_mover;
+o.mdown=NaviTabWidget_mdown;
+o.keydownCB=NaviTabWidget_keydownCB;
+o.contextMenuCB=NaviTabWidget_contextMenuCB;
+o.changeState=NaviTabWidget_changeState;
+o.getVertHTML=NaviTabWidget_getVertHTML;
+o.getHorizHTML=NaviTabWidget_getHorizHTML;
+o.displaySep=NaviTabWidget_displaySep;
+o.isVert=NaviTabWidget_isVert;
+o.updateCloseIcon=NaviTabWidget_updateCloseIcon;
+o.mdown_closeIcon=NaviTabWidget_mdown_closeIcon;
+o.clickCB=NaviTabWidget_clickCB;
+o.dblClickCB=NaviTabWidget_dblClickCB;
+o.leftimgLyr=null;
+o.midimgLyr=null;
+o.rightimgLyr=null;
+o.txtLyr=null;
+o.iconLyr=null;
+//for horiz bar
+o.sepLyr=null;
+o.closeLyr=null;
+o.data=new Object;
+    o.naviVTabTextClassName="naviVTabText";
+    o.naviVTabDisTextClassName="naviVTabDisabledText";    
+    o.naviHTabDisTextClassName="naviHTabDisabledText";    
+    o.getTxtClassName=function()
+    {
+        var o=this;
+        var cls;
+        if (o.isVert())
+        {                             
+            cls=o.disabled?o.naviVTabDisTextClassName:o.naviVTabTextClassName;               
+        }
+        else
+        {     
+            var state=(o.isSelected)?_horizTabSelected:_horizTabNormal;                                                                                 
+            cls=o.disabled?o.naviHTabDisTextClassName:o.tabCSSTable[_tabTxt][state];                                              
+        }
+        return cls;
+    }
+o.setDisabled=function(d)
+{
+    var o=this;
+        if (o.isSelected) return;
+        o.disabled=d;
+        if (o.layer)
+        {      
+            o.layer.style.cursor=d?'default':_hand;
+        } 
+        if (o.txtLyr) 
+        {           
+        o.txtLyr.className=o.getTxtClassName();
+        o.txtLyr.tabIndex=d?-1:0;
+    }
+    if (o.iconLyr)
+    {
+        changeSimpleOffset(o.iconLyr,(d?o.iconOffDisX:o.iconOffX),(d?o.iconOffDisY:o.iconOffY));    
+    }
+}
+return o;
+}
+function NaviTabWidget_init(layer)
+{
+var o=this;
+o.superInit(layer);
+layer=o.layer
+if (layer)
+{
+addEvent(layer, "mouseover", o.mover)
+addEvent(layer, "mouseout", o.mover)
+addEvent(layer, "mousedown", o.mdown)
+addEvent(layer, "mouseup", o.mdown)
+addEvent(layer, "click", o.clickCB)
+if (_ie)
+addEvent(layer, "dblclick", o.dblClickCB)
+addEvent(layer, "keydown", o.keydownCB)
+addEvent(layer, "selectstart", function() {return false;})
+addEvent(layer, "dragstart", function() {return false;})
+addEvent(layer, "contextmenu", o.contextMenuCB)
+}
+o.leftimgLyr=getLayer(o.leftimgid);
+o.midimgLyr=getLayer(o.midimgid);
+o.rightimgLyr=getLayer(o.rightimgid);
+o.txtLyr=getLayer(o.txtid);
+o.iconLyr=getLayer(o.iconid);
+//for horiz navigation tab
+o.sepLyr=getLayer(o.sepid);
+if (o.tabType==_HorizTabTopWithClose)
+{
+var cl = o.closeLyr = getLayer(o.closeid);
+addEvent(cl, "mousedown", o.mdown_closeIcon)
+addEvent(cl, "contextmenu", o.mdown_closeIcon)
+o.updateCloseIcon("naviHTabCloseSel", o.isSelected);
+}
+}
+function NaviTabWidget_getVertHTML()
+{
+var o=this;
+var s= new Array, si = 0
+s[si++] = '<table id="'+o.id+'" style="cursor:'+(o.disabled?'default':_hand)+'" cellspacing="0" cellpadding="0" border="0">';
+s[si++] = '<tbody><tr height="'+ _mitemH+'">';
+//left
+var state=o.isSelected?_vertTabSelected:_vertTabNormal;
+s[si++] = '<td id="'+o.leftimgid+'" class="'+ o.tabCSSTable[_tabImgLeft][state]+'"><div style="width:'+_vertTabImgW+'px;"></div></td>';
+//middle
+var w=o.par.w-2*_vertTabImgW;
+s[si++] = '<td id="'+o.midimgid+'" class="'+ o.tabCSSTable[_tabImgMid][state]+'" width="'+w+'">'
+if (o.tabType==_VertTabWithIcon)
+{
+s[si++] = '<table cellspacing="0" cellpadding="0" border="0" width="100%">';
+s[si++] = '<tbody><tr height="'+ _mitemH+'">';
+//icon
+s[si++] = '<td style="padding-left:'+ _vertTabLBorderToIcon+'px;">'+
+imgOffset((o.icon?o.icon:(_skin+"../transp.gif")),_vertTabIconSize,o.iconH,(o.disabled?o.iconOffDisX:o.iconOffX),(o.disabled?o.iconOffDisY:o.iconOffY), o.iconid)+'</td>'
+//text
+var ww=Math.max(40,w-_vertTabLBorderToIcon-_vertTabIconSize);
+s[si++] = '<td  style="padding-left:'+ _vertTabIconToTxt +'px;width:'+ww+'px;" >'
+s[si++] = '<div id="'+o.txtid+'" tabindex="'+(o.disabled ? -1 : 0)+'"  class="'+(o.getTxtClassName())+'" style="width:'+(ww-_vertTabIconToTxt-2)+'px;">'+convStr(o.name)+'</div></td>'
+s[si++] = '</tr></tbody></table>';
+}
+else
+{
+//_VertTab 
+s[si++] = '<div id="'+o.txtid+'" tabindex="'+(o.disabled ? -1 : 0)+'"  class="'+(o.getTxtClassName())+'" style="padding-left:'+ _vertTabLBorderToTxt+'px;width:'+(w-_vertTabLBorderToTxt-2)+'px;">'
+    +convStr(o.name)+'</div>';
+}
+s[si++] = '</td>';
+//right
+s[si++] = '<td id="'+o.rightimgid+'" class="'+o.tabCSSTable[_tabImgRight][state]+'"><div style="width:'+_vertTabImgW+'px"></div></td>';
+s[si++] = '</tr></tbody></table>';
+return s.join('');
+}
+function NaviTabWidget_getHorizHTML()
+{
+var o=this, s = new Array, si = 0
+s[si++] = '<table id="'+o.id+'" style="cursor:'+(o.disabled?'default':_hand)+'" cellspacing="0" cellpadding="0" border="0">';
+s[si++] = '<tbody><tr height="'+ _naviHorzTabH+'">';
+//left
+var state=o.isSelected?_horizTabSelected:_horizTabNormal;
+s[si++] = '<td id="'+o.leftimgid+'" class="'+ o.tabCSSTable[_tabImgLeft][state]+'" valign="top"><div style="width:'+_horizTabImgL+'px;"></div></td>';
+//middle
+s[si++] = '<td id="'+o.midimgid+'" valign="bottom" class="'+ o.tabCSSTable[_tabImgMid][state]+'">';
+s[si++] = '<table cellspacing="0" cellpadding="0" border="0" width="100%">';
+s[si++] = '<tbody><tr height="'+ _naviHorzTabH+'">';
+if (_menuBarTab!=o.tabType)
+{
+//icon
+var sty=(_HorizTabTop==o.tabType || _HorizTabTopWithClose==o.tabType)?"margin-bottom:3px;":"margin-bottom:6px;";
+sty=sty+"margin-left:"+((o.iconW>1)?_horizTabImgPadL:0)+"px;";
+s[si++] = '<td  valign="bottom" >'+
+imgOffset((o.icon?o.icon:(_skin+"../transp.gif")),o.iconW,o.iconH,(o.disabled?o.iconOffDisX:o.iconOffX),(o.disabled?o.iconOffDisY:o.iconOffY), o.iconid, null, null, sty)+'</td>';
+}
+//text
+var txt_sty=' style="padding-left:'+ ((o.iconW>1)?_horizTabImgToTxt:_horizTabTxtPaddingL)+
+'px;padding-right:'+((_HorizTabTopWithClose==o.tabType)?_horizTabTxtToClose:_horizTabTxtPaddingR)+
+'px;padding-bottom:'+((_HorizTabTop==o.tabType|| _HorizTabTopWithClose==o.tabType)?_horizTabTxtPaddingB:_horizBottomTabTxtPadB)+'px;" ';
+// Temporary fix. the role should be role="tab", but for consistency with Infoview, use role="button"
+// until the problem with JAWS is fixed (508)
+var txt='<div role="button" tabindex="'+(o.disabled ? -1 : 0)+'" id="'+o.txtid+'" '+txt_sty+' class="'+(o.getTxtClassName())+'" >'+convStr(o.name)+'</div>';
+s[si++] = '<td valign="bottom">'+txt+'</td>';
+//close icon on top-right
+if (_HorizTabTopWithClose==o.tabType)
+{
+s[si++] = '<td valign="top" style="padding-right:'+_horizTabClosePadR+'px;">';
+s[si++] = '<div class="naviHTabCloseSel" id="'+o.closeid+'"></div></td>';
+}
+s[si++] = '</tr></tbody></table>';
+s[si++] = '</td>';
+//right
+s[si++] = '<td id="'+o.rightimgid+'" class="'+o.tabCSSTable[_tabImgRight][state]+'" valign="top">';
+s[si++] = '<div style="width:'+((_HorizTabTopWithClose==o.tabType)?_horizTabImgL:_horizTabImgR)+'px"></div></td>';
+//separator
+s[si++] = '<td  class="'+((o.tabType==_HorizTabBottom)?'naviHBottomTabMNormal':'naviHTabMNormal')+'" valign="bottom" >'
+s[si++] = '<div id="'+o.sepid+'" class="naviHTabSeparator" style="padding-bottom:'+((_ie && o.tabType==_HorizTabTop)?0:((o.tabType==_HorizTabBottom)?(_horizBottomTabTxtPadB-1):_horizTabTxtPaddingB))+'px;"></div></td>'
+s[si++] = '</tr></tbody></table>';
+return s.join('')
+}
+function NaviTabWidget_isVert()
+{
+var o=this;
+return (o.tabType==_VertTabWithIcon || o.tabType==_VertTab);
+}
+function NaviTabWidget_getHTML()
+{
+var o=this;
+return (o.isVert())?o.getVertHTML():o.getHorizHTML();
+}
+function NaviTabWidget_select(sel)
+{
+var o=this;
+if (o.disabled) return;
+o.isSelected=sel;
+o.changeState(o.isVert()?(sel?_vertTabSelected:_vertTabNormal):(sel?_horizTabSelected:_horizTabNormal));
+o.updateCloseIcon("naviHTabCloseSel", o.isSelected);
+}
+function NaviTabWidget_updateCloseIcon(cls, show)
+{
+var o=this;
+if (o.tabType==_HorizTabTopWithClose && o.closeLyr)
+{
+o.closeLyr.className=cls;
+o.closeLyr.style.visibility=show?_show:_hide;
+}
+}
+function NaviTabWidget_changeState(state)
+{
+var o=this;
+if (o.layer)
+{
+o.leftimgLyr.className=o.tabCSSTable[_tabImgLeft][state];
+o.midimgLyr.className=o.tabCSSTable[_tabImgMid][state];
+o.rightimgLyr.className=o.tabCSSTable[_tabImgRight][state];
+}
+if (o.txtLyr && !o.isVert())
+{
+o.txtLyr.className=o.tabCSSTable[_tabTxt][state];
+}
+}
+function NaviTabWidget_mover(evt)
+{
+var o=getWidget(this);
+if (o.disabled) return;
+var evt=getEvent(evt);
+var over=(evt && evt.type=="mouseover")?true:false;
+if (o.isVert())
+{
+o.changeState(over?_vertTabHover:(o.isSelected?_vertTabSelected:_vertTabNormal));
+}
+else
+{
+//horizontal tabs 
+o.changeState(o.isSelected?(over?_horizTabSelHover:_horizTabSelected):(over?_horizTabHover:_horizTabNormal));
+//update separator display state
+var tabs=o.par.getPrevNextTabs(o.idx);
+if (!tabs) return;
+var prevTab=tabs.prevTab;
+var nextTab=tabs.nextTab;
+if (!o.isSelected)
+{
+var d=false;
+if (!over)
+{
+d=true;
+if (nextTab)
+{
+if (nextTab.isSelected)
+d=false;
+}
+else
+d=false;
+}
+o.displaySep(d, true);
+if (prevTab)
+prevTab.displaySep(over?false:((prevTab.isSelected)?false:true), true);
+}
+else
+{
+o.displaySep(false);
+if (prevTab)
+prevTab.displaySep(false);
+}
+o.updateCloseIcon((over?"naviHTabCloseHover":"naviHTabCloseSel"), (o.isSelected ||over) );
+}
+}
+function NaviTabWidget_mdown(evt)
+{
+var o=getWidget(this);
+if (o.disabled) return true;
+var evt=getEvent(evt);
+var down=(evt && evt.type=="mousedown")?true:false;
+if (o.isVert())
+{
+o.changeState(down?_vertTabPressed:(o.isSelected?_vertTabSelected:_vertTabNormal));
+}
+}
+function NaviTabWidget_mdown_closeIcon(evt)
+{
+var o=getWidget(this);
+if (o.disabled) return;
+var evt=getEvent(evt);
+var down=(evt && evt.type=="mousedown")?true:false;
+//o is NaviTabWidget
+o.updateCloseIcon((down?"naviHTabClosePressed":"naviHTabCloseSel"), (down || o.isSelected));
+//if (!down)
+{
+if (o.par && o.par.closeTab)//NaviBarWidget
+o.par.closeTab(o.idx, o.closeTabCB);
+}
+}
+function NaviTabWidget_clickCB(evt)
+{
+var evt=getEvent(evt);
+var o=getWidget(this);
+if (o.disabled) return true;
+if (o && o.cb)
+o.cb();
+eventCancelBubble(evt);
+return false;
+}
+function NaviTabWidget_dblClickCB(evt)
+{
+var evt=getEvent(evt);
+var o=getWidget(this);
+if (o.disabled) return false;
+if (o && o.dblClick)
+o.dblClick();
+eventCancelBubble(evt);
+return false;
+}
+function NaviTabWidget_keydownCB(e)
+{
+    var o=getWidget(this);
+    if (o.disabled) return;
+var k=eventGetKey(e);
+if(k == 13)//enter
+{
+if (o && o.cb)
+o.cb();
+eventCancelBubble(e);
+}
+}
+function NaviTabWidget_displaySep(d, effect)
+{
+var o=this;
+if (!o.isVert() && o.sepLyr)
+{
+   /*if (d && effect) {
+   new Effect.Opacity(o.id, {
+   from: 0,
+   to: 1,
+   duration: 0.5
+   })
+   } else {*/
+       o.sepLyr.style.visibility = d ? _show : _hide
+   //}
+}
+}
+function NaviTabWidget_setUserData(s)
+{
+this.data.userdata=s;
+}
+function NaviTabWidget_getUserData()
+{
+return this.data.userdata;
+}
+function NaviTabWidget_contextMenuCB(evt)
+{
+evt=getEvent(evt);
+var tab=getWidget(this);
+    if (tab.disabled) return;
+var tabbar = tab.par;
+if (tab && tab.cb)
+tab.cb();//NaviBarWidget_itemClick
+if (tabbar && tabbar.showTabMenu)
+{
+tabbar.showTabMenu(evt, tab.idx);
+}
+eventCancelBubble(evt);
+return false;
+}
+function NaviTabWidget_setMenu(m)
+{
+this.data.menu=m;
+}
+function NaviTabWidget_getMenu()
+{
+return this.data.menu;
+}
+function NaviTabWidget_setHtml(html)
+{
+this.data.html=html;
+}
+function NaviTabWidget_getHtml()
+{
+return this.data.html;
+}
+function NaviTabWidget_change(prms)
+{
+var o=this;
+if (prms.value)
+o.value=prms.value;
+if (prms.cb)
+o.cb=prms.cb;
+if (prms.dblClick)
+o.dblClick=prms.dblClick; 
+if (prms.tooltip)
+o.tooltip=prms.tooltip;   
+    if (typeof(prms.icon)=="object")
+    {
+        var icon=prms.icon;
+        o.icon=icon.src;
+        o.iconW=icon.w;
+        o.iconH=icon.h;
+        o.iconOffX=icon.dx;
+        o.iconOffY=icon.dy;  
+    }
+    else
+    {
+    if (typeof(prms.icon)!="undefined")
+    o.icon=prms.icon;  
+    if (prms.iconW!=null)
+    {
+    o.iconW=prms.iconW;  
+    }
+    else
+    {
+        if (typeof(prms.icon)!="undefined")
+        o.iconW=(o.icon)?_vertTabIconSize:1;
+        if (prms.iconH!=null)
+        o.iconH=prms.iconH;   
+        else
+        if (typeof(prms.icon)!="undefined")
+        o.iconH=o.icon?_vertTabIconSize:1;
+        if (prms.iconOffX!=null)
+        o.iconOffX=prms.iconOffX; 
+        if (prms.iconOffY!=null)   
+        o.iconOffY=prms.iconOffY; 
+    }
+}
+if ((typeof(prms.icon)!="undefined") || (prms.iconW!=null) || (prms.iconH!=null) || (prms.iconOffX!=null) || (prms.iconOffY!=null))
+{
+if (o.iconLyr)
+{
+changeOffset(o.iconLyr,o.iconOffX,o.iconOffY,(o.icon?o.icon:(_skin+"../transp.gif")));
+var w=(_VertTabWithIcon==o.tabType)?_vertTabIconSize:o.iconW;
+o.iconLyr.style.width=""+w+"px"
+o.iconLyr.style.height=""+o.iconH+"px"
+}
+}
+if (prms.name)
+{
+o.name=prms.name;
+if (o.txtLyr)
+{
+o.txtLyr.innerHTML=convStr(o.name,true);
+}
+}
+if (!o.isVert())
+{
+if (o.txtLyr)
+o.txtLyr.style.paddingLeft=""+((o.iconW>1)?_horizTabImgToTxt:_horizTabTxtPaddingL)+"px";
+if (o.iconLyr)
+o.iconLyr.style.marginLeft=""+((o.iconW>1)?_horizTabImgPadL:0)+"px";
+}
+if (o.par && o.par.updateScrollIconState)
+o.par.updateScrollIconState();
+}
+function new_NaviBarWidget(prms){
+    var o = new_Widget(prms);
+    o.superInit=o.init;
+    o.oldResize=o.resize;
+// public API
+    o.init=NaviBarWidget_init;
+    o.getHTML=NaviBarWidget_getHTML;
+    o.add=NaviBarWidget_add;
+    o.addByPrms=NaviBarWidget_addByPrms;
+    o.remove=NaviBarWidget_remove;
+    o.removeAll=NaviBarWidget_removeAll;
+    o.getCount=NaviBarWidget_getCount;
+    o.select=NaviBarWidget_select;
+    o.getSelection=NaviBarWidget_getSelection;
+    o.getBarType=NaviBarWidget_getBarType;  
+    o.scroll=NaviBarWidget_scroll;
+    o.getMenu=NaviBarWidget_getMenu;
+    o.showMenu=NaviBarWidget_showMenu;
+o.getTabMenu=NaviBarWidget_getTabMenu;
+o.showTabMenu=NaviBarWidget_showTabMenu;
+    o.setShowContextMenuAllowed=NaviBarWidget_setShowContextMenuAllowed;
+    o.setUniqueTabContextMenu=NaviBarWidget_setUniqueTabContextMenu;
+    o.getTab=NaviBarWidget_getTab;
+    o.getSelectedTab=NaviBarWidget_getSelectedTab;
+    o.showTab=NaviBarWidget_showTab;
+    o.resize=NaviBarWidget_resize;
+    o.setTabHTML=NaviBarWidget_setTabHTML;
+    o.getTabHTML=NaviBarWidget_getTabHTML;
+    o.getTabIndexByName=NaviBarWidget_getTabIndexByName;
+    o.getTabIndexByValue=NaviBarWidget_getTabIndexByValue;
+    o.getTabID=NaviBarWidget_getTabID;//from tab index to get the unique number NaviTabWidget.idx
+    //internal usage
+    var w = Widget_param(prms, "w", null)
+    var h = Widget_param(prms, "h", null)
+    o.cb = Widget_param(prms, "cb", null)
+    o.dblclick = Widget_param(prms, "dblclick", null)   
+    o.beforeShowTabMenu= Widget_param(prms, "beforeShowTabMenu", null);        
+o.type = Widget_param(prms, "naviBarType", _VertTab);
+    o.counter=0;
+    o.items=new Array;
+    o.selIndex=-1;
+    o.leftLimit=0;
+   o.showContextMenuAllowed=true;
+   o.uniqueTabContextMenu=false;
+o.menu=newMenuWidget("naviBarMenu_"+o.id,null,Widget_param(prms, "beforeShowMenu", null));
+o.tabList=null;
+o.showScrollBar=_noScrollBar;
+    o.isVert=((o.type== _VertTab) || (o.type==_VertTabWithIcon))?true:false;
+    if (o.isVert)
+    {
+        if (w)
+        {
+            w=Math.max(_vertNaviPanelMinW,w);
+            w=Math.min(w, _vertNaviPanelMaxW);
+        }
+        o.w=(w?w:((o.type== _VertTab)?_vertNaviPanelMinW:_vertNaviPanelWithIconW))+2    //border;
+        //resize is available
+        /*
+        if (h)
+        {
+            var n=Math.ceil(h/_mitemH);
+            h=(Math.max(1, n))*_mitemH;
+        } 
+        */  
+        o.h=(h?h:_vertNaviPanelH)+2;    //border
+    }
+    else
+    {
+//horizontal bar
+        //tab list
+        var showTabList= Widget_param(prms, "showTabList", false);
+        if (showTabList)
+        {
+o.tabList=new_MenuWidget({id:("naviBarTabListMenu_"+o.id), 
+beforeShowCB:NaviBarWidget_beforeShowTabListCB,
+onPositionCB:NaviBarWidget_TabListonPositionCB});
+o.tabList.navibar=o;
+        }
+        else
+        {
+var showScrollBar = Widget_param(prms, "showScrollBar", false);
+o.showScrollBar=showScrollBar?((_HorizTabBottom==o.type)?_ScrollBarAtBegin:_ScrollBarAtEnd):_noScrollBar;
+        }
+        o.w=w?w:(_horizBarWidth+_scrollBarWidth);
+        o.h=_naviHorzTabH;
+    }
+    switch (o.type)
+    {
+        case _VertTab:
+        case _VertTabWithIcon:
+            o.tabCSSTable=_vertTabCSS;
+            break;
+        case _HorizTabBottom:
+            o.tabCSSTable=_horizBottomTabCSS;
+            break;
+        case _HorizTabTop:
+        default:
+            o.tabCSSTable=_horizTabCSS;
+            break;
+    }
+    //for horizontal navigation bar
+    o.trid="naviBarTR_"+o.id;
+    o.trLyr=null;
+    o.divid="naviBarDIV_"+o.id;
+    o.divLyr=null;
+    //for scroll bar in horizontal bar at top or at bottom
+o.scrollbarid="scrlbar_"+o.id
+    o.firstid="f_"+o.id
+    o.previd="p_"+o.id
+    o.nextid="n_"+o.id
+    o.lastid="l_"+o.id
+o.scrollbarLyr=null;
+    o.firstLyr=null;
+    o.prevLyr=null;
+    o.nexttLyr=null;
+    o.lastLyr=null;
+    o.updateSepDisplay=NaviBarWidget_updateSepDisplay;
+    o.getPrevNextTabs=NaviBarWidget_getPrevNextTabs;
+    o.closeTab=NaviBarWidget_closeTab;
+    o.getBarIndex=NaviBarWidget_getBarIndex;
+    o.mover_scrollbar=NaviBarWidget_mover_scrollbar;
+    o.mdown_scrollbar=NaviBarWidget_mdown_scrollbar;
+o.contextMenuCB=NaviBarWidget_contextMenuCB;
+o.dblclickCB=NaviBarWidget_dblclickCB;
+    o.getItemXPos=NaviBarWidget_getItemXPos;
+    o.updateScrollIconState=NaviBarWidget_updateScrollIconState;
+    o.firstCB=NaviBarWidget_firstCB;
+    o.prevCB=NaviBarWidget_prevCB;
+    o.nextCB=NaviBarWidget_nextCB;
+    o.lastCB=NaviBarWidget_lastCB;
+    o.par=null;
+    //scroll menu
+    o.tablistid="bartablist_"+o.id;
+    o.tablistLyr=null;
+    o.mover_tablist=NaviBarWidget_mover_tablist;
+    o.mdown_tablist=NaviBarWidget_mdown_tablist;
+    o.click_tablist=NaviBarWidget_click_tablist;
+    o.keydown_tablist=NaviBarWidget_keydown_tablist;
+    o.onChangeTabList=NaviBarWidget_onChangeTabList;
+    o.showTabListIcon=NaviBarWidget_showTabListIcon;
+    o.buildTabList=NaviBarWidget_buildTabList;
+o.focus=function()
+{
+for (var i=0; i<o.items.length; i++) {
+    var item = o.items[i]
+    if (!item.disabled) 
+    {
+        item.focus();
+        return;
+    }
+}
+}
+    o.moveTab=function(fromIndex, toIndex)
+    {
+        var o=this;
+        if (fromIndex==toIndex) return;
+        var addIndex, deleteIndex;
+        if (toIndex>fromIndex)
+        {
+            //add after toIndex
+            addIndex=toIndex+1;
+            deleteIndex=fromIndex;                   
+        }
+        else
+        {
+            //add before toIndex
+            addIndex=toIndex;
+            deleteIndex=fromIndex+1;               
+        }
+        var tab=o.getTab(fromIndex);
+        if (!tab) return;
+        tab=o.addByPrms({name:tab.name, value:tab.value, tooltip:tab.tooltip, 
+                        icon:tab.icon, iconW:tab.iconW, iconH:tab.iconH, iconOffX:tab.iconOffX, iconOffY:tab.iconOffY}, addIndex);
+        o.remove(deleteIndex);   
+        return tab;             
+    }
+    return o;
+}
+function newNaviBarWidget(id, naviBarType, cb, dblclick, w, h, beforeShowTabMenu, beforeShowMenu, showScrollBar, showTabList)
+{
+    return new_NaviBarWidget({
+id:id,
+naviBarType:naviBarType,
+cb:cb,
+dblclick:dblclick,
+w:w,
+h:h,
+beforeShowTabMenu:beforeShowTabMenu,
+beforeShowMenu:beforeShowMenu,
+showScrollBar:showScrollBar,
+showTabList:showTabList
+})
+}
+function NaviBarWidget_getBarType()
+{
+return this.type;
+}
+function NaviBarWidget_init()
+{
+var o=this,items=o.items
+o.superInit();
+o.trLyr=getLayer(o.trid);
+o.divLyr=getLayer(o.divid);
+var len = items.length
+for (var i=0;i<len;i++)
+{
+var it=items[i]
+it.init()
+it.select(i==o.selIndex)
+}
+o.updateSepDisplay()
+if (o.tabList)
+{
+var tl = o.tablistLyr=getLayer(o.tablistid);
+addEvent(tl, "mouseover", o.mover_tablist)
+addEvent(tl, "mouseout", o.mover_tablist)
+addEvent(tl, "mousedown", o.mdown_tablist)
+addEvent(tl, "mouseup", o.mdown_tablist)
+addEvent(tl, "click", o.click_tablist)
+addEvent(tl, "contextmenu", function(){return false;})
+addEvent(tl, "keydown", o.keydown_tablist) //508
+o.showTabListIcon();
+}
+else
+if (o.showScrollBar!=_noScrollBar)
+{
+o.scrollbarLyr=getLayer(o.scrollbarid);
+o.firstLyr=getLayer(o.firstid);
+o.prevLyr=getLayer(o.previd);
+o.nexttLyr=getLayer(o.nextid);
+o.lastLyr=getLayer(o.lastid);
+var arr=[o.firstLyr, o.prevLyr, o.nexttLyr, o.lastLyr];
+for (var i=0; i<4; i++)
+{
+var l=arr[i]
+addEvent(l, "mouseover", o.mover_scrollbar)
+addEvent(l, "mouseout",  o.mover_scrollbar)
+addEvent(l, "mousedown", o.mdown_scrollbar)
+addEvent(l, "mouseup",   o.mdown_scrollbar)
+}
+addEvent(o.firstLyr, "click", o.firstCB)
+addEvent(o.prevLyr,  "click", o.prevCB)
+addEvent(o.nexttLyr, "click", o.nextCB)
+addEvent(o.lastLyr,  "click", o.lastCB)
+addEvent(o.scrollbarLyr, "contextmenu", function(){return false;})
+}
+if (o.isVert)
+addEvent(o.layer, "contextmenu", o.contextMenuCB)
+else
+if (o.divLyr)
+addEvent(o.divLyr,  "contextmenu", o.contextMenuCB)
+if (o.cb)
+{
+if (o.isVert)
+addEvent(o.layer, "click", function(){o.cb();return false;})
+else
+if (o.divLyr)
+addEvent(o.divLyr, "click", function(){o.cb();return false;})
+}
+if (o.dblclick)
+{
+if (o.isVert)
+addEvent(o.layer, "dblclick", o.dblclickCB)
+else
+if (o.divLyr)
+addEvent(o.divLyr, "dblclick", o.dblclickCB)
+}
+addEvent(o.layer, "selectstart", function() {return false;})
+addEvent(o.layer, "dragstart",   function() {return false;})
+o.resize(o.w,o.h);
+}
+function NaviBarWidget_dblclickCB(evt)
+{
+var o=getWidget(this);
+var evt=getEvent(evt);
+if (o.dblclick)
+o.dblclick();
+eventCancelBubble(evt);
+return false;
+}
+function NaviBarWidget_mover_scrollbar(evt)
+{
+if (this.disabled) return;
+var o=getWidget(this);
+var evt=getEvent(evt);
+var over=(evt && evt.type=="mouseover")?true:false;
+//o is NaviBarWidget
+this.className=over?o.tabCSSTable[_tabScrollBar][_scrollbarHover]:o.tabCSSTable[_tabScrollBar][_scrollbarM];
+}
+function NaviBarWidget_mdown_scrollbar(evt)
+{
+if (this.disabled) return;
+var o=getWidget(this);
+var evt=getEvent(evt);
+var down=(evt && evt.type=="mousedown")?true:false;
+//o is NaviBarWidget
+this.className=down?o.tabCSSTable[_tabScrollBar][_scrollbarPressed]:o.tabCSSTable[_tabScrollBar][_scrollbarM];
+}
+function NaviBarWidget_getHTML()
+{
+var o=this,items=o.items,len=items.length
+var sty='style="'+(o.isVert?'overflow:auto;':'')+'width:'+o.w+'px;height:'+o.h+'px"'
+var s= new Array, si = 0
+// role is for 508
+s[si++] =  '<div role="tablist" id="'+this.id+'" class="'+(o.isVert?"dlgFrame":"")+'" align="left" '+sty+' >'
+s[si++] = '<table cellspacing="0" cellpadding="0" border="0" '+(o.isVert?' class="naviVTabBackgnd"  ':'')+'><tbody>'
+if (o.isVert)
+{
+for (var i=0;i<len;i++)
+s[si++] = '<tr><td>'+items[i].getHTML()+'</td></tr>'
+}
+else
+{
+//horizontal navigation bar
+s[si++] = '<tr>'
+var scroll=''
+if (o.showScrollBar!=_noScrollBar)
+{
+scroll='<td>'
+scroll+='<table id="'+o.scrollbarid+'" cellspacing="0" cellpadding="0" border="0" width="'+_scrollBarWidth+'"><tbody><tr style="width:'+_scrollBarWidth+'px;">'
+scroll+='<td class="'+o.tabCSSTable[_tabScrollBar][_scrollbarL]+'"><div></div></td>'
+scroll+='<td id="'+o.firstid+'" class="'+o.tabCSSTable[_tabScrollBar][_scrollbarM]+'" align="center" valign="bottom"><div class="'+o.tabCSSTable[_tabScrollBar][_scrollbarFirst]+'"></div></td>'
+scroll+='<td id="'+o.previd+'" class="'+o.tabCSSTable[_tabScrollBar][_scrollbarM]+'" align="center" valign="bottom"><div class="'+o.tabCSSTable[_tabScrollBar][_scrollbarPrev]+'"></div></td>'
+scroll+='<td id="'+o.nextid+'" class="'+o.tabCSSTable[_tabScrollBar][_scrollbarM]+'" align="center" valign="bottom"><div class="'+o.tabCSSTable[_tabScrollBar][_scrollbarNext]+'"></div></td>'
+scroll+='<td id="'+o.lastid+'" class="'+o.tabCSSTable[_tabScrollBar][_scrollbarM]+'" align="center" valign="bottom"><div class="'+o.tabCSSTable[_tabScrollBar][_scrollbarLast]+'"></div></td>'
+scroll+='<td class="'+o.tabCSSTable[_tabScrollBar][_scrollbarR]+'"><div></div></td>'
+scroll+='</tr></tbody></table>'
+scroll+='</td>'
+}
+if (o.showScrollBar==_ScrollBarAtBegin)
+{
+s[si++] = scroll;
+}
+var w=o.w;
+if (o.showScrollBar!=_noScrollBar)
+{
+w=Math.max(w-_scrollBarWidth, _horizBarWidth);
+}
+s[si++] = '<td><div style="overflow:hidden;width:'+w+'px;"  id="'+o.divid+'" class="'+o.tabCSSTable[_tabImgMid][_horizTabNormal]+'">'
+s[si++] = '<table cellspacing="0" cellpadding="0" border="0"><tbody>'
+s[si++] = '<tr id="'+o.trid+'">'
+for (var i=0;i<len;i++)
+{
+s[si++] = '<td>'+items[i].getHTML()+'</td>'
+}
+s[si++] = '</tr></tbody></table></div></td>'
+if (o.tabList)
+{
+var ariaLabel = convStr(_tablistButton)
+s[si++] = '<td class="'+o.tabCSSTable[_tabImgMid][_horizTabNormal]+'"><table cellspacing="0" cellpadding="0" border="0"><tbody><tr>'
+s[si++] = '<td role="button" aria-label="'+ariaLabel+'" title="'+ariaLabel+'" tabIndex="0" id="'+o.tablistid+'" class="'+o.tabCSSTable[_tabList][_tabListNormal]+'">' 
+s[si++] = '<div class="tabListIcon"></div></td>';
+s[si++] = '</tr></tbody></table></td>';
+}
+if (o.showScrollBar==_ScrollBarAtEnd)
+{
+s[si++] = scroll;
+}
+s[si++] = '</tr>'
+}
+s[si++] = '</tbody></table></div>'
+return s.join('')
+}
+function NaviBarWidget_add(name, value, idx, icon, iconW,iconH,iconOffX,iconOffY, tooltip, closeTabCB)
+{
+this.addByPrms({name:name, 
+value:value, 
+tooltip:tooltip, 
+icon:{src:icon, w:iconW, h:iconH, dx:iconOffX, dy:iconOffY}, 
+closeTabCB:closeTabCB
+}, idx);
+}
+function NaviBarWidget_addByPrms(prms, idx)
+{
+var o=this,counter=o.counter++
+prms.id="naviTab_"+counter+"_"+o.id;
+prms.tabType=o.type;
+prms.clickCB=NaviBarWidget_itemClick;
+prms.dblclickCB=NaviBarWidget_itemDblClick;
+var obj=new_NaviTabWidget(prms);
+obj.par=o;
+obj.idx=counter;
+arrayAdd(o,"items",obj,idx);
+var len=o.items.length;
+//for vertical navigation panel
+if (o.isVert && o.layer!=null)
+{
+var trElt=_curDoc.createElement("tr");
+var node=o.layer.childNodes[0].childNodes[0];
+if ((typeof(idx)=="undefined") || (len==1) ||(idx==null) || (idx==-1) || ((idx+1) >=len))
+{
+node.appendChild(trElt);
+idx=len-1;
+}
+else
+if (node.childNodes[parseInt(idx)])
+node.insertBefore(trElt,node.childNodes[parseInt(idx)]);
+var tdElt=_curDoc.createElement("td");
+trElt.appendChild(tdElt);
+tdElt.innerHTML=obj.getHTML()
+obj.init();
+}
+else
+if (o.trLyr)
+{
+//horizontal navigation bar
+var tdElt=_curDoc.createElement("td");
+if ((typeof(idx)=="undefined") || (len==1) || (idx==null) || (idx==-1) || (idx+1 >=len))
+{
+o.trLyr.appendChild(tdElt);
+idx=len-1;
+}
+else
+o.trLyr.insertBefore(tdElt, o.trLyr.childNodes[parseInt(idx)]);
+tdElt.innerHTML=obj.getHTML()
+obj.init();
+o.showTabListIcon();
+}
+//update the selection index
+if ((o.selIndex!=null) && (o.selIndex>=0))
+{
+if (idx<=o.selIndex)
+o.selIndex++;
+}
+o.updateSepDisplay();
+o.updateScrollIconState();
+return obj;
+}
+function NaviBarWidget_getBarIndex(itemIdx)
+{
+var o=this,items=o.items,len=items.length
+for (var i=0; i<len;i++)
+{
+if (items[i].idx==itemIdx) return i;
+}
+return null;
+}
+function NaviBarWidget_itemClick()
+{
+var o=this.par,items=o.items,len=items.length,index=-1
+for (var i=0;i<len;i++)
+{
+if (items[i].idx==this.idx)
+{
+o.select(i)
+index=i
+break
+}
+}
+if (o.cb)
+o.cb(index)//NaviFrameWidget_tabClick
+}
+function NaviBarWidget_itemDblClick()
+{
+var o=this.par,items=o.items,len=items.length,index=-1
+for (var i=0;i<len;i++)
+{
+if (items[i].idx==this.idx)
+{
+index=i
+break
+}
+}
+if (o.dblclick)
+o.dblclick(index)
+}
+function NaviBarWidget_select(index)
+{
+if (index==null || typeof(index)=="undefined") return;
+var o=this,items=o.items,len=items.length
+if (index==-1) index=len-1
+if ((index>=0)&&(index<len))
+{
+if ((o.selIndex!=null) && (o.selIndex>=0)&&(o.selIndex!=index)&&(o.selIndex<len))
+items[o.selIndex].select(false)
+        o.onChangeTabList(index);   //CSS #1155958 / 2014 WebI tab names do not highlight 
+o.selIndex=index
+items[index].select(true)
+//update separator display state
+o.updateSepDisplay();
+}
+}
+function NaviBarWidget_updateSepDisplay()
+{
+var o=this;
+if (o.isVert || (o.layer==null)) return;
+var items=o.items,len=items.length
+var d=true;
+for (var i=0;i<len;i++)
+{
+d=true;
+if (items[i].isSelected)
+{
+d=false;
+}
+else
+if ((i+1 < len) && items[i+1].isSelected)//next one is selected
+{
+d=false;
+}
+else
+if (i==len-1)//last one
+{
+d=false;
+}
+items[i].displaySep(d);
+}
+}
+function NaviBarWidget_closeTab(itemIndex, closeTabCB)
+{
+var o=this;
+var i=o.getBarIndex(itemIndex);
+if (closeTabCB)
+closeTabCB(i);
+if (o.par && o.par.closeTab)
+o.par.closeTab(i);//NaviFrameWidget in case
+o.remove(i);//remove the tab from the bar
+}
+function NaviBarWidget_getPrevNextTabs(index)
+{
+var o=this;
+var i=o.getBarIndex(index);
+var items=o.items,len=items.length;
+if (i!=null)
+{
+var ret=new Object;
+ret.prevTab=(i==0)?null:items[i-1];
+ret.nextTab=(i==len-1)?null:items[i+1];
+return ret;
+}
+return null;
+}
+function NaviBarWidget_getItemXPos(index)
+{
+var o=this
+var x=0
+for (var i=0;i<index;i++)
+x+=parseInt(o.items[i].getWidth())
+return x
+}
+function NaviBarWidget_getCount()
+{
+return this.items.length
+}
+function NaviBarWidget_updateScrollIconState()
+{
+var o=this
+if (o.divLyr==null || (o.showScrollBar==_noScrollBar)) return;
+var tabsl=o.divLyr
+var tabsSL=tabsl.scrollLeft,tabsOW=tabsl.offsetWidth,contentLen=o.trLyr.offsetWidth;
+// Enable or disable the navigation icons if no scroll is possible on the right
+o.nexttLyr.disabled=(contentLen-tabsSL>tabsOW)?false:true;
+o.lastLyr.disabled=(contentLen-tabsSL>tabsOW)?false:true;
+// Enable or disable the navigation icons if no scroll is possible on the left
+o.firstLyr.disabled=(tabsSL == 0)?true:false;
+o.prevLyr.disabled=(tabsSL == 0)?true:false;
+//update scroll bar disabled state
+var arr=[o.firstLyr, o.prevLyr, o.nexttLyr, o.lastLyr];
+var dis;
+for (var i=0; i<4; i++)
+{
+dis=arr[i].disabled;
+arr[i].className=o.tabCSSTable[_tabScrollBar][(dis?_scrollbarDisabled:_scrollbarM)]
+arr[i].childNodes[0].className=o.tabCSSTable[_tabScrollBar][(dis?(_scrollbarFirstDis+i):(_scrollbarFirst+i))]
+}
+}
+function NaviBarWidget_firstCB()
+{
+var o=getWidget(this);
+o.scroll('first')
+}
+function NaviBarWidget_prevCB()
+{
+var o=getWidget(this);
+o.scroll('previous')
+}
+function NaviBarWidget_nextCB()
+{
+var o=getWidget(this);
+o.scroll('next')
+}
+function NaviBarWidget_lastCB()
+{
+var o=getWidget(this);
+o.scroll('last')
+}
+function NaviBarWidget_scroll(step,destItem)
+{
+var o=this
+if ((o.divLyr==null) || (o.showScrollBar==_noScrollBar)) return;
+var tabsl=o.divLyr
+var tabsSL=tabsl.scrollLeft,tabsOW=tabsl.offsetWidth,tabsSW=tabsl.scrollWidth,SLMax=tabsSW-tabsOW
+//alert("AVANT scroll\nstep="+step+"\no.leftLimit="+o.leftLimit+"\ntabsSL="+tabsSL+"\nSLMax="+SLMax)
+// Scroll
+if (step=='first')// go to first tab
+{
+tabsl.scrollLeft=tabsSL=0
+o.leftLimit=0
+}
+else
+if (step=='previous')// go to previous tab
+{
+if (o.leftLimit > 0)
+{
+o.leftLimit=o.leftLimit-1
+var x=o.getItemXPos(o.leftLimit)
+tabsl.scrollLeft=tabsSL=x
+}
+else return;
+}
+else
+if (step=='next')// go to next tab
+{
+if (o.leftLimit>o.getCount()-1)
+return;
+if (tabsSL < SLMax)
+{
+o.leftLimit+=1
+var x=o.getItemXPos(o.leftLimit)
+if (x<SLMax)
+tabsl.scrollLeft=tabsSL=x
+else
+tabsl.scrollLeft=tabsSL=SLMax
+}
+else return;
+}
+else
+if (step=='last')// go to last tab
+{
+for (var i=0;i<o.getCount();i++)
+{
+var x=o.getItemXPos(i);
+if (x>SLMax)
+break;
+}
+tabsl.scrollLeft=tabsSL=Math.max(0,SLMax)
+o.leftLimit=i
+}
+else
+if (step==null)// go to the specified <destItem>
+{
+var x=o.getItemXPos(destItem);
+if (x<SLMax)
+tabsl.scrollLeft=tabsSL=x
+else
+tabsl.scrollLeft=tabsSL=SLMax
+for (var i=0;i<o.getCount();i++)
+{
+var x=o.getItemXPos(i)
+if (x>SLMax)
+break;
+}
+o.leftLimit=i
+}
+else return;
+o.updateScrollIconState()
+//alert("AVANT scroll\nstep="+step+"\no.leftLimit="+o.leftLimit+"\ntabsSL="+tabsSL+"\nSLMax="+SLMax)
+}
+function NaviBarWidget_mover_tablist(evt)
+{
+var o=getWidget(this);
+var evt=getEvent(evt);
+var over=(evt && evt.type=="mouseover")?true:false;
+//o is NaviBarWidget
+this.className=over?o.tabCSSTable[_tabList][_tabListHover]:o.tabCSSTable[_tabList][_tabListNormal];
+}
+function NaviBarWidget_mdown_tablist(evt)
+{
+var o=getWidget(this);
+var evt=getEvent(evt);
+var down=(evt && evt.type=="mousedown")?true:false;
+//o is NaviBarWidget
+this.className=down?o.tabCSSTable[_tabList][_tabListPressed]:o.tabCSSTable[_tabList][_tabListNormal];
+}
+function NaviBarWidget_click_tablist()
+{
+//"this" is the tablist icon, o is NaviBarWidget
+var o=getWidget(this);
+o.buildTabList();
+//x, y will be set via NaviBarWidget_TabListonPositionCB()
+o.tabList.show(true,0,0);
+}
+function NaviBarWidget_keydown_tablist(e)
+{
+var k=eventGetKey(e)
+if(k == 13)//enter
+{
+//same code as NaviBarWidget_click_tablist
+var o=getWidget(this);
+o.buildTabList();
+o.tabList.show(true,0,0);
+eventCancelBubble(e);
+}
+}
+function NaviBarWidget_TabListonPositionCB()
+{
+var o=this.navibar;
+if (!o) return;
+var tablist_pos=getScrolledPos(o.tablistLyr);
+var pos=new Object;
+pos.x=Math.max(0, (tablist_pos.x+ _tabListIconWidth -o.tabList.getWidth()));
+pos.y=(o.type==_HorizTabTop)?(tablist_pos.y+_naviHorzTabH):Math.max(0, (tablist_pos.y-(o.tabList.getHeight())));
+return pos;
+}
+function NaviBarWidget_beforeShowTabListCB()
+{
+//this is NaviBarWidget.tabList menu widget
+var o=this.navibar;
+if (!o) return;
+var tab=o.getSelectedTab();
+if (tab)
+{
+var menuitem=this.getItemByID(tab.idx);
+if (menuitem)
+menuitem.setTextClass("tabListMenuItem");
+}
+}
+function NaviBarWidget_remove(idx)
+{
+var o=this,items=o.items,len=items.length
+if ((idx>=0)&&(idx<len))
+{
+var elem=items[idx]
+arrayRemove(o,"items",idx)
+items=o.items
+len=items.length
+var l=elem.layer
+if (l!=null)
+{
+if (o.isVert && o.layer)
+{
+var row=l.parentNode.parentNode;
+var node=o.layer.childNodes[0].childNodes[0];
+cleanTagMem(row)
+node.removeChild(row);
+}
+else
+if (o.trLyr)
+{
+cleanTagMem(l.parentNode)
+o.trLyr.removeChild(l.parentNode);
+}
+}
+if (o.selIndex>idx) 
+o.select(o.selIndex-1)
+else 
+if ((o.selIndex==idx) && (len>0))
+o.select(Math.min(idx,len-1))
+else
+if (len==0)//empty bar
+{
+o.selIndex=null;
+}
+o.updateScrollIconState();
+o.showTabListIcon();
+}
+}
+function NaviBarWidget_removeAll()
+{
+var o=this,items=o.items, len= items.length
+for (var i=len-1;i>=0;i--)
+o.remove(i)
+}
+function NaviBarWidget_setTabHTML(index, s)
+{
+var o=this
+if (typeof(index)=="undefined" || index==null) index=o.items.length-1;
+if (index>=0 && index <=(o.items.length-1))
+{
+o.items[index].setHtml(s);
+}
+}
+function NaviBarWidget_getTabHTML(index)
+{
+var o=this
+if (index>=0 && index <=(o.items.length-1))
+{
+return o.items[index].getHtml();
+}
+return "";
+}
+function NaviBarWidget_getSelection()
+{
+var o=this;
+if (o.getCount()==0)
+{
+o.selIndex=-1;
+return null;
+}
+var index=o.selIndex;
+if ((index!=null) && (index>=0))
+{
+var obj=new Object;
+obj.index=index;
+obj.value=o.items[index].value;
+obj.name=o.items[index].name;
+return obj;
+}
+else
+return null;
+}
+function NaviBarWidget_getMenu()
+{
+return this.menu
+}
+function NaviBarWidget_getTabMenu(index)
+{
+var menu=null;
+var o=this,items=o.items,len=items.length;
+if ((index>=0) && (index<len))
+{
+menu=items[index].getMenu();
+if (!menu)
+{
+menu=newMenuWidget(("naviTabMenu_"+o.id+"_"+o.getTabID(index)),null, o.beforeShowTabMenu);
+items[index].setMenu(menu);
+}
+}
+return menu;
+}
+function NaviBarWidget_setShowContextMenuAllowed(b)
+{
+this.showContextMenuAllowed=b
+}
+function NaviBarWidget_setUniqueTabContextMenu(b)
+{
+this.uniqueTabContextMenu=b
+}
+function NaviBarWidget_showMenu(evt)
+{
+if (this.showContextMenuAllowed==false)
+return
+evt=getEvent(evt);
+if(!this.uniqueTabContextMenu)
+{
+this.menu.show(true,(eventGetX(evt)+winScrollX()),(eventGetY(evt)+winScrollY()))
+eventCancelBubble(evt);
+}
+}
+function NaviBarWidget_showTabMenu(evt, itemIndex)
+{
+if (this.showContextMenuAllowed==false)
+return
+evt=getEvent(evt);
+if(this.uniqueTabContextMenu)
+{
+this.menu.show(true,(eventGetX(evt)+winScrollX()),(eventGetY(evt)+winScrollY()))
+eventCancelBubble(evt);
+}
+else
+{
+var index=this.getBarIndex(itemIndex);
+var menu=this.items[index].getMenu();
+if (menu)
+{
+menu.show(true,(eventGetX(evt)+winScrollX()),(eventGetY(evt)+winScrollY()));
+eventCancelBubble(evt);
+}
+}
+}
+function NaviBarWidget_showTab(index,show)
+{
+var o=this,items=o.items,len=items.length
+if ((index>=0) && (index<len))
+items[index].show(show)
+}
+function NaviBarWidget_showTabListIcon()
+{
+var o=this;
+if (o.tablistLyr)
+{
+o.tablistLyr.style.visibility=(o.items.length>1)?_show:_hide
+o.tabList.par = o.tablistLyr; //508: to restore focus on the icon when leave the menu.
+}
+}
+function NaviBarWidget_tabListMenuItemsCB()
+{
+//this is newMenuItem, newMenuItem.par is MenuWidget, MenuWidget.navibar is NaviBarWidget
+var o=this.par.navibar;
+if (!o) return;
+//get tab index from tab unique idx
+var tab_index=o.getBarIndex(parseInt(this.id));
+if ((tab_index>=0) && (tab_index<o.items.length) && o.divLyr && o.tabList)
+{
+        //o.onChangeTabList(tab_index);    instead of calling here calling from "Function NaviBarWidget_select(index)",which will be called for all purpose CSS #1155958 / 2014 / WebI tab names do not highlight
+o.select(tab_index);
+if (o.cb)
+o.cb(tab_index);
+}
+}
+function NaviBarWidget_onChangeTabList(visibleIdx)
+{
+if (visibleIdx<0) visibleIdx=0;
+var o=this;
+var items=o.items,len=items.length;
+if (!o.divLyr || !o.trLyr || !o.tabList || !len) return;
+//at least one visible item
+var toRight=visibleIdx;
+var toLeft=visibleIdx;
+var nLeftMost=visibleIdx;
+var visibleLen=o.divLyr.offsetWidth;
+var nItemsLen=items[visibleIdx].getWidth();
+if (o.trLyr.offsetWidth>o.divLyr.offsetWidth)
+{
+if (nItemsLen<visibleLen)
+{
+while (true)
+{
+toRight++;
+if (toRight < len)
+{
+if ((items[toRight].getWidth()+nItemsLen) < visibleLen)
+{
+nItemsLen+=items[toRight].getWidth();
+}
+else break;
+}
+toLeft--;
+if (toLeft>=0)
+{
+if ((items[toLeft].getWidth()+nItemsLen) < visibleLen)
+{
+nItemsLen+=items[toLeft].getWidth();
+nLeftMost=toLeft;
+}
+else break;
+}
+}
+}
+}
+else nLeftMost=0;
+if (nLeftMost>=0)
+{
+o.divLyr.scrollLeft=o.getItemXPos(nLeftMost);
+}
+}
+function NaviBarWidget_buildTabList()
+{
+var o=this;
+var items=o.items,len=items.length;
+//build tab list menu items
+o.tabList.removeAll();
+for (var i=0; i<len; i++)
+{
+o.tabList.add((""+items[i].idx), items[i].name, NaviBarWidget_tabListMenuItemsCB);
+}
+}
+function NaviBarWidget_resize(w,h)
+{
+var o=this
+//debuggingLogger("NaviBarWidget_resize: w="+(w)+" h="+(h),700,0,250,400);
+if (o.isVert) 
+{    
+    o.oldResize(null, h);
+    if (h)
+        o.h=h;
+    return;
+}
+//horizontal bar
+o.oldResize(w)
+if (w!=null)
+{
+o.w=w;
+//horizontal bar
+if (o.divLyr)
+{
+if (o.tabList)
+w=Math.max((w-_tabListIconWidth), _horizBarWidth);
+else
+if (o.showScrollBar!=_noScrollBar)
+w=Math.max(o.w-_scrollBarWidth, _horizBarWidth);
+o.divLyr.style.width=''+w+'px';
+}
+o.onChangeTabList(o.selIndex);
+}
+o.updateScrollIconState()
+}
+function NaviBarWidget_contextMenuCB(evt)
+{
+evt=getEvent(evt);
+var tabbar=getWidget(this);
+if (tabbar.cb)
+tabbar.cb();
+if (tabbar.showMenu)
+tabbar.showMenu(evt);
+return false;
+}
+function NaviBarWidget_getTabIndexByName(name)
+{
+var o=this,items=o.items,len=items.length
+for (var i=0;i<len;i++)
+{
+if (items[i].name==name) return i;
+}
+return -1;
+}
+function NaviBarWidget_getTabIndexByValue(value)
+{
+var o=this,items=o.items,len=items.length
+for (var i=0;i<len;i++)
+{
+if (items[i].value==value) return i;
+}
+return -1;
+}
+function NaviBarWidget_getTabID(tabIndex)
+{
+var o=this,items=o.items;
+if ((tabIndex!=null) && (tabIndex>=0) && (tabIndex<items.length))
+return items[tabIndex].idx;
+return null;
+}
+function NaviBarWidget_getTab(index)
+{
+var o=this,items=o.items;
+if ((index!=null) && (index>=0) && (index<items.length))
+return items[index];
+return null;
+}
+function NaviBarWidget_getSelectedTab()
+{
+var o=this;
+var sel=o.getSelection();
+if (sel)
+return o.getTab(sel.index);
+return null;
+}
+function new_MenuBarTabWidget(prms)
+{
+prms.tabType=_menuBarTab;
+var o=new_NaviTabWidget(prms);
+//public API
+o.getHTML=MenuBarTabWidget_getHTML;
+o.mover=MenuBarTabWidget_mover;
+o.mdown=MenuBarTabWidget_mdown;
+o.contextMenuCB=MenuBarTabWidget_contextMenuCB;
+o.keydownCB=MenuBarTabWidget_none;
+o.clickCB=MenuBarTabWidget_none;
+o.dblClickCB=MenuBarTabWidget_none;
+return o;
+}
+function MenuBarTabWidget_getHTML()
+{
+var o=this;
+var s= new Array, si = 0
+s[si++] = '<table id="'+o.id+'"  style="cursor:'+_hand+'" cellspacing="0" cellpadding="0" border="0">';
+s[si++] = '<tbody><tr height="'+ _menuBarTabHeight+'" valign="middle">';
+//left
+s[si++] = '<td id="'+o.leftimgid+'" ><div style="width:3px;"></div></td>';
+//middle
+s[si++] = '<td id="'+o.midimgid+'" >';
+s[si++] = '<div style="padding-left:5px;padding-right:5px;" class="naviHTabText">'+convStr(o.name)+'</div>';
+s[si++] = '</td>';
+//right
+s[si++] = '<td id="'+o.rightimgid+'" ><div style="width:3px;"></div></td>';
+//space between menus
+s[si++] = '<td style="cursor:default;"><div style="width:'+_spaceBetweenInMenuBar+'px;" ></div></td>';
+s[si++] = '</tr></tbody></table>';
+return s.join('');
+}
+function MenuBarTabWidget_mover(evt)
+{
+var o=getWidget(this);
+var cxtmenu=o.par.getContextMenu();
+if (!cxtmenu || !cxtmenu.isShown()) 
+{
+var evt=getEvent(evt);
+var over=(evt && evt.type=="mouseover")?true:false;
+var menu=o.getMenu();
+var state=(over || (menu && menu.isShown()))?_menuBarHover:_menuBarNormal;
+o.changeState(state);
+//debuggingLogger("tab mover  state="+(state),300,300,200,400);
+if (over)
+o.par.mover(o.idx);
+}
+eventCancelBubble(evt);
+return false;
+}
+function MenuBarTabWidget_mdown(evt)
+{
+var o=getWidget(this);
+var evt=getEvent(evt);
+var down=(evt && evt.type=="mousedown")?true:false;
+var cxtmenu=o.par.getContextMenu();
+if (cxtmenu.isShown())
+cxtmenu.show(false);
+var menu=o.getMenu();
+var state=down?_menuBarPressed:((menu && menu.isShown())?_menuBarHover:_menuBarNormal);
+o.changeState(state);
+//debuggingLogger("tab mdown  state="+(state),300,300,200,400);
+//is the left button down?
+if (down)
+{
+if (_ie)
+{
+if (evt.button!=1) return false;
+}
+else
+{
+if (evt.which!=1) return false;
+}
+}
+if (down && o.par)
+o.par.mdown(o.idx);
+eventCancelBubble(evt);
+return false;
+}
+function MenuBarTabWidget_contextMenuCB(evt)
+{
+var o=getWidget(this);
+var evt=getEvent(evt);
+if (o.par && o.par.showMenu)
+o.par.showMenu(evt);
+eventCancelBubble(evt);
+return false;
+}
+function MenuBarTabWidget_none(evt)
+{
+eventCancelBubble(evt);
+return false;
+}
+function MenuBarTabWidget_hideMenuCB()
+{
+var o=this.bartab;//"this" is the tab menu
+if (!o) return;
+o.changeState(_menuBarNormal);
+o.par.shownMenuTabIdx=-1;
+}
+function MenuBarTabWidget_beforeShowCB()
+{
+var o=this.bartab;//"this" is the tab menu
+if (!o) return;
+o.par.shownMenuTabIdx=o.idx;
+}
+function new_MenuBarWidget(prms)
+{
+// Base class
+var o = new_Widget(prms);
+// Parameters parsing
+o.cssClassName = Widget_param(prms, "cssClassName", "toolbarBackgnd");
+o.marginTop = Widget_param(prms, "marginTop", 2);
+o.superInit=o.init;
+//public API
+o.init=MenuBarWidget_init;
+o.getHTML=MenuBarWidget_getHTML;
+o.add=MenuBarWidget_add;
+o.remove=MenuBarWidget_remove;
+o.removeByValue=MenuBarWidget_removeByValue;
+o.removeAll=MenuBarWidget_removeAll;
+o.getMenu=MenuBarWidget_getMenu;//to add menu items in a menu 
+o.getContextMenu=MenuBarWidget_getContextMenu;
+o.setShowContextMenuAllowed=MenuBarWidget_setShowContextMenuAllowed;
+o.getCount=MenuBarWidget_getCount;
+//internal usage
+o.width = Widget_param(prms, "width", _defaultMenuBarWidth);
+o.menu=newMenuWidget("menuBarContextMenu_"+o.id,null,Widget_param(prms, "beforeShowMenu", null));
+    o.counter=0;   
+    o.items=new Array;
+    o.showContextMenuAllowed=true;    
+    o.showMenu=MenuBarWidget_showMenu;
+    o.mover=MenuBarWidget_mover;
+o.mdown=MenuBarWidget_mdown;
+o.getShownMenuIndex=MenuBarWidget_getShownMenuIndex;
+o.contextMenuCB=MenuBarWidget_contextMenuCB;
+o.getBarIndex=MenuBarWidget_getBarIndex;
+o.shownMenuTabIdx=-1;
+return o;
+}
+function MenuBarWidget_init(layer)
+{
+var o=this;
+o.superInit();
+layer=o.layer
+addEvent(layer, "contextmenu", o.contextMenuCB)
+addEvent(layer, "selectstart", function() {return false;})
+addEvent(layer, "dragstart", function() {return false;})
+var items=o.items,len = items.length
+for (var i=0;i<len;i++)
+{
+var it=items[i]
+it.init()
+}
+}
+function MenuBarWidget_getHTML()
+{
+var o=this,items=o.items,len=items.length;
+var s= new Array, si = 0
+s[si++] = '<div class="'+o.cssClassName+'" id="'+o.id+'" align="left" style="width:'+o.width+'px;overflow:hidden;">'
+s[si++] = '<table cellspacing="0"  cellpadding="0" border="0" style="margin-top:'+o.marginTop+'px;" height="'+_menuBarTabHeight+'"><tbody><tr valign="middle">'
+for (var i=0; i<len; i++)
+{
+s[si++] = '<td >'+items[i].getHTML()+'</td>';
+}
+s[si++] = '</tr></tbody></table></div>'
+return s.join('');
+}
+function MenuBarWidget_add(name, value, idx)
+{
+var o=this,counter=o.counter++
+var obj=new_MenuBarTabWidget({id:"menuBarTab_"+counter+"_"+o.id, 
+  name:name, 
+  value:value
+});
+obj.par=o;
+obj.idx=counter;
+arrayAdd(o,"items",obj,idx);
+var len=o.items.length;
+if (o.layer)
+{
+var trLyr=o.layer.childNodes[0].childNodes[0].childNodes[0];
+var tdElt=_curDoc.createElement("td");
+if ((typeof(idx)=="undefined") || (len==1) || (idx==null) || (idx==-1) || (idx >=len))
+{
+trLyr.appendChild(tdElt);
+}
+else
+trLyr.insertBefore(tdElt, trLyr.childNodes[parseInt(idx)]);
+tdElt.innerHTML=obj.getHTML();
+obj.init();
+}
+return obj;
+}
+function MenuBarWidget_remove(idx)
+{
+var o=this,items=o.items,len=items.length
+if ((idx>=0)&&(idx<len))
+{
+var elem=items[idx];
+arrayRemove(o,"items",idx);
+var l=elem.layer;
+if (l!=null)
+{
+var trLyr=o.layer.childNodes[0].childNodes[0].childNodes[0];
+if (trLyr)
+{
+trLyr.removeChild(l.parentNode);
+}
+}
+}
+}
+function MenuBarWidget_removeByValue(value)
+{
+var o=this,items=o.items,len=items.length
+var index=null;
+for (var i=0; i<len;i++)
+{
+if (value==items[i].value) 
+{
+index=i;
+break;
+}
+}
+if (index==null) return;
+o.remove(index);
+}
+function MenuBarWidget_removeAll()
+{
+var o=this,items=o.items, len= items.length
+for (var i=len-1;i>=0;i--)
+o.remove(i)
+}
+function MenuBarWidget_getCount()
+{
+return this.items.length;
+}
+function MenuBarWidget_setMenu(idx, menu)
+{
+var o=this,items=o.items,len=items.length
+if ((idx>=0)&&(idx<len))
+{
+items[idx].setMenu(menu);
+}
+}
+function MenuBarWidget_getMenu(idx)
+{
+var o=this,items=o.items;
+if ((idx>=0)&&(idx<items.length))
+{
+var menu=items[idx].getMenu();
+if (!menu)
+{
+menu=new_MenuWidget({id:("menuBarTabMenu_"+items[idx].idx+"_"+o.id),
+hideCB:MenuBarTabWidget_hideMenuCB,
+beforeShowCB:MenuBarTabWidget_beforeShowCB});
+items[idx].setMenu(menu);
+menu.bartab=items[idx];
+return menu;
+}
+}
+return null;
+}
+function MenuBarWidget_getShownMenuIndex()
+{
+return this.getBarIndex(this.shownMenuTabIdx);
+}
+function MenuBarWidget_getBarIndex(itemIdx)
+{
+if (itemIdx>=0)
+{
+var o=this,items=o.items,len=items.length
+for (var i=0; i<len;i++)
+{
+if (items[i].idx==itemIdx) return i;
+}
+}
+return null;
+}
+function MenuBarWidget_mover(itemIdx)
+{
+var o=this,items=o.items
+var index=o.getBarIndex(itemIdx);
+if (index==null) return;
+var oldIndex=o.getShownMenuIndex();
+/*
+debuggingLogger("----------------------------------------",300,300,200,400);
+debuggingLogger("bar mover      oldIndex="+(oldIndex) +" index="+(index),300,300,200,400);
+debuggingLogger("----------------------------------------",300,300,200,400);
+*/
+if ((oldIndex!=null) && (oldIndex>=0) && (index!=oldIndex))
+{
+var oldMenu=items[oldIndex].getMenu();
+if (oldMenu)
+{
+oldMenu.show(false);
+//debuggingLogger("bar mover     close menu "+(oldIndex),300,300,200,400);
+//debuggingLogger(oldMenu.id+" isShown: "+(oldMenu.css.display) +" bool="+(oldMenu.css.display!='none'),300,300,200,400);
+}
+var item=items[index], l=item.layer, menu=item.getMenu();
+if (menu)
+{
+menu.show(true,getScrolledPos(l).x,getScrolledPos(l).y+item.getHeight()+1,null,null,item);
+}
+}
+}
+function MenuBarWidget_mdown(itemIdx)
+{
+var o=this,items=o.items;
+var index=o.getBarIndex(itemIdx);
+if (index==null) return;
+var oldIndex=o.getShownMenuIndex();
+var item=items[index];
+var menu=item.getMenu();
+/*
+debuggingLogger("----------------------------------------",300,300,200,400);
+debuggingLogger("bar mdown   oldIndex="+(oldIndex) +" index="+(index),300,300,200,400);
+debuggingLogger("----------------------------------------",300,300,200,400);
+*/
+//todo
+//MenuWidget_globalClick();
+if (menu)
+{
+if (oldIndex!=index)
+{
+var l=item.layer;
+menu.show(true, getScrolledPos(l).x,getScrolledPos(l).y+item.getHeight()+1,null,null,item);
+//debuggingLogger(menu.id+" isShown: "+(menu.css.display) +" bool="+(menu.css.display!='none'),300,300,200,400);
+}
+else
+{
+menu.show(false);
+}
+}
+}
+function MenuBarWidget_contextMenuCB(evt)
+{
+evt=getEvent(evt);
+var bar=getWidget(this);
+if (bar.cb)
+bar.cb();
+if (bar.showMenu)
+bar.showMenu(evt);
+eventCancelBubble(evt);
+return false;
+}
+function MenuBarWidget_getContextMenu()
+{
+return this.menu;
+}
+function MenuBarWidget_showMenu(evt)
+{
+var o=this;
+if (o.showContextMenuAllowed==false)
+return
+var oldIndex=o.getShownMenuIndex();
+if (oldIndex!=null)
+{
+o.items[oldIndex].changeState(_menuBarNormal);
+}
+evt=getEvent(evt);
+o.menu.show(true,(eventGetX(evt)+winScrollX()),(eventGetY(evt)+winScrollY()));
+}
+function MenuBarWidget_setShowContextMenuAllowed(b)
+{
+this.showContextMenuAllowed=b
+}
+_bvertTabImgW = 2
+_bvertTabCSS=[['naviBasicVTabNormal', 'naviBasicVTabLSelected', 'naviBasicVTabLSelected', 'naviBasicVTabNormal'],//left
+['naviBasicVTabNormal', 'naviBasicVTabMSelected', 'naviBasicVTabMSelected', 'naviBasicVTabNormal'],//middle
+['naviBasicVTabNormal', 'naviBasicVTabRSelected', 'naviBasicVTabRSelected', 'naviBasicVTabNormal']//right
+]
+function JITCreate_class_BasicBarWidget()
+{
+JITCreate_class_Widget()
+if (window.class_BasicBarWidget == null) window.class_BasicBarWidget = Class.create(class_Widget,
+{
+initialize : function ($super,prms)
+{
+$super(prms)
+var o = this
+o.counter=0;    
+    o.items=new Array;
+    o.selIndex=-1;
+o.w = Widget_param(prms, "w", _vertNaviPanelMaxW);
+o.h = Widget_param(prms, "h", 50);
+o.cb = Widget_param(prms, "cb", null)  
+o.dblclick = Widget_param(prms, "dblclick", null); 
+}
+,getHTML : function ()
+{
+var o=this,items=o.items,len=items.length
+var sty='style="overflow:auto;width:'+o.w+'px;height:'+o.h+'px"'
+var s= new Array, si = 0
+// role is for 508
+s[si++] =  '<div role="tablist" id="'+this.id+'" align="left" '+sty+' >'
+s[si++] = '<table cellspacing="0" cellpadding="0" border="0" class="naviBasicVTabBackgnd"><tbody>'
+for (var i=0;i<len;i++)
+s[si++] = '<tr><td>'+items[i].getHTML()+'</td></tr>'
+s[si++] = '</tbody></table></div>'
+return s.join('')
+}
+,init : function ($super)
+{
+$super()
+var o = this, items=o.items,len=items.length
+for (var i=0;i<len;i++)
+{
+items[i].init();
+items[i].select(i==o.selIndex);
+}
+if (o.cb)
+addEvent(o.layer, "click", function(){o.cb();return false;})
+if (o.dblclick)
+addEvent(o.layer, "dblclick", o.dblclickCB)
+addEvent(o.layer, "keydown", o.keydown_tablist) //508
+addEvent(o.layer, "selectstart", function() {return false;})
+addEvent(o.layer, "dragstart",   function() {return false;})
+}
+,add: function (prms)
+{
+var o=this,counter=o.counter++
+prms.id="basicNaviTab_"+counter+"_"+o.id;
+prms.clickCB=o.itemClick;
+prms.dblclickCB=o.itemDblClick;
+var obj=new_BasicNaviTabWidget(prms);
+obj.par=o;
+obj.idx=counter;
+arrayAdd(o,"items",obj,idx);
+return obj;
+}
+,getSelection : function ()
+{
+var o=this;
+if (o.items.length==0)
+{
+o.selIndex=-1;
+return null;
+}
+var index=o.selIndex;
+if ((index!=null) && (index>=0))
+{
+var obj=new Object;
+obj.index=index;
+obj.value=o.items[index].value;
+obj.name=o.items[index].name;
+return obj;
+}
+else
+return null;
+}
+,itemClick : function ()
+{
+var o=this.par,items=o.items,len=items.length,index=-1
+for (var i=0;i<len;i++)
+{
+if (items[i].idx==this.idx)
+{
+o.select(i)
+index=i
+break
+}
+}
+if (o.cb)
+o.cb(index)
+}
+,itemDblClick : function ()
+{
+var o=this.par,items=o.items,len=items.length,index=-1
+for (var i=0;i<len;i++)
+{
+if (items[i].idx==this.idx)
+{
+index=i
+break
+}
+}
+if (o.dblclick)
+o.dblclick(index)
+}
+,dblclickCB : function (evt)
+{
+var o=getWidget(this);
+var evt=getEvent(evt);
+if (o.dblclick)
+o.dblclick();
+eventCancelBubble(evt);
+return false;
+}
+,select : function (index)
+{
+if (index==null || typeof(index)=="undefined") return;
+var o=this,items=o.items,len=items.length
+if (index==-1) index=len-1
+if ((index>=0)&&(index<len))
+{
+if ((o.selIndex!=null) && (o.selIndex>=0)&&(o.selIndex!=index)&&(o.selIndex<len))
+items[o.selIndex].select(false)
+o.selIndex=index
+items[index].select(true)
+}
+}
+,keydown_tablist : function (e)
+{
+var o=getWidget(this), k=eventGetKey(e)
+if(k == 40)// down arrow
+{
+o.select(o.selIndex+1)
+}
+else if(k==38 && (o.selIndex-1>-1) )// up arrow
+o.select(o.selIndex-1)
+}
+})
+}
+function new_BasicBarWidget(prms)
+{
+JITCreate_class_BasicBarWidget()
+return new class_BasicBarWidget(prms)
+}
+function JITCreate_class_BasicNaviTabWidget()
+{
+JITCreate_class_Widget()
+if (window.class_BasicNaviTabWidget == null) window.class_BasicNaviTabWidget = Class.create(class_Widget,
+{
+initialize : function ($super,prms)
+{
+$super(prms)
+var o = this
+o.name=Widget_param(prms, "name", "Tab");
+o.desc=Widget_param(prms, "desc", "Description");
+o.value=Widget_param(prms, "value", 0); 
+o.cb=Widget_param(prms, "clickCB", null);  
+o.dblClick=Widget_param(prms, "dblclickCB", null); 
+    var icon=prms.icon;
+        o.icon=Widget_param(icon, "src", null);  
+    o.iconW=Widget_param(icon, "w", (o.icon?_vertTabIconSize:1));  
+    o.iconH=Widget_param(icon, "h", (o.icon?_vertTabIconSize:1));   
+    o.iconOffX=Widget_param(icon, "dx", 0);    
+    o.iconOffY=Widget_param(icon, "dy", 0); 
+o.tabCSSTable=_bvertTabCSS;
+o.isSelected=false;
+o.leftimgid="bnaviTabL_"+o.id
+o.midimgid="bnaviTabM_"+o.id
+o.rightimgid="bnaviTabR_"+o.id
+o.leftimgLyr=null;
+o.midimgLyr=null;
+o.rightimgLyr=null;
+}
+,getHTML : function ()
+{
+var o=this;
+var itemH = 42;
+var s= new Array, si = 0
+s[si++] = '<table  tabIndex="0" id="'+o.id+'" style="cursor:'+_hand+'" cellspacing="0" cellpadding="0" border="0">';
+s[si++] = '<tbody><tr height="'+ itemH+'">';
+//left
+var state=o.isSelected?_vertTabSelected:_vertTabNormal;
+s[si++] = '<td id="'+o.leftimgid+'" class="'+ o.tabCSSTable[_tabImgLeft][state]+'"><div style="width:'+_bvertTabImgW+'px;"></div></td>';
+//middle
+var w=o.par.w-2*_bvertTabImgW;
+s[si++] = '<td id="'+o.midimgid+'" class="'+ o.tabCSSTable[_tabImgMid][state]+'" width="'+w+'">'
+s[si++] = '<table cellspacing="0" cellpadding="0" border="0" width="100%">';
+s[si++] = '<tbody><tr height="'+ itemH+'">';
+//icon
+s[si++] = '<td style="padding-left:'+ _vertTabLBorderToIcon+'px;">'+
+imgOffset((o.icon?o.icon:(_skin+"../transp.gif")),_vertTabIconSize,o.iconH,o.iconOffX,o.iconOffY, null)+'</td>'
+//text
+var ww=Math.max(40,w-_vertTabLBorderToIcon-_vertTabIconSize);
+s[si++] = '<td style="padding-left:'+ _vertTabIconToTxt +'px;width:'+ww+'px;" >'
+s[si++] = '<div class="naviBasicVTabTitle" style="width:'+(ww-_vertTabIconToTxt-2)+'px;">'+convStr(o.name)+'</div>'
+s[si++] = '<div class="naviBasicVTabText" style="width:'+(ww-_vertTabIconToTxt-2)+'px;">'+convStr(o.desc)+'</div></td>'
+s[si++] = '</tr></tbody></table>';
+s[si++] = '</td>';
+//right
+s[si++] = '<td id="'+o.rightimgid+'" class="'+o.tabCSSTable[_tabImgRight][state]+'"><div style="width:'+_bvertTabImgW+'px"></div></td>';
+s[si++] = '</tr></tbody></table>';
+return s.join('');
+}
+,init : function ($super,prms)
+{
+var o=this;
+$super(prms);
+var layer=o.layer
+if (layer)
+{
+addEvent(layer, "click", o.clickCB)
+addEvent(layer, "dblclick", o.dblClickCB)
+addEvent(layer, "selectstart", function() {return false;})
+addEvent(layer, "dragstart", function() {return false;})
+}
+o.leftimgLyr=getLayer(o.leftimgid);
+o.midimgLyr=getLayer(o.midimgid);
+o.rightimgLyr=getLayer(o.rightimgid);
+}
+,changeState : function (state)
+{
+var o=this;
+if (o.layer)
+{
+o.leftimgLyr.className=o.tabCSSTable[_tabImgLeft][state];
+o.midimgLyr.className=o.tabCSSTable[_tabImgMid][state];
+o.rightimgLyr.className=o.tabCSSTable[_tabImgRight][state];
+}
+}
+,select:function (sel)
+{
+var o=this;
+o.isSelected=sel;
+o.changeState(sel?_vertTabSelected:_vertTabNormal);
+}
+,clickCB : function (evt)
+{
+var evt=getEvent(evt);
+var o=getWidget(this);
+if (o && o.cb)
+o.cb();
+eventCancelBubble(evt);
+return false;
+}
+,dblClickCB : function (evt)
+{
+var evt=getEvent(evt);
+var o=getWidget(this);
+if (o && o.dblClick)
+o.dblClick();
+eventCancelBubble(evt);
+return false;
+}
+})
+}
+function new_BasicNaviTabWidget(prms)
+{
+JITCreate_class_BasicNaviTabWidget()
+return new class_BasicNaviTabWidget(prms)
+}

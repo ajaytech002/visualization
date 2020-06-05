@@ -1,0 +1,727 @@
+Draw=initDraw()
+function initDraw()
+{
+var o=window.Draw=new Object
+o.html        = [] // Buffer for HTML
+o.classes     = null // Hash for CSS classes
+o.currColor   = {r:0, g:0, b:0, alpha:1}
+o.classIndex  = 0
+o.origin      = {x:0, y:0}
+o.zIndex      = 1
+o.renderIndex = 1
+o.renderData  = []
+o.iconDescs   = []
+// ==========================
+// utility: shape to polygon
+// ==========================
+o.shapeToPoly = function(lyr)
+{
+var ret=null
+if (lyr)
+{
+if (lyr.shape.toLowerCase()=="poly")
+{
+var xy=lyr.coords.split(","),len=xy.length
+ret=[]
+for (var i=0; i<len; i+=2)
+ret[ret.length]={x:parseInt(xy[i]), y:parseInt(xy[i+1])}
+}
+}
+return ret
+}
+// =======================
+// utility: shape to rect
+// =======================
+o.shapeToRect = function(lyr)
+{
+var ret=null
+if (lyr)
+{
+if (lyr.shape.toLowerCase()=="rect")
+{
+var xy=lyr.coords.split(","),len=xy.length, temp
+var x1=parseInt(xy[0]), x2=parseInt(xy[2])
+var y1=parseInt(xy[1]), y2=parseInt(xy[3])
+if (x1>x2) {temp=x2; x2=x1; x1=temp}
+if (y1>y2) {temp=y2; y2=y1; y1=temp}
+return {x:x1, y:y1, w:(x2-x1+1), h:(y2-y1+1)}
+}
+}
+return ret
+}
+// =================
+// Fill an AREA tag
+// =================
+o.fillAreaTag = function(lyr)
+{
+var o=this, points=o.shapeToPoly(lyr)
+if (points)
+o.fillPoly(points)
+else
+{
+points=o.shapeToRect(lyr)
+if (points)
+o.fillRect(points.x, points.y, points.w, points.h)
+}
+}
+// =================
+// draw an AREA tag
+// =================
+o.strokeAreaTag = function(lyr)
+{
+var o=this, points=o.shapeToPoly(lyr)
+if (points)
+o.strokePoly(points, true)
+else
+{
+points=o.shapeToRect(lyr)
+if (points)
+o.strokeRect(points.x, points.y, points.w, points.h)
+}
+}
+// ============================
+// draw images in AREA vertice 
+// iconDesc: src,x,y,w,h
+//   optional: dx, dy, cursor
+//   callbacks mouseDownCB 
+//      mouseUpCB mouseMoveCB
+//      mouseOverCB mouseOutCB dblclickCB
+// ============================
+o.imagesAreaTag = function(lyr, iconDesc)
+{
+var o=this, points=o.shapeToPoly(lyr)
+if (points)
+o.drawImages(points, iconDesc)
+else
+{
+points=o.shapeToRect(lyr)
+if (points)
+{
+var x1=points.x, y1=points.y, x2=x1+points.w, y2=y1+points.h
+o.drawImages([{x:x1, y:y1}, {x:x1, y:y2}, {x:x2, y:y2}, {x:x2, y:y1} ], iconDesc)
+}
+}
+}
+// =======================
+// Set the current origin
+// =======================
+o.setOrigin = function(x,y)
+{
+var org = this.origin
+org.x=x
+org.y=y
+}
+// ==============================
+// Set the current drawing color
+// ==============================
+o.setColor = function (nc)
+{
+var c=this.currColor
+c.r=nc.r; c.g=nc.g; c.b=nc.b
+}
+// ========================
+// Set the current opacity
+// ========================
+o.setOpacity = function (alpha)
+{
+this.currColor.alpha=alpha
+}
+// ==============================
+// Set the current drawing color
+// ==============================
+o.setPattern = function (imgUrl)
+{
+this.imgUrl = imgUrl
+}
+o.setZIndex = function(z)
+{
+this.zIndex=z
+}
+// ===============
+// Draw Rectangle
+// ===============
+o.strokeRect = function(x,y,w,h)
+{
+if (w<1 || h<1)
+return 
+var o=this, org=o.origin
+x=x+org.x
+y=y+org.y
+var x1=x+w-1, y1=y+h-1, classDef=o.generateClass()
+o.internalDrawRect(x,y,w,1,classDef)
+o.internalDrawRect(x,y,1,h,classDef)
+o.internalDrawRect(x1,y,1,h,classDef)
+o.internalDrawRect(x,y1,w,1,classDef)
+/*o.BresLine(x, y, x, y1, classDef)
+o.BresLine(x, y1, x1, y1, classDef)
+o.BresLine(x1, y1, x1, y, classDef)
+o.BresLine(x1, y, x, y, classDef)*/
+}
+// ===============
+// Fill Rectangle
+// ===============
+o.fillRect = function(x,y,w,h)
+{
+var o=this, org=o.origin
+x=x+org.x
+y=y+org.y
+o.internalDrawRect(x,y,w,h,o.generateClass())
+}
+// ===============
+// Stroke polygon
+// ===============
+o.strokePoly = function(points, closePoly)
+{
+var o=this
+points=o.polyToGlobalCoords(points)
+if (closePoly) o.closePoly(points)
+var len=points.length-1, classDef=o.generateClass()
+for (var i=0; i<len; i++)
+{
+var p1=points[i], p2=points[i+1]
+o.BresLine(p1.x, p1.y, p2.x, p2.y, classDef)
+}
+}
+// ===================================
+// Draw image for each polygon vertex
+// The image is centered on each point
+// iconDesc: src,x,y,w,h
+//   optional: dx, dy, cursor
+//   callbacks mouseDownCB 
+//      mouseUpCB mouseMoveCB
+//      mouseOverCB mouseOutCB dblclickCB
+// ===================================
+o.drawImages = function(points, iconDesc)
+{
+var o=this, points=o.polyToGlobalCoords(points), len=points.length
+if (len>=2)
+{
+// if the last point is the first, do not draw twice
+var p0=points[0], pn=points[len-1]
+if ((p0.x==pn.x)&&(p0.y==pn.y))
+len--
+}
+for (var i=0; i<len; i++)
+{
+var p=points[i]
+o.internalDrawImage(p.x, p.y, iconDesc)
+}
+}
+// ===================================
+// Draw an rectangle using the image
+// described by iconDesc as a pattern
+// iconDesc: src,x,y,w,h
+//   optional: dx, dy, cursor
+//   callbacks mouseDownCB 
+//      mouseUpCB mouseMoveCB
+//      mouseOverCB mouseOutCB dblclickCB
+// ===================================
+o.patternRectangle = function(x, y, w, h, iconDesc)
+{
+var o=this, org=o.origin
+x=x+org.x
+y=y+org.y
+o.internalRectPattern(x, y, w, h, iconDesc)
+}
+// ===================================
+// Stroke a transparent rectangle
+// with a given line width.
+// The rectangle lines are centered
+// callbackDesc: cursor
+//   callbacks mouseDownCB 
+//      mouseUpCB mouseMoveCB
+//      mouseOverCB mouseOutCB
+// ===================================
+o.transpRectangle = function(x, y, w, h, lineWidth, callbackDesc)
+{
+var o=this, ic=callbackDesc, halfW=Math.round(lineWidth/2)
+var centeredLine = !ic.feedbackOutside
+ic.cursor = Widget_param(ic, "cursor", "move")
+ic.src=_skin +"../transp.gif"
+//ic.src=_skin +"../resizepattern.gif"
+//patternRectangle = function(x, y, w, h, iconDesc)
+if (centeredLine) {
+o.patternRectangle(x-halfW, y-halfW, lineWidth, h+lineWidth, ic)
+o.patternRectangle(x-halfW, y+h-halfW, w+lineWidth, lineWidth, ic)
+o.patternRectangle(x+w-halfW, y-halfW, lineWidth, h+lineWidth, ic)
+o.patternRectangle(x-halfW, y-halfW, w+lineWidth, lineWidth, ic)
+} else {
+o.patternRectangle(x-lineWidth, y-lineWidth, lineWidth, h+lineWidth, ic)
+o.patternRectangle(x-lineWidth, y+h, w+lineWidth, lineWidth, ic)
+o.patternRectangle(x+w, y-lineWidth, lineWidth, h+lineWidth, ic)
+o.patternRectangle(x-lineWidth, y-lineWidth, w+lineWidth, lineWidth, ic)
+}
+}
+o.transpArea = function(x, y, w, h, callbackDesc)
+{
+var o=this, ic=callbackDesc
+//ic.src=_skin +"../transp.gif"
+//patternRectangle = function(x, y, w, h, iconDesc)
+o.patternRectangle(x, y, w, h, ic)
+}
+// =============
+// Fill polygon
+// =============
+o.fillPoly = function(points)
+{
+var o=this
+points=o.polyToGlobalCoords(points)
+o.closePoly(points)
+var len=points.length, classDef=o.generateClass()
+if (len>0)
+{
+var p1=points[0], xMin=xMax=p1.x, yMin=yMax=p1.y
+for (var i=0; i<len; i++)
+{
+var p=points[i], x=p.x, y=p.y
+if (x<xMin) xMin=x
+if (x>xMax) xMax=x
+if (y<yMin) yMin=y
+if (y>yMax) yMax=y
+}
+for (var y=yMin; y<=yMax; y++)
+{
+var pairs=[], pLen=0, i, j=len-1
+for (i=0; i<len; i++)
+{
+var pt=points[i], piY=pt.y, piX=pt.x
+pt=points[j]
+var pjY=pt.y, pjX=pt.x
+if ((piY<y && pjY>=y) || (pjY<y && piY>=y))
+pairs[pLen++]=Math.round(piX + (y-piY)/(pjY-piY) * (pjX-piX))
+j=i
+}
+pairs.sort(function(a,b){return a-b})
+for (i=0; i<pLen; i+=2)
+{
+var x1=pairs[i], x2=pairs[i+1]
+if (x1>xMax) break
+if (x2>xMin)
+{
+if (x1<xMin) x1=xMin
+if (x2>xMax) x2=xMax
+o.internalDrawRect(x1, y, x2-x1+1, 1, classDef)
+}
+}
+}
+}
+}
+// =====
+// Line
+// =====
+o.line = function(x0, y0, x1, y1)
+    {
+        this.BresLine(x0, y0, x1, y1, this.generateClass()) 
+    }
+// ===================
+// render the content
+// ===================
+o.render = function(win)
+{
+var o=this, win = (win ? win : _curWin)
+var classes=o.getClasses(), doc=win.document
+if (!_webKit)
+{
+var s=[]
+var newCssWritten=false
+classes.each(function(pair) {
+var i = pair.key;
+var css = classes.get(i)
+if (!css.written)
+{
+css.written=true
+newCssWritten=true
+s[s.length]='.'+css.className+'{'+css.value+'}'
+}
+})
+if (newCssWritten)
+{
+if (_ie && (!_ie11R || _userAgent.indexOf("compatible; msie")>=0)) 
+{
+doc.createStyleSheet().cssText = s.join('')
+}
+else
+{
+append(doc.getElementsByTagName('head')[0], '<style type="text/css">'+s.join('')+'</style>', doc)
+}
+}
+}
+else
+{
+function getStyleSheet()
+{
+if (doc.styleSheets.length >0)
+{
+return doc.styleSheets[0]
+}
+else
+{
+var styleTag = doc.createElement ("style");
+var head = doc.getElementsByTagName ("head")[0];
+            head.appendChild(styleTag);
+return doc.styleSheets[0];
+}
+}
+var styleSheet = null
+classes.each(function(pair) {
+var i = pair.key;
+var css = classes.get(i)
+if (!css.written)
+{
+css.written=true
+if (styleSheet == null)
+{
+styleSheet = getStyleSheet()
+}
+styleSheet.insertRule ('.'+css.className+'{'+css.value+'}', 0);
+}
+})
+}
+// Append the drawing in the body
+var id='__renderDHTML_'+(o.renderIndex)
+var data = o.renderData[o.renderIndex] = {id:id, win:win, rendered:true}
+append(doc.body, '<div style="position:absolute;top:0px;left:0px" id="'+id+'">'+o.html.join('')+'</div>', doc)
+// Add callbacks on icons
+var ics=o.iconDescs, len=ics.length
+for (var i=0; i<len; i++)
+{
+var ic=ics[i]
+var lyr=doc.getElementById(ic.id)
+if (lyr) {
+if (ic.mouseDownCB) lyr.onmousedown=ic.mouseDownCB
+if (ic.mouseUpCB) lyr.onmouseup=ic.mouseUpCB
+if (ic.mouseMoveCB) lyr.onmousemove=ic.mouseMoveCB
+if (ic.mouseOverCB) lyr.onmouseover=ic.mouseOverCB
+if (ic.mouseOutCB) lyr.onmouseout=ic.mouseOutCB
+if (ic.contextMenuCB) lyr.oncontextmenu=ic.contextMenuCB
+if (ic.dblclickCB) lyr.ondblclick=ic.dblclickCB 
+// D&D
+if (lyr.addEventListener) {
+if (ic.dragOverCB) lyr.addEventListener("dragover",ic.dragOverCB,false)
+if (ic.dropCB) lyr.addEventListener("drop",ic.dropCB,false)
+} else {
+if (ic.dragOverCB) lyr.ondragover=ic.dragOverCB
+if (ic.dropCB) lyr.ondrop=ic.dropCB
+} 
+}
+}
+// Clear the HTML buffer
+o.html.clear()
+o.iconDescs.clear()
+return o.renderIndex++
+}
+// ===================
+// clear a given 
+// rendered content
+// ===================
+o.clear=function(index)
+{
+var o=this, data=o.renderData[index]
+if (data&&data.rendered)
+{
+lyr=data.win.document.getElementById(data.id)
+if (lyr)
+{
+lyr.parentNode.removeChild(lyr)
+data.rendered=false
+}
+}
+}
+// ===================
+// Move the 
+// rendered content
+// ===================
+o.move=function(index, x,y)
+{
+var o=this, data=o.renderData[index]
+if (data&&data.rendered)
+{
+lyr=data.win.document.getElementById(data.id)
+if (lyr)
+{
+var css=lyr.style
+if (x!=null) css.left=""+x+"px"
+if (y!=null) css.top=""+y+"px"
+}
+}
+}
+// ===================
+// render the content
+// ===================
+o.init=function()
+{
+var o=this
+o.html.clear()
+o.classes=new Hash
+o.currColor   = {r:0, g:0, b:0, alpha:1}
+o.classIndex  = 0
+o.origin      = {x:0, y:0}
+o.zIndex      = 1
+o.renderIndex = 1;
+o.renderData  = []
+o.iconDescs   = []
+o.imgUrl      = null
+}
+// ================
+// Close a Polygon
+// ================
+o.closePoly = function(points)
+{
+var len=points.length
+if (len>2)
+{
+var p0=points[0], pn=points[len-1]
+if ((p0.x!=pn.x) || (p0.y!=pn.y))
+points[len]={x:p0.x, y:p0.y}
+}
+}
+// ===================
+// PRIVATE getClasses
+// ===================
+o.getClasses = function()
+{
+var o=this
+if (o.classes==null)
+{
+o.classes = new Hash
+}
+return o.classes;
+}
+// ===================
+// PRIVATE beginPixel
+// ===================
+o.beginPixel = function()
+{
+this.setCurrent(null, null)
+}
+// =======================================
+// PRIVATE endPixel : flush the last line
+// =======================================
+o.endPixel = function(classDef)
+{
+var o=this
+if (o.startX==null)
+return
+switch(o.direction)
+{
+case null:
+o.internalDrawRect(o.startX, o.startY, 1, 1, classDef)
+break;
+case 1:
+o.internalDrawRect(o.startX, Math.min(o.currY,o.startY), 1, Math.abs(o.currY-o.startY) + 1, classDef)
+break;
+case 2:
+o.internalDrawRect(Math.min(o.currX,o.startX), o.startY, Math.abs(o.currX-o.startX) + 1, 1, classDef)
+break;
+}
+o.setCurrent(null, null)
+}
+// =============================================
+// PRIVATE setCurrent: current pos for setPixel
+// =============================================
+o.setCurrent = function(x,y)
+{
+var o=this
+o.startX=o.currX=x
+o.startY=o.currY=y
+o.direction=null
+}
+// ==============================================
+// PRIVATE getDirection : direction for setPixel
+// ==============================================
+o.getDirection = function(x,y)
+{
+var o=this
+if ((o.currX==x)&&(Math.abs(o.currY-y)==1))
+return 1 // Vertical
+else if ((o.currY==y)&&(Math.abs(o.currX-x)==1))
+return 2 // horizontal
+else
+return null // No direction
+}
+// ================================================
+// PRIVATE setPixel :
+// optimized pixel generation - try to generate
+// lines instead of single pixels.
+// Usage 
+//   beginPixel  setPixel...setPixel  endPixel
+// ================================================
+o.setPixel = function(classDef, x, y)
+{
+var o=this
+if (o.startX==null)
+o.setCurrent(x,y)
+else
+{
+if (o.direction==null)
+{
+switch(o.direction = o.getDirection(x,y))
+{
+case 1: o.currY=y; break
+case 2: o.currX=x; break
+default: 
+o.endPixel(classDef)
+o.setCurrent(x,y)
+break
+}
+}
+else
+{
+if (o.direction != o.getDirection(x,y))
+{
+o.endPixel(classDef)
+o.setCurrent(x,y)
+}
+else
+{
+switch(o.direction)
+{
+case 1: o.currY=y; break
+case 2: o.currX=x; break
+}
+}
+}
+}
+}
+// =======================
+// PRIVATE Draw a segment
+// =======================
+o.BresLine = function(x0, y0, x1, y1, classDef)
+    {
+        var o=this, dy=y1-y0, dx=x1-x0, stepx, stepy, frct
+        if (dy < 0) {dy = -dy; stepy = -1} else {stepy = 1}
+        if (dx < 0) {dx = -dx; stepx = -1} else {stepx = 1}
+        dy <<= 1
+        dx <<= 1
+o.beginPixel()
+        o.setPixel(classDef, x0, y0)
+        if (dx > dy)
+        {
+            frct = dy - (dx >> 1)
+            while (x0 != x1)
+            {
+                if (frct >= 0)
+                {
+                    y0 += stepy
+                    frct -= dx
+                }
+                x0 += stepx
+                frct += dy
+                o.setPixel(classDef, x0, y0)
+            }
+        }
+        else
+        {
+            frct = dx - (dy >> 1)
+            while (y0 != y1)
+            {
+                if (frct >= 0)
+                {
+                    x0 += stepx
+                    frct -= dy
+                }
+                y0 += stepy
+                frct += dx
+                o.setPixel(classDef, x0, y0)
+            }
+        }
+o.endPixel(classDef)
+    }
+// ===========================
+// PRIVATE Generate CSS class
+// ===========================
+o.generateClass = function()
+{
+var o=this, c=o.currColor, key=''+c.r+'-'+c.g+'-'+c.b+'-'+c.alpha+o.imgUrl, s=[],i=0
+s[i++] = 'z-index:'+o.zIndex+';overflow:hidden;position:absolute;background-color:rgb('+c.r+','+c.g+','+c.b+');'
+if (c.alpha != 1)
+{
+if (_ie)
+s[i++] = 'filter:progid:DXImageTransform.Microsoft.Alpha( style=0,opacity='+Math.round(c.alpha*100)+');'
+else
+s[i++] = 'opacity:'+(c.alpha)+';'
+}
+if (o.imgUrl)
+s[i++] = 'background-image:url(\''+o.imgUrl+'\');'
+return o.addClass(key,s.join(''))
+}
+// =========================
+// PRIVATE Draw a rectangle
+// =========================
+o.internalDrawRect = function(x,y,w,h,classDef)
+{
+var a=this.html
+a[a.length] = '<div class="' + classDef.className + '" style="top:'+y+'px;left:'+x+'px;width:'+w+'px;height:'+h+'px;"></div>'
+}
+// ===============================
+// PRIVATE Draw an image centered
+// on (x, y)
+// iconDesc: x,y,w,h
+//   optional: dx, dy, cursor
+//   callbacks mouseDownCB 
+//      mouseUpCB mouseMoveCB
+//      mouseOverCB mouseOutCB
+// ===============================
+o.internalDrawImage = function(x,y, iconDesc)
+{
+this.internalRectPattern(Math.round(x-iconDesc.w/2), Math.round(y-iconDesc.h/2), iconDesc.w, iconDesc.h, iconDesc)
+}
+// ============================
+// PRIVATE draw a rectangle
+// filled with a pattern
+// 
+// iconDesc: x,y,w,h
+//   optional: dx, dy, cursor
+//   callbacks mouseDownCB 
+//      mouseUpCB mouseMoveCB
+//      mouseOverCB mouseOutCB
+// ============================
+o.internalRectPattern = function (x, y, w, h, iconDesc)
+{
+var o=this, a=o.html
+var ic=o.iconDescs[o.iconDescs.length]=Object.clone(iconDesc)
+ic.id = generateDefaultLayerId()
+var custAttr = (ic.attrId)?attr(ic.attrId, ic.attrVal):''
+// test custAttr += ' style="background-color:red;" ' 
+a[a.length] = '<div id="'+ic.id+'" ' + custAttr + attr("bid", ic.bid) + attr("idref", ic.idref) + attr("zone", ic.zone) + ' style="'+sty('cursor',ic.cursor)+'position:absolute;z-index:'+o.zIndex+';overflow:hidden;top:'+y+'px;left:'+x+'px;width:'+w+'px;height:'+h+'px;'+backImgOffset(ic.src,ic.dx,ic.dy)+'"></div>'
+}
+// ======================================
+// PRIVATE add a CSS class in hash table
+// ======================================
+o.addClass = function(key, value)
+{
+// key is the key in the HashTable
+// className is the name of the CSS class
+var classes=o.getClasses(), classDef=classes.get(key)
+if (classDef == null)
+{
+className = 'DU_' + (o.classIndex++)
+classDef  = {written:false, className:className, value:value}
+classes.set(key, classDef)
+}
+return classDef
+}
+// =======================================
+// PRIVATE
+// Translate a point in the coord system
+// defined by the origin
+// =======================================
+o.pointToGlobalCoords = function(point)
+{
+var o=this, org=o.origin
+return {x:(point.x+org.x), y:(point.y+org.y)}
+}
+// =======================================
+// PRIVATE
+// Translate a polygon in the coord system
+// defined by the origin
+// =======================================
+o.polyToGlobalCoords = function(points)
+{
+var o=this, len=points.length, ret=[]
+for (var i=0; i<len; i++)
+ret[i]=o.pointToGlobalCoords(points[i])
+return ret
+}
+return o
+}

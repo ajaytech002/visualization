@@ -1,0 +1,1137 @@
+/*
+=============================================================
+WebIntelligence(r) Report Panel
+Copyright(c) 2001-2005 Business Objects S.A.
+All rights reserved
+
+Use and support of this software is governed by the terms
+and conditions of the software license agreement and support
+policy of Business Objects S.A. and/or its subsidiaries. 
+The Business Objects products and technology are protected
+by the US patent number 5,555,403 and 6,247,008
+
+=============================================================
+*/function callImplementation(args, name, curFrame)
+{
+if (curFrame)
+{
+var frameElement = document.getElementById(curFrame.name);
+if (frameElement)
+{
+var contribId = frameElement.getAttribute('contributionid');
+if (contribId != null && contribId != '')
+{
+if (args != null)
+args = Array.prototype.slice.call(args);
+else
+args = [];
+args[args.length] = contribId;
+}
+}
+}
+var implFunc = this['impl_' + name];
+if (implFunc != null)
+{
+try
+{
+return implFunc(args, curFrame);
+}
+catch(e)
+{
+return {error:{error_code: 999, message: e.message}};
+}
+}
+else
+{
+return {error:{error_code: 999, message: 'Not implemented yet...'}};
+}
+}
+function impl_addEventListener(args)
+{
+if (args != null && args.length > 0)
+{
+var obj = args[0];
+var dhtmEvent = -1;
+switch (obj.eventType)
+{
+case "undo_redo":
+dhtmEvent = _EVT_UNDO_REDO;
+break;
+case "report_page_loaded":
+dhtmEvent = _EVT_PAGE_LOADED;
+break;
+case "data_refreshed":
+dhtmEvent = _EVT_REFRESH_DATA;
+break;
+case "report_selected":
+dhtmEvent = _EVT_REP_SELECTED;
+break;
+case "report_element_selected":
+application_addEventListener(_EVT_SELECTION_CHANGES_VIEWING, args);
+dhtmEvent = _EVT_SELECTION_CHANGES;
+break;
+case "perspective_selected":
+dhtmEvent = _EVT_SWITCH_TO_PERSPECTIVE;
+break;
+default:
+impl_addEventListener_sidepane(args);
+break;
+}
+if (dhtmEvent >= 0)
+{
+application_addEventListener(dhtmEvent, args);
+}
+}
+}
+function impl_removeEventListener(args)
+{
+if (args != null && args.length > 0)
+{
+var obs = args[0];
+switch (obs.eventType)
+{
+case "undo_redo":
+case "report_page_loaded":
+case "data_refreshed":
+case "report_selected":
+case "report_element_selected":
+case "perspective_selected":
+obs.contribId = application_getContribId(args);
+application_removeEventListener(obs);
+break;
+default:
+impl_removeEventListener_sidepane(args);
+break;
+}
+}
+}
+function impl_setWaitCursorDisplayed(args)
+{
+var display = true;
+if (args != null && args.length > 0)
+{
+display = args[0];
+}
+if (display)
+{
+wt();
+}
+else
+{
+hideBlockWhileWaitWidget();
+}
+}
+function impl_displayErrorMessage(args)
+{
+if (args != null && args.length > 0)
+{
+var err = args[0];
+if (err != null)
+{
+var formattedErrorMsg = '';
+if (err.message != null)
+{
+formattedErrorMsg += err.message;
+}
+if (err.code != null)
+{
+formattedErrorMsg += ' (Error: INF ' + err.code + ')';
+}
+advDisplayViewerErrorMsgDlg(formattedErrorMsg, err.title);
+}
+}
+}
+function impl_getContext()
+{
+var context = new Object();
+context.applicationType = "dhtml";
+context.documentName = DS.strDocName;
+context.currentUser = WS.strUserName;
+context.selectedReportId = application_getSelectedReportId();
+context.pageNumber = DS.iPage;
+context.pvl = DS._PVLocale;
+context.lang = WS.lang;
+context.documentId = DS.strDocID;
+context.readingDirection = (typeof(_rtl) != "undefined" && _rtl)?'rtl':'ltr';
+context.selectedReportElementsInfo = application_getSelections();
+context.selectedPerspective = application_getPerspective();
+return context;
+}
+function impl_loadReport(args)
+{
+var obj = null;
+if (args != null && args.length > 0) {
+obj = args[0];
+}
+var targetRepID = (obj != null && obj.reportId != null)?obj.reportId:DS.iReportID;
+var targetPageNumber = (obj != null && obj.pageNumber != null)?obj.pageNumber:DS.iPage;
+var params = '?sEntry=' + DS.strEntry + '&iViewerID=' + WS.iViewerID;
+params += '&iReportID=' + targetRepID;
+var reports = '';
+for (var i=0; i<DS.arrReports.length; i++) {
+if (i > 0) reports += ';'; 
+reports += DS.arrReports[i].reportID;
+}
+params += '&objects=' + encodeURIComponent(reports);
+params += '&docid=' + DS.strDocID + '&raylightSessionID=' + DS.raylightSessionID + '&raylightDocOccurrenceID=' + DS.raylightDocOccurrenceID;
+var url = 'ajaxExtensionLoadReport'+_appExt + params;
+var cb = raylight_getAsyncCallback(args);
+var isAsync = (cb != null);
+sendAjaxRequest(url, function(response) {
+var jsonResponse = JSON.parse(response);
+if (jsonResponse.newToken) {
+var bUndoEnabled = (DS.strEntry != jsonResponse.newToken);
+var bNotifySelectEvent = false;
+DS.strEntry = jsonResponse.newToken;
+switch(jsonResponse.action)
+{
+case "add":
+DS.arrReports[DS.arrReports.length] = jsonResponse.report;
+reportTabsCB(_EVT_REP_ADDED);
+break;
+case "remove":
+for (var i=0; i<DS.arrReports.length; i++) {
+if (DS.arrReports[i].reportID == jsonResponse.reportId) {
+DS.arrReports.splice(i, 1);
+reportTabsCB(_EVT_REP_DELETED, i);
+break;
+}
+}
+break;
+case "select":
+for (var i=0; i<DS.arrReports.length; i++) {
+if (DS.arrReports[i].reportID == jsonResponse.reportId) {
+var rep = DS.arrReports[i];
+rep.name = jsonResponse.report.name;
+rep.isLeaf = jsonResponse.report.isLeaf;
+rep.drillLite = jsonResponse.report.drillLite;
+rep.drillBar = jsonResponse.report.drillBar;
+rep.tdcActivate = jsonResponse.report.tdcActivate;
+rep.foldPanel = jsonResponse.report.foldPanel;
+reportTabsCB(_EVT_REP_RENAMED, i);
+break;
+}
+}
+}
+var reportIndex = 0;
+for (var i=0; i<DS.arrReports.length; i++) {
+if (DS.arrReports[i].reportID == targetRepID) {
+reportIndex = i;
+DS.arrReports[i].iPage = targetPageNumber;
+break;
+}
+}
+if (!bNotifySelectEvent) {
+application_notifyEvent(_EVT_REP_DATAOK);
+}
+application_dispatchEvents();
+selectReport(reportIndex, true, bUndoEnabled, DS.strEntry, bNotifySelectEvent, application_getCachePageEnabled());
+application_setCachePageEnabled(true);
+}
+else if (jsonResponse.invalidSession) {
+alertSessionInvalid();
+}
+else if (jsonResponse.displayErrorMessage != null) {
+advDisplayViewerErrorMsgDlg(jsonResponse.displayErrorMessage);
+}
+if (cb != null)
+cb();
+}, isAsync);
+}
+function impl_navigateTo(args, curFrame)
+{
+if (args != null && args.length > 0)
+{
+var obj = args[0];
+if (obj != null && obj.url != null)
+{
+if (obj.targetFrame == "sameframe")
+{
+curFrame.location.replace(obj.url);
+}
+else if (obj.targetFrame == "dialogbox")
+{
+var url = curFrame.location.href;
+iPos = url.lastIndexOf('/');
+if (iPos >= 0)
+{
+url = url.substring(0, iPos + 1) + obj.url; 
+}
+var dlg = dialogbox_createCustomDialogBox();
+var key = application_getContribId(args) + '_' + dlg.id;
+dlg.layer.setAttribute("contributionid", key);
+dlg.iframeLyr.setAttribute("contributionid", key);
+dlg.resetUrl(url);
+}
+}
+}
+}
+application_listener = [];
+application_dhtmlEvents = [];
+function application_addEventListener(dhtmEvent, args)
+{
+var inList = false;
+for (var i=0; i<application_dhtmlEvents.length; i++)
+{
+if (application_dhtmlEvents[i].evt == dhtmEvent)
+{
+inList = true;
+break;
+}
+}
+if (!inList)
+application_dhtmlEvents.push(newObserverOneEvent(dhtmEvent, application_eventCB));
+var contribId = application_getContribId(args);
+application_listener.push({evt:dhtmEvent, eventType:args[0].eventType, callback:args[0].callback, contribId:contribId});
+}
+function application_removeEventListener(ls)
+{
+if (!ls)
+return;
+for (var i=0; i<application_listener.length; i++)
+{
+var obs = application_listener[i];
+if (ls.contribId == obs.contribId && ls.eventType == obs.eventType && (ls.callback == null || ls.callback == obs.callback))
+{
+application_listener.splice(i, 1);
+i--;
+}
+}
+}
+function application_eventCB(evt, data)
+{
+for (var i=0; i<application_listener.length; i++)
+{
+var obs = application_listener[i];
+if (obs.evt == evt)
+{
+var dataValue = data;
+if (evt == _EVT_REP_SELECTED)
+{
+dataValue = getReportIdFromIdx(dataValue);
+_selectedReportId = dataValue;
+}
+if ((evt == _EVT_SELECTION_CHANGES_VIEWING || evt == _EVT_SELECTION_CHANGES) && (data == null || data == false))
+continue;
+try
+{
+obs.callback(obs.eventType, dataValue);
+}
+catch(e)
+{
+if (typeof(console) != "undefined" && console.log != null)
+console.log(e);
+application_listener.splice(i, 1);
+i--;
+}
+}
+}
+}
+function impl_sidepane_reloadPane(args, curFrame)
+{
+if (curFrame)
+{
+curFrame.location.reload(true);
+}
+}
+function impl_addEventListener_sidepane(args)
+{
+impl_addEventListener_dialogbox(args);
+}
+function impl_removeEventListener_sidepane(args)
+{
+impl_removeEventListener_dialogbox(args);
+}
+function impl_sidepane_getWidth()
+{
+var res = {width:0};
+var pers = workbenchW.getPerspective();
+if (pers.leftPaneAndBarVisible && pers.leftPaneVisible)
+{
+var w = pers.leftPane.getCurrentWidth();
+if (!isNaN(w))
+res.width = parseInt(w);
+}
+return res;
+}
+function impl_sidepane_setWidth(args)
+{
+if (args == null || args.length == 0)
+return;
+switch (args[0].width)
+{
+case -1: 
+var W = winWidth()-6;
+sidepane_setWidth(W);
+break;
+case -2:
+viewActionCB(null, workbenchW.getAction("showLeftPane_Mini"));
+break ;
+default:
+sidepane_setWidth(args[0].width);
+}
+}
+function sidepane_setWidth(w)
+{
+if (w != null && !isNaN(w))
+{
+w = parseInt(w);
+var pers = workbenchW.getPerspective();
+if (pers.leftPaneAndBarVisible && pers.leftPaneVisible)
+{
+if (!pers.leftPaneVisible)
+pers.showLeftPane(true);
+var maxWidth = winWidth();
+var grab = pers.par.leftZoneGrab;
+var keepMaxWidth = grab.max;
+if (grab)
+grab.setMinMax(grab.min, maxWidth);
+pers.leftPane.resize(w+3);
+pers.par.leftPaneW = w+1;
+pers.resizeElements();
+if (pers.par.leftGrabCB)
+pers.par.leftGrabCB(w);
+grab.setMinMax(grab.min, keepMaxWidth);
+}
+}
+}
+function impl_addEventListener_dialogbox(args)
+{
+if (args != null && args.length > 0)
+{
+var obj = args[0];
+switch (obj.eventType)
+{
+case "ok_click":
+case "apply_click":
+case "cancel_click":
+dialogbox_addEventListener(obj.eventType, obj.callback);
+break;
+default:
+impl_addEventListener_bar(args);
+break;
+}
+}
+}
+function impl_removeEventListener_dialogbox(args)
+{
+if (args != null && args.length > 0)
+{
+var obs = args[0];
+switch (obs.eventType)
+{
+case "ok_click":
+case "apply_click":
+case "cancel_click":
+dialogbox_removeEventListener(args);
+break;
+default:
+impl_removeEventListener_bar(args);
+break;
+}
+}
+}
+function impl_dialogbox_attachDefaultButton(args)
+{
+if (args != null && args.length > 0)
+{
+if (args[0] != null)
+{
+var currDialog = dialogbox_customDialogPool[dialogbox_customDialogPoolCurrIndex];
+var button = dialogbox_getButton(currDialog, args[0]);
+if (button != null)
+{
+currDialog.attachDefaultButton(button);
+}
+}
+}
+}
+function impl_dialogbox_setTitle(args)
+{
+if (args != null && args.length > 0)
+{
+if (args[0] != null)
+{
+var currDialog = dialogbox_customDialogPool[dialogbox_customDialogPoolCurrIndex];
+currDialog.setTitle(args[0]);
+}
+}
+}
+function impl_dialogbox_resize(args)
+{
+if (args != null && args.length > 0)
+{
+if (args[0] != null)
+{
+var w = (args[0].width==null)?dialogbox_defaultWidth:args[0].width;
+var h = (args[0].height==null)?dialogbox_defaultHeight:args[0].height;
+var currDialog = dialogbox_customDialogPool[dialogbox_customDialogPoolCurrIndex];
+currDialog.resize(w, h);
+currDialog.center();
+}
+}
+}
+function impl_dialogbox_close()
+{
+var index = dialogbox_customDialogPoolCurrIndex;
+if (index >= 0)
+{
+dialogbox_closeCustomDialogBox(index);
+}
+}
+function impl_dialogbox_setButtonText(args)
+{
+if (args != null && args.length > 0)
+{
+if (args[0] != null)
+{
+var currDialog = dialogbox_customDialogPool[dialogbox_customDialogPoolCurrIndex];
+var button = dialogbox_getButton(currDialog, args[0].button);
+if (button != null)
+{
+button.setText(args[0].text);
+} 
+}
+}
+}
+function impl_dialogbox_setButtonTitle(args)
+{
+if (args != null && args.length > 0)
+{
+if (args[0] != null)
+{
+var currDialog = dialogbox_customDialogPool[dialogbox_customDialogPoolCurrIndex];
+var button = dialogbox_getButton(currDialog, args[0].button);
+if (button != null)
+{
+button.setTooltip(args[0].title);
+}
+}
+}
+}
+function impl_dialogbox_setButtonDisabled(args)
+{
+if (args != null && args.length > 0)
+{
+if (args[0] != null)
+{
+var currDialog = dialogbox_customDialogPool[dialogbox_customDialogPoolCurrIndex];
+var button = dialogbox_getButton(currDialog, args[0].button);
+if (button != null)
+{
+button.setDisabled(args[0].disable);
+}
+}
+}
+}
+function impl_dialogbox_setButtonDisplayed(args)
+{
+if (args != null && args.length > 0)
+{
+if (args[0] != null)
+{
+var currDialog = dialogbox_customDialogPool[dialogbox_customDialogPoolCurrIndex];
+var button = dialogbox_getButton(currDialog, args[0].button);
+if (button != null)
+{
+button.setDisplay(args[0].display);
+}
+}
+}
+}
+dialogbox_customDialogPool = [];
+dialogbox_customDialogPoolCurrIndex = -1;
+dialogbox_defaultWidth = 500;
+dialogbox_defaultHeight = 300;
+function dialogbox_createCustomDialogBox()
+{
+var index = ++dialogbox_customDialogPoolCurrIndex;
+var currDialog = null;
+if (index < dialogbox_customDialogPool.length)
+{
+currDialog = dialogbox_reInitCustomDialogBox(index);
+}
+else 
+{
+dialogbox_customDialogPool[index] = currDialog = new_IFrameDlgWidget(
+{id:"customBasicDlg_" + index, 
+                 title:"",
+                 width:dialogbox_defaultWidth,
+                 height:dialogbox_defaultHeight,
+                 defaultCB:dialogbox_okCB,
+ cancelCB:dialogbox_cancelCB,                                           
+                 url:_root+'html/empty.html',                                       
+                 noOKButtonZone:false,
+                 resizeable:true,
+ resizeCB:dialogbox_resizeCB,
+ minWidth:260,
+ minHeight:100});
+currDialog.getApplyBtn().setCB(dialogbox_applyCB);
+targetApp(currDialog.getHTML());
+currDialog.init();
+currDialog.getApplyBtn().setDisplay(true);
+}
+currDialog.listener = new Array();
+currDialog.show(true);
+return currDialog;
+}
+function dialogbox_reInitCustomDialogBox(index)
+{
+if (index == -1) return;
+var o = dialogbox_customDialogPool[index];
+if (o) 
+{
+o.setTitle("");
+o.resize(dialogbox_defaultWidth, dialogbox_defaultHeight);
+o.attachDefaultButton(o.getOKBtn());
+var okButton = o.getOKBtn();
+okButton.setText(_libOkButton);
+okButton.setTooltip(_libOkButton);
+okButton.setDisplay(true);
+okButton.setDisabled(false);
+okButton.executeCB = dialogbox_okCB;
+var cancelButton = o.getCancelBtn();
+cancelButton.setText(_libCancelButton);
+cancelButton.setTooltip(_libCancelButton);
+cancelButton.setDisplay(true);
+cancelButton.setDisabled(false);
+cancelButton.executeCB = dialogbox_cancelCB;
+var applyButton = o.getApplyBtn();
+applyButton.setText(_libApplyButton);
+applyButton.setTooltip(_libApplyButton);
+applyButton.setDisplay(true);
+applyButton.setDisabled(false);
+applyButton.executeCB = dialogbox_cancelCB;
+return o;
+}
+}
+function dialogbox_closeCustomDialogBox(index)
+{
+var o=dialogbox_customDialogPool[index];
+if (o) 
+{
+o.show(false);
+dialogbox_customDialogPoolCurrIndex--;
+}
+}
+function dialogbox_okCB()
+{
+dialogbox_dispatchEvent("ok_click");
+}
+function dialogbox_applyCB()
+{
+dialogbox_dispatchEvent("apply_click");
+}
+function dialogbox_cancelCB()
+{
+dialogbox_dispatchEvent("cancel_click");
+var isButtonCaller = (this.id.indexOf("_BTN_") >= 0);
+if (!isButtonCaller)
+{
+dialogbox_customDialogPoolCurrIndex--;
+}
+}
+function dialogbox_resizeCB()
+{
+if (!_ie)
+{
+var o = this;
+if (o.iframeLyr != null && o.iframeLyr.scrolling != "auto")
+{
+o.iframeLyr.scrolling = "auto";
+o.iframeLyr.style.overflow = "auto";
+}
+}
+}
+function dialogbox_dispatchEvent(eventType)
+{
+var currDialog = dialogbox_customDialogPool[dialogbox_customDialogPoolCurrIndex];
+var arr = currDialog.listener;
+for (var i=0; i<arr.length; i++)
+{
+var obs = arr[i];
+if (obs.evt == eventType)
+{
+try
+{
+obs.cb(obs.evt);
+}
+catch(e)
+{
+currDialog.listener.splice(i, 1);
+i--;
+}
+}
+}
+}
+function dialogbox_addEventListener(eventType, cb)
+{
+var currDialog = dialogbox_customDialogPool[dialogbox_customDialogPoolCurrIndex];
+var obs = new Object();
+obs.evt = eventType;
+obs.cb = cb;
+currDialog.listener.push(obs);
+}
+function dialogbox_removeEventListener(ls)
+{
+if (!ls)
+return;
+var currDialog = dialogbox_customDialogPool[dialogbox_customDialogPoolCurrIndex];
+for (var i=0; i<currDialog.listener.length; i++)
+{
+var obs = currDialog.listener[i];
+if (ls.eventType == obs.eventType && (ls.callback == null || ls.callback == obs.callback))
+{
+currDialog.listener.splice(i, 1);
+i--;
+}
+}
+}
+function dialogbox_getButton(dialog, buttonType)
+{
+var button = null;
+switch(buttonType)
+{
+case "ok":
+button = dialog.getOKBtn();
+break;
+case "apply":
+button = dialog.getApplyBtn();
+break;
+case "cancel":
+button = dialog.getCancelBtn();
+break;
+}
+return button;
+}
+function impl_addEventListener_bar(args)
+{
+if (args != null && args.length > 0)
+{
+var obj = args[0];
+switch (obj.eventType)
+{
+case "bar_init":
+case "bar_button_click":
+case "bar_toggle_button_press":
+case "bar_toggle_button_release":
+bar_addEventListener(args);
+break;
+}
+}
+}
+function impl_removeEventListener_bar(args)
+{
+if (args != null && args.length > 0)
+{
+var obs = args[0];
+switch (obs.eventType)
+{
+case "bar_init":
+case "bar_button_click":
+case "bar_toggle_button_press":
+case "bar_toggle_button_release":
+obs.contribId = application_getContribId(args);
+bar_removeEventListener(obs);
+break;
+}
+}
+}
+function impl_bar_getContributionType(args)
+{
+var contribType = null;
+if (args != null && args.length > 0)
+{
+var contrib = extension_getContribById(args[0]);
+if (contrib != null)
+contribType = contrib.type;
+}
+return contribType;
+}
+function impl_bar_button_setDisabled(args)
+{
+if (args != null && args.length > 0)
+{
+var actionId = extension_getContribAction(application_getContribId(args));
+var action = _currWorkbench.getAction(actionId);
+if (action != null)
+action.setDisabled(args[0]);
+}
+}
+function impl_bar_button_setDisplayed(args)
+{
+if (args != null && args.length > 0)
+{
+var actionId = extension_getContribAction(application_getContribId(args));
+var action = _currWorkbench.getAction(actionId);
+if (action != null)
+action.setDisplay(args[0]);
+}
+}
+function impl_bar_button_setChecked(args)
+{
+if (args != null && args.length > 0)
+{
+var contrib = extension_getContribById(application_getContribId(args));
+if (contrib != null && contrib.type == extension_contributionTypes.TOGGLE_BUTTON)
+{
+var actionId = extension_getContribAction(application_getContribId(args));
+var action = _currWorkbench.getAction(actionId);
+if (action != null)
+action.check(args[0]);
+}
+}
+}
+function impl_bar_button_isDisabled(args)
+{
+var actionId = extension_getContribAction(args[0]);
+var action = _currWorkbench.getAction(actionId);
+return action.isDisabled();
+}
+function impl_bar_button_isDisplayed(args)
+{
+var actionId = extension_getContribAction(args[0]);
+var action = _currWorkbench.getAction(actionId);
+return action.isDisplayed();
+}
+function impl_bar_button_isChecked(args)
+{
+var isChecked = false;
+var contrib = extension_getContribById(args[0]);
+if (contrib != null && contrib.type == extension_contributionTypes.TOGGLE_BUTTON)
+{
+var actionId = extension_getContribAction(args[0]);
+var action = _currWorkbench.getAction(actionId);
+isChecked = action.isChecked();
+}
+return isChecked;
+}
+function impl_bar_button_getText(args)
+{
+var contrib = extension_getContribById(args[0]);
+return (contrib != null)?contrib.text:'';
+}
+function impl_bar_button_setText(args)
+{
+if (args != null && args.length > 0)
+{
+var contrib = extension_getContribById(application_getContribId(args));
+if (contrib != null)
+{
+var actionId = extension_getContribAction(application_getContribId(args));
+var action = _currWorkbench.getAction(actionId);
+if (action != null && action.items != null && action.items[0] != null)
+{
+var btn = action.items[0];
+if (typeof(btn.setText) != 'undefined')
+{
+btn.setText(args[0]);
+contrib.text = args[0];
+}
+}
+}
+}
+}
+function impl_bar_button_getIconURL(args)
+{
+var contrib = extension_getContribById(args[0]);
+return (contrib != null)?contrib.iconURL:'';
+}
+function impl_bar_button_setIconURL(args)
+{
+if (args != null && args.length > 0)
+{
+var contrib = extension_getContribById(application_getContribId(args));
+if (contrib != null)
+{
+var actionId = extension_getContribAction(application_getContribId(args));
+var action = _currWorkbench.getAction(actionId);
+if (action != null && action.items != null && action.items[0] != null)
+{
+var btn = action.items[0];
+if (typeof(btn.changeImg) != 'undefined')
+{
+var ext = contrib.par;
+var src = args[0];
+if (src.toLowerCase().indexOf('http') < 0)
+{
+var ext = contrib.par;
+var src = ext.rootPath + args[0];
+}
+btn.changeImg(0, 0, src, 0, 16);
+contrib.text = args[0];
+}
+}
+}
+}
+}
+bar_listener = [];
+function bar_addEventListener(args)
+{
+if (args != null && args.length > 0)
+{
+var obs = args[0];
+obs.contribId = application_getContribId(args);
+bar_listener.push(obs);
+}
+}
+function bar_removeEventListener(ls)
+{
+if (!ls)
+return;
+for (var i=0; i<bar_listener.length; i++)
+{
+var obs = bar_listener[i];
+if (ls.contribId == obs.contribId  && ls.eventType == obs.eventType && (ls.callback == null || ls.callback == obs.callback))
+{
+bar_listener.splice(i, 1);
+i--;
+}
+}
+}
+newObserverTwoEvents(_EVT_HTML_WRITTEN, _EVT_PAGE_LOADED, function()
+{
+for (var i=0; i<bar_listener.length; i++)
+{
+var obs = bar_listener[i];
+if (obs.eventType == 'bar_init')
+bar_notifyEvent(obs);
+}
+});
+function bar_dispatchAction(contrib, srcWidget)
+{
+var eventType = '';
+switch (contrib.type)
+{
+case extension_contributionTypes.BUTTON:
+eventType = 'bar_button_click';
+break;
+case extension_contributionTypes.TOGGLE_BUTTON:
+if (srcWidget.checked)
+eventType = 'bar_toggle_button_press';
+else
+eventType = 'bar_toggle_button_release';
+break;
+}
+for (var i=0; i<bar_listener.length; i++)
+{
+var obs = bar_listener[i];
+if (obs.contribId == contrib.id && obs.eventType == eventType)
+bar_notifyEvent(obs);
+}
+}
+function bar_notifyEvent(obs)
+{
+if (obs)
+{
+try
+{
+obs.callback(obs.eventType);
+}
+catch(e)
+{
+bar_listener.splice(i, 1);
+i--;
+}
+}
+}
+newObserverOneEvent(_EVT_BEFORE_TOKEN_UPDATE, function(evt, newToken)
+{
+if (DS.strEntry != newToken)
+application_updateDocument(newToken);
+WS._webiServicesReady = true;
+});
+newObserverTwoEvents(_EVT_DOCID_UPDATE, _EVT_PAGE_LOADED, function(evt){
+application_updateDocument(DS.strEntry);
+});
+function application_updateDocument(newToken)
+{
+if (WS._customization == null)
+return;
+if (!WS._customization.enabled)
+return;
+if (WS._customization.extensions == null)
+return;
+if (WS._customization.extensions.length == 0)
+return;
+if (DS.raylightSessionID == null)
+return;
+var url = 'ajaxExtensionUpdateDoc'+_appExt;
+url += '?iViewerID=' + WS.iViewerID + '&sEntry=' + newToken + '&docid=' + DS.strDocID + '&raylightSessionID=' + DS.raylightSessionID + '&raylightDocOccurrenceID=' + DS.raylightDocOccurrenceID;
+sendAjaxRequest(url, function(response){
+if (response != null)
+{
+var jsonResponse = JSON.parse(response);
+if (jsonResponse.invalidSession)
+{
+alertSessionInvalid();
+}
+else if (jsonResponse.displayErrorMessage != null)
+{
+advDisplayViewerErrorMsgDlg(jsonResponse.displayErrorMessage);
+}
+}
+}, true);
+}
+function application_setCachePageEnabled(b)
+{
+application_cachePageEnabled = b;
+}
+function application_getCachePageEnabled()
+{
+if (typeof(application_cachePageEnabled) == "undefined")
+application_cachePageEnabled = true;
+return application_cachePageEnabled;
+}
+function application_notifyEvent(evt, data)
+{
+if (evt == null) return;
+if (typeof(application_eventList) == "undefined")
+application_eventList = [];
+var inList = false;
+for (var i=0; i<application_eventList.length; i++)
+{
+if (application_eventList[i].evt == evt)
+{
+inList = true;
+break;
+}
+}
+if (!inList)
+{
+var obs = new Object();
+obs.evt = evt;
+obs.data = data;
+application_eventList[application_eventList.length] = obs;
+}
+}
+function application_dispatchEvents()
+{
+if (typeof(application_eventList) != "undefined")
+{
+for (var i=0; i<application_eventList.length; i++)
+{
+var obs = application_eventList[i];
+eventManager.notify(obs.evt, obs.data);
+}
+application_eventList = [];
+}
+}
+newObserverOneEvent(_EVT_LEFTCOMBO_CHANGED, function(evt, key)
+{
+var leftPane = workbenchW.getPerspective().getLeftPane();
+if (leftPane != null)
+leftPane.iframe.layer.setAttribute("contributionid", key);
+});
+function application_getSelections()
+{
+var sels = new Array();
+if (isInteractive)
+{
+if (_instanceIds != null && _instanceIds.length > 0)
+{
+for (var i=0; i<_instanceIds.length; i++)
+{
+var jsonObj = new Object();
+var idref = _instanceIds[i].id;
+if (idref)
+{
+jsonObj.referenceId = idref;
+var layer = getLayerByIdRef(idref);
+if (layer)
+{
+jsonObj.elementId = layer.getAttribute('bid');
+}
+}
+sels[sels.length] = jsonObj;
+}
+}
+else
+{
+selectedBid.each(function(pair) {
+var bid = pair.key;
+if (pair.value == 1)
+{
+var jsonObj = new Object();
+jsonObj.elementId = bid;
+var iPos = sels.indexOf(jsonObj);
+if (iPos < 0)
+sels[sels.length] = jsonObj;
+}
+});
+}
+}
+else if (selectedIdRef != null)
+{
+selectedIdRef.each(function(pair)
+{
+var jsonObj = new Object();
+jsonObj.elementId = pair.value;
+var idref = pair.key;
+if (idref)
+{
+jsonObj.referenceId = idref;
+}
+sels[sels.length] = jsonObj; 
+});
+}
+return sels;
+}
+function application_getPerspective()
+{
+var persp = _currWorkbench.getPerspective().value;
+switch (persp)
+{
+case "welcome":
+break;
+case "viewingPers":
+persp = "reading";
+break;
+case "pdfPers":
+persp = "pdf";
+break;
+case "interactivePers":
+persp = isStructure?"structure":"design";
+break;
+}
+return persp;
+}
+function application_getSelectedReportId()
+{
+var repId = DS.iReportID;
+if (typeof(_selectedReportId) != "undefined")
+repId = _selectedReportId;
+return repId;
+}
+function application_updateAfterSaveAs(docId, cb)
+{
+var params = '?iViewerID=' + WS.iViewerID + '&docid=' + docId + '&raylightSessionID=' + DS.raylightSessionID + '&raylightDocOccurrenceID=' + DS.raylightDocOccurrenceID;
+var url = 'ajaxExtensionSaveAsDoc'+_appExt + params;
+var isSync = (cb != null);
+sendAjaxRequest(url, function(response) {
+var jsonResponse = JSON.parse(response);
+if (jsonResponse.newToken)
+{
+changeEntry(jsonResponse.newToken);
+DS.strDocID = docId;
+strDocID = DS.strDocID;
+DS.strDocName = jsonResponse.name;
+strDocName = DS.strDocName;
+setDocTitle(strDocName);
+eventManager.notify(_EVT_REPORT_RELOAD);
+resetStatesCB();
+DS.bUndoableAction = true;
+saveStateCB();
+eventManager.notify(_EVT_PROCESS_SAVE);
+eventManager.notify(_EVT_DOCID_UPDATE);
+}
+if (cb != null)
+cb(jsonResponse);
+}, isSync);
+}
+function application_getContribId(args)
+{
+if (!args)
+return null;
+return args[args.length - 1];   
+}

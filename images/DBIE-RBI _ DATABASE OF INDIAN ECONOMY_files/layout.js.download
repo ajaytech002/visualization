@@ -1,0 +1,544 @@
+/*
+©2010 - 2013 SAP AG or an SAP affiliate company.  All rights reserved.
+ 
+SAP and other SAP products and services mentioned herein as well as their respective logos are trademarks or registered trademarks of SAP AG in Germany and other countries.  Please see http://www.sap.com/corporate-en/legal/copyright/index.epx#trademark for additional trademark information and notices.
+*/
+
+/*
+Extend YAHOO.widget.Layout to include the Open/Close Right Panel buttons
+*/
+if ('undefined' == typeof businessobjects ) { var businessobjects = {}; }
+businessobjects['webutil'] = businessobjects['webutil'] || {};
+businessobjects.webutil['layout'] = businessobjects.webutil['layout'] || {};
+
+businessobjects.webutil.layout.Layout = function(el, attrs) {
+    businessobjects.webutil.layout.Layout.superclass.constructor.call(this, el, attrs);
+};
+
+YAHOO.extend(businessobjects.webutil.layout.Layout, YAHOO.widget.Layout, {
+    /**
+     * @private
+     * @method initAttributes
+     * @description Processes the config
+     */        
+    initAttributes: function(attr) {
+        businessobjects.webutil.layout.Layout.superclass.initAttributes.call(this, attr);
+         
+        /**
+         * @attribute allowRightPanel
+         * @description Set this option to true if this layout can have a right panel
+         * @type Boolean
+         */
+        this.setAttributeConfig('allowRightPanel', {
+            value: attr.allowRightPanel,
+            method: function(allowRightPanel) {
+                if (!this._units) {
+                    return false;
+                }
+                
+                centerUnit = this.getUnitByPosition('center');
+                if (!centerUnit) {
+                    return false;
+                }
+
+                if (allowRightPanel) {
+                    var openRightPanelElement = YAHOO.util.Dom.getElementsByClassName('openRightPanel', 'div', centerUnit)[0];
+                    if (!openRightPanelElement) {
+                        this._addOpenRightPanelHandler(centerUnit);
+                    }
+                } else {
+                    if (this.getUnitByPosition('right')) {
+                        this.getUnitByPosition('right').destroy();
+                    }
+
+                    var openRightPanelElement = YAHOO.util.Dom.getElementsByClassName('openRightPanel', 'div', centerUnit)[0];
+                    if (openRightPanelElement) {
+                        openRightPanelElement.parentNode.removeChild(openRightPanelElement);
+                    }
+                }
+            }
+        });
+        
+        /**
+         * @attribute ttOpenRightPanel
+         * @description Tooltip for the button to open the Right Panel
+         * @type String
+         */
+        this.setAttributeConfig('ttOpenRightPanel', {
+            value: attr.ttOpenRightPanel
+        });
+
+        /**
+         * @attribute ttCloseRightPanel
+         * @description Tooltip for the button to close the Right Panel
+         * @type String
+         */
+        this.setAttributeConfig('ttCloseRightPanel', {
+            value: attr.ttCloseRightPanel
+        });
+        
+        /**
+         * @attribute docId
+         * @description Composite id of the layout
+         * @type String
+         */
+        this.setAttributeConfig('docId', {
+            value: attr.docId || ''
+        });
+
+        /**
+         * @attribute top
+         * @description The top positioning of the layout relative to the viewport
+         * @type Number
+         */
+        this.setAttributeConfig('top', {
+            value: attr.top || 0
+        });
+
+        /**
+         * @attribute customCenterIframeId
+         * @description (Optional) id and name attribute of the center iframe. This is for backward compatibility of OpenDoc where its viewer frame has had a hard-coded name
+         * @type String
+         */
+        this.setAttributeConfig('customCenterIframeId', {
+            value: attr.customCenterIframeId || false
+        });
+
+        /**
+         * @attribute rightUnitHeaderCssClass
+         * @description The css class of the right unit header
+         * @type String
+         */
+        this.setAttributeConfig('rightUnitHeaderCssClass', {
+            value: attr.rightUnitHeaderCssClass || false
+        });
+
+        /**
+         * @attribute rightUnitHeaderIcon
+         * @description (Optional) Icon to be added at the front of the right unit header
+         * @type Object, in the form of {cssClass: <HTMLElementClassNameString>, url: <urlString>, alt: <altString>}
+         */
+        this.setAttributeConfig('rightUnitHeaderIcon', {
+            value: attr.rightUnitHeaderIcon || false,
+            method: function(rightUnitHeaderIcon) {
+                if (!this._units) {
+                    return false;
+                }
+                
+                rightUnit = this.getUnitByPosition('right');
+                if (!rightUnit) {
+                    return false;
+                }
+
+                var arr = YAHOO.util.Dom.getElementsByClassName(this.get("rightUnitHeaderCssClass"), 'div', rightUnit);
+                if (arr.length <= 0) {
+                    return false;
+                }
+
+                // Do not show any icon if no new icon url is defined. Remove old icon if it exists.
+                var hasNewIcon = rightUnitHeaderIcon && rightUnitHeaderIcon.url && rightUnitHeaderIcon.url.length > 0;
+                
+                var headerContent = arr[0];
+                var img;
+                var imgElements = headerContent.getElementsByTagName("img");
+                if (imgElements.length > 0) {
+                    // img already exists. Just replace the old values with the new icon, or remove the icon if there's no new icon
+                    if (hasNewIcon) {
+                        img = imgElements[0];
+                    } else {
+                        headerContent.removeChild(imgElements[0]);
+                    }
+                } else {
+                    // img doesn't exist. Create the element and append it to the header
+                    if (hasNewIcon) {
+                        img = headerContent.ownerDocument.createElement("img");
+                        if (headerContent.hasChildNodes()) {
+                            headerContent.insertBefore(img, headerContent.firstChild);
+                        } else {
+                            headerContent.appendChild(img);
+                        }
+                    }
+                }
+                
+                if (!img) {
+                    return;
+                }
+                
+                img.src = rightUnitHeaderIcon.url;
+                if (rightUnitHeaderIcon.cssClass) {
+                    img.className = rightUnitHeaderIcon.cssClass;
+                }
+                if (rightUnitHeaderIcon.alt) {
+                    img.alt = rightUnitHeaderIcon.alt;
+                }
+            }
+        });
+
+        /**
+         * @attribute rightUnitTitle
+         * @description Text to show at the right unit header
+         * @type Object, in the form of {cssClass: <HTMLElementClassNameString>, text: <textString>}
+         */
+        this.setAttributeConfig('rightUnitTitle', {
+            value: attr.rightUnitTitle || {cssClass: "rightUnitTitle", text: " "},
+            method: function(rightUnitTitle) {
+                if (!this._units) {
+                    return false;
+                }
+                
+                rightUnit = this.getUnitByPosition('right');
+                if (!rightUnit) {
+                    return false;
+                }
+
+                var arr = YAHOO.util.Dom.getElementsByClassName(this.get("rightUnitHeaderCssClass"), 'div', rightUnit);
+                if (arr.length <= 0) {
+                    return false;
+                }
+                
+                var headerContent = arr[0];
+
+                var titleArr = YAHOO.util.Dom.getElementsByClassName(this.get("rightUnitTitle").cssClass, 'div', headerContent);
+                if (titleArr.length <= 0) {
+                    return false;
+                }
+
+                var headerTitle = titleArr[0];
+                
+                if (rightUnitTitle.cssClass && rightUnitTitle.cssClass.length > 0) {
+                    headerTitle.className = rightUnitTitle.cssClass;
+                }
+                if (rightUnitTitle.text && rightUnitTitle.text.length > 0) {
+                    while (headerTitle.hasChildNodes()) {
+                        headerTitle.removeChild(headerTitle.firstChild);
+                    }
+                    var textNode = headerContent.ownerDocument.createTextNode(rightUnitTitle.text);
+                    headerTitle.appendChild(textNode);
+                    headerTitle.title = rightUnitTitle.text;
+                }
+            }
+        });
+
+        /**
+         * @attribute rightUnitCloseButtonAlt
+         * @description Alternate text for the close button on the right unit header which closes the right unit when clicked on
+         * @type String
+         */
+        this.setAttributeConfig('rightUnitCloseButtonAlt', {
+            value: attr.rightUnitCloseButtonAlt || false
+        });
+
+        /**
+         * @attribute rightUnitAlertText
+         * @description For accessibility - the alert to throw to JAWS11 without having a visible text shown in the UI once the right unit is opened
+         * @type String
+         */
+        this.setAttributeConfig('rightUnitAlertText', {
+            value: attr.rightUnitAlertText || false
+        });
+
+        /**
+         * @attribute rightPanelURL
+         * @description The source to load into the right unit body
+         * @type String
+         */
+        this.setAttributeConfig('rightPanelURL', {
+            value: attr.rightPanelURL || false,
+            method: function(rightPanelURL) {
+                if (!rightPanelURL || rightPanelURL.length == 0) {
+                    return;
+                }
+                
+                if (!this._units) {
+                    return false;
+                }
+                
+                rightUnit = this.getUnitByPosition('right');
+                if (!rightUnit) {
+                    // Do nothing if the right unit is not open
+                    return false;
+                }
+
+                // If the right panel is open, replace the iframe url with the new one
+                var rightPanelFrameId = "iframeRightUnit" + this.get('docId');
+                var rightPanelFrame = document.getElementById(rightPanelFrameId);
+                if (rightPanelFrame) {
+                    rightPanelFrame.src = rightPanelURL;
+                }
+            }
+        });
+    },
+    
+    /**
+     * @method addUnit
+     * @param {Object} cfg The config for the LayoutUnit that you want to add
+     * @description Add a unit to this layout and if the layout is rendered, resize the layout. 
+     * @return {<a href="YAHOO.widget.LayoutUnit.html">YAHOO.widget.LayoutUnit</a>} The LayoutUnit instance
+     */
+    addUnit: function(cfg) {
+        var unit = businessobjects.webutil.layout.Layout.superclass.addUnit.call(this, cfg);
+        if (!unit || !this.get('allowRightPanel')) {
+            return unit;
+        }
+        
+        if (cfg.position == 'center') {
+            this._addOpenRightPanelHandler(unit);
+        }
+
+        if (cfg.position == 'right') {
+            // Middle Close button
+            var closeRightPanelElement = document.createElement("div");
+            closeRightPanelElement.title = this.get('ttCloseRightPanel');
+            YAHOO.util.Dom.addClass(closeRightPanelElement, "closeRightPanel");
+       
+            unit.appendChild(closeRightPanelElement);
+
+            var layout = this;
+            YAHOO.util.Event.on(closeRightPanelElement, "click", function(e) {
+                layout._closeRightPanel();
+            }, layout, true);
+            
+            // Accessibility: enable the closing of the right panel based on keyboard
+            YAHOO.util.Event.on(closeRightPanelElement, "keydown", function(e) {
+                // can use either the space bar or enter key
+                if (e.keyCode == 32 || e.keyCode == 13) {
+                    layout._closeRightPanel();
+                }
+            }, layout, true);
+            
+            unit.on('resize', function() {
+                var closeRightPanelElement = YAHOO.util.Dom.getElementsByClassName('closeRightPanel', 'div', this)[0];
+                if (closeRightPanelElement) {
+                    // Align the resize knob and the close button
+                    var resizeKnob = YAHOO.util.Dom.getElementsByClassName('yui-layout-resize-knob', 'div', this)[0];
+                    if (resizeKnob) {
+                        var top = this.get('height')*45/100 - (closeRightPanelElement.offsetHeight - resizeKnob.offsetHeight + 1)/2
+                        YAHOO.util.Dom.setStyle(closeRightPanelElement, 'top', top + 'px');
+                    }
+                }
+            });
+
+            unit.destroy = function(force) {
+                // In this context 'this' is the unit itself
+                var par = this.get('parent');
+                if (par) {
+                    centerUnit = par.getUnitByPosition("center");
+                    if (centerUnit) {
+                        var openRightPanelElement = YAHOO.util.Dom.getElementsByClassName('openRightPanel', 'div', centerUnit)[0];
+                        if (openRightPanelElement) {
+                            YAHOO.util.Dom.removeClass(openRightPanelElement, "invisibleElement");
+                        }
+                    }
+                }
+
+                YAHOO.widget.LayoutUnit.prototype.destroy.call(this, force);
+            };
+
+            var centerUnit = this.getUnitByPosition('center');
+            if (centerUnit) {
+                var openRightPanelElement = YAHOO.util.Dom.getElementsByClassName('openRightPanel', 'div', centerUnit)[0];
+                if (openRightPanelElement) {
+                    YAHOO.util.Dom.addClass(openRightPanelElement, "invisibleElement");
+                }
+            }
+        }
+
+        return unit;
+    },
+    
+    /**
+     * Create the handle that opens up the right unit when clicked on, and append it to the center unit
+     */
+    _addOpenRightPanelHandler: function(centerUnit) {
+        // Middle Open button
+        var openRightPanelElement = document.createElement("div");
+        openRightPanelElement.title = this.get('ttOpenRightPanel');
+        YAHOO.util.Dom.addClass(openRightPanelElement, "openRightPanel");
+        openRightPanelElement.tabIndex = "0";
+        
+        YAHOO.util.Event.on(openRightPanelElement, "click", function() {
+            this._addRightPanel();
+        }, this, true);
+
+        // Accessibility: enable the opening of the right panel based on keyboard
+        YAHOO.util.Event.on(openRightPanelElement, "keydown", function(e) {
+            // can use either the space bar or enter key
+            if (e.keyCode == 32 || e.keyCode == 13) {
+                this._addRightPanel();
+            }
+        }, this, true);
+   
+        centerUnit.appendChild(openRightPanelElement);
+    },
+
+    /**
+     * Create the right unit and append it to the layout
+     */
+    _addRightPanel: function() {
+        this.fireEvent('beforeOpenRightPanel');
+        
+        var docId = this.get('docId');
+        var divID = "divRightUnit" + docId;
+        var innerDiv = null;
+        var existingDiv = YAHOO.util.Dom.get(divID);
+        if (!existingDiv) {
+            var iframeHeight = this.get('height');
+            // configure iframe properties
+            var newFrame = document.createElement('iframe');
+            newFrame.frameBorder = "0";
+            newFrame.id = "iframeRightUnit" + docId;
+            newFrame.scrolling = "no";
+            newFrame.style.width = "100%";
+            newFrame.style.height = iframeHeight + "px";
+
+            innerDiv = document.createElement('div');
+            innerDiv.id = divID;
+            innerDiv.appendChild(newFrame);
+            this.appendChild(innerDiv);
+        } else {
+            innerDiv = existingDiv;
+        }
+
+        /*
+         * Do not display the close button since we will manually add it with a custom event attached.
+         * Header is set to empty string so that YUI creates a empty header area (if this was omitted there is no header)
+         */
+        var rightUnit = this.addUnit( {
+            position: 'right',
+            width: 300,
+            maxWidth: 600,
+            minWidth: 180,
+            resize: true,
+            collapse: false,
+            gutter: '0 0 0 5px',
+            close: false,
+            useShim: true,
+            proxy: true,
+            header: "",
+            body: innerDiv.id
+        });
+
+        this.render();
+        
+        // Add accessible header to the right unit
+        var header = YAHOO.util.Dom.getElementsByClassName('yui-layout-hd', 'div', rightUnit)[0];
+
+        // Icon
+        var img;
+        var headerIcon = this.get("rightUnitHeaderIcon");
+        if (headerIcon && headerIcon.url && headerIcon.url.length > 0) {
+            img = header.ownerDocument.createElement("img");
+            img.className = headerIcon.cssClass;
+            img.alt = headerIcon.alt;
+            img.src = headerIcon.url;
+        }
+
+        // Title
+        var title = header.ownerDocument.createElement("div");
+        headerText = this.get("rightUnitTitle");
+        title.className = headerText.cssClass;
+        title.title = headerText.text;
+        title.appendChild(header.ownerDocument.createTextNode(headerText.text));
+                    
+        // Close button
+        var close = header.ownerDocument.createElement("div");
+        close.title = this.get("rightUnitCloseButtonAlt");
+        // Accessibility: add the close button to the tab order
+        close.tabIndex = "0";
+        YAHOO.util.Dom.addClass(close, "close");
+        YAHOO.util.Event.on(close, "click", function() {
+            this._closeRightPanel();
+        }, this, true);
+        
+        // Accessibility: enable the closing of the right unit based on keyboard
+        YAHOO.util.Event.on(close, "keydown", function(e) {
+            // can use either the space bar or enter key
+            if (e.keyCode == 32 || e.keyCode == 13) {
+                this._closeRightPanel();
+            }
+        }, this, true);
+        
+        // Add img, title and close button to a div under the header
+        var headerContent = header.ownerDocument.createElement("div");
+        var rightUnitHeaderCssClass = this.get("rightUnitHeaderCssClass");
+        if (rightUnitHeaderCssClass) {
+            YAHOO.util.Dom.addClass(headerContent, rightUnitHeaderCssClass);
+        }
+        
+        if (img) {
+            headerContent.appendChild(img);
+        }
+        
+        headerContent.appendChild(title);
+        headerContent.appendChild(close);
+        
+        // Replace previous header
+        if (header.hasChildNodes()) {
+            header.removeChild(header.firstChild);
+        }
+        header.appendChild(headerContent);
+        
+        // Accessibility: will throw an alert to JAWS11 without having a visible text shown in the UI once the right unit panel is opened
+        if (this.get("rightUnitAlertText")) {
+            var alertNotification = header.ownerDocument.createElement("div");
+            alertNotification.setAttribute("role", "alert");
+            alertNotification.setAttribute("style", "position: absolute !important; clip: rect(1px, 1px, 1px, 1px);");
+            alertNotification.appendChild(header.ownerDocument.createTextNode(this.get("rightUnitAlertText")));
+            headerContent.appendChild(alertNotification);
+        }
+
+        // YUI adds an h2 element by default but it messes with my styles, so I need to remove it
+        var h2 = header.getElementsByTagName('h2')[0];
+        if (h2) {
+            header.removeChild(h2);
+        }
+
+        var detailsFrame = YAHOO.util.Dom.get("iframeRightUnit" + docId);
+        if (detailsFrame) {
+            var rightPanelURL = this.get('rightPanelURL');
+            if (rightPanelURL && rightPanelURL.length > 0) {
+                newFrame.src = rightPanelURL;
+            }
+        }
+        
+        this.fireEvent('openRightPanel', {});
+    },
+    
+    /**
+     * Destroy the right unit and fire custom events before and after doing it
+     */
+    _closeRightPanel: function() {
+        rightUnit = this.getUnitByPosition('right');
+        if (!rightUnit) {
+            return;
+        }
+            
+        this.fireEvent('beforeCloseRightPanel');
+        rightUnit.destroy();
+        this.fireEvent('closeRightPanel');
+    }
+    
+    /**
+     * @event beforeOpenRightPanel
+     * @description Fired before the right unit is opened
+     * @type YAHOO.util.CustomEvent
+     */
+
+    /**
+     * @event openRightPanel
+     * @description Fired when the right unit is opened
+     * @type YAHOO.util.CustomEvent
+     */
+
+    /**
+     * @event beforeCloseRightPanel
+     * @description Fired before the right unit is closed
+     * @type YAHOO.util.CustomEvent
+     */
+
+    /**
+     * @event closeRightPanel
+     * @description Fired when the right unit is closed
+     * @type YAHOO.util.CustomEvent
+     */
+});

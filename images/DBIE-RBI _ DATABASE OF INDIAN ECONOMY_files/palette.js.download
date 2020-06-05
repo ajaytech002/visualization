@@ -1,0 +1,5806 @@
+if (window._DHTML_LIB_PALETTE_JS_LOADED==null)
+{
+_DHTML_LIB_PALETTE_JS_LOADED=true
+_allBOIcons=new Array
+_allBOIconsMenus=new Array
+_menuType_simple=0
+_menuType_color=1
+_menuType_border=2
+_menuType_custom_showText=3         //custom combo:show text
+_menuType_custom_showIcon28x16=4    //custom combo:show icon
+_menuType_custom_showIcon64x16=5    //custom combo:show icon
+_colorsArr = null;
+//icon hover & pressed state
+_iconNormal=0;
+_iconHover=1;
+_iconPressed=2;
+_iconHoverPressed=3;
+    _iconNormal_HoverOnSelection=4;
+//used for the colonne 
+_iconLeft=0;
+_iconMid=1;
+_iconRight=2;
+    _iconRight_NextIsSelected=3;
+// ================================
+// Icon Text classes
+//
+// [normal, hover, down, hover+down, disabled]
+//
+// ================================
+_iconTextCSS = ['iconText', 'iconText', 'iconText', 'iconText', 'iconTextDis']
+  _iconTextGrayCSS = ['iconTextDis', 'iconTextDis', 'iconTextDis', 'iconTextDis', 'iconTextDis']
+_tabbedGroupTextCSS = ['tabbedGrouptext', 'tabbedGrouptext', 'tabbedGrouptextSel', 'tabbedGrouptextSel', 'tabbedGrouptext']
+_paneButtonTextCSS = ['paneText', 'paneTextDown', 'paneTextDown', 'paneTextDown', 'paneText']
+    _toolboxTabTextCSS = ['toolboxTabText', 'toolboxTabText', 'toolboxTabText', 'toolboxTabText', 'toolboxTabTextDis']                           
+    _tabsCSS  = [["toolboxTabsL", "toolboxTabsM", "toolboxTabsR"],
+                 ["toolboxTabsHoverL","toolboxTabsHoverM","toolboxTabsHoverR"]]
+    _tabsNoRightCSS  = [["toolboxTabsL", "toolboxTabsM", "toolboxTabsMR"],
+                        ["toolboxTabsHoverL","toolboxTabsHoverM","toolboxTabsHoverMR"]]
+    _tabbedGroupTabsCSS  = [ ["", "tabbedGroupTabsM", "tabbedGroupTabsR"], 
+                            ["", "tabbedGroupTabsHoverM", "tabbedGroupTabsHoverR"]];
+    _noTabGroupTabsCSS  = [ ["noTabGroupL", "noTabGroupM", "noTabGroupR"], 
+                            ["noTabGroupL", "noTabGroupM", "noTabGroupR"]];
+    _toolboxContCSS  = ["toolboxContL", "toolboxContM", "toolboxContR"];
+    _tabbedGroupContCSS=["tabbedGroupContL", "tabbedGroupContM", "tabbedGroupContR"];   
+    _noTabGroupContCSS=["tabbedGroupContL", "tabbedGroupContM", "tabbedGroupContR"]; 
+// ========================================================
+// Icon classes - use null or '' for no class
+//
+// [
+//     normal CSS     [left, middle, right]
+//     hover CSS      [left, middle, right]
+//     down CSS       [left, middle, right]
+//     hover+down CSS [left, middle, right] (optional)
+// ]
+//
+// ========================================================
+_iconCSS=[['', '', ''],
+['iconHoverL', 'iconHoverM', 'iconHoverR'],
+['iconPressedL', 'iconPressedM', 'iconPressedR']
+ ]
+ _framedIconCSSNoLeft=[['iconHoverM', 'iconHoverM', 'iconHoverR'],
+    ['iconHoverM', 'iconHoverM', 'iconHoverR'],
+    ['iconPressedM', 'iconPressedM', 'iconPressedR']
+     ]
+_framedIconCSSNoRight=[['iconHoverL', 'iconHoverM', 'iconHoverM'],
+['iconHoverL', 'iconHoverM', 'iconHoverM'],
+['iconPressedL', 'iconPressedM', 'iconPressedM']
+ ]
+ _iconCSSNoLeft=[['', '', ''],
+    ['iconHoverM', 'iconHoverM', 'iconHoverR'],
+    ['iconPressedM', 'iconPressedM', 'iconPressedR']
+     ]
+_iconCSSNoRight=[['', '', ''],
+['iconHoverL', 'iconHoverM', 'iconHoverM'],
+['iconPressedL', 'iconPressedM', 'iconPressedM']
+ ]
+_framedIcon16CSS=[['iconHoverL', 'iconHoverM', 'iconHoverR'],
+['iconHoverL', 'iconHoverM', 'iconHoverR'],
+['iconPressedL', 'iconPressedM', 'iconPressedR']
+ ]
+_iconCSS32=[['', '', ''],
+            ['iconHoverL32', 'iconHoverM32', 'iconHoverR32'],
+            ['iconPressedL32', 'iconPressedM32', 'iconPressedR32']
+   ]
+_iconCSS50=[['', '', ''],
+            ['iconHoverL50', 'iconHoverM50', 'iconHoverR50'],
+            ['iconPressedL50', 'iconPressedM50', 'iconPressedR50']
+   ]
+    _toolbox1stBtnCSS=[['toolbox1stBtnL', 'toolboxBtnM', 'toolboxBtnR', 'toolboxNormalR_NextPressed'],
+                    ['toolbox1stBtnHoverL', 'toolboxBtnHoverM', 'toolboxBtnHoverR','toolboxBtnHoverR_NextPressed'],
+                    ['toolbox1stBtnPressedL', 'toolboxBtnPressedM', 'toolboxBtnPressedR','toolboxBtnPressedR'],
+                            ['toolbox1stBtnHoverPressedL', 'toolboxBtnHoverPressedM', 'toolboxBtnHoverPressedR','toolboxBtnHoverPressedR'],  
+                            ['toolbox1stNormalL_HoverSelectedTab','toolboxNormalM_HoverSelectedTab','toolboxNormalR_HoverSelectedTab','']                                         
+                    ];
+_toolboxBtnCSS=[['toolboxBtnL', 'toolboxBtnM', 'toolboxBtnR', 'toolboxNormalR_NextPressed'],
+                ['toolboxBtnHoverL', 'toolboxBtnHoverM', 'toolboxBtnHoverR','toolboxBtnHoverR_NextPressed'],
+                ['toolboxBtnPressedL', 'toolboxBtnPressedM', 'toolboxBtnPressedR','toolboxBtnPressedR'],
+                        ['toolboxBtnHoverPressedL', 'toolboxBtnHoverPressedM', 'toolboxBtnHoverPressedR','toolboxBtnHoverPressedR'], 
+                        ['toolboxNormalL_HoverSelectedTab','toolboxNormalM_HoverSelectedTab','toolboxNormalR_HoverSelectedTab','']                                                  
+                ];
+    _tabbedGroup1stBtnCSS = [['tabbedGroup1stBtnL', 'tabbedGroupBtnM', 'tabbedGroupBtnR','tabbedGroupBtnR_NextPressed'],
+                   ['tabbedGroup1stBtnHoverL', 'tabbedGroupBtnHoverM', 'tabbedGroupBtnHoverR','tabbedGroupBtnHoverR_NextPressed'],
+                   ['tabbedGroup1stBtnPressedL', 'tabbedGroupBtnPressedM', 'tabbedGroupBtnPressedR','tabbedGroupBtnPressedR'],
+                   ['tabbedGroup1stBtnHoverPressedL', 'tabbedGroupBtnHoverPressedM', 'tabbedGroupBtnHoverPressedR','tabbedGroupBtnHoverPressedR'],
+                            ['tabbedGroup1stBtnL_HoverSelectedTab','tabbedGroupBtnM_HoverSelectedTab','tabbedGroupBtnR_HoverSelectedTab','']
+                 ];
+_tabbedGroupBtnCSS = [['tabbedGroupBtnL', 'tabbedGroupBtnM', 'tabbedGroupBtnR','tabbedGroupBtnR_NextPressed'],
+                   ['tabbedGroupBtnHoverL', 'tabbedGroupBtnHoverM', 'tabbedGroupBtnHoverR','tabbedGroupBtnHoverR_NextPressed'],
+                   ['tabbedGroupBtnPressedL', 'tabbedGroupBtnPressedM', 'tabbedGroupBtnPressedR','tabbedGroupBtnPressedR'],
+                   ['tabbedGroupBtnHoverPressedL', 'tabbedGroupBtnHoverPressedM', 'tabbedGroupBtnHoverPressedR','tabbedGroupBtnHoverPressedR'],
+                            ['tabbedGroupBtnL_HoverSelectedTab','tabbedGroupBtnM_HoverSelectedTab','tabbedGroupBtnR_HoverSelectedTab','']
+                 ];
+_spinnerUpCSS=[['spinnerArrowUpL', 'spinnerArrowUpM', 'spinnerArrowUpR'],
+['spinnerHoverL', 'spinnerHoverM', 'spinnerHoverR'],
+['spinnerPressedL', 'spinnerPressedM', 'spinnerPressedR']
+  ]
+_spinnerDownCSS=[['spinnerArrowDownL', 'spinnerArrowDownM', 'spinnerArrowDownR'],
+['spinnerHoverL', 'spinnerHoverM', 'spinnerHoverR'],
+['spinnerPressedL', 'spinnerPressedM', 'spinnerPressedR']
+]
+_calendarSpinUpCSS=[['calendarSpinUpL', 'spinnerArrowUpM', 'spinnerArrowUpR'],
+['spinnerHoverL', 'spinnerHoverM', 'spinnerHoverR'],
+['spinnerPressedL', 'spinnerPressedM', 'spinnerPressedR']
+  ]
+_calendarSpinDownCSS=[['calendarSpinDownL', 'spinnerArrowDownM', 'spinnerArrowDownR'],
+['spinnerHoverL', 'spinnerHoverM', 'spinnerHoverR'],
+['spinnerPressedL', 'spinnerPressedM', 'spinnerPressedR']
+]
+_comboCSS=[['comboArrowL', 'comboArrowM', 'comboArrowR'],
+['comboHoverL', 'comboHoverM', 'comboHoverR'],
+['comboPressedL', 'comboPressedM', 'comboPressedR']
+]
+_comboCSSRTL=[['comboButtonL', 'comboArrowM', 'comboArrowM'],
+['comboHoverL', 'comboHoverM', 'comboHoverR'],
+['comboPressedL', 'comboPressedM', 'comboPressedR']
+]
+_paneComboButtonCSS=[['', '', ''],
+     ['comboHoverL', 'comboHoverM', 'comboHoverM'],
+     ['comboPressedL', 'comboPressedM', 'comboPressedM']
+     ]
+_paneComboArrowCSS=[['', '', ''],
+    ['comboHoverM', 'comboHoverM', 'comboHoverR'],
+    ['comboPressedM', 'comboPressedM', 'comboPressedR']
+    ]
+    _paneComboRightBtnCSS=[['', '', ''],
+        ['', '', ''],
+        ['', '', '']
+            ]
+_paneMinBtnCSS=[['paneMinL', 'paneMinM', 'paneMinR'],
+     ['paneMinHoverL', 'paneMinHoverM', 'paneMinHoverR'],
+     ['paneMinPressedL', 'paneMinPressedM', 'paneMinPressedR']
+     ]
+_comboButtonCSS=[['comboButtonL', 'comboArrowM', 'comboArrowM'],
+                 ['comboButtonL', 'comboArrowM', 'comboArrowM'],
+                 ['comboButtonL', 'comboArrowM', 'comboArrowM']
+    ]
+_comboButtonCSSRTL=[['comboArrowL', 'comboArrowM', 'comboArrowR'],
+['comboArrowL', 'comboArrowM', 'comboArrowR'],
+['comboArrowL', 'comboArrowM', 'comboArrowR']
+]
+_groupLeftCSS=[['groupL', 'groupM', 'groupNoSep'],
+['groupHoverL', 'groupHoverM', 'groupNoSep'],
+['groupPressL', 'groupPressM', 'groupNoSep']
+];
+_groupMidCSS=[['groupSep', 'groupM', 'groupNoSep'],
+['groupSep', 'groupHoverM', 'groupNoSep'],
+['groupSep', 'groupPressM', 'groupNoSep']
+];
+_groupRightCSS=[['groupSep', 'groupM', 'groupR'],
+['groupSep', 'groupHoverM', 'groupHoverR'],
+['groupSep', 'groupPressM', 'groupPressR']
+];
+_midGroupLeftCSS=[
+                 ['medGroupL_L', 'medGroupM_M', 'medGroupM_R'],
+['medGroupHoverL_L', 'medGroupHoverM_M', 'medGroupHoverM_R'],
+['medGroupPressL_L', 'medGroupPressM_M', 'medGroupPressM_R']
+];
+_midGroupMidCSS=[
+                 ['medGroupM_L', 'medGroupM_M', 'medGroupM_R'],
+['medGroupHoverM_L', 'medGroupHoverM_M', 'medGroupHoverM_R'],
+['medGroupPressM_L', 'medGroupPressM_M', 'medGroupPressM_R']
+];
+_midGroupRightCSS=[
+                 ['medGroupM_L', 'medGroupM_M', 'medGroupR_R'],
+['medGroupHoverM_L', 'medGroupHoverM_M', 'medGroupHoverR_R'],
+['medGroupPressM_L', 'medGroupPressM_M', 'medGroupPressR_R']
+];
+_midGroupLeftRightCSS=[
+                 ['medGroupL_L', 'medGroupM_M', 'medGroupR_R'],
+['medGroupHoverL_L', 'medGroupHoverM_M', 'medGroupHoverR_R'],
+['medGroupPressL_L', 'medGroupPressM_M', 'medGroupPressR_R']
+];
+    _vertBarInLeftPanelCSS=[['', '', ''],
+                 ['vertBarInLeftPanelHoverL', 'vertBarInLeftPanelHoverM', 'vertBarInLeftPanelHoverR'],
+         ['vertBarInLeftPanelPressL', 'vertBarInLeftPanelPressM', 'vertBarInLeftPanelPressR']
+            ];
+    _noTabGroupBtnCSS  = [ ["", "", ""], 
+                            ["", "", ""],
+                            ["", "", ""]];
+//icon type
+_icon16=0
+_iconCombo=1
+_iconComboArrow=2
+_iconSpinnerUp=3
+_iconSpinnerDown=4
+_iconArrow=5
+_icon32=6
+_iconComboMenu=7
+_groupL16=8
+_groupM16=9
+_groupR16=10
+_midGroupL16=11
+_midGroupM16=12
+_midGroupR16=13
+_midGroupLR16=14
+_toolboxBtn=15
+_icon50=16
+_tabbedGroupBtn=17
+_framedIcon16=18
+_iconComboButton=19
+_icon16NoRight=20
+_iconArrowNoLeft=21
+_paneComboButton=22
+_paneComboArrow=23
+_paneComboRightBtn=24
+_paneMinBtn=25
+_framedIcon16NoLeft=26
+_framedIcon16NoRight=27
+_iconVertBarInLeftPanel=28
+    _noTabGroupBtn=29  
+    _iconCalendarSpinUp=30
+_iconCalendarSpinDown=31
+}
+function new_ContainerWidget(prms)
+{
+var o = new_Widget(prms);
+o.isContainer = true;
+//================================================
+// Virtual function used by add for instantiation
+//================================================
+o.instanciate = function (prms)
+{
+return prms.isWidget ? prms : createWidget(prms)
+}
+//================================================
+// In Containers, set focus on the first visible
+// widget
+//================================================
+o.focus = function()
+{
+var o=this, items=this.items
+if (o.layer)
+{
+for (var i=0; i<items.length; i++)
+{
+var item = items[i]
+if (item && item.isWidget && item.layer)
+{
+if (item.canHaveFocus() && isLayerDisplayed(item.layer) &&!item.isDisabled())
+{
+item.focus()
+break
+}
+}
+}
+}
+}
+//=============================
+// Add a widget in a container
+//=============================
+o.add = function (prms)
+{
+//var o=this, item=o.instanciate(prms);
+var o=this, item=o.instanciate(prms||{actionId:'nullAction'});// JCC: if null widget, display it as "(null)" to see the error of the definition
+item.parentContainer = o;
+item.getParentContainer = function ()
+{
+return this.parentContainer
+}
+return o.items[o.items.length] = item
+}
+//=====================================
+// add multiple widgets in a container
+//=====================================
+o.fill = function (arrPrms)
+{
+var len = arrPrms.length
+for (var i=0; i<len; i++)
+{
+var prm = arrPrms[i]
+if (prm) o.add(prm)
+}
+}
+    o.getItemByIndex = function (index)
+{
+var o=this,items=o.items, len = items.length
+if (index >=0 && index < len)
+{
+        return items[index]
+}
+return null
+}
+//=======================================================
+// Get an item from it's ID in a container (recursively)
+//=======================================================
+o.getItemByID = function (id)
+{
+var o=this,items=o.items, len = items.length
+for(var i=0; i<len; i++)
+{
+var item=items[i]
+if(item.id == id)
+return item;
+item =  (item.getItemByID) ? item.getItemByID(id) : null
+if (item)
+return item
+}
+return null
+}
+//==========================================================
+// Get an item from it's value in a container (recursively)
+//==========================================================
+o.getItemByValue = function (value)
+{
+var o=this,items=o.items, len = items.length
+for(var i=0; i<len; i++)
+{
+var item=items[i]
+if(item.value == value)
+return item;
+item =  (item.getItemByValue) ? item.getItemByValue(value) : null
+if (item)
+return item
+}
+return null
+}
+    o.getPrevItemByValue = function (value)
+{
+var o=this,items=o.items, len = items.length
+for(var i=0; i<len; i++)
+{
+var item=items[i]
+if(item.value == value)
+            {
+return (i-1>=0)?items[i-1]:null;
+}
+item =  (item.getPrevItemByValue) ? item.getPrevItemByValue(value) : null
+if (item)
+return item
+}
+return null
+}
+    o.getNextItemByValue = function (value)
+{
+var o=this,items=o.items, len = items.length
+for(var i=0; i<len; i++)
+{
+var item=items[i]
+if(item.value == value)
+            {
+return (i+1<len)?items[i+1]:null;
+}
+item =  (item.getNextItemByValue) ? item.getNextItemByValue(value) : null
+if (item)
+return item
+}
+return null
+}
+o.getLength = function ()
+{
+var o=this,items=o.items, len = items.length
+return len;
+    }
+//===============================
+// Init initializes the children
+//===============================
+o.widgetInit = o.init
+o.init = function()
+{
+var o=this,items=o.items, len = items.length
+o.widgetInit()
+for(var i=0; i<len; i++)
+{
+var item=items[i]
+if (item.init)
+item.init()
+}
+}
+// =========================
+// Hide unneeded separators
+// =========================
+o.repair=function()
+{
+var o=this
+var lastIsSep=true //usefull when the first item is a separator
+var index=-1
+var items=o.items,itemsLen=items.length
+for (var i=0; i < itemsLen; i++)
+{
+var item=items[i]
+if(item)
+{
+if (item.isContainer)
+{
+item.repair()
+}
+if (item.isSeparator==true)
+{
+if(lastIsSep)
+{
+item.setDisplay(false)
+}
+else
+{
+index=i
+//=====================================================
+//put the same behavior as repairToolbar
+//repairMenu can be called several times
+//the algo must display again the separator if necessary
+item.setDisplay(true)
+//=====================================================
+}
+lastIsSep=true
+}
+else if(item.isDisplayed==null || item.isDisplayed()) 
+{
+lastIsSep=false
+index=-1
+}
+}
+}
+//usefull when the last item is a separator
+if(lastIsSep && index >-1) 
+items[index].setDisplay(false)
+}
+//================
+// Private fields
+//================
+o.items=new Array;
+return o;
+}
+function new_LinesWidget(prms)
+{
+var o = new_ContainerWidget(prms);
+o.rowHeight = Widget_param(prms, "rowHeight", 22);
+    o.vAlign = Widget_param(prms, "vAlign", "middle");
+    o.lineSty = Widget_param(prms, "lineSty", ' style="padding:0px;margin:0px;" ');
+// ======================================
+// call br() to create a new line
+// ======================================
+o.br = function ()
+{ 
+this.add({type:"br"})
+}
+// ================
+// HTML Generation
+// ================
+o.getHTML = function ()
+{
+var o=this, s=new Array, items=o.items, len=items.length
+       var lineBegin = '<tr><td '+o.lineSty+' valign='+o.vAlign+' '+(o.rowHeight ? ('height="'+o.rowHeight+'"') : '')+'><table cellspacing="0" cellpadding="0" border="0"><tbody><tr><td>'
+var lineEnd = '</td></tr></tbody></table></td></tr>'
+s[s.length]= o.getLabelForAriaHTMLTag()
+s[s.length]='<table id="'+o.id+'" cellspacing="0" cellpadding="0" border="0" ><tbody>';
+s[s.length] = lineBegin
+for (var i=0;i<len; i++)
+{
+var item=items[i]
+if (item.type=="br")
+{
+s[s.length]=lineEnd
+s[s.length]=lineBegin
+}
+else
+{
+s[s.length]='<td>'
+s[s.length]=item.getHTML()
+s[s.length]='</td>'
+}
+}
+s[s.length]=lineEnd
+s[s.length]='</tbody></table>'
+return s.join("");
+}
+if (prms.children)
+o.fill(prms.children)
+return o;
+}
+function new_ToolboxBar(prms)
+{
+var o = new_Widget(prms);
+o.leftToolbox = new_Toolbox({size:"small", elastic:true})
+    var leftTGroupHeight=25;     
+    o.leftTransverseGroup = new_LinesWidget({rowHeight:leftTGroupHeight}) 
+o.midToolbox = new_Toolbox({size:"big", hasRightTabZone:true, tabsCSS:_tabsNoRightCSS})
+o.className = Widget_param(prms, "className", (_ie?"toolboxBGIE":"toolboxBG")); 
+// =============
+// Generate HTML
+// =============
+o.repair = function()
+{
+this.leftToolbox.repair()
+this.leftTransverseGroup.repair()
+this.midToolbox.repair()
+}
+o.getHTML = function()
+{
+var o=this, s=new Array
+//85+4(padding-top) =89                        
+        var totalHeight=_ie?85:89;     
+s[s.length]='<table height='+totalHeight +' id="'+o.id+'" class="'+o.className+'" cellspacing="0" cellpadding="0" border="0"><tbody>'
+s[s.length]='<tr valign=top>'
+        //left tool box:32+26=58px 
+        s[s.length]='<td style="padding-left:4px;padding-bottom:0px;" height=58>'+o.getLabelForAriaHTMLTag() + o.leftToolbox.getHTML()+'</td>'
+        s[s.length]='<td rowspan=2 ><div style="width:6px;"></div></td>'
+        //32+53=85       
+        s[s.length]='<td height=85 rowspan=3 width="100%">' + o.midToolbox.getHTML() + '</td>'
+s[s.length]='</tr>'
+        s[s.length]='<tr valign=top ><td style="padding-left:8px;padding-top:0px;padding-bottom:0px;" height='+leftTGroupHeight+'>'+o.leftTransverseGroup.getHTML()+'</td></tr>' 
+        s[s.length]='<tr valign=top ><td colspan=2 style="padding:0px;"><div class="toolboxLeftTGroup"></div></td></tr>'
+s[s.length]='</tbody></table>'
+return s.join("")
+}
+// =====
+// Init
+// =====
+o.widgetInit=o.init
+o.init = function()
+{
+o.widgetInit()
+o.leftToolbox.init()
+o.leftTransverseGroup.init()
+o.midToolbox.init()
+}
+// =======
+// Resize
+// =======
+o.widgetResize=o.resize
+o.resize = function(w)
+{
+// Can only resize the width
+var o=this
+o.widgetResize(w)
+var leftW = 9 + 4 + Math.max(o.leftToolbox.getWidth() + 2, o.leftTransverseGroup.getWidth())
+o.midToolbox.resize(Math.max(20, w - leftW))
+}
+// ==========
+// Accessors
+// ==========
+o.getLeftToolbox         = function () { return this.leftToolbox }
+o.getLeftTransverseGroup = function () { return this.leftTransverseGroup }
+o.getMidToolbox          = function () { return this.midToolbox }
+o.getRightZone           = function () { return this.midToolbox.getRightTabZone() }
+return o
+}
+function new_Toolbox(prms)
+{
+var o = new_ContainerWidget(prms);
+o.selectedValue = null;
+// ===================
+// Parameters parsing
+// ===================
+o.width = Widget_param(prms, "width", null) // If ommited the zone is elastic
+o.size  = Widget_param(prms, "size", "big") // "big" or "small" for tool box in editing
+o.tabStyle = Widget_param(prms, "tabStyle", _toolboxBtn)
+o.tabTextStyle = Widget_param(prms, "tabTextStyle", _toolboxTabTextCSS) 
+o.hasRightTabZone = Widget_param(prms, "hasRightTabZone", false);
+    o.tabsClasses  = Widget_param(prms, "tabsCSS", _tabsCSS);
+    o.contClasses  = Widget_param(prms, "tbContCSS", _toolboxContCSS);
+    o.elastic = Widget_param(prms, "elastic", false);
+o.rightTabZone = o.hasRightTabZone ? new_LinesWidget({rowHeight:20, vAlign:"bottom", lineSty:' style="padding-bottom:8px;"'}) : null;
+   o.smallClasses = ["toolboxContSL", "toolboxContSM", "toolboxContSR"]    
+    //rightTabZone
+    o.rtZoneClasses  = [["toolboxRTZoneL", "toolboxTabsM", "toolboxRTZoneR"],
+                        ["toolboxRTZoneHoverL","toolboxTabsHoverM","toolboxRTZoneHoverR"]]
+    o.leftLyr=null;
+    o.midLyr=null;
+    o.rightLry=null;
+    o.leftid='left'+o.id;
+o.midid='mid'+o.id;
+    o.rightid='right'+o.id;   
+    //for  rightTabZone  
+    o.rtZoneLLyr=null; 
+    o.rtZoneMLyr=null;
+    o.rtZoneRLyr=null;     
+    o.rtZoneLId='rtZoneL'+o.id;
+    o.rtZoneMId='rtZoneM'+o.id;
+    o.rtZoneRId='rtZoneR'+o.id;     
+o.tabMinW = 60
+o.tabSpacing = 5    
+o.contTopMargin = (o.size=="small")?0:1; 
+o.contHoriMargin = 0
+o.margRight = 0
+// ===========================
+// focus must be on first tab
+// ==========================
+o.focus = function()
+{
+var o=this, layer=o.layer, items=o.items
+if (layer)
+{
+for (var i=0;i<items.length;i++)
+{
+var item=items[i].tab
+if (item&&item.isDisplayed())
+{
+layer = item.layer
+break
+}
+}
+safeSetFocus(layer)
+}
+}
+// ========================
+// Instanciation : new tab
+// ========================
+o.instanciate = function(prms)
+{
+prms.par = this
+prms.tabStyle = this.tabStyle
+prms.tabTextStyle = this.tabTextStyle
+return new_ToolboxTab(prms);
+}
+// ===========
+// Init a tab
+// ===========
+o.containerInit = o.init
+o.init = function()
+{
+        var o=this;
+o.containerInit();
+o.contentLayer = getLayer(o.id+'_contentLyr')
+if (o.rightTabZone) 
+        {
+            o.rightTabZone.init();
+            o.rtZoneLLyr=getLayer(o.rtZoneLId); 
+            o.rtZoneMLyr=getLayer(o.rtZoneMId); 
+            o.rtZoneRLyr=getLayer(o.rtZoneRId); 
+        }
+        o.leftLyr=getLayer(o.leftid);
+        o.midLyr=getLayer(o.midid);
+        o.rightLyr=getLayer(o.rightid);
+}
+    o.tabIsSelected=function(item)
+    {
+        var o=this;
+        return (item.value==o.selectedValue)?true:false;
+    }
+    o.updateTabBarOnSelChange=function()
+    {
+        var o=this;
+        var items=o.items, len=items.length;
+        for (var i=0; i<len; i++)
+        {
+            //next tab
+            if (i+1<len)
+            {                              
+                var nextTabIsSelected=o.tabIsSelected(items[i+1]);            
+                var tabIsSelected=o.tabIsSelected(items[i]);
+                items[i].updateOnNextTab(tabIsSelected, nextTabIsSelected);   
+            }
+        }
+    }
+// =============
+// Select a tab
+// =============
+o.select = function(value)
+{
+var o=this;
+var newTab = o.getItemByValue(value)
+if (value != o.selectedValue)
+{
+var oldTab = o.getItemByValue(o.selectedValue)
+var newTab = o.getItemByValue(value)
+if (newTab == null)
+{
+// If the item does not exist, select the firt one
+newTab = o.getItemByIndex(0)
+if (newTab) value = newTab.value
+}
+            o.selectedValue = value;                      
+if (oldTab)
+{
+oldTab.tab.check(false)
+oldTab.line.setDisplay(false);
+}
+if (newTab)
+{                                
+if (o.layer&&!newTab.htmlWritten)
+{
+append(o.contentLayer, newTab.getHTML())
+newTab.line.init()
+}
+newTab.line.setDisplay(true);
+newTab.tab.check(true)
+}
+            o.updateTabBarOnSelChange();
+}
+else
+{
+var tab = o.getItemByValue(value)
+tab.tab.check(true)
+}
+}
+// =============
+// Generate HTML
+// =============
+o.getRightTabZone = function ()
+{
+return this.rightTabZone
+}
+// =============
+// Generate HTML
+// =============
+o.beginHTML = function()
+{
+var o=this, items=o.items, len=items.length
+// If no selection, select the first element if any
+if (o.selectedValue==null&&len>0)
+{
+var tab=items[0]
+o.selectedValue = tab.value;
+tab.tab.check(true)
+}
+return beginTable(null, o.id)
+}
+o.bord = function(className, id)
+{
+        var divId=id?(' id='+id):'';
+return '<td><div class="'+className+'"'+divId+'></div></td>'
+}
+o.beginTable = function(className, id, elastic, w, margRight)
+{
+        var width=elastic?( 'width="100%" '):(attr('width', w));
+        return '<table ' + width + ' ' +(margRight ? ' style="margin'+(_rtl ? 'left':'right')+':'+margRight+'px" ' : '') + attr('id', id) + attr('class', className) + ' cellspacing="0" cellpadding="0" border="0"><tbody>'
+}
+o.endTable = function()
+{
+return '</tbody></table>'
+}
+o.tabsHTML = function()
+{
+var o=this, items=o.items, len=items.length, s=[], i=0
+        if (len>0)
+        {
+            items[0].isFirst=true;
+            var tab=items[0].tab;
+            if (tab.icontype==_toolboxBtn)
+                tab.iconCSS=_toolbox1stBtnCSS;
+            else
+            if (tab.icontype==_tabbedGroupBtn)
+                tab.iconCSS=_tabbedGroup1stBtnCSS;
+        }
+s[i++] = '<tr><td>' + o.beginTable(null, null, true) + '<tr>' 
+        var cls=o.tabsClasses[_iconNormal][_iconLeft];
+        if (cls!='')
+        {
+            //for tabbedGroup in safari
+    s[i++] = o.bord(cls, o.leftid);
+        }
+s[i++] = '<td width="100%" valign="bottom" class="'+o.tabsClasses[_iconNormal][_iconMid]+'" id="'+o.midid+'">' + o.beginTable() + '<tr>'
+for (var j=0;j<len;j++) s[i++]='<td width="'+o.tabMinW+'" >'+items[j].tab.getHTML()+'</td>'       
+s[i++] = '</tr>' + o.endTable() + '</td>'
+s[i++] = o.bord(o.tabsClasses[_iconNormal][_iconRight], o.rightid)
+if (o.rightTabZone)
+        {
+s[i++] ='<td align="right"  style="padding-top:0px;">' + 
+                        '<table height=32 border="0" cellspacing="0" cellpadding="0" width="100%"><tbody>' +
+                        '<tr>'+
+                        o.bord(o.rtZoneClasses[_iconNormal][_iconLeft], o.rtZoneLId)+
+                        '<td valign="bottom" class="'+o.rtZoneClasses[_iconNormal][_iconMid]+'"  id="'+o.rtZoneMId+'">'+                     
+                            o.rightTabZone.getHTML() + 
+                        '</td>'+
+                        o.bord(o.rtZoneClasses[_iconNormal][_iconRight], o.rtZoneRId)+
+                        '</tr>'+
+                        '</tbody></table>' +
+                    '</td>';
+}
+s[i++] = '</tr>' + o.endTable() + '</td></tr>'
+return s.join("")
+}
+o.contentHTML = function()
+{
+var o=this, selTab=o.getItemByValue(o.selectedValue), s=[], i=0
+        var cl;
+        switch(o.size)
+        {
+            case "big":
+                cl= o.contClasses;
+                break;
+            case "small":
+                cl=o.smallClasses;
+                break;                    
+        }
+s[i++] = '<tr><td valign=middle>' + o.beginTable(null, null, true) + '<tr>' 
+s[i++] = o.bord(cl[0])
+s[i++] = '<td class="'+cl[1]+'" width="100%">' + o.beginTable(null, null, true)
+if (o.contTopMargin>0)
+s[i++]='<tr><td height="'+o.contTopMargin+'"></td></tr>'
+// Just in time fill
+s[i++]='<tr><td style="padding-left:'+o.contHoriMargin+'px; padding-right:'+o.contHoriMargin+'px" id="'+o.id+'_contentLyr">'
+if (selTab) s[i++]=selTab.getHTML()
+s[i++]='</td></tr>'
+s[i++] = o.endTable() + '</td>'
+s[i++] = o.bord(cl[2])
+s[i++] = '</tr>' + o.endTable() + '</td></tr>'
+return s.join("")
+}
+o.endHTML = function()
+{
+return '</tbody></table>'
+}
+o.getHTML = function()
+{
+var o=this, items=o.items, len=items.length, s=[], i=0
+// If no selection, select the first element if any
+if (o.selectedValue==null&&len>0)
+{
+var tab=items[0]
+o.selectedValue = tab.value;
+tab.tab.check(true)
+}
+        s[i++]= o.beginTable(null, o.id, o.elastic, o.tabMinW*len, o.margRight)
+s[i++]= o.tabsHTML()
+s[i++]= o.contentHTML()
+s[i++]= o.endTable()
+return s.join("");
+}
+    o.changeTabsBackgndImg=function(r)
+    {
+        var o=this;
+        if (o.leftLyr)
+        {
+            o.leftLyr.className=o.tabsClasses[r][_rtl ? _iconRight : _iconLeft];
+        }
+        if (o.midLyr)
+        {
+            o.midLyr.className=o.tabsClasses[r][_iconMid];
+        }
+        if (o.rightLyr)
+        {
+            o.rightLyr.className=o.tabsClasses[r][_rtl ? _iconLeft  : _iconRight];
+        }
+    }
+    o.changeRTZoneBackgndImg=function(r)
+    {
+        var o=this;
+        if (o.rtZoneLLyr)
+        {
+            o.rtZoneLLyr.className=o.rtZoneClasses[r][_rtl ? _iconRight : _iconLeft];
+        }
+        if (o.rtZoneMLyr)
+        {
+            o.rtZoneMLyr.className=o.rtZoneClasses[r][_iconMid];
+        }
+        if (o.rtZoneRLyr)
+        {
+            o.rtZoneRLyr.className=o.rtZoneClasses[r][_rtl ? _iconLeft  : _iconRight];
+        }
+    }
+if (prms.children)
+o.fill(prms.children)
+return o
+}
+function new_TabbedGroup(prms)
+{
+prms.tabStyle = _tabbedGroupBtn
+prms.tabTextStyle = _tabbedGroupTextCSS
+prms.tabsCSS=_tabbedGroupTabsCSS;
+    prms.tbContCSS=_tabbedGroupContCSS;
+var o=new_Toolbox(prms)
+o.selectors = Widget_param(prms, "selectors", null) // is an array of strings
+o.tabMinW = 20
+o.tabSpacing = 0
+o.contTopMargin = 0 
+o.contHoriMargin = 3
+o.margRight = 2
+return o
+}
+function new_noTabGroup(prms)
+{
+    prms.tabStyle=_noTabGroupBtn;
+    prms.tabsCSS=_noTabGroupTabsCSS;
+    prms.tbContCSS=_noTabGroupContCSS;
+    prms.elastic=true;
+    var o=new_Toolbox(prms)
+o.selectors = Widget_param(prms, "selectors", null) // is an array of strings
+o.tabMinW = 0
+o.tabSpacing = 0
+o.contTopMargin = 0 
+o.contHoriMargin = 3
+o.margRight = 2
+    return o;
+}
+function ToolboxTabIconWidget_changeInactiveBackgndImg(r)
+{
+    var o=this;
+    if (o.iconCSS && o.iconCSS[r]) 
+    {
+        if (o.iconleftLyr)
+            o.iconleftLyr.className=o.iconCSS[r][_iconLeft];
+       if (o.iconrightLyr)
+        {
+o.iconrightLyr.className=o.iconCSS[r][_iconRight]
+}
+if (o.iconmidLyr)
+o.iconmidLyr.className=o.iconCSS[r][_iconMid]
+if (o.txtmidLyr)
+o.txtmidLyr.className=o.iconCSS[r][_iconMid]
+    }
+}
+function ToolboxTabIconWidget_changeBackgndImg(r)
+{
+var o=this;
+    if (o.icontype==_noTabGroupBtn) return;
+    var toolboxTab=o.par;    
+    var isSelected=toolboxTab.tabIsSelected();
+    var nextTabIsSlected=isSelected?false:toolboxTab.nextTabIsSelected();
+    var prevTabIsSelected=isSelected?false:(nextTabIsSlected?false:toolboxTab.prevTabIsSelected());
+if (r==_iconHover&&o.checked)
+{
+if (o.iconCSS[_iconHoverPressed]!=null)
+r=_iconHoverPressed
+}
+    if (isSelected && (r==_iconHoverPressed || r==_iconPressed))
+    {
+        //update the other tabs in the tab bar when hover/un-hover on selected/active/pressed tab       
+        var toolbox=toolboxTab.par;
+        var items= toolbox.items, len= items.length, item;
+        for (var i=0; i<len; i++)
+        {
+            item=items[i];
+            if (item.value!=toolboxTab.value)
+            {
+                item.tab.changeInactiveBackgndImg((_iconHoverPressed==r)?_iconNormal_HoverOnSelection:_iconNormal);
+            }       
+        }  
+        //update toolbox
+        var rr=(r==_iconHoverPressed)?_iconHover:_iconNormal;             
+        toolbox.changeTabsBackgndImg(rr);
+        //update  Right Tab zone      
+        toolbox.changeRTZoneBackgndImg(rr);
+    }
+if (o.iconCSS) 
+{
+if (o.iconleftLyr)
+        {
+            o.iconleftLyr.className=o.iconCSS[r][_iconLeft];
+            //update previous tab's right side
+            var prevTab=toolboxTab.getPrevTab();
+            if (prevTab)
+            {
+                var preRLyr=prevTab.tab.iconrightLyr;
+                if ( preRLyr)          
+                {                         
+                    var cls='';
+                    if (isSelected)
+                    {
+                        switch (o.icontype)
+                        {
+                            case _toolboxBtn:
+                                cls=(r==_iconHoverPressed)?'toolboxNormalR_NextHoverPressed':'toolboxNormalR_NextPressed';
+                                break;
+                            case _tabbedGroupBtn:
+                                cls=(r==_iconHoverPressed)?'tabbedGroupBtnR_NextHoverPressed':'tabbedGroupBtnR_NextPressed';
+                                break;
+                        }
+                    }
+                    else
+                    if (r==_iconPressed)
+                    {
+                        switch (o.icontype)
+                        {
+                            case _toolboxBtn:
+                                cls=(prevTabIsSelected)?'toolboxSelectedBtnR_NextPressed':'toolboxNormalR_NextPressed';
+                                break;
+                            case _tabbedGroupBtn:
+                                cls=(prevTabIsSelected)?'tabbedGroupSelectedBtnR_NextPressed':'tabbedGroupBtnR_NextPressed';
+                                break;
+                        }
+                    }
+                    else
+                    {                      
+                        var prevState=prevTabIsSelected?_iconPressed:_iconNormal;
+                        cls=prevTab.tab.iconCSS[prevState][_iconRight];
+                    }                                                           
+                    if (cls!='')
+                        preRLyr.className=cls;   
+                }           
+            }
+}
+        if (o.iconrightLyr)
+        {        
+            var col=(nextTabIsSlected && o.iconCSS[r][_iconRight_NextIsSelected])?_iconRight_NextIsSelected:_iconRight;           
+            o.iconrightLyr.className=o.iconCSS[r][col];              
+}
+if (o.iconmidLyr)
+o.iconmidLyr.className=o.iconCSS[r][_iconMid]
+if (o.txtmidLyr)
+o.txtmidLyr.className=o.iconCSS[r][_iconMid]
+}
+if (o.text)
+{
+var hover = (r==_iconHover || r==_iconHoverPressed)
+var check = (r==_iconPressed || r==_iconHoverPressed)
+o.setTextCSS(hover,check)
+}
+if (o.onChangeState)
+o.onChangeState(r)
+return false;
+}
+function new_ToolboxTab(prms)
+{
+var o = new Object(prms);
+// ===================
+// Parameters parsing
+// ===================
+o.text = Widget_param(prms, "text", "");                     // Tab text
+o.par  = Widget_param(prms, "par", null);                   // Parent container
+o.id   = Widget_param(prms, "id", generateDefaultLayerId()); // Id
+o.tabStyle = Widget_param(prms, "tabStyle", _toolboxBtn)
+o.tabTextStyle=Widget_param(prms, "tabTextStyle", _iconTextCSS)
+o.htmlWritten = false;
+    o.isFirst=false;
+// ===============================
+// fill the tab content
+// ===============================
+o.fill = function(arrPrms)
+{
+o.line.fill(arrPrms)
+}
+// ===============================
+// add the tab content
+// ===============================
+o.add = function(prms)
+{
+o.line.add(prms)
+}
+// ================
+// HTML Generation
+// ================
+o.getHTML = function()
+{
+o.htmlWritten = true;
+return o.line.getHTML()
+}
+// ===============================
+// Callback when click on tab
+// "this" is the iconckeck widget 
+// ===============================
+o.tabClick = function()
+{
+this.par.par.select(this.par.value)
+}
+//update the right part of the tab when a selection has changed
+    o.updateOnNextTab= function(tabIsSelected, nextTabIsSelected)
+    {
+        var o=this;
+        var cls;
+        var tab=o.tab;
+        if (!tab.iconrightLyr || tab.icontype!=_tabbedGroupBtn && tab.icontype!=_toolboxBtn) return;
+        if (nextTabIsSelected)
+        {
+            cls=tab.iconCSS[_iconNormal][_iconRight_NextIsSelected];          
+        }
+        else
+        {           
+            cls=tab.iconCSS[(tabIsSelected?_iconPressed:_iconNormal)][_iconRight];         
+        }      
+    tab.iconrightLyr.className=cls;
+    }
+// ===============================
+// Init the Widget
+// ===============================
+o.init = function()
+{
+var o=this;
+o.tab.init()
+if (o.htmlWritten)
+o.line.init()      
+}
+    o.tabIsSelected=function()
+    {
+        var o=this;
+        var isSelected=false;
+        var toolbox=o.par;
+        if (toolbox)
+        {
+            isSelected=toolbox.tabIsSelected(o);                     
+        }
+        return isSelected;
+    }
+    o.getNextTab=function()
+    {
+        var o=this;
+        var nextTab=null;     
+        var toolbox=o.par;
+        if (toolbox)
+        {                      
+            nextTab=toolbox.getNextItemByValue(o.value);                                     
+        }        
+        return nextTab;
+    }   
+    o.nextTabIsSelected=function()
+    {
+        var o=this;
+        var nextIsSelected=false;     
+        var toolbox=o.par;                              
+        var nextTab=o.getNextTab()                 
+        if (nextTab && toolbox)
+        {
+            nextIsSelected=toolbox.tabIsSelected(nextTab);
+        }                
+        return nextIsSelected;
+    }   
+    o.getPrevTab=function()
+    {
+        var o=this;
+        var prevTab=null;     
+        var toolbox=o.par;
+        if (toolbox)
+        {                      
+            prevTab=toolbox.getPrevItemByValue(o.value);                                       
+        }        
+        return prevTab;
+    }   
+    o.prevTabIsSelected=function()
+    {
+        var o=this;
+        var prevTabIsSelected=false;     
+        var toolbox=o.par;    
+        var prevTab=o.getPrevTab();                      
+        if (prevTab && toolbox)
+        {
+            prevTabIsSelected=toolbox.tabIsSelected(prevTab);
+        }                           
+        return prevTabIsSelected;
+    }   
+// ===============
+// Private Fields
+// ===============
+o.tab = new_IconCheckWidget({icontype:o.tabStyle, iconTextType:o.tabTextStyle, text:o.text, clickCB:((o.tabStyle==_noTabGroupBtn)?null:o.tabClick), txtVAlign:"top"})
+    o.tab.changeBackgndImg=ToolboxTabIconWidget_changeBackgndImg;
+    o.tab.changeInactiveBackgndImg=ToolboxTabIconWidget_changeInactiveBackgndImg;
+o.line = new_LinesWidget({})
+o.tab.par=o
+o.line.par=o
+if (prms.children)
+o.fill(prms.children)
+return o;
+}
+function new_PaletteGroupWidget(prms)
+{
+var o = new_ContainerWidget(prms);
+// Parameters parsing
+o.text      = Widget_param(prms, "text", "");       // Group text
+o.size      = Widget_param(prms, "size", "bigtext") // possible values: small(h:25px), gtsmall (h:27px), med (h:53px), big (h:73px ), bigtext
+o.icon      = Widget_iconParam(prms, "icon", null) // 32x32 icon for compact mode
+o.expanded  = Widget_param(prms, "expanded", true) // State expanded
+o.width     = Widget_param(prms, "width", null)    // Minimal width 
+// ================
+// Init the widget
+// ================
+o.containerInit = o.init;
+o.init = function()
+{
+o.containerInit();
+o.iconLyr = getLayer("iconZone_"+o.id);
+o.contentLyr = getLayer("contentZone_"+o.id);
+}
+// ================
+// HTML Generation
+// ================
+o.getHTML = function()
+{
+var o=this, s=new Array, len=o.items.length, className=("group"+o.size)
+s[s.length] = '<table '+(o.width!=null?'width='+o.width:'')+' id="'+o.id+'" class="'+className+'" cellspacing="0" cellpadding="0" border="0"><tbody><tr>';
+// Left Border
+s[s.length] = '<td><div id="leftZone_'+o.id+'" class="'+className+'L"></div></td>'
+// Middle Zone
+s[s.length] = '<td class="'+className+'M" valign="middle" align="left" width="100%" id="expZone_'+o.id+'">';
+if (o.icon)
+s[s.length] = o.icon.getHTML({id:"iconZone_"+o.id, st: (o.expanded?"display:none":"")});
+s[s.length] = '<table id="contentZone_'+o.id+'" cellspacing="0" cellpadding="0" border="0" style="'+(o.expanded?"":"display:none")+'"><tbody>'
+s[s.length] = (o.size=="bigtext") ? '<tr height=56>' : '<tr>';
+for (var i=0; i<len; i++)
+s[s.length] = '<td valign="middle">' + o.items[i].getHTML() + '</td>';
+s[s.length] = '</tr>'
+if (o.size=="bigtext")
+s[s.length] = '<tr height=17><td colspan="'+Math.max(1,len)+'" align="center" valign=top style="font-size:1px;height:17px;"><nobr class="grouptext">'+convStr(o.text)+'</nobr></td></tr>'
+s[s.length] = '</tbody></table>';
+s[s.length] = '</td>'
+// Right border
+s[s.length] = '<td><div id="leftZone_'+o.id+'" class="'+className+'R"></div></td>'
+s[s.length] = '</tr></tbody></table>';
+return s.join("");
+}
+// ================
+// Expand/collapse
+// ================
+o.expand = function(expanded)
+{
+var o=this;
+if (o.expanded!=expanded)
+{
+o.expanded=expanded;
+if (o.layer)
+{
+o.iconLyr.style.display = o.expanded ? "none" : "block";
+o.contentLyr.style.display = o.expanded ? "block" : "none"; 
+}
+}
+}
+// ==================
+// Check if expanded
+// ==================
+o.isExpanded = function()
+{ 
+return this.expanded
+}
+// ==================
+// Additional code
+// ==================
+if (prms.children)
+o.fill(prms.children)
+return o;
+}
+function new_LabelWidget(prms)
+{
+// Base class
+var o = new_Widget(prms)
+// Parameters parsing
+o.text = Widget_param(prms, "text", " ") // [String]: label text
+o.convBlanks = Widget_param(prms, "convBlanks", false) // [boolean] if true, blank are converted into &nbsp;
+o.wrapSpace = Widget_param(prms, "wrapSpace", false) // [boolean]: if true, the text is wrapped
+   o.normalCSS = Widget_param(prms, "normalCSS", "iconText")  
+    o.extraStyle = Widget_param(prms, "extraStyle", null);  
+    o.hasMargin = Widget_param(prms, "hasMargin", true);  
+// Private fields
+o.dis=false
+o.disabledCSS="iconTextDis"
+// ================
+// HTML Generation
+// ================
+o.getHTML=function()
+{
+var o=this
+var sty=o.wrapSpace?'':'white-space:nowrap;';
+if (o.extraStyle)
+{
+    sty+=o.extraStyle+';';
+}
+if (o.hasMargin)
+{
+    sty+="margin-right:4px;margin-left:4px;"
+}
+return '<div id="'+o.id+'" class="'+(o.dis?o.disabledCSS:o.normalCSS)+'" style='+sty+'cursor:default">'+convStr(o.text,o.convBlanks)+'</div>'
+}
+// ========
+// Disable
+// ========
+o.setDisabled=function (dis)
+{
+var o=this
+o.dis=dis
+if (o.layer)
+{
+o.layer.className=(o.dis?o.disabledCSS:o.normalCSS)
+}
+}
+// ===========================================
+// Change the CSS classes used by this widget
+// ===========================================
+o.setClasses=function(normalCSS,disabledCSS)
+// normal [String - optional] class for normal state (if null, use default)
+// disabled [String - optional] class used when widget is disabled (if null, use default)
+{
+var o=this
+if (normalCSS)
+o.normalCSS=normalCSS
+if (disabledCSS)
+o.disabledCSS=disabledCSS
+if (o.layer)
+{
+o.layer.className=(o.dis?o.disabledCSS:o.normalCSS)
+}
+}
+// =============================
+// Change the text of the label
+// =============================
+o.setText=function (s)
+{
+var o=this
+if (o.layer) 
+{
+o.layer.innerHTML=convStr(s)
+}
+else
+{
+o.text = s;
+}
+}
+return o;
+}
+function NewLabelWidget(id,text,convBlanks, wrapSpace)
+{
+return new_LabelWidget({
+id:id,
+text:text,
+convBlanks:convBlanks,
+wrapSpace:wrapSpace
+})
+}
+function new_IconWidget(prms)
+{
+// Base class
+var o = new_Widget(prms)
+// Parameters parsing
+o.clickCB = Widget_param(prms, "clickCB", null);
+o.dblclickCB = Widget_param(prms, "dblclickCB", null);
+o.text = Widget_param(prms, "text", null);
+o.tooltip = Widget_param(prms, "tooltip", null);
+    o.txtVAlign= Widget_param(prms, "txtVAlign", "middle");
+    o.txtNoPadding=Widget_param(prms, "txtNoPadding", false);
+    o.border=Widget_param(prms, "border", 4);  
+    o.marginTop=Widget_param(prms, "marginTop", 2);  
+if (prms&&prms.icon)
+{
+var ic=prms.icon
+o.src = Widget_param(ic, "src", null);
+o.dx = Widget_param(ic, "dx", 0);
+o.dy = Widget_param(ic, "dy", 0);
+o.disDx = Widget_param(ic, "disDx", o.dx);
+o.disDy = Widget_param(ic, "disDy", o.dy);
+o.w =  Widget_param(ic, "w", o.src ? 16: 1);
+o.h =  Widget_param(ic, "h", 16);
+}
+else
+{
+o.src = Widget_param(prms, "src", null);
+o.dx = Widget_param(prms, "dx", 0);
+o.dy = Widget_param(prms, "dy", 0);
+o.disDx = Widget_param(prms, "disDx", o.dx);
+o.disDy = Widget_param(prms, "disDy", o.dy);
+o.w =  Widget_param(prms, "width", o.src ? 16: 1);
+o.h =  Widget_param(prms, "height", 16);
+}
+/*
+ * custom pal
+*/
+if (prms&&prms.palette)
+{
+// Palette is an array of color structure ex:  [{r:255, v:127, b:0}, {r:0, v:127, b:0}, ...]
+// you can't have both a palette and an icon !!!!
+o.palette = prms.palette
+o.h = 50 //fix because it determines the icontype below !!!
+o.iconDiv = new_Widget({id: o.id +"_div"})
+o.setPaletteColor = IconWidget_setPaletteColor
+}
+if (prms && prms.backgdColor)
+{
+//  backgdColor is a  structure ex:  {r:255, v:127, b:0}
+o.backgdColor = prms.backgdColor
+//o.h = 32
+//o.h = 16
+o.getBackgdColor = IconWidget_getBackgdColor
+o.setBackgdColor = IconWidget_setBackgdColor
+}
+o.mousedownCB = Widget_param(prms, "mousedownCB", null);
+o.mouseupCB = Widget_param(prms, "mouseupCB", null);
+o.icontype = Widget_param(prms, "icontype", null) //((o.h==16)?_icon16:null));
+o.iconTextType = Widget_param(prms, "iconTextType", _iconTextCSS)
+o.onChangeState = Widget_param(prms, "onChangeState", null)
+if (o.icontype == null)
+{
+switch (o.h)
+{
+case 16:
+o.icontype=_icon16
+break
+case 32:
+o.icontype=_icon32
+break
+case 50:
+case 48:
+o.icontype=_icon50
+break
+}
+}
+o.allowDblClick = Widget_param(prms, "allowDblClick", false); // If true, a double click is regarded as a single click
+o.margin=Widget_param(prms, "margin", 1); 
+// Public methods
+o.iconOldInit=o.init
+o.init=IconWidget_init
+o.isDisplayed=IconWidget_isDisplayed
+o.setDisplay=IconWidget_setDisplay
+o.getHTML=IconWidget_getHTML
+o.getTxtWidth=IconWidget_getTxtWidth
+o.changeTooltip=IconWidget_changeTooltip
+o.changeText=IconWidget_changeText
+o.setText=IconWidget_changeText
+o.changeImg=IconWidget_changeImg
+o.setDisabled=IconWidget_setDisabled
+o.isDisabled=IconWidget_isDisabled
+o.getAriaLabel = function()
+{
+var o=this
+if (o.text)
+return o.text
+if (o.tooltip)
+return o.tooltip
+if (o.customTooltip&&o.customTooltip.title)
+return o.customTooltip.title
+return ""
+}
+// Private fields
+o.width = null
+o.txtAlign="left"
+o.txtPosition="rigth" //to the left or rigth of the icon
+o.dis=false
+o.disp=true
+//o.margin=1
+o.extraHTML=''
+o.imgLayer=null
+o.txtLayer=null
+o.overCB="IconWidget_overCB"
+o.outCB="IconWidget_outCB"
+o.index=_allBOIcons.length++
+o.nocheckClass=""
+o.hoverClass="iconhover"
+o.checkClass="iconcheck"
+o.checkhoverClass="iconcheckhover"
+o.currentClass=o.nocheckClass
+o.currentHoverClass=o.hoverClass
+o.setClasses=IconWidget_setClasses
+o.internalUpCB=null
+o.internalDownCB=IconWidget_internalDownCB
+o.internalUpCB=IconWidget_internalUpCB
+o.isHover=false
+o.acceptClick=IconWidget_acceptClick
+_allBOIcons[o.index]=o
+o.outEnable=true
+o.setCrs=IconWidget_setCrs
+o.oldRes=o.resize
+o.resize=IconWidget_resize
+//for hover & pressed   
+o.changeBackgndImg=IconWidget_changeBackgndImg;   
+o.iconleft="iconleft_"+o.id
+o.iconmid="iconmid_"+o.id
+o.iconright="iconright_"+o.id
+o.txtmid="icontxtmid_"+o.id
+o.iconmidLyr=null
+o.txtmidLyr=null
+o.iconleftLyr=null;
+o.iconrightLyr=null;
+o.iconCSS=null;
+o.iconHoverHeight=0;
+o.isCombo=(o.icontype==_iconCombo)?true:false;
+switch (o.icontype)
+{
+case _iconArrow:
+case _icon16:
+o.iconHoverHeight=22;
+o.iconCSS=_iconCSS;
+break;
+case _icon16NoRight:
+o.iconHoverHeight=22;
+o.iconCSS=_rtl ? _iconCSSNoLeft : _iconCSSNoRight
+break
+case _iconArrowNoLeft:
+o.iconHoverHeight=22;
+o.iconCSS=_rtl ? _iconCSSNoRight : _iconCSSNoLeft
+break
+case _framedIcon16NoLeft:
+o.iconHoverHeight=22;
+o.iconCSS=_rtl ? _framedIconCSSNoRight : _framedIconCSSNoLeft
+break
+case _framedIcon16NoRight:
+o.iconHoverHeight=22;
+o.iconCSS=_rtl ? _framedIconCSSNoLeft  : _framedIconCSSNoRight
+break
+case _paneComboButton:
+o.iconHoverHeight=16;
+o.iconCSS=_paneComboButtonCSS
+break
+case _paneComboArrow:
+o.iconHoverHeight=16;
+o.iconCSS=_paneComboArrowCSS
+break
+case _paneComboRightBtn:
+o.iconHoverHeight=16;
+o.iconCSS=_paneComboRightBtnCSS
+break
+case _paneMinBtn:
+o.iconHoverHeight=19;
+o.iconCSS=_paneMinBtnCSS
+break
+case _framedIcon16:
+o.iconHoverHeight=22;
+o.iconCSS=_framedIcon16CSS;
+break;
+case _icon32:
+o.iconHoverHeight=42;
+o.iconCSS=_iconCSS32;
+break;
+case _icon50:
+o.iconHoverHeight=56;
+o.iconCSS=_iconCSS50;
+break;
+case _iconSpinnerUp://for spinner
+o.iconHoverHeight=10;
+o.iconCSS=_spinnerUpCSS;
+break;
+case _iconSpinnerDown://for spinner
+o.iconHoverHeight=10;
+o.iconCSS=_spinnerDownCSS;
+break;
+case _iconCalendarSpinUp:   //for calendar spinner
+o.iconHoverHeight=10;
+o.iconCSS=_calendarSpinUpCSS;
+break;
+case _iconCalendarSpinDown://for calendar spinner
+o.iconHoverHeight=10;
+o.iconCSS=_calendarSpinDownCSS;
+break;
+case _iconComboArrow://for combo & input field
+o.iconHoverHeight=20;
+o.iconCSS=_rtl ? _comboCSSRTL : _comboCSS;
+break;
+case _iconComboButton:
+o.iconHoverHeight=20;
+o.iconCSS=_rtl ? _comboButtonCSSRTL: _comboButtonCSS
+break;
+case _groupL16: // For icon 16 inside a small group: left icon
+o.iconHoverHeight=20;
+o.iconCSS=_rtl ? _groupRightCSS : _groupLeftCSS;
+o.margin=0
+break;
+case _groupM16: // For icon 16 inside a small group: mid icon
+o.iconHoverHeight=20;
+o.iconCSS=_groupMidCSS;
+o.margin=0
+break;
+case _groupR16: // For icon 16 inside a small group: right icon
+o.iconHoverHeight=20;
+o.iconCSS=_rtl ? _groupLeftCSS : _groupRightCSS;
+o.margin=0
+break;
+case _midGroupL16: // For icon 16 inside a medium group: left icon
+o.iconHoverHeight=22;
+o.iconCSS=_rtl ? _midGroupRightCSS : _midGroupLeftCSS;
+o.margin=0
+break;
+case _midGroupM16: // For icon 16 inside a medium group: left icon
+o.iconHoverHeight=22;
+o.iconCSS=_midGroupMidCSS;
+o.margin=0
+break;
+case _midGroupR16: // For icon 16 inside a medium group: left icon
+o.iconHoverHeight=22;
+o.iconCSS=_rtl ? _midGroupLeftCSS : _midGroupRightCSS;
+o.margin=0
+break;
+case _midGroupLR16: // For icon 16 inside a medium group: unique (left& right) icon
+o.iconHoverHeight=22;
+o.iconCSS=_midGroupLeftRightCSS;
+o.margin=0
+break;
+case _toolboxBtn: // For tabs inside a toolbox
+            o.iconHoverHeight=28;           
+o.iconCSS=_toolboxBtnCSS;          
+o.margin=0
+break;
+case _tabbedGroupBtn: // For tabs inside a tabbed group
+            o.iconHoverHeight=19;
+o.iconCSS=_tabbedGroupBtnCSS;
+o.margin=0
+o.border=0
+break;
+        case _iconVertBarInLeftPanel:
+            o.iconHoverHeight=35;
+o.iconCSS=_vertBarInLeftPanelCSS;
+o.margin=0
+o.border=0
+            break;
+        case _noTabGroupBtn: // For tabs inside a no Tab group in the tool box            
+            o.iconHoverHeight=19;
+o.iconCSS=_noTabGroupBtnCSS;
+o.margin=0
+o.border=0
+break;
+}
+o.getTextCSS = function(hover, down)
+{
+var o=this
+hover=hover?true:false
+down=down?true:false
+if (o.dis) return o.iconTextType[4]
+if (hover&&!down) return o.iconTextType[1]
+if (!hover&&down) return o.iconTextType[2]
+if (hover&&down) return o.iconTextType[3]
+return o.iconTextType[0]
+}
+o.setTextCSS = function(hover, down)
+{
+var o=this
+if (o.txtLayer==null)
+o.txtLayer=getLayer("IconImg_Txt_"+o.id)
+if (o.txtLayer)
+{
+var newClassName=o.getTextCSS(hover,down)
+if (o.txtLayer.className!=newClassName)
+o.txtLayer.className=newClassName
+}
+}
+o.setTextType = function(iconTextType)
+{
+var o=this
+o.iconTextType = iconTextType
+o.setTextCSS(false,o.checked)
+}
+return o
+}
+function newIconWidget(id, src, clickCB, text, tooltip, width, height, dx, dy, disDx, disDy, dblclickCB, mousedownCB, mouseupCB, icontype, iconTextType)
+{
+return new_IconWidget({
+id:id,
+src:src,
+clickCB:clickCB,
+text:text,
+tooltip:tooltip,
+width:width,
+height:height,
+dx:dx,
+dy:dy,
+disDx:disDx,
+disDy:disDy,
+dblclickCB:dblclickCB,
+mousedownCB:mousedownCB,
+mouseupCB:mouseupCB,
+icontype:icontype,
+iconTextType:iconTextType
+})
+}
+function new_IconMenuWidget(prms)
+{
+// Base class
+var o=new_Widget(prms)
+//beforeShowCB,, type
+// Parameters Parsing
+o.isColor = Widget_param(prms, "isColor", false);
+o.menuType = Widget_param(prms, "menuType", o.isColor?_menuType_color:_menuType_simple);
+o.clickCB = Widget_param(prms, "clickCB", null);
+o.margin = Widget_param(prms, "margin", 1);
+o.tooltip = Widget_param(prms, "tooltip", null);
+o.iconType = Widget_param(prms, "iconType", o.clickCB==null?_icon16NoRight:_icon16);
+o.arrowType = Widget_param(prms, "arrowType", o.clickCB==null?_iconArrowNoLeft:_iconArrow);
+o.iconTextType = Widget_param(prms, "iconTextType", null)
+// Additional code
+o.menuItemType = o.isColor? _isColor:_isNotColor
+o.getAriaIconLabel = function(text)
+{
+var o=this
+if (text)
+return text
+if (o.tooltip)
+return o.tooltip
+if (o.customTooltip&&o.customTooltip.title)
+return o.customTooltip.title
+return ""
+}
+o.icon=new_IconWidget({id:"iconMenu_icon_"+o.id,
+                        src:prms.src,
+                        icon:prms.icon,
+                        clickCB:IconMenuWidget_iconClickCB,
+                        text:prms.text,
+tooltip:o.getAriaIconLabel(prms.text),
+        width:prms.w,
+        height:prms.h,
+        dx:prms.dx,
+        dy:prms.dy,
+        disDx:prms.disDx,
+        disDy:prms.disDy,
+            icontype:o.iconType, 
+            iconTextType:o.iconTextType,
+            txtNoPadding:((o.menuType==_menuType_custom_showIcon28x16 || o.menuType==_menuType_custom_showIcon64x16)?true:false),
+mousedownCB:IconMenuWidget_iconStopEvent
+});
+o.arrow=newIconWidget("iconMenu_arrow_"+o.id,_skin+"toolbar_elements.png",IconMenuWidget_arrowClickCB,null,(_openMenuPart1+(prms.text?prms.text:(prms.tooltip?prms.tooltip:""))+_openMenuPart2),
+5,3,0,132,0,361, null, IconMenuWidget_arrowStopEvent, null, o.arrowType)
+if (o.clickCB==null)
+{
+o.icon.oldInternalDownCB=o.icon.internalDownCB
+o.icon.internalDownCB=IconMenuWidget_internalDownCB
+o.arrow.oldInternalDownCB=o.arrow.internalDownCB
+o.arrow.internalDownCB=IconMenuWidget_internalDownCB
+}
+o.arrow.hasPopup = true
+o.changeIcon=function(icn)
+{
+if (icn)
+this.icon.changeImg(icn.dx,icn.dy,icn.src,icn.disDx,icn.disDy)
+}
+o.setIconTextType = function(iconTextType)
+{
+this.icon.setTextType(iconTextType)
+}
+switch (o.menuType)
+{
+    case _menuType_custom_showText:
+    case _menuType_custom_showIcon28x16:
+    case _menuType_custom_showIcon64x16:
+        o.menu=new_MenuWidget({id:"iconMenu_menu_"+o.id,hideCB:IconMenuWidget_hideCB,beforeShowCB:prms.beforeShowCB, menuItemIconType:prms.menuItemIconType})
+        break;
+case _menuType_color:
+o.menu=newMenuColorWidget("iconMenu_menu_"+o.id,IconMenuWidget_hideCB)
+break
+case _menuType_border:
+o.menu=newMenuBordersWidget("iconMenu_menu_"+o.id,IconMenuWidget_hideCB,prms.beforeShowCB,IconBordersMenuWidget_internalClickCB)
+break
+default:
+case _menuType_simple:
+o.menu=newMenuWidget("iconMenu_menu_"+o.id,IconMenuWidget_hideCB,prms.beforeShowCB)
+break
+}
+o.icon.par=o
+o.arrow.par=o
+o.menu.parIcon=o
+o.menu.container=o
+o.icon.margin=0
+o.arrow.margin=0
+o.icon.overCB="IconWidget_none"
+o.icon.outCB="IconWidget_none"
+o.arrow.overCB="IconWidget_none"
+o.arrow.outCB="IconWidget_none"
+o.spc=0
+o.getHTML=IconMenuWidget_getHTML
+o.getMenu=IconMenuWidget_getMenu
+o.menIcnOldInit=o.init
+o.init=IconMenuWidget_init
+o.index=_allBOIconsMenus.length++
+_allBOIconsMenus[o.index]=o
+o.setDisabled=IconMenuWidget_setDisabled
+o.isDisabled=IconMenuWidget_isDisabled
+o.disableMenu=IconMenuWidget_disableMenu
+o.changeText=IconMenuWidget_changeText
+o.setText=IconMenuWidget_changeText
+o.imwpResize=o.resize
+o.resize=IconMenuWidget_resize
+o.focus=IconMenuWidget_focus
+o.changeArrowTooltip=IconMenuWidget_changeArrowTooltip
+o.setClickCallback=IconMenuWidget_setClickCallback
+o.disp=true
+o.isDisplayed=IconWidget_isDisplayed
+o.setDisplay=IconWidget_setDisplay
+return o
+}
+function newIconMenuWidget(id,src,clickCB,text,tooltip,w,h,dx,dy,disDx,disDy,isColor,beforeShowCB,menuType, type)
+{
+return new_IconMenuWidget({
+id:id,
+src:src,
+clickCB:clickCB,
+text:text,
+tooltip:tooltip,
+width:w,
+height:h,
+dx:dx,
+dy:dy,
+disDx:disDx,
+disDy:disDy,
+isColor:isColor,
+beforeShowCB:beforeShowCB,
+menuType:menuType,
+type:type
+})
+}
+function IconMenuWidget_setClickCallback(clickCB)
+{
+this.clickCB=clickCB
+}
+function IconMenuWidget_changeText(s)
+{
+this.icon.changeText(s, this.getAriaIconLabel(s))
+}
+function IconMenuWidget_changeArrowTooltip(tooltip)
+{
+this.arrow.changeTooltip(tooltip,false);
+}
+function IconMenuWidget_resize(w,h)
+{
+var o=this
+if (w!=null)
+w=Math.max(0,w-2*o.margin)
+var d=o.layer.display!="none"
+if (d&_moz&&!_saf)
+o.setDisplay(false)
+o.imwpResize(w,h)
+if (w!=null)
+o.icon.resize(Math.max(0,w-13-o.spc))
+if (d&_moz&&!_saf)
+o.setDisplay(true)
+}
+function IconMenuWidget_setDisabled(dis)
+{
+var o=this
+if (dis) {
+if (o.menu.isShown()) {
+o.menu.show(false)
+o.menu._iconIsPressed=false;
+}
+IconMenuWidgetOutCB(o.index)
+}
+o.icon.setDisabled(dis)
+o.arrow.setDisabled(dis)
+}
+function IconMenuWidget_isDisabled()
+{
+return (this.icon.dis == true)
+}
+function IconMenuWidget_internalCB()
+{
+var o=this,col=null
+if (o.id!="moreColors")
+{
+col = (o.menuItemType != _isLastUsedColor)? o.id.slice(6) : o.color // "color".length=6
+}
+var icon=o.par.parIcon
+if (icon.curColor != null)
+icon.oldColor=icon.curColor
+icon.curColor=col
+icon.defaultActionColor=col
+if (icon.defaultActionColor!=null)
+icon.showSample()
+if (icon.clickColor)
+icon.clickColor()
+}
+function IconMenuWidget_focus()
+{
+var o=this
+o.arrow.focus()
+}
+function IconMenuWidget_disableMenu(b)
+{
+var o=this
+o.arrow.setDisabled(b)
+o.menu.setDisabled(b)
+}
+function IconMenuWidget_getMenu()
+{
+return this.menu
+}
+function IconWidget_none()
+{
+}
+function IconMenuWidget_init()
+{
+var o=this
+o.menIcnOldInit()
+var td = o.layer.childNodes[0].childNodes[0]
+o.icon.init(td.childNodes[0].childNodes[0])
+o.arrow.init(td.childNodes[1].childNodes[0])
+o.menu.init()
+var l=o.layer
+//l.onmouseover=IconMenuWidget_OverCB
+//l.onmouseout=IconMenuWidget_OutCB
+addEvent(l, "mouseover", IconMenuWidget_OverCB);
+addEvent(l, "mouseout", IconMenuWidget_OutCB);
+}
+function IconMenuWidget_getHTML()
+{
+var o=this,d=o.disp?"":"display:none;"
+return '<table id="'+o.id+'" cellspacing="0" cellpadding="0" border="0" style="'+d+'margin:'+o.margin+'px"><tr><td>'+
+o.icon.getHTML()+'</td><td  style="padding-'+(_rtl ? 'right' : 'left')+':'+o.spc+'px" width="'+(13+o.spc)+'">'+o.arrow.getHTML()+'</td></table>'
+}
+function IconMenuWidget_OverCB()
+{
+var o=getWidget(this)
+IconMenuWidgetOverCB(o.index)
+// disable tooltips on sub components
+if (o.icon.layer && o.htmlTooltipRegistered)
+{
+o.oldIconTitleAttr = o.icon.layer.title
+o.icon.layer.title = ''
+}
+if (o.arrow.layer && o.htmlTooltipRegistered)
+{
+o.oldArrowTitleAttr = o.arrow.layer.title
+o.arrow.layer.title = ''
+}
+return true
+}
+function IconMenuWidget_OutCB()
+{
+var o=getWidget(this)
+// Restore tooltips on sub components
+//////////////////////////////////////////////
+IconMenuWidgetOutCB(o.index)
+if (o.icon.layer && o.htmlTooltipRegistered)
+{
+o.icon.layer.title = o.oldIconTitleAttr
+o.oldIconTitleAttr = null
+}
+if (o.arrow.layer && o.htmlTooltipRegistered)
+{
+o.arrow.layer.title = o.oldArrowTitleAttr
+o.oldArrowTitleAttr = null
+}
+}
+function IconMenuWidgetOverCB(i)
+{
+o=_allBOIconsMenus[i]
+if (!(o.icon.isCombo))
+IconWidget_overCB(o.icon.index)
+IconWidget_overCB(o.arrow.index)
+}
+function IconMenuWidgetOutCB(i)
+{
+o=_allBOIconsMenus[i]
+if (!o.menu || !o.menu.isShown())
+{
+if (!(o.icon.isCombo))
+IconWidget_outCB(o.icon.index);
+IconWidget_outCB(o.arrow.index)
+}
+else
+{
+if (!o.icon.isCombo)
+IconWidget_overCB(o.icon.index);
+IconWidget_overCB(o.arrow.index)
+}
+}
+function IconMenuWidget_iconStopEvent(e)
+{
+var o=this.par
+if ((null != _globMenuCaptured) && (null !=_globMenuCaptured.parIcon) && (null !=_globMenuCaptured.parIcon.id) && (_globMenuCaptured.parIcon.id == o.id) && (o.clickCB==null)) {
+stopEvent(e)
+}
+}
+function IconMenuWidget_arrowStopEvent(e)
+{
+var o=this.par
+if ((null != _globMenuCaptured) && (null !=_globMenuCaptured.parIcon) &&  (null !=_globMenuCaptured.parIcon.id) && (_globMenuCaptured.parIcon.id == o.id)) {
+stopEvent(e)
+}
+}
+function IconMenuWidgetsShowMenu(o)
+{
+var l=o.layer, m = o.menu
+if (null == m._iconIsPressed)
+{
+m._iconIsPressed = true 
+} 
+else
+{
+m._iconIsPressed = !m._iconIsPressed
+}
+if (_rtl){
+var old = m.alignLeft
+m.alignLeft=true
+m.show(m._iconIsPressed, getPosScrolled(l).x+o.getWidth()+1,getPosScrolled(l).y+o.getHeight()+1,null,null,o)
+m.alignLeft=old
+}
+else 
+{
+m.show(m._iconIsPressed, getPosScrolled(l).x,getPosScrolled(l).y+o.getHeight()+1,null,null,o)
+}
+}
+function IconMenuWidget_iconClickCB(e)
+{
+var o=this.par
+if (o.clickCB==null)
+{
+IconMenuWidgetsShowMenu(o)
+IconMenuWidgetOverCB(o.index);
+}
+else
+{
+o.clickCB()
+}
+}
+function IconMenuWidget_arrowClickCB()
+{
+var o = this.par;
+IconMenuWidgetsShowMenu(o)
+IconMenuWidgetOverCB(o.index)
+}
+function IconMenuWidget_hideCB()
+{
+var o=this.parIcon
+if (o) {
+IconMenuWidgetOutCB(o.index)
+}
+}
+function new_RadioIconMenuWidget(prms)
+{
+// Base class
+var o = new_IconMenuWidget(prms)
+o.defDx = Widget_param(prms, "dx", null)
+o.defDy = Widget_param(prms, "dy", null)
+var attachMenuCB = Widget_param(prms, "attachMenuCB", null)
+if (attachMenuCB) {
+o.attachMenuCB=attachMenuCB
+o.arrow.clickCB=RadioIconMenuWidget_arrowClickCB
+o.icon.clickCB=RadioIconMenuWidget_iconClickCB
+}
+o.radioIdx = Widget_param(prms, "radioIdx",-1)
+o.checked = (o.radioIdx>-1)?true:false
+o.autoUpdateMenuIconFromItemIcon=Widget_param(prms, "autoUpdateMenuIconFromItemIcon", false)
+o.attachMenu=RadioIconMenuWidget_attachMenu
+o.updateButton=RadioIconMenuWidget_updateButton
+o.setAutoUpdateMenuIconFromItemIcon=RadioIconMenuWidget_SetAutoUpdateMenuIconFromItemIcon
+o.updateRadioBtn=RadioIconMenuWidget_updateRadioBtn
+o.updateAriaPressed = function()
+{
+var o=this, lyr=o.icon.layer
+if (lyr && lyr.setAttribute)
+lyr.setAttribute("aria-pressed",o.checked)
+}
+o.iconMenuInit = o.init
+o.init = function (layer)
+{
+var o=this
+o.iconMenuInit(layer)
+o.updateAriaPressed()
+o.updateRadioBtn(o.checked)
+}
+ return o
+}
+function newRadioIconMenuWidget(id,src,clickCB,text,tooltip,w,h,dx,dy,disDx,disDy,radioIdx,attachMenuCB)
+{
+return new_RadioIconMenuWidget({
+id:id,
+src:src,
+clickCB:clickCB,
+text:text,
+tooltip:tooltip,
+width:w,
+height:h,
+dx:dx,
+dy:dy,
+disDx:disDx,
+disDy:disDy,
+radioIdx:radioIdx,
+attachMenuCB:attachMenuCB
+})
+}
+function RadioIconMenuWidget_arrowClickCB()
+{
+var o=this.par,l=o.layer
+if (o.attachMenuCB)
+o.attachMenuCB()
+o.menu.show(!o.menu.isShown(),getPosScrolled(l).x,getPosScrolled(l).y+o.getHeight()+1,null,null,o)
+IconMenuWidgetOverCB(o.index)
+}
+function RadioIconMenuWidget_iconClickCB()
+{
+var o=this.par
+if (o.clickCB==null)
+{
+var l=o.layer
+if (o.attachMenuCB)
+o.attachMenuCB()
+o.menu.show(!o.menu.isShown(),getPosScrolled(l).x,getPosScrolled(l).y+o.getHeight()+1,null,null,o)
+IconMenuWidgetOverCB(o.index)
+}
+else
+o.clickCB()
+}
+function RadioIconMenuWidget_updateButton(idx, checked)
+{
+var o=this
+o.icon.dis=false
+if ((idx != null) &&  (idx > 0)) {
+if (checked==null) checked = true
+if (o.radioIdx == idx && o.checked==checked) return
+o.radioIdx=idx
+o.checked=checked
+dx=idx*16
+dy=0
+cn=o.checked?o.icon.checkClass:o.icon.nocheckClass
+} else {
+if (checked==null) checked = false
+o.radioIdx=0
+o.checked=checked
+dx=16
+dy=0
+cn=o.checked?o.icon.checkClass:o.icon.nocheckClass
+}
+if (o.icon)
+{
+var lyr=o.icon.layer
+if (lyr)
+{
+o.icon.changeImg(dx,dy)
+if (o.icon.iconHoverHeight)
+o.icon.changeBackgndImg((o.checked?_iconPressed:_iconNormal));
+else
+lyr.className=cn
+}
+}
+o.updateAriaPressed()
+if (idx==null) o.setDisabled(true)
+}
+function RadioIconMenuWidget_updateRadioBtn(checked, idx, disable)
+{
+    var o=this
+var dx=null;
+var dy=null;
+var cn;
+if ((idx != null) &&  (idx > 0)) 
+{
+if (checked==null) checked = true
+if (o.radioIdx == idx && o.checked==checked) return
+o.radioIdx=idx
+o.checked=checked
+dx=0
+dy=idx*16
+cn=o.checked?o.icon.checkClass:o.icon.nocheckClass
+} 
+else 
+{
+    //dont change icon 
+if (checked==null) checked = false
+o.checked=checked
+cn=o.checked?o.icon.checkClass:o.icon.nocheckClass
+}
+if (typeof(disable)!="undefined") {
+o.icon.dis=disable
+    o.setDisabled(disable)
+} 
+if (o.icon)
+{
+var lyr=o.icon.layer
+if (lyr)
+{    
+    o.icon.changeImg(dx,dy)
+if (o.icon.iconHoverHeight)
+o.icon.changeBackgndImg((o.checked?_iconPressed:_iconNormal));
+else
+lyr.className=cn
+}
+}
+o.updateAriaPressed() 
+}
+function RadioIconMenuWidget_attachMenu(menu)
+{
+var o=this
+o.par=null
+if (o.menu)
+{
+o.menu.parIcon=null
+o.menu.hideCB=null
+}
+o.menu=menu
+menu.par=null
+menu.container=o
+menu.parIcon=o
+menu.hideCB=IconMenuWidget_hideCB;
+return menu
+}
+function RadioIconMenuWidget_SetAutoUpdateMenuIconFromItemIcon (_autoUpdateMenuIconFromItemIcon)
+{
+this.autoUpdateMenuIconFromItemIcon = _autoUpdateMenuIconFromItemIcon
+}
+function new_IconColorMenuWidget(prms)
+{
+prms.isColor = true
+var o = new_IconMenuWidget(prms)
+var curColorAsActionColor = Widget_param(prms, "curColorAsActionColor", null) 
+if (curColorAsActionColor == null)
+o.curColorAsActionColor=true;
+else
+o.curColorAsActionColor=curColorAsActionColor;
+var clickCB = Widget_param(prms, "clickCB", null)
+o.icon.extraHTML='<div id="colSample_'+o.id+'" style="position:relative;top:-4px;left:0px;width:16px;height:4px;overflow:hidden;margin:0px"></div>'
+o.curColor=null
+o.sampleLayer=null
+o.hasDefaultActionOnIcon=false
+o.clickColor=clickCB
+o.clickCB=(o.hasDefaultActionOnIcon?clickCB:null)
+o.defaultActionColor=null
+o.setColor=IconColorMenuWidget_setColor
+o.getColor=IconColorMenuWidget_getColor
+o.getValue=IconColorMenuWidget_getColor
+o.getDefaultActionColor=IconColorMenuWidget_getDefaultActionColor;
+o.setDefaultActionColor=IconColorMenuWidget_setDefaultActionColor;
+o.colOldSetDis=o.setDisabled
+o.setDisabled=IconColorMenuWidget_setDisabled
+o.showSample=IconColorMenuWidget_showSample
+o.changeTooltip=IconColorMenuWidget_changeTooltip
+o.setDefaultActionOnIcon=IconColorMenuWidget_setDefaultActionOnIcon
+var m=o.menu
+m.ac=m.addColor
+var cb=IconMenuWidget_internalCB
+var c1=m.addCheck("color_-1,-1,-1",_default,cb)
+c1.leftZoneClass="menuLeftPartColor"
+c1.leftZoneSelClass="menuLeftPartSel"
+if (_colorsArr == null)
+{
+var colorTable = [
+["0,0,0", _black],
+["148,52,0", _brown],
+["49,52,0", _oliveGreen],
+["0,52,0", _darkGreen],
+["0,52,99", _darkTeal],
+["0,0,132", _navyBlue],
+["49,52,148", _indigo],
+["66,65,66", _darkGray],
+["132,4,0", _darkRed],
+["255,101,0", _orange],
+["123,125,0", _darkYellow],
+["0,125,0", _green],
+["0,125,123", _teal],
+["0,0,255", _blue],
+["99,101,148", _blueGray],
+["132,130,132", _mediumGray],
+["255,0,0", _red],
+["255,195,66", _lightOrange],
+["148,199,0", _lime],
+["49,150,99", _seaGreen],
+["49,199,198", _aqua],
+["49,101,255", _lightBlue],
+["132,0,132", _violet],
+["148,150,148", _gray],
+["255,0,255", _magenta],
+["255,199,0", _gold],
+["255,255,0", _yellow],
+["0,255,0", _brightGreen],
+["0,255,255", _cyan],
+["0,199,255", _skyBlue],
+["148,52,99", _plum],
+["198,195,198", _lightGray],
+["255,178,181", _pink],
+["255,199,148", _tan],
+["255,255,206", _lightYellow],
+["206,255,206", _lightGreen],
+["206,255,255", _lightTurquoise],
+["148,199,255", _paleBlue],
+["198,150,255", _lavender],
+["255,255,255", _white]
+];
+_colorsArr=new Hash;
+var len = colorTable.length
+var elt;
+for (var i=0; i<len; i++) 
+{
+elt = colorTable[i];
+_colorsArr.set(elt[0], elt[1]);
+}
+}
+with (m)
+{
+_colorsArr.each(function(iter) {
+ac(iter.value,iter.key,cb);
+});
+}
+var lastUsedColorsAr = Widget_param(prms, "lastUsedColorsAr", null)
+if (lastUsedColorsAr) 
+{
+m.addLastUsed(_lastUsed,lastUsedColorsAr, cb)
+}
+c1=m.add("moreColors",_moreColors,cb)
+c1.leftZoneClass="menuLeftPartColor"
+c1.leftZoneSelClass="menuLeftPartSel"
+return o
+}
+function newIconColorMenuWidget(id,src,clickCB,text,tooltip,w,h,dx,dy,disDx,disDy, lastUsedColorsAr, curColorAsActionColor)
+{
+return new_IconColorMenuWidget({
+id:id,
+src:src,
+clickCB:clickCB,
+text:text,
+tooltip:tooltip,
+width:w,
+height:h,
+dx:dx,
+dy:dy,
+disDx:disDx,
+disDy:disDy,
+lastUsedColorsAr:lastUsedColorsAr,
+curColorAsActionColor:curColorAsActionColor
+})
+}
+function IconColorMenuWidget_setColor(color)
+{
+var o=this,menu=o.menu
+menu.uncheckAll()
+o.curColor=color
+if (o.curColorAsActionColor)
+o.defaultActionColor=o.curColor;
+if (color!=null)
+{
+var id="color_"+color
+var items=menu.items
+var len = items.length
+for (var i=0; i<len; i++)
+{
+var item=items[i]
+if ((item.menuItemType && (item.menuItemType == _isLastUsedColor) && (color == menu.lastUsedColorsAr[item.idx])) || (item.id==id)){
+item.check(true)
+break
+}
+}
+}
+o.showSample()
+}
+function IconColorMenuWidget_showSample()
+{
+var o=this
+if (o.layer)
+{
+if (o.sampleLayer==null)
+o.sampleLayer=getLayer('colSample_'+o.id)
+var color=o.defaultActionColor;
+o.sampleLayer.style.backgroundColor=((color!='-1,-1,-1')&&(color!=null)) ? 'rgb('+color+')' : ''
+} else { // if html not written will do it using extraHTML for the iconWIdget sample 
+var color = o.defaultActionColor;
+if ((null != color) && (color != '-1,-1,-1')) {
+o.icon.extraHTML='<div id="colSample_'+o.id+'" style="position:relative;top:-4px;left:0px;width:16px;height:4px;overflow:hidden;margin:0px;background-color:rgb('+color+');"></div>'
+}
+}
+}
+function IconColorMenuWidget_setDisabled(dis)
+{
+this.colOldSetDis(dis)
+if (this.layer)
+this.showSample()
+}
+function IconColorMenuWidget_getColor()
+{
+return this.curColor;
+}
+function IconColorMenuWidget_getDefaultActionColor()
+{
+return this.defaultActionColor;
+}
+function IconColorMenuWidget_setDefaultActionColor(c)
+{
+this.defaultActionColor=c;
+}
+function IconColorMenuWidget_changeTooltip(s)
+{
+var o=this
+if (s==null) return;
+if (o.icon && o.arrow) {
+o.icon.tooltip=s;
+o.icon.changeTooltip(s)
+o.arrow.changeTooltip(_openMenuPart1+ s +_openMenuPart2)
+}
+}
+function IconColorMenuWidget_setDefaultActionOnIcon(b)
+{
+var o=this
+o.hasDefaultActionOnIcon=b
+o.clickCB=(o.hasDefaultActionOnIcon?o.clickColor:null)
+}
+function new_IconCheckWidget(prms)
+{
+var o=new_IconWidget(prms)
+o.checked=false
+o.internalUpCB=IconCheckWidget_internalUpCB
+o.internalDownCB=IconCheckWidget_internalDownCB
+o.check=IconCheckWidget_check
+o.isChecked=IconCheckWidget_isChecked
+o.getValue=IconCheckWidget_isChecked
+o.oldInit=o.init
+o.init=IconCheckWidget_init
+o.isRadio=false
+return o
+}
+function newIconCheckWidget(id,src,clickCB,text,tooltip,w,h,dx,dy,disDx,disDy,dblclickCB)
+{
+return new_IconCheckWidget({
+id:id,
+src:src,
+clickCB:clickCB,
+text:text,
+tooltip:tooltip,
+width:w,
+height:h,
+dx:dx,
+dy:dy,
+disDx:disDx,
+disDy:disDy,
+dblclickCB:dblclickCB
+});
+}
+function new_IconToggleWidget(prms)
+{
+var o = new_IconWidget(prms)
+o.togX = Widget_param(prms, "togX", null)
+o.togY = Widget_param(prms, "togY", null)
+o.checked=false
+o.isRadio=false
+o.internalUpCB=IconToggleWidget_internalUpCB
+o.internalDownCB=IconToggleWidget_internalDownCB
+o.check=IconToggleWidget_check
+o.isChecked=IconCheckWidget_isChecked
+o.getValue=IconCheckWidget_isChecked
+o.oldInit=o.init
+o.init=IconCheckWidget_init
+return o
+}
+function newIconToggleWidget(id,src,clickCB,text,tooltip,w,h,dx,dy,togX,togY,disDx,disDy,dblclickCB)
+{
+return new_IconToggleWidget({
+id:id,
+src:src,
+clickCB:clickCB,
+text:text,
+tooltip:tooltip,
+width:w,
+height:h,
+dx:dx,
+dy:dy,
+togX:togX,
+togY:togY,
+disDx:disDx,
+disDy:disDy,
+dblclickCB:dblclickCB
+})
+}
+function new_IconRadioWidget(prms)
+{
+var o = new_IconCheckWidget(prms)
+o.group = Widget_param(prms, "group", null)
+o.isRadio=true
+if (_RadioWidget_groups[o.group]==null)
+_RadioWidget_groups[o.group]=new Array
+o.groupInstance=_RadioWidget_groups[o.group]
+var g=o.groupInstance
+o.groupIdx=g.length
+g[g.length]=o
+o.beforeClickCB=IconRadioWidget_uncheckOthers
+o.getValue = IconCheckWidget_isChecked
+o.moveSelection=IconRadioWidget_moveSelection
+return o
+}
+function newIconRadioWidget(id,src,clickCB,text,tooltip,group,w,h,dx,dy,disDx,disDy)
+{
+return new_IconRadioWidget({
+id:id,
+src:src,
+clickCB:clickCB,
+text:text,
+tooltip:tooltip,
+group:group,
+width:w,
+height:h,
+dx:dx,
+dy:dy,
+disDx:disDx,
+disDy:disDy
+})
+}
+function new_PaletteContainerWidget(prms)
+{
+var o = new_Widget(prms)
+o.contextMenu = Widget_param(prms, "contextMenu", null)
+o.margin = Widget_param(prms, "margin", 4)
+o.clip = Widget_param(prms, "clip", true)
+o.className=Widget_param(prms, "className", "palette")
+o.beginHTML=PaletteContainerWidget_beginHTML
+o.endHTML=PaletteContainerWidget_endHTML
+o.add=PaletteContainerWidget_add
+o.palettes=new Array
+return o
+}
+function newPaletteContainerWidget(id,contextMenu,margin,clip)
+{
+return new_PaletteContainerWidget({
+id:id,
+contextMenu:contextMenu,
+margin:margin,
+clip:clip
+})
+}
+function new_PaletteWidget(prms)
+{
+var o = new_ContainerWidget(prms);
+o.height = Widget_param(prms, "height", _toolbarHeight)
+o.className = Widget_param(prms, "className", null)
+o.vAlign = Widget_param(prms, "vAlign", "middle")
+o.leftPadding = Widget_param(prms, "leftPadding", 4)
+o.rightPadding = Widget_param(prms, "rightPadding", 4)
+o.topPadding = Widget_param(prms, "topPadding", 0)
+o.rightZoneWidth = Widget_param(prms, "rightZoneWidth", 0)
+o.sepCount=0
+o.haveRightZone=false;
+o.superInit=o.init;
+o.superResize=o.resize;
+o.leftZoneId="leftZone_"+o.id;
+o.rightZoneId="rightZone_"+o.id;
+o.leftZoneLyr=null;
+o.rightZoneLyr=null;
+// ================
+// HTML Generation
+// ================
+o.getHTML=function ()
+{
+var o=this,items=o.items,len=items.length,fields=new Array;j=0
+var left = _rtl ? "right" : "left"
+var right = _rtl ? "left" : "right"
+fields[j++]='<table style="padding-top:'+o.topPadding+'px;padding-'+left+':'+o.leftPadding+'px;padding-'+right+':'+o.rightPadding+'px" ' + (o.className ? ('class="' + o.className + '" ') : '') + 'id="'+o.id+'" '+attr("height",o.height)+' cellspacing="0" cellpadding="0" '+(' width="100%"')+'><tbody><tr valign="'+o.vAlign+'">'
+fields[j++]='<td align="'+left+'" >'+o.getLabelForAriaHTMLTag()+'<div id="'+o.leftZoneId+'" style="overflow:hidden;"><table cellspacing="0" cellpadding="0"><tbody><tr valign="'+o.vAlign+'">'
+for (var i=0;i<len;i++)
+{
+var it=items[i]
+if (it.type=="rightZone")
+{
+fields[j++]='</tr></tbody></table></td><td width="100%" align="'+right+'" id="'+o.rightZoneId+'" style="padding-'+right+':0px"><table cellspacing="0" cellpadding="0"><tbody><tr valign="'+o.vAlign+'">'
+}
+else
+fields[j++]='<td>'+it.getHTML()+'</td>'
+}
+if (!o.haveRightZone)
+fields[j++]='</tr></tbody></table></td><td width="100%" align="right" style="padding-'+right+':0px"><table cellspacing="0" cellpadding="0"><tbody><tr valign="'+o.vAlign+'"><td></td>'
+fields[j++]='</tr></tbody></table></div></td></tr></tbody></table>'
+return fields.join("")
+}
+// ===============
+// Adding an item
+// ===============
+o.containerAdd=o.add
+o.add=function(item)
+{
+if(item==null)
+{
+item=newPaletteVerticalSepWidget(this.id+"_palettesep_"+(this.sepCount++))
+}
+return o.containerAdd(item)
+}
+// =================
+// Disable al Items
+// =================
+o.disableChildren=function (dis)
+{
+var items=this.items, len = items.length
+for (var i=0;i<len;i++)
+{
+var item=items[i]
+if (item&&(item.isSep!=true)&&item.setDisabled)
+item.setDisabled(dis)
+}
+}
+// ===========================================
+// Begin right zone (can be called only once)
+// ===========================================
+o.beginRightZone=function ()
+{
+this.add({type:"rightZone"})
+this.haveRightZone=true;
+}
+o.init=function()
+{
+    var o=this;
+    o.superInit();
+    o.leftZoneLyr=getLayer(o.leftZoneId);
+    o.rightZoneLyr=getLayer(o.rightZoneId); 
+    if (o.rightZoneLyr && o.rightZoneWidth==0)
+    {               
+        o.rightZoneWidth=o.rightZoneLyr.offsetWidth;             
+    }
+}
+o.resize=function (w, h)
+{
+    var o=this;
+    o.superResize(w);
+    if (o.leftZoneLyr && o.rightZoneLyr && o.haveRightZone && o.rightZoneWidth>0) 
+    {                                                                                                                      
+            var leftWidth, rightWidth;
+            if (w > o.rightZoneWidth+ o.rightPadding)                            
+            {
+                leftWidth=Math.max(0,w-o.rightZoneWidth-o.rightPadding);
+                rightWidth=o.rightZoneWidth;
+            }
+            else           
+            {                                             
+            leftWidth=0;
+                rightWidth=w;
+            }        
+            o.leftZoneLyr.style.width=(_ie?Math.max(0,(leftWidth-o.leftPadding)):leftWidth)+'px';
+            o.rightZoneLyr.style.width=(_ie?(rightWidth+o.rightPadding):rightWidth)+'px';               
+    }
+}
+if (prms && prms.children)
+o.fill(prms.children)
+return o
+}
+function newPaletteWidget(id,height)
+{
+return new_PaletteWidget({
+id:id,
+height:height
+})
+}
+function new_PaletteSepWidget(prms)
+{
+var o = new_Widget(prms)
+o.getHTML=PaletteSepWidget_getHTML
+o.isSeparator=true
+o.canHaveFocus=function(){
+return false
+}
+return o
+}
+function newPaletteSepWidget(id)
+{
+return new_PaletteSepWidget({id:id})
+}
+function new_PaletteVerticalSepWidget(prms)
+{
+var o = new_Widget(prms)
+o.getHTML=PaletteVerticalSepWidget_getHTML
+o.isSeparator=true
+o.isSpace = Widget_param(prms, "isSpace", false);
+o.canHaveFocus=function(){
+return false
+}
+return o
+}
+function newPaletteVerticalSepWidget(id)
+{
+return new_PaletteVerticalSepWidget({id:id})
+}
+function PaletteVerticalSepWidget_getHTML()
+{
+var sty=(_ie)?'style="margin-top:3px;"':'';
+var s='<div id="'+this.id+'" class="'+(this.isSpace? 'toolbarSpace' :'toolbarSep')+'" '+sty+'></div>'
+return s;
+}
+function getPaletteSep()
+{
+var sty=(_ie)?'style="margin-top:3px;"':'';
+var s='<div class="toolbarSep" '+sty+'></div>'
+return s;
+}
+function IconRadioWidget_uncheckOthers()
+{
+var g=this.groupInstance,idx=this.groupIdx,len=g.length;
+for (var i=0;i<len;i++)
+{
+if (i!=idx)
+{
+var c=g[i];
+if(c)
+c.check(false);
+}
+}
+}
+function IconRadioWidget_moveSelection(next)
+{
+var g=this.groupInstance,idx=this.groupIdx,len=g.length;
+var c=g[idx];
+if(c && c.isChecked())
+{
+c.check(false);
+var i=idx+(next?1:-1);
+if(i==len) i=0;
+if(i==-1) i=len-1;
+c=g[i];
+if(c)
+{
+c.check(true);
+c.focus();
+}
+}
+}
+function PaletteSepWidget_getHTML()
+{
+return '<div style="background-image:url('+_skin+'sep.gif);height:2px;padding:0px;margin-top:0px;margin-bottom:0px;margin-left:4px;margin-right:4px">'+getSpace(1,2)+'</div>'
+}
+function PaletteContainerWidget_beginHTML()
+{
+var o=this,className = o.className ? ('class="' + o.className + '" ') : '';
+var cm=o.contextMenu?('oncontextmenu="'+_codeWinName+'.PaletteContainerWidget_contextMenu(this,event);return false"'):''
+var ov=o.clip?"overflow:hidden;":""
+if (o.clip)
+return '<div ' + cm + className +' style="width:100%;overflow:hidden;margin:'+o.margin+'px;" id="'+o.id+'">'
+else
+return '<table width="100%" cellspacing="0" cellpadding="0" '+ cm + className + ' style="margin:'+o.margin+'px;" id="'+o.id+'"><tr><td>'
+}
+function PaletteContainerWidget_endHTML()
+{
+if (this.clip)
+return '</div>'
+else
+return '</td></tr></table>'
+}
+_delayedMenu=null
+function PaletteContainerWidget_contextMenu(o,e)
+{
+if (_ie)
+e=_curWin.event
+e.cancelBubble = true;
+_delayedMenu=getWidget(o).contextMenu
+setTimeout('_delayedMenu.par=null;_delayedMenu.show(true,'+absxpos(e)+','+absypos(e)+')',1)
+}
+function PaletteContainerWidget_add(palette)
+{
+this.palettes[this.palettes.length]=palette
+return palette
+}
+function PaletteWidget_getHTML()
+{
+var o=this,items=o.items,len=items.length,fields=new Array;j=0
+var left = _rtl ? 'right' : 'left'
+var right = _rtl ? 'left' : 'right'
+fields[j++]='<table ' + (o.className ? ('class="' + o.className + '" ') : '') + 'id="'+o.id+'" '+attr("height",o.height)+' cellspacing="0" cellpadding="0" '+(_ie?"":'width="100%"')+'><tbody><tr valign="middle">'
+fields[j++]='<td align="'+left+'" style="padding-'+left+':'+o.vertPadding+'px;padding'+right+':4px"><table cellspacing="0" cellpadding="0"><tbody><tr valign="middle">'
+var haveRightZone=false
+for (var i=0;i<len;i++)
+{
+var it=items[i]
+if (item.type=="rightZone")
+{
+fields[j++]='</tr></tbody></table></td><td width="100%" align="'+right+'" style="padding-'+right+':'+o.vertPadding+'px"><table cellspacing="0" cellpadding="0"><tbody><tr valign="middle">'
+haveRightZone=true
+}
+else
+fields[j++]='<td>'+it.getHTML()+'</td>'
+}
+if (!haveRightZone)
+fields[j++]='</tr></tbody></table></td><td width="100%" align="'+right+'" style="padding-'+right+':4px"><table cellspacing="0" cellpadding="0"><tbody><tr valign="middle"><td></td>'
+fields[j++]='</tr></tbody></table></td></tr></tbody></table>'
+return fields.join("")
+}
+function PaletteWidget_disableChildren(dis)
+{
+var items=this.items, len = items.length
+for (var i=0;i<len;i++)
+{
+var item=items[i]
+if (item&&(item.isSep!=true))
+item.setDisabled(dis)
+}
+}
+function IconWidget_isDisplayed()
+{
+return this.disp
+}
+function IconWidget_setDisplay(d)
+{
+var o=this
+if (o.css)
+{
+var ds=d?"block":"none"
+if (o.css.display!=ds)
+o.css.display=ds
+}
+o.disp=d
+}
+function IconWidget_getTxtWidth()
+{
+var o=this,w=o.width
+if (w!=null)
+{
+w=w-(o.margin*2) // remove table margin
+w=w-(o.src?o.w+o.border:1) // Image size
+w=w-(o.txtNoPadding?0:((o.src?4:2)+2))
+if (_ie)
+w-=2
+else
+w-=2
+return Math.max(0,w)
+}
+else
+return -1
+}
+function IconWidget_init(layer)
+{
+var o=this,dblClick=false
+o.iconOldInit(layer)
+var l=o.layer
+//manage focus for 508
+l.tabIndex=o.dis?-1:0
+//manage tooltip for 508
+l.title= o.getAriaLabel() //(o.tooltip?o.tooltip:"")
+// attach callbacks
+if (o.clickCB)
+{
+l.onclick=IconWidget_upCB
+l.onmousedown=IconWidget_downCB
+if (o.allowDblClick&&(_ie||_saf)&&(o.dblclickCB==null))
+{
+dblClick=true
+addDblClickCB(l,IconWidget_upCB)
+}
+l.onkeydown=IconWidget_keydownCB
+//l.onmouseover=IconWidget_realOverCB
+//l.onmouseout=IconWidget_realOutCB
+o.observe(l, "mouseover", IconWidget_mouseOverCB);
+o.observe(l, "mouseout", IconWidget_mouseOutCB);
+}
+if (o.dblclickCB)
+{
+addDblClickCB(l,IconWidget_dblClickCB)
+}
+else if (!dblClick)
+addDblClickCB(l,IconWidget_retFalse)
+l.onselectstart=IconWidget_retFalse
+var d=o.disp?"block":"none"
+if (o.css.display!=d)
+o.css.display=d
+if (o.iconHoverHeight)
+{
+/*
+o.iconleftLyr=getLayer(o.iconleft)
+o.iconrightLyr=getLayer(o.iconright)
+o.iconmidLyr=getLayer(o.iconmid)
+o.txtmidLyr=getLayer(o.txtmid)
+*/
+var tb = o.layer.childNodes[0]
+if (tb)
+{
+var tr=tb.childNodes[0];i=0
+if (tr)
+{
+o.iconleftLyr=tr.childNodes[i++]
+if (o.txtPosition=="rigth")
+{
+o.iconmidLyr=tr.childNodes[i++];
+if (o.text) {
+o.txtmidLyr=tr.childNodes[i++];
+//o.txtLayer=getLayer("IconImg_Txt_"+o.id)
+if (o.txtmidLyr) {
+o.txtLayer=o.txtmidLyr.childNodes[0]
+}
+}
+}
+else
+{
+if (o.text) {
+o.txtmidLyr=tr.childNodes[i++];
+if (o.txtmidLyr) {
+o.txtLayer=o.txtmidLyr.childNodes[0]
+}
+}
+o.iconmidLyr=tr.childNodes[i++];
+}
+o.iconrightLyr=tr.childNodes[i++];                             
+}
+}
+}
+}
+/*
+ * 
+ * custom pal
+*/
+function IconWidget_setBackgdColor(c)
+{
+var o=this;
+if (o.iconDivLayer==null)
+o.iconDivLayer=getLayer(o.id +"_div")
+if (o.iconDivLayer)
+{
+//o.iconDivLayer.style.backgroundColor = 'rgb(' + c + ')'
+o.iconDivLayer.style.backgroundColor ='rgb(' + c.r + ',' + c.g + ',' + c.b +')';
+setLayerTransp(o.iconDivLayer,c.alpha);
+//var tabColor = c.split(",")
+//o.backgdColor.r = tabColor[0]
+//o.backgdColor.g = tabColor[1]
+//o.backgdColor.b = tabColor[2]
+o.backgdColor = c;
+}
+}
+function IconWidget_setPaletteColor(palette)
+{
+var o=this;
+if(palette && palette.length > 0)
+{
+for(var i=0;i<palette.length;i++)
+{
+var iconLayer = getLayer(o.id +i+"_palDiv");
+var color = palette[i].backgdColor
+if (iconLayer)
+{
+iconLayer.style.backgroundColor = 'rgb(' + color.r + ',' + color.g + ',' + color.b +')'
+o.palette[i].backgdColor = palette[i].backgdColor
+}
+}
+}
+}
+function IconWidget_getBackgdColor()
+{
+var o=this;
+if (o.backgdColor)
+    {
+return o.backgdColor
+}
+}
+function IconWidget_changeBackgndImg(r)
+{
+var o=this;
+if (r==_iconHover&&o.checked)
+{
+if (o.iconCSS[_iconHoverPressed]!=null)
+r=_iconHoverPressed
+}
+if (o.iconCSS) 
+{
+if (o.iconleftLyr)
+o.iconleftLyr.className=o.iconCSS[r][_rtl ? _iconRight :_iconLeft]
+if (o.iconrightLyr)
+o.iconrightLyr.className=o.iconCSS[r][_rtl ? _iconLeft : _iconRight]
+if (o.iconmidLyr)
+o.iconmidLyr.className=o.iconCSS[r][_iconMid]
+if (o.txtmidLyr)
+o.txtmidLyr.className=o.iconCSS[r][_iconMid]
+}
+if (o.text)
+{
+var hover = (r==_iconHover || r==_iconHoverPressed)
+var check = (r==_iconPressed || r==_iconHoverPressed)
+o.setTextCSS(hover,check)
+}
+if (o.onChangeState)
+o.onChangeState(r)
+return false;    
+}
+function IconWidget_getHTML(onlyInner)
+{
+var o=this, width='', leftZoneW = 3, rightZoneW = 3;
+switch (o.icontype)
+{
+    case _paneComboRightBtn:
+        leftZoneW = 0;
+        rightZoneW = 2;
+        break;
+case _iconComboButton:
+leftZoneW = 3;
+break
+case _iconArrow:
+case _iconArrowNoLeft:
+case _iconComboArrow:
+case _iconSpinnerUp:
+case _iconSpinnerDown:
+case _iconCalendarSpinUp:
+case _iconCalendarSpinDown:
+width = 'width:7px;'
+break;
+case _groupL16:
+leftZoneW = 2;
+rightZoneW = 0;
+width = 'width:16px;'
+break;
+case _groupM16:
+leftZoneW = 1;
+rightZoneW = 0;
+width = 'width:16px;'
+break;
+case _groupR16:
+leftZoneW = 1;
+rightZoneW = 2;
+width = 'width:16px;'
+break;
+case _midGroupL16:
+case _midGroupM16:
+case _midGroupR16:
+case _midGroupLR16:
+leftZoneW = 4;
+rightZoneW = 4;
+width = 'width:16px;'
+break;
+case _toolboxBtn:
+            leftZoneW = 17;
+            if (o.par)
+            {
+                var tab=o.par;
+                if (tab.isFirst)
+                {
+                    leftZoneW = 27;
+                }
+            }            
+            rightZoneW = 6;
+width = (_ff2&&o.w) ? ('width:'+o.w+'px') : '';
+break;
+case _tabbedGroupBtn:           
+            leftZoneW = 12;
+            if (o.par)
+            {
+                var tab=o.par;
+                if (tab.isFirst)
+                {                    
+                    leftZoneW = 24;
+                }
+            }      
+rightZoneW = 5;
+width = (_ff2&&o.w) ? ('width:'+o.w+'px') : '';
+break;
+case _icon32:
+case _icon50:
+leftZoneW = 5;
+rightZoneW = 5;
+width = (_ff2&&o.w) ? ('width:'+o.w+'px') : '';
+break;
+        case _iconVertBarInLeftPanel:
+            leftZoneW = 2;
+rightZoneW = 2;
+            break;
+        case _noTabGroupBtn:
+            leftZoneW = 0;
+rightZoneW = 0;
+            break;
+default:
+width = (_ff2&&o.w) ? ('width:'+o.w+'px') : '';
+break;
+}
+var checked = ''  
+if (o.onChangeState)
+{
+o.onChangeState(o.checked ? _iconPressed : _iconNormal)
+}
+//Check if custom button
+var isCustomIcon = (o.value != null && o.value.indexOf('customButton') == 0);
+if(o.isChecked)
+checked = ' aria-pressed="'+o.checked+'" '
+var imgCode=o.src?'<div style="overflow:hidden;height:'+(o.h+o.border)+'px;'+width+'" valign="middle">'+
+simpleImgOffset(o.src,o.w,o.h,o.dis?o.disDx:o.dx,o.dis?o.disDy:o.dy,'IconImg_'+o.id,null,null/*o.tooltip*/,'margin-top:'+o.marginTop+'px;'+(isCustomIcon?'background-repeat:no-repeat;background-position:center;margin-top:0px;':'')+'cursor:'+(o.clickCB ? (!o.acceptClick() ? 'default' : _hand):'default'))+
+o.extraHTML+'</div>':'<div class="iconText" style="width:1px;height:'+(o.h+o.border)+'px"></div>'
+var txtAtt='style="white-space:nowrap;',txtW=o.getTxtWidth()
+if ((o.icontype==_toolboxBtn)||(o.icontype==_tabbedGroupBtn))
+{
+txtAtt='style="white-space:nowrap;text-align:center"'
+}
+else
+{
+if (txtW>=0)
+    txtAtt+='text-overflow:ellipsis;overflow:hidden;width:'+txtW+'px'
+}
+txtAtt+='"'
+var height=o.isCombo?'':('height:'+o.iconHoverHeight+'px;');
+//var lnkAtt = ' tabIndex="-1" title="'+ (o.text? o.text:(o.tooltip?o.tooltip:''))+'"'; //accessibility
+var lnkAtt = ' tabIndex="-1" '; //accessibility
+var iconHTML = null
+// a moduler pour le reste
+var nbLines = 5;
+var nbColBig  = 4, nbColSmall  = 8;
+//var HLineBig  = 17, HLineSmall  = 7;
+//var WColBig   = 13,  WColSmall  = 6;
+var HLineBig  = 14, HLineSmall  = 7;
+var WColBig   = 13,  WColSmall  = 6;
+// palette color
+if (o.palette)
+{
+var s=[];
+var pal = o.palette;
+var k=0, HLine, WCol, nbCol;
+s.push('<td id="'+o.iconmid+'" align="center" style="'+height+'" class="'+(o.iconCSS?o.iconCSS[_iconNormal][_iconMid]:'')+'"><table cellpadding=0 cellspacing=1 border=0>')
+for (var l=0; l<nbLines; l++)
+{
+HLine = ((l<2)?HLineBig:HLineSmall); 
+nbCol = ((l<2)?nbColBig:nbColSmall); 
+WCol = ((l<2)?WColBig:WColSmall);
+if(l==2)
+s.push('</table><table cellpadding=0 cellspacing=1 border=0>')
+s.push('<tr height='+HLine+'>')
+for (var j=0; j<nbCol; j++)
+{
+if (k>=pal.length) k=0
+var color = pal[k].backgdColor
+var alpha = "" ;//draw alpha
+if(color.alpha!=null)
+{
+alpha = ((_ie && !_ie9R) ?";progid:DXImageTransform.Microsoft.Alpha( style=0,opacity="+color.alpha+")":";opacity:"+color.alpha/100);
+}
+s.push('<td><div id="'+o.id+k+'_palDiv" style="width:'+WCol+'px;height:'+HLine+'px;overflow:hidden;background-color:rgb(' + color.r + ',' + color.g + ',' + color.b + ')'+alpha+'"></div></td>')
+k++
+}
+s.push('</tr>')
+}
+s.push('</table></td>')
+iconHTML = s.join('')
+//alert(iconHTML)
+}
+else if (o.backgdColor)
+{
+//var s=[],HLine =24,WCol=24,color=o.backgdColor
+//var s=[],HLine =16,WCol=16,color=o.backgdColor
+var s=[];
+var color = o.backgdColor
+s.push('<td id="'+o.iconmid+'" align="center" style="'+height+'" class="'+(o.iconCSS?o.iconCSS[_iconNormal][_iconMid]:'')+'"><table cellpadding=0 cellspacing=0 border=0>')
+//s.push('<tr height='+HLine+'>')
+//s.push('<td><div id="'+o.id+'_div"   style="width:'+WCol+'px;height:'+HLine+'px;overflow:hidden;background-color:rgb(' + color.r + ',' + color.g + ',' + color.b + ')"></div></td>')
+s.push('<tr height='+o.h+'>')
+s.push('<td><div id="'+o.id+'_div"  style="width:'+o.w+'px;height:'+o.h+'px;overflow:hidden;background-color:rgb(' + color.r + ',' + color.g + ',' + color.b + ')"></div></td>')
+s.push('</tr>')
+s.push('</table></td>')
+iconHTML = s.join('')
+//alert(iconHTML)
+}
+else
+{
+iconHTML = '<td id="'+o.iconmid+'" align="center" style="'+height+'" class="'+(o.iconCSS?o.iconCSS[_iconNormal][_iconMid]:'')+'">'+ 
+((o.clickCB&&_ie)?lnk(imgCode,null,null,null, lnkAtt ):imgCode)+'</td>';
+}
+var d=o.disp?"":"display:none;"
+var s = new Array, i = 0 
+var ariaLabel = convStr(o.getAriaLabel())
+var iconLeft  = _rtl ? _iconRight : _iconLeft
+var iconRight = _rtl ? _iconLeft  : _iconRight
+if (onlyInner != true) {
+s[i++] = '<table role="button" aria-label="'+ariaLabel+'"'+checked+'title="'+ariaLabel+'" style="'+d+(o.width!=null?"width:"+o.width+"px;":"")+ checked
+s[i++] = 'margin:'+o.margin+'px" id="'+o.id+'" class="' +(o.isCombo?o.nocheckClass:"")+ '" cellspacing="0" cellpadding="0" border="0">'
+}
+s[i++] = '<tr valign="middle">';
+if (_dtd4)
+s[i++] = ((o.iconHoverHeight && !o.isCombo)?('<td id="'+o.iconleft+'" class="'+(o.iconCSS?o.iconCSS[_iconNormal][iconLeft]:'')+'"><div style="width:'+leftZoneW+'px;height:'+o.iconHoverHeight+'px"></div></td>'):'');
+else
+s[i++] = ((o.iconHoverHeight && !o.isCombo)?('<td id="'+o.iconleft+'" class="'+(o.iconCSS?o.iconCSS[_iconNormal][iconLeft]:'')+'">'+getSpace(leftZoneW, o.iconHoverHeight)+'</td>'):'');
+var textClass = o.getTextCSS(false,o.checked)
+s[i++] = ((o.txtPosition=="rigth")?iconHTML:"")
+    s[i++] = (o.text?'<td class="'+(o.iconCSS?o.iconCSS[_iconNormal][_iconMid]:'')+'" id="'+o.txtmid+'" '+(o.icontype==_toolboxBtn ? ' width=63 align="center"' : '')+' valign="' + o.txtVAlign +  '" style="'+height+'padding-'+ (o.txtPosition=="rigth"?'left':'right') +
+':'+(o.txtNoPadding?0:(o.src?4:2))+
+'px;padding-'+(o.txtPosition=="rigth"?'right':'left') +':'+(o.txtNoPadding?0:2)+'px"><div id="IconImg_Txt_'+o.id+'" class="'+textClass+
+'" '+txtAtt+'>'+convStr(o.text)+'</div></td>':'')
+s[i++] = ((o.txtPosition=="left")?iconHTML:"");
+if (_dtd4)
+s[i++] = ((o.iconHoverHeight && !o.isCombo)?('<td id="'+o.iconright+'" class="'+(o.iconCSS?o.iconCSS[_iconNormal][iconRight]:'')+'"><div style="width:'+rightZoneW+'px;height:'+o.iconHoverHeight+'px"></div></td>'):'');
+else
+s[i++] = ((o.iconHoverHeight && !o.isCombo)?('<td id="'+o.iconright+'" class="'+(o.iconCSS?o.iconCSS[_iconNormal][iconRight]:'')+'">'+getSpace(rightZoneW, o.iconHoverHeight)+'</td>'):'');
+s[i++] = '</tr>'
+if (onlyInner != true) {
+s[i++] = '</table>'
+}
+return s.join('');
+}
+__globIconWidget_realOutCBobj=null
+function IconWidget_realOutCB()
+{
+var o=getWidget(this)
+if (o&&o.outCB)
+{
+__globIconWidget_realOutCBobj=o
+eval(__globIconWidget_realOutCBobj.outCB+'('+__globIconWidget_realOutCBobj.index+')')
+}
+}
+function IconWidget_mouseOutCB()
+{
+var o=this;
+if (o&&o.outCB)
+{
+__globIconWidget_realOutCBobj=o
+eval(__globIconWidget_realOutCBobj.outCB+'('+__globIconWidget_realOutCBobj.index+')')
+}
+}
+function IconWidget_mouseOverCB()
+{
+var o=this;
+if (o&&o.overCB)
+{
+__globIconWidget_realOutCBobj=o
+eval(__globIconWidget_realOutCBobj.overCB+'('+__globIconWidget_realOutCBobj.index+')')
+}
+return true
+}
+function IconWidget_realOverCB()
+{
+var o=getWidget(this)
+if (o&&o.overCB)
+{
+__globIconWidget_realOutCBobj=o
+eval(__globIconWidget_realOutCBobj.overCB+'('+__globIconWidget_realOutCBobj.index+')')
+}
+return true
+}
+function IconWidget_retFalse()
+{
+return false
+}
+function IconWidget_resize(w,h)
+{
+var o=this
+if (o.layer)
+o.oldRes(w,h)
+if (o.txtLayer==null)
+o.txtLayer=getLayer("IconImg_Txt_"+o.id)
+if (w!=null)
+{
+o.width=w
+var txtW=o.getTxtWidth()
+if (o.txtLayer&&(txtW>=0))
+{
+o.txtLayer.style.width=''+txtW+'px'
+}
+}
+if (h!=null)
+{
+o.h=h?(h-o.border):o.h
+if (o.txtLayer&&(o.h>=0))
+{
+o.txtLayer.style.height=''+o.h+'px'
+}
+}
+}
+function IconWidget_changeTooltip(s,isTemporary)
+{
+var o=this
+if (s==null) return;
+if(!isTemporary)
+o.tooltip=s;
+if(o.layer)
+o.layer.title=s
+if (o.imgLayer==null)
+o.imgLayer = getLayer('IconImg_'+this.id);
+//if (o.imgLayer)
+//changeSimpleOffset(o.imgLayer,null,null,null,s)
+}
+function IconWidget_changeText(s,tooltip)
+{
+var o=this
+o.text=s
+if (tooltip!=null)
+o.tooltip = tooltip
+if (o.layer)
+{
+if (o.txtLayer==null)
+o.txtLayer=getLayer("IconImg_Txt_"+o.id)
+if(o.txtLayer==null)
+{
+if (o.layer.outerHTML)
+o.layer.outerHTML = o.getHTML()
+else
+o.layer.innerHTML = o.getHTML(true)
+o.init();
+}
+else
+o.txtLayer.innerHTML=convStr(s)
+o.layer.title = o.ariaLabel = o.getAriaLabel()
+}
+}
+function IconWidget_changeImg(dx,dy,src,disDx,disDy)
+{
+var o=this
+if (src) o.src=src
+if (dx!=null) o.dx=dx
+if (dy!=null) o.dy=dy
+if (disDx!=null) o.disDx = disDx
+if (disDy!=null) o.disDy = disDy
+if (o.layer&&(o.imgLayer==null))
+o.imgLayer = getLayer('IconImg_'+this.id);
+if (o.imgLayer)
+{
+changeSimpleOffset(o.imgLayer,o.dis?o.disDx:o.dx,o.dis?o.disDy:o.dy, src)
+}
+}
+function IconMenuWidget_internalDownCB()
+{
+var o=this.par
+o.icon.oldInternalDownCB()
+o.arrow.oldInternalDownCB()
+}
+function IconWidget_internalDownCB()
+{
+    var o=this;
+if (!o.dis)
+{
+if (o.iconHoverHeight)
+{
+if (!o.isCombo)
+o.changeBackgndImg(_iconPressed);
+}
+else
+if (o.onChangeState)
+{
+    if (!o.isCombo)
+        o.onChangeState(_iconPressed);
+}
+else
+o.currentHoverClass=o.checkhoverClass
+}
+}
+function IconWidget_internalUpCB()
+{
+if (!this.dis)
+{
+if (this.iconHoverHeight)
+{
+if (!this.isCombo)
+this.changeBackgndImg(_iconNormal);
+}
+else
+this.currentHoverClass=this.hoverClass
+}
+}
+function IconWidget_setCrs()
+{
+var o=this,crs=(o.clickCB ? (!o.acceptClick() ? 'default' : _hand) : 'default')
+o.css.cursor=crs
+if (o.src)
+{
+if (o.imgLayer==null)
+o.imgLayer = getLayer('IconImg_'+o.id);
+if (o.imgLayer) o.imgLayer.style.cursor=crs
+}
+}
+function IconWidget_downCB(e)
+{
+var o=getWidget(this)
+if ((o.layer)&&(o.acceptClick()))
+{
+if (_ie||(_moz&&(!o.dblclickCB||e.detail!=2)))
+{
+o.internalDownCB()
+if (o.mousedownCB)
+o.mousedownCB(e);
+}
+}
+return _webKit ? true : false
+}
+function IconWidget_upCB(e)
+{
+var o=getWidget(this)
+if (_moz || _ie9R)
+{
+if (o.dblclickCB&&e.detail==2)
+{
+if (!o.mouseupCB)
+setTimeout("delayedDblClickCB("+o.index+")",1)
+else
+o.mouseupCB();
+eventCancelBubble(e);
+return false;
+}
+}
+if ((o.layer)&&(o.acceptClick()))
+{
+o.internalUpCB()
+o.setCrs()
+if (!o.mouseupCB)
+setTimeout("delayedClickCB("+o.index+")",1)
+else
+    o.mouseupCB();
+}
+}
+function IconWidget_dblClickCB()
+{
+var o=getWidget(this)
+if (_ie&&(o.layer)&&(o.acceptClick()))
+{
+//o.internalUpCB()
+setTimeout("delayedDblClickCB("+o.index+")",1)
+}
+return false
+}
+function IconWidget_keydownCB(e)
+{
+var k = eventGetKey(e);
+if(k==13 || k==32) //enter or spacebar
+{
+var o=getWidget(this)
+o.internalUpCB() //usefull for iconcheckwidget
+o.layer.className=o.isHover?o.currentHoverClass:o.currentClass
+setTimeout("delayedClickCB("+o.index+")",1)
+eventCancelBubble(e);//be careful ! usefull for dialog box close by Enter keypressed
+}
+if(k==37 || k==39) //39:  // right arrow : 37 :left arrow
+{
+var o=getWidget(this);
+if(o && o.group && o.isRadio && o.moveSelection)
+o.moveSelection(k==39);
+}
+}
+function delayedClickCB(index)
+{
+var o=_allBOIcons[index]
+if (o.beforeClickCB)
+o.beforeClickCB()
+if (o.clickCB)
+o.clickCB()
+}
+function delayedDblClickCB(index)
+{
+var o=_allBOIcons[index]
+if (o.dblclickCB)
+o.dblclickCB()
+}
+function IconWidget_overCB(index)
+{
+var o=_allBOIcons[index]
+o.setCrs()
+if ((o.layer)&&(!o.dis)) // if not button container and it is checked
+{
+o.isHover=true
+if (o.iconHoverHeight)
+o.changeBackgndImg(_iconHover);
+else
+if (o.onChangeState)
+{
+    o.onChangeState(_iconHover);
+}
+else
+{
+o.layer.className=o.currentHoverClass
+        }
+}
+}
+function IconWidget_outCB(index)
+{
+var o=_allBOIcons[index]
+if ((o.layer)&&(o.outEnable)) // if not button container and it is checked
+{
+o.isHover=false
+if (o.iconHoverHeight)
+{
+o.changeBackgndImg(((o.checked || (o.par && o.par.checked && (o.icontype!=_iconArrow && o.icontype!=_iconArrowNoLeft)))?_iconPressed:_iconNormal));
+}
+else
+if (o.onChangeState)
+{
+    o.onChangeState(_iconNormal);
+}
+o.layer.className=o.currentClass
+}
+//for spinner
+if (o.mouseOutCB)
+o.mouseOutCB()
+}
+function IconCheckWidget_init()
+{
+var o=this
+o.oldInit()
+o.check(o.checked,true)
+}
+function IconCheckWidget_internalDownCB()
+{
+var o=this
+if (o.acceptClick())
+{
+if (o.iconHoverHeight)
+{
+o.changeBackgndImg(_iconPressed);
+        }      
+else
+{
+o.layer.className=o.checked?o.hoverClass:o.checkhoverClass;
+o.currentHoverClass=o.checked?o.hoverClass:o.checkhoverClass
+}
+}
+}
+function IconCheckWidget_internalUpCB()
+{
+var o=this
+if (o.acceptClick())
+{
+o.checked=o.isRadio?true:!o.checked
+if (o.iconHoverHeight)
+{
+o.changeBackgndImg((o.checked?_iconPressed:_iconNormal));
+}
+else
+{
+o.currentClass=o.checked?this.checkClass:this.nocheckClass
+o.currentHoverClass=o.checked?this.checkhoverClass:this.hoverClass
+}
+}
+}
+function IconToggleWidget_internalDownCB()
+{
+var o=this
+if (o.acceptClick()) {
+//o.currentHoverClass=o.checked?o.hoverClass:o.checkhoverClass
+}
+}
+function IconToggleWidget_internalUpCB()
+{
+var o=this
+if (o.acceptClick())
+{
+if (o.layer&&(o.imgLayer==null))
+o.imgLayer = getLayer('IconImg_'+this.id);
+if (!o.imgLayer) return
+o.checked=!o.checked
+if (o.checked)
+{
+changeSimpleOffset(o.imgLayer,o.togX,o.togY,o.src)
+} else {
+changeSimpleOffset(o.imgLayer,o.dx,o.dy,o.src)
+}
+}
+}
+function IconCheckWidget_check(checked,force)
+{
+var o=this
+if ((o.checked!=checked)||force)
+{
+o.checked=checked
+if (this.iconHoverHeight)
+this.changeBackgndImg((o.checked?_iconPressed:_iconNormal));
+else
+{
+if (o.layer)
+{
+o.layer.className=o.currentClass=o.checked?this.checkClass:this.nocheckClass
+o.currentHoverClass=o.checked?this.checkhoverClass:this.hoverClass
+}
+}
+}
+if ((o.layer) && (o.icontype == _tabbedGroupBtn))
+{
+if (o.txtLayer==null)
+o.txtLayer=getLayer("IconImg_Txt_"+o.id)
+var lyr=o.txtLayer
+if (lyr)
+{
+o.setTextCSS(false,o.checked)
+/*
+var newClassName = (o.checked ? 'tabbedGrouptextSel' : 'tabbedGrouptext')
+if (lyr.className!=newClassName)
+lyr.className=newClassName
+*/
+}
+}
+if (o.layer && o.layer.setAttribute)
+o.layer.setAttribute("aria-pressed",checked)
+if (o.checked&&o.beforeClickCB)
+{
+if (o.layer)
+o.beforeClickCB()
+}
+}
+function IconToggleWidget_check(checked,force)
+{
+var o=this
+if ((o.checked!=checked)||force)
+{
+o.checked=checked
+if (o.layer&&(o.imgLayer==null))
+o.imgLayer = getLayer('IconImg_'+this.id);
+if (!o.imgLayer) return
+if (o.checked)
+{
+changeSimpleOffset(o.imgLayer,o.togX,o.togY,o.src)
+} else {
+changeSimpleOffset(o.imgLayer,o.dx,o.dy,o.src)
+}
+}
+if (o.checked&&o.beforeClickCB)
+{
+if (o.layer)
+o.beforeClickCB()
+}
+}
+function IconCheckWidget_isChecked()
+{
+return this.checked
+}
+function IconWidget_setClasses(nocheck, check, hover, checkhover)
+{
+var o=this
+o.nocheckClass=nocheck
+o.checkClass=check
+o.hoverClass=hover
+o.checkhoverClass=checkhover
+o.currentClass=o.nocheckClass
+o.currentHoverClass=o.hoverClass
+}
+function IconWidget_setDisabled(dis)
+{
+ var o=this
+{
+o.dis=dis
+if (o.layer)
+{
+o.setCrs()
+if (o.src)
+{
+if (o.imgLayer==null)
+o.imgLayer = getLayer('IconImg_'+this.id);
+changeSimpleOffset(o.imgLayer,dis?o.disDx:o.dx,dis?o.disDy:o.dy)
+}
+if (o.text)
+{
+o.setTextCSS(false,o.checked)
+}
+//manage focus for 508
+o.layer.tabIndex=o.dis?-1:0
+}
+}
+}
+function IconWidget_isDisabled()
+{
+return this.dis?this.dis:false
+}
+function IconWidget_acceptClick()
+{
+var o=this
+if (o.isDisabled()) return false
+if (o.isRadio&&o.checked) return false
+return true
+}
+function new_CustomCombo(prms)
+{
+// Base class
+//var useIconMenuStyle = Widget_param(prms, "useIconMenuStyle", false);
+//var usePaneMenuStyle = Widget_param(prms, "usePaneMenuStyle", false);
+prms.text = prms.text ? prms.text : " "
+prms.iconType = Widget_param(prms, "iconType", _iconComboButton)
+prms.arrowType = Widget_param(prms, "arrowType", _iconComboArrow)
+prms.elastic = Widget_param(prms, "elastic", false)
+switch(prms.iconType)
+{
+case _iconCombo:
+prms.h = 14
+break;
+}
+    var transImgFile=_skin+'../transp.gif';
+    if (prms.menuType==_menuType_custom_showIcon28x16)
+    {
+        prms.src=transImgFile;      
+        prms.w=28;        
+    }
+    else
+    if (prms.menuType==_menuType_custom_showIcon64x16)
+    {
+        prms.src=transImgFile;      
+        prms.w=64; 
+    }
+var o=new_IconMenuWidget(prms);
+o.margin=Widget_param(prms, "margin", 2);
+o.helpTxt=Widget_param(prms, "helpTxt", " ");
+o.clickCB = null;
+o.noTextWhenDisabled = Widget_param(prms, "noTextWhenDisabled", true);
+// Parameter Parsing
+o.changeCB = Widget_param(prms, "changeCB", null);
+o.h = Widget_param(prms, "height", 14);
+o.width = Widget_param(prms, "width", prms.elastic ? null :50);
+if (!prms.elastic)
+o.icon.width=Math.max(0,o.width-13);
+o.spc=0
+// Private attributes
+o.counter=0
+o.selectedItem=null
+o.setOldDid=o.setDisabled
+o.disabled=false
+o.ccomboOldInit=o.init
+o.setHelpTxt = function (helpTxt)
+{
+this.helpTxt = helpTxt
+this.selectItem()
+}
+// Public methods
+o.init=CustomCombo_init
+o.add=CustomCombo_add
+o.addCustom=CustomCombo_addCustom   //icon is not 16x16
+o.insertCustom=CustomCombo_insertCustom   //icon is not 16x16
+o.removeCustom=CustomCombo_removeCustom 
+o.addSeparator=CustomCombo_addSeparator
+o.addMenuItem=CustomCombo_addMenuItem
+o.addCustomMenuItem=CustomCombo_addCustomMenuItem
+o.select=CustomCombo_select
+o.getSelection=CustomCombo_getSelection
+o.getValue=CustomCombo_getValue
+o.valueShow=CustomCombo_valueShow
+o.valueSelect=CustomCombo_valueSelect
+o.setUndefined=CustomCombo_setUndefined
+o.setDisabled=CustomCombo_setDisabled
+o.getVisibleItemsCount=CustomCombo_getVisibleItemsCount
+o.del=CustomCombo_del
+// Private methods
+o.selectItem=CustomCombo_selectItem
+o.getItemByIndex=CustomCombo_getItemByIndex
+o.getItemIndex=CustomCombo_getItemIndex
+o.setItemDisabled=CustomCombo_setItemDisabled
+return o
+}
+function newCustomCombo(id,changeCB,noMargin,width,tooltip,src,w,h,dx,dy,disDx,disDy)
+{
+return new_CustomCombo({
+id:id,
+changeCB:changeCB,
+noMargin:noMargin,
+width:width,
+tooltip:tooltip,
+src:src,
+width:w,
+height:h,
+dx:dx,
+dy:dy,
+disDx:disDx,
+disDy:disDy
+})
+}
+function CustomCombo_init()
+{
+var o=this
+o.ccomboOldInit()
+if(o.disabled) o.icon.changeTooltip(o.icon.tooltip?o.icon.tooltip:"",true)
+o.arrow.changeTooltip(_openMenuPart1+(o.icon.tooltip?o.icon.tooltip:"")+_openMenuPart2)
+}
+function CustomCombo_add(s,val,selected,icn)
+{
+var o=this
+var item
+if (icn != null) { //MenuWidget_addCheck(id,text,cb,icon,dx,dy,disabled,disDx,disDy,alt,accelerator,userData)
+    item=o.menu.addCheck(o.id+"_it_"+(o.counter++),s,CustomCombo_internalCB, icn.src, icn.dx, icn.dy, false, icn.disDx, icn.disDy)
+} else {
+item=o.menu.addCheck(o.id+"_it_"+(o.counter++),s,CustomCombo_internalCB)
+}
+item.val=""+val
+item.parCombo=o
+item.isComboVal=true
+if ((o.selectedItem==null)||selected)
+o.selectItem(item)
+}
+function CustomCombo_addCustom(s,val,selected,icn)
+{
+var o=this
+var item;
+if (icn != null) 
+{ //MenuWidget_addCheck(id,text,cb,icon,dx,dy,disabled,disDx,disDy,alt,accelerator,userData)
+    item=o.menu.addCustomCheck({id:o.id+"_it_"+(o.counter++),
+                                text:s,
+                                cb:CustomCombo_internalCB, 
+                            src:icn.src, dx:icn.dx, dy:icn.dy, disabled:false, disDx:icn.disDx, disDy:icn.disDy})
+} 
+else 
+{
+item=o.menu.addCustomCheck({id:o.id+"_it_"+(o.counter++),text:s,cb:CustomCombo_internalCB})
+}
+item.val=""+val
+item.parCombo=o
+item.isComboVal=true
+if ((o.selectedItem==null)||selected)
+o.selectItem(item)
+}
+function CustomCombo_removeCustom(index)
+{
+this.menu.remove(index)
+}
+function CustomCombo_insertCustom(index,s,val,selected,icn)
+{
+var o=this
+var item;
+if (icn != null) 
+{ //MenuWidget_addCheck(id,text,cb,icon,dx,dy,disabled,disDx,disDy,alt,accelerator,userData)
+    item=o.menu.insertCustomCheck(index,{id:o.id+"_it_"+(o.counter++),
+                                text:s,
+                                cb:CustomCombo_internalCB, 
+                            src:icn.src, dx:icn.dx, dy:icn.dy, disabled:false, disDx:icn.disDx, disDy:icn.disDy})
+} 
+else 
+{
+item=o.menu.insertCustomCheck(index,{id:o.id+"_it_"+(o.counter++),text:s,cb:CustomCombo_internalCB})
+}
+item.val=""+val
+item.parCombo=o
+item.isComboVal=true
+if ((o.selectedItem==null)||selected)
+o.selectItem(item)
+}
+function CustomCombo_addSeparator()
+{
+this.menu.addSeparator()
+}
+function CustomCombo_addMenuItem(id,text,cb,icon,dx,dy,disabled,disDx,disDy)
+{
+this.menu.add(id,text,cb,icon,dx,dy,disabled,disDx,disDy)
+}
+function CustomCombo_addCustomMenuItem(prm)
+{
+this.menu.addCustom(prm)
+}
+function CustomCombo_internalCB()
+{
+var o=this,c=o.parCombo
+c.selectItem(o)
+if (c.changeCB)
+c.changeCB()
+}
+function CustomCombo_getItemByIndex(idx)
+{
+var items=this.menu.items
+return ((idx>=0)&&(idx<items.length))?items[idx]:null
+}
+function CustomCombo_getItemIndex(item)
+{
+var items=this.menu.items,len=items.length,j=0
+for (var i=0;i<len;i++)
+{
+var it=items[i]
+if (it.isComboVal)
+{
+if (it.id==item.id)
+return j
+j++
+}
+}
+return -1
+}
+function CustomCombo_selectItem(item)
+{
+var o=this
+if (o.selectedItem)
+o.selectedItem.check(false)
+if (item)
+{
+o.val=item.val
+if (o.menuType==_menuType_custom_showIcon28x16 || o.menuType==_menuType_custom_showIcon64x16)
+{    
+    var dx=item.dx?item.dx:0;
+    var dy=item.dy?item.dy:0;
+    if (o.disabled)
+    {
+        dx=item.disDx?item.disDx:0;
+        dy=item.disDy?item.disDy:0;
+    }
+    var icon=item.icon?item.icon:(_skin+'../transp.gif');  
+    o.icon.changeImg(dx, dy, icon)  
+}
+else
+{
+    o.icon.changeText(o.disabled&&o.noTextWhenDisabled ? "" : item.text)
+if(item.icon)
+o.icon.changeImg(item.dx,item.dy,item.icon,item.disDx,item.disDy);
+}
+o.selectedItem=item
+item.check(true)
+if(o.disabled)
+o.icon.changeTooltip(o.icon.tooltip?o.icon.tooltip:"",true)
+else
+o.icon.changeTooltip(o.icon.tooltip?(o.icon.tooltip+' ('+item.text)+')':(item.text),true)
+}
+else
+{
+o.val=null
+o.icon.changeText(o.helpTxt)
+o.icon.changeTooltip(o.icon.tooltip?o.icon.tooltip:"",true)
+o.selectedItem=null
+}
+}
+function CustomCombo_setDisabled(d)
+{
+var o=this
+if (o.selectedItem)
+o.icon.changeText(d&&o.noTextWhenDisabled ? " " : o.selectedItem.text)
+o.disabled=d
+o.setOldDid(d)
+if(d) o.icon.changeTooltip(o.icon.tooltip?o.icon.tooltip:"",true)
+}
+function CustomCombo_select(idx)
+{
+var o=this,item=o.getItemByIndex(idx)
+if (item)
+o.selectItem(item)
+}
+function CustomCombo_setItemDisabled(idx,disabled)
+{
+var o=this,item=o.getItemByIndex(idx)
+if (item)
+item.setDisabled(disabled)
+}
+function CustomCombo_getSelection()
+{
+var o=this,it=o.selectedItem
+if (it)
+return {index:o.getItemIndex(it),value:it.val}
+else
+return null
+}
+function CustomCombo_getValue()
+{
+var o=this,it=o.selectedItem
+if (it)
+return it.val
+else
+return null
+}
+function CustomCombo_valueSelect(v)
+{
+v=""+v
+var o=this,items=o.menu.items,len=items.length
+for (var i=0;i<len;i++)
+{
+var it=items[i]
+if ((it.isComboVal)&&(it.val==v)&&(it.isShown) )
+{
+o.selectItem(it)
+return true
+}
+}
+return false
+}
+function CustomCombo_valueShow(v,show)
+{
+v=""+v
+var o=this,items=o.menu.items,len=items.length
+for (var i=0;i<len;i++)
+{
+var it=items[i]
+if ((it.isComboVal)&&(it.val==v))
+{
+it.show(show)
+return
+}
+}
+}
+function CustomCombo_setUndefined(u)
+{
+var o=this
+if (u)
+o.selectItem(null)
+}
+function CustomCombo_getVisibleItemsCount()
+{
+var o=this,items=o.menu.items,len=items.length,n=0
+for (var i=0;i<len;i++)
+{
+var it=items[i]
+if ((it.isComboVal)&&(it.isShown))
+{
+n++
+}
+}
+return n;
+}
+function CustomCombo_del(i)
+{
+if (this.menu)
+this.menu.remove (i)
+}
+function new_ComboTextFieldWidget(prms)
+{
+var dataType = Widget_param(prms, "dataType", "")
+var o = (dataType == "int")? new_IntFieldWidget(prms): new_TextFieldWidget(prms)
+o.par=null
+o.oldInit=o.init
+o.init=ComboTextFieldWidget_init
+o.setContentEditable=ComboTextFieldWidget_setContentEditable
+o.isContentEditable=ComboTextFieldWidget_isContentEditable
+o.getHTML=ComboTextFieldWidget_getHTML
+o.oldSetDisabled=o.setDisabled
+o.setDisabled=ComboTextFieldWidget_setDisabled
+return o
+}
+function newComboTextFieldWidget(id,changeCB,maxChar,keyUpCB,enterCB,noMargin,tooltip,width,dataType)
+{
+return new_ComboTextFieldWidget({
+id:id,
+changeCB:changeCB,
+maxChar:maxChar,
+keyUpCB:keyUpCB,
+enterCB:enterCB,
+noMargin:noMargin,
+tooltip:tooltip,
+width:width,
+dataType:dataType
+})
+}
+function ComboTextFieldWidget_init()
+{
+var o=this
+o.oldInit()
+var l=o.layer
+if (l!=null)
+{
+o.setContentEditable(true)
+l.onclick=ComboTextFieldWidget_onClick
+//complete events
+addEvent(l, "change", o.internalChangeCB)
+addEvent(l, "focus", o.internalFocusCB)
+addEvent(l, "blur", o.internalBlurCB)
+addEvent(l, "keydown",ComboTextFieldWidget_onKeyDown)
+addEvent(l, "keyup", o.internalKeyUpCB)
+}
+}
+function ComboTextFieldWidget_setContentEditable(d)
+{
+var o=this, l=o.layer
+o.contentEditable=d
+if (l)
+{
+l.contentEditable=d
+l.style.cursor=d?'text':_hand
+l.className=d?'comboEditable':'combo'
+}
+}
+function ComboTextFieldWidget_isContentEditable()
+{
+var o=this
+return o.contentEditable
+}
+function ComboTextFieldWidget_onClick()
+{
+var o=getWidget(this)
+if (o.contentEditable)
+return
+if (o.par!=null)
+o.par.clickCB()
+}
+function ComboTextFieldWidget_onKeyDown(e)
+{
+var o=getWidget(this)
+o.inputLyr.disabled=!o.contentEditable;
+o.internalKeyDownCB(e);
+}
+function ComboTextFieldWidget_getHTML()
+{
+var o=this
+var s= '<input'+(o.disabled?' disabled':'')+' oncontextmenu="event.cancelBubble=true;return true" style="'+
+sty("width",""+o.width+"px")+ 
+'height:14px;padding:2px;margin:0px;margin-left:'+(this.noMargin?0:10)+'px" type="text" '+attr('maxLength',this.maxChar)+
+' ondragstart="event.cancelBubble=true;return true" onselectstart="event.cancelBubble=true;return true" class="combo" id="'+
+this.id+'" name="'+this.id+'"'+attr('title',this.tooltip)+' value="">'
+/*//obsolete
+var s= '<input'+(o.disabled?' disabled':'')+' oncontextmenu="event.cancelBubble=true;return true" style="'+
+sty("width",""+o.width+"px")+ //+(_dtd4?'padding-left:2px;padding-right:2px;':'')+
+//'padding-top:2px;padding-bottom:0px;margin:0px;margin-left:'+(this.noMargin?0:10)+'px" onfocus="'+_codeWinName+'.TextFieldWidget_focus(this)" onblur="'+
+'height:14px;padding:2px;margin:0px;margin-left:'+(this.noMargin?0:10)+'px" onfocus="'+_codeWinName+'.TextFieldWidget_focus(this)" onblur="'+
+_codeWinName+'.TextFieldWidget_blur(this)" onchange="'+_codeWinName+'.TextFieldWidget_changeCB(event,this)" onkeydown=" return '+
+_codeWinName+'.TextFieldWidget_keyDownCB(event,this);" onkeyup=" return '+_codeWinName+
+'.TextFieldWidget_keyUpCB(event,this);" type="text" '+attr('maxLength',this.maxChar)+
+' ondragstart="event.cancelBubble=true;return true" onselectstart="event.cancelBubble=true;return true" class="combo" id="'+
+this.id+'" name="'+this.id+'"'+attr('title',this.tooltip)+' value="">'
+*/
+return s;
+}
+function ComboTextFieldWidget_setDisabled(d)
+{
+var o=this
+o.oldSetDisabled(d)
+//o.layer.className=d?'comboDisabled':'combo'
+}
+function new_TextComboWidget(prms)
+{
+var o = new_Widget(prms)
+var formName = Widget_param(prms, "formName", "text_"+o.id)
+var maxChar = Widget_param(prms, "maxChar", null)
+var tooltip = Widget_param(prms, "tooltip", null)
+var w = Widget_param(prms, "width", 13)
+var dataType = Widget_param(prms, "dataType", null)
+var beforeShowCB = Widget_param(prms, "beforeShowCB", null)
+o.changeCB = Widget_param(prms, "changeCB", null)
+o.checkCB = Widget_param(prms, "checkCB", null)
+o.editable = Widget_param(prms, "editable", true)
+o.isTextComboWidget=true
+// basic widgets
+o.text=newComboTextFieldWidget(formName,TextComboWidget_checkCB,maxChar,null/*keyUpCB*/,TextComboWidget_enterCB,true,tooltip,w-13,dataType)
+o.arrow=newIconWidget("arrow_"+o.id,_skin+"toolbar_elements.png",TextComboWidget_arrowClickCB,null,(_openMenuPart1+(tooltip?tooltip:"")+_openMenuPart2),5,3,0,132,0,361, null,null, null,_iconComboArrow);
+o.menu=newMenuWidget("menu_"+o.id,TextComboWidget_hideCB,beforeShowCB)
+// set the parent
+o.text.par=o
+o.arrow.par=o
+o.menu.parIcon=o
+// properties
+o.arrow.margin=0
+o.arrow.overCB="IconWidget_none"
+o.arrow.outCB="IconWidget_none"
+o.margin=0;
+o.spc=0
+o.counter=0
+o.index=_allBOIconsMenus.length++
+_allBOIconsMenus[o.index]=o
+// public methods
+o.menIcnOldInit=o.init
+o.init=TextComboWidget_init
+o.imwpResize=o.resize
+o.resize=TextComboWidget_resize
+o.getHTML=TextComboWidget_getHTML
+o.setDisabled=TextComboWidget_setDisabled
+o.isDisabled=TextComboWidget_isDisabled
+o.add=TextComboWidget_add
+o.addSeparator=TextComboWidget_addSeparator
+o.addMenuItem=TextComboWidget_addMenuItem
+o.select=TextComboWidget_select
+o.getSelection=TextComboWidget_getSelection
+o.valueShow=TextComboWidget_valueShow
+o.valueSelect=TextComboWidget_valueSelect
+o.setUndefined=TextComboWidget_setUndefined
+o.setContentEditable=TextComboWidget_setContentEditable
+o.isContentEditable=TextComboWidget_isContentEditable
+o.del=TextComboWidget_del
+o.getTextValue=TextComboWidget_getTextValue
+// private methods
+o.clickCB=TextComboWidget_clickCB
+o.selectItem=TextComboWidget_selectItem
+o.getItemByIndex=TextComboWidget_getItemByIndex
+o.getItemIndex=TextComboWidget_getItemIndex
+o.setItemDisabled=TextComboWidget_setItemDisabled
+o.selectTextValue=TextComboWidget_SelectTextValue
+o.text.enterCancelBubble=false
+return o
+}
+function newTextComboWidget(id,maxChar,tooltip,width,changeCB,checkCB,beforeShowCB,formName,dataType)
+{
+return new_TextComboWidget({
+id:id,
+maxChar:maxChar,
+tooltip:tooltip,
+width:width,
+changeCB:changeCB,
+checkCB:checkCB,
+beforeShowCB:beforeShowCB,
+formName:formName,
+dataType:dataType
+})
+}
+function TextComboWidget_init()
+{
+var o=this
+o.menIcnOldInit()
+o.text.init()
+o.arrow.init()
+o.menu.init()
+var l=o.layer
+//l.onmouseover=TextCombo_OverCB
+//l.onmouseout=TextCombo_OutCB
+addEvent(l, "mouseover", TextCombo_OverCB);
+addEvent(l, "mouseout", TextCombo_OutCB);
+o.text.setContentEditable(o.editable);
+}
+function TextComboWidget_getHTML()
+{
+var o=this, s= new Array, i = 0
+s[i++] = '<table id="'+o.id+'" cellspacing="0" cellpadding="0" border="0" style="cursor:default;margin:'+o.margin+'px;height:20px;padding:0px"><tbody><tr>'
+s[i++] = '<td style="font-size:1px;">'+o.text.getHTML()+'</td>'
+s[i++] = '<td style="font-size:1px;padding-left:'+o.spc+'px" width="'+(13+o.spc)+'">'+o.arrow.getHTML()+'</td>'
+s[i++] = '</tr></tbody></table>'
+return s.join('')
+}
+function TextComboWidget_resize(w,h)
+{
+var o=this
+if (w!=null)
+w=Math.max(0,w-2*o.margin)
+var d=o.layer.display!="none"
+if (d&_moz&&!_saf)
+o.setDisplay(false)
+o.imwpResize(w,h)
+if (d&_moz&&!_saf)
+o.setDisplay(true)
+}
+function TextComboWidget_add(s,val,selected)
+{
+var o=this
+var item=o.menu.addCheck(o.id+"_it_"+(o.counter++),s,TextComboWidget_internalCB)
+item.val=""+val
+item.parCombo=o
+item.isComboVal=true
+if ((o.selectedItem==null)||selected)
+o.selectItem(item)
+}
+function TextComboWidget_addSeparator()
+{
+this.menu.addSeparator()
+}
+function TextComboWidget_addMenuItem(id,text,cb,icon,dx,dy,disabled,disDx,disDy)
+{
+this.menu.add(id,text,cb,icon,dx,dy,disabled,disDx,disDy)
+}
+function TextComboWidget_setDisabled(d)
+{
+var o=this
+o.text.setDisabled(d)
+o.arrow.setDisabled(d)
+o.menu.setDisabled(d)
+o.disabled=d
+}
+function TextComboWidget_isDisabled()
+{
+var o=this
+return o.disabled
+}
+function TextComboWidget_select(idx)
+{
+var o=this
+idx=(idx==-1) ? o.menu.items.length-1 : idx;
+var item=o.getItemByIndex(idx)
+if (item)
+o.selectItem(item)
+}
+function TextComboWidget_setItemDisabled(idx,disabled)
+{
+var o=this,item=o.getItemByIndex(idx)
+if (item)
+item.setDisabled(disabled)
+}
+function TextComboWidget_getSelection()
+{
+var o=this,it=o.selectedItem
+var txt=o.text.getValue()
+if (it)
+return {index:o.getItemIndex(it),value:it.val}
+else
+return {index:-1,value:txt}
+}
+function TextComboWidget_valueSelect(v)
+{
+v=""+v
+var o=this,items=o.menu.items,len=items.length
+for (var i=0;i<len;i++)
+{
+var it=items[i]
+if ((it.isComboVal)&&(it.val==v))
+{
+o.selectItem(it)
+return
+}
+}
+o.text.setValue(v)
+}
+function TextComboWidget_valueShow(v,show)
+{
+v=""+v
+var o=this,items=o.menu.items,len=items.length
+for (var i=0;i<len;i++)
+{
+var it=items[i]
+if ((it.isComboVal)&&(it.val==v))
+{
+it.show(show)
+return
+}
+}
+o.text.setValue(v)
+o.text.show(show)
+}
+function TextComboWidget_setUndefined(u)
+{
+var o=this
+if (u)
+o.selectItem(null)
+}
+function TextComboWidget_setContentEditable(d)
+{
+var o=this
+o.text.setContentEditable(d)
+}
+function TextComboWidget_isContentEditable()
+{
+var o=this
+return o.text.isContentEditable()
+}
+function TextComboWidget_del(i)
+{
+if (this.menu)
+this.menu.remove (i)
+}
+function TextComboWidget_selectItem(item)
+{
+var o=this
+if (o.selectedItem)
+o.selectedItem.check(false)
+if (item)
+{
+o.val=item.val
+o.text.setValue(o.disabled ? "" : item.text)
+o.selectedItem=item
+item.check(true)
+}
+else
+{
+o.val=null
+o.text.setValue("")
+o.selectedItem=null
+}
+}
+function TextComboWidget_getItemByIndex(idx)
+{
+var items=this.menu.items
+return ((idx>=0)&&(idx<items.length))?items[idx]:null
+}
+function TextComboWidget_getItemIndex(item)
+{
+var items=this.menu.items,len=items.length,j=0
+for (var i=0;i<len;i++)
+{
+var it=items[i]
+if (it.isComboVal)
+{
+if (it.id==item.id)
+return j
+j++
+}
+}
+return -1
+}
+function TextComboWidget_changeCB()
+{
+var p=this.par
+var b=true
+if (p.checkCB)
+b=p.checkCB()
+if (!b)
+return
+if (p.changeCB)
+p.changeCB()
+}
+function TextComboWidget_enterCB()
+{
+var p=this.par
+// 1st : Unselect any selected element from the menu
+if (p.selectedItem)
+{
+p.selectedItem.check(false)
+p.selectedItem=null
+}
+//2nd : Call the callBack function
+var b=true
+if (p.checkCB)
+b=p.checkCB()
+if (!b)
+return
+if (p.changeCB) 
+p.changeCB()
+}
+function TextComboWidget_checkCB()
+{
+var p=this.par
+p.selectTextValue ()
+if (p.checkCB) 
+p.checkCB()
+}
+function TextComboWidget_hideCB()
+{
+var o=this.parIcon
+TextComboOutCB(o.index)
+}
+function TextComboWidget_arrowClickCB()
+{
+this.par.clickCB()
+}
+function TextComboWidget_clickCB()
+{
+var o=this,l=o.layer
+//o.menu.show(!o.menu.isShown(),getPosScrolled(l).x,getPosScrolled(l).y+o.getHeight()+1,null,null,o)
+IconMenuWidgetsShowMenu(o);
+TextComboOverCB(o.index)
+}
+function TextComboWidget_getTextValue()
+{
+return this.text.getValue()
+}
+function TextCombo_OverCB()
+{
+TextComboOverCB(getWidget(this).index)
+return true
+}
+function TextComboOverCB(i)
+{
+var o=_allBOIconsMenus[i]
+IconWidget_overCB(o.arrow.index)// Re-use method from IconWidget class
+}
+function TextCombo_OutCB(i)
+{
+TextComboOutCB(getWidget(this).index)
+}
+function TextComboOutCB(i)
+{
+var o=_allBOIconsMenus[i]
+if (!o.menu.isShown())
+IconWidget_outCB(o.arrow.index)// Re-use method from IconWidget class
+else
+IconWidget_overCB(o.arrow.index)
+}
+function TextComboWidget_internalCB()
+{
+var o=this,c=o.parCombo
+c.selectItem(o)
+if (c.changeCB)
+c.changeCB()
+}
+function TextComboWidget_keyUpCB()
+{
+}
+function TextComboWidget_SelectTextValue ()
+{
+var o=this,l=""+o.text.getValue(),items=o.menu.items,len=items.length
+// Find and select a matching item if any
+for (var i=0;i<len;i++)
+{
+var it=items[i]
+if ((it.isComboVal)&&(""+it.text==l))
+{
+o.selectItem(it)
+return
+}
+}
+// If we arrive here, we did'nt found any matching item
+// Deselect if any item is already selected
+// Don't setUndefined because it update the TextComboWidget text
+if (o.selectedItem)
+o.selectedItem.check(false)
+}
+function new_IconScrollMenuWidget(prms)
+// CONSTRUCTOR
+// id[String]the icon id for DHTML processing
+// src[String]the icon image url
+// clickCB[Function - optional]callback called when clicking
+// text[String - optional]icon  text
+// tooltip[String]icon tooltip
+// w[int]visible image width
+// h[int]visible image height
+// dx[int - optional]horizontal offset in the image
+// dy[int - optional]vertical offset in the image
+// disDx[int - optional]horizontal offset for disabled state
+// disDy[int - optional]vertical offset for disabled state
+// changeCB[Function - optional]calback when selection is changed by the user
+// multi[boolean - optional]if true, multiselection is enabled
+// lines[int]number of visible lines
+// tooltip[String - optional]tooltip for 508
+// dblClickCB[Function - optional]calback when an item is double-clicked
+// keyUpCB[Function - optional]calback when a key
+// showLabel[boolean - optional]if true a label is displayed
+// label[boolean - optional]text of the label
+// convBlanks[int - optional]
+// beforeShowCB [Function - optional]callback called before showing the menu
+{
+var o = new_IconMenuWidget(prms)
+prms.id="iconMenu_menu_"+o.id
+o.menu = new_ScrollMenuWidget(prms)
+o.add=IconScrollMenu_add
+return o
+}
+function newIconScrollMenuWidget(id,src,clickCB,text,tooltip1,w,h,dx,dy,disDx,disDy,
+changeCB,multi,width,lines,tooltip2,dblClickCB,keyUpCB,showLabel,label,convBlanks,beforeShowCB)
+{
+var tooltip = null;
+if (tooltip1 != null) tooltip = tooltip1;
+if (tooltip2 != null) tooltip = tooltip2;
+return new_IconScrollMenuWidget({
+id:id,
+src:src,
+clickCB:clickCB,
+text:text,
+width:w,
+height:h,
+dx:dx,
+dy:dy,
+disDx:disDx,
+disDy:disDy,
+changeCB:changeCB,
+multi:multi,
+width:width,
+lines:lines,
+tooltip:tooltip,
+dblClickCB:dblClickCB,
+keyUpCB:keyUpCB,
+showLabel:showLabel,
+label:label,
+convBlanks:convBlanks,
+beforeShowCB:beforeShowCB
+})
+}
+function IconScrollMenu_add(s,val,sel,id)
+{
+this.menu.add(s,val,sel,id)
+}
+function new_VertBarInLeftPaneWidget(prms)
+{
+// Base class
+var o = new_ContainerWidget(prms);
+o.containerInit = o.init
+    o.getHTML=function()
+{
+var o=this;
+        var cls, st, item
+        var s = new Array, si = 0 
+s[si++] = '<table id="'+prms.id+'" border="0"  cellpadding="0" cellspacing="0" width='+prms.vertBarWidth+'><tbody>';               
+        var len=o.items.length;        
+        for (var i=0; i<len; i++)
+        {
+item = o.items[i]
+            cls=(i+1<len)?'vertBarBGWithSep':'vertBarBGWithoutSep';
+            s[si++] = '<tr><td class="'+cls+'">';
+            s[si++] = o.items[i].getHTML();
+            s[si++] = '</td></tr>';                       
+        }
+    s[si++] = '</tbody></table>';    
+        return s.join('');
+    }
+o.init=function(layer)
+{
+var o=this, items=o.items, len=items.length
+o.containerInit(layer)
+for (var i=0; i<len; i++)
+        {
+var item = items[i]
+if (item._parentDisplay==false)
+item.layer.parentNode.parentNode.style.display="none"
+   }
+}
+o.setItemDisplay=function(value, show)
+{
+var o=this, item=o.getItemByValue(value)
+if (item)
+{
+item._parentDisplay = show
+if (item.layer)
+item.layer.parentNode.parentNode.style.display = (show == false ? "none" : "")
+}
+}
+    return o;
+}
+function new_PaneWidget(prms)
+{
+// Base class
+var o = new_ContainerWidget(prms);
+// Parameters parsing
+o.w            = Widget_param(prms, "width", 100)            // the pane width
+o.h            = Widget_param(prms, "height", 400)           // the pane height
+o.x            = Widget_param(prms, "x", null)              // the Pane abscissa
+o.y            = Widget_param(prms, "y", null);             // the Pane ordinate
+o.changeCB     = Widget_param(prms, "changeCB", null)       // callback when selection changed
+o.showTitle    = Widget_param(prms, "showTitle", true)      // Show/Hide the title zone
+o.showPalette  = Widget_param(prms, "showPalette", true)    // Show/Hide the selector zone
+o.paletteOnTop = Widget_param(prms, "paletteOnTop", false)  // Selector on top or bottom
+o.noBorders    = Widget_param(prms, "noBorders", false)     // Do not display borders
+o.paneType     = Widget_param(prms, "paneType", "combo")    // "buttonBar", "combo"
+o.minimizeCB   = Widget_param(prms, "minimizeCB", null)
+    o.maxCB        = Widget_param(prms, "maxCB", null)
+    o.workbench    = Widget_param(prms, "workbench", null)
+o.selection    = null
+    o.paneTableId  = "paneTable_"+o.id;
+    o.paneTableLyr = null;
+    o.vertBarWidth = 35;
+o.vertBar      = new_VertBarInLeftPaneWidget({id:"vertBar_"+o.id, vertBarWidth:o.vertBarWidth});     
+    o.vertBar.userData = o;  
+    o.vertBarIconCount=0;
+    o.vertBarSty    ='border-right:1px solid #96A8C3;';
+o.currentURL=null
+o.navigationFreezed = false
+    if (o.noBorders)
+    {
+        o.vertBarSty +='border-left:1px solid #96A8C3;';
+    } 
+// Members
+o.selector = null
+o.internMinCB = function()
+{
+var o=this.par.par
+if (o.minimizeCB)
+o.minimizeCB()
+}
+switch (o.paneType)
+{
+case "buttonBar":
+o.selector = new_PaneIconBarSelectorWidget({id:"palette_"+o.id, pane:o})
+break
+case "combo":
+o.selector = new_PaneComboSelectorWidget({minimizeCB:o.minimizeCB?o.internMinCB:null,id:"palette_"+o.id, pane:o, rightZoneWidth:20})
+break
+}
+o.selector.par=o
+o.iframe  = newWidget("_iframe"+o.id)
+o.title   = newWidget("paneTitleB_"+o.id)
+o.bottomH = o.showPalette ? o.selector.getHeight() : 0;
+o.topH    = o.showTitle ? _dtd4?19:20 : 0;
+// ============
+// Instanciate
+// ============
+o.instanciate = function(prms)
+{
+prms.par = this;
+switch (o.paneType)
+{
+case "buttonBar":
+return new_IconBarElement(prms)
+case "combo":
+return new_ComboElement(prms)
+}
+}
+o.containerAdd=o.add
+o.add= function(value,name,icon,dx,dy,url)
+{
+o.addInPane({value:value,text:name,icon:(icon?{src:icon,dx:dx,dy:dy}:null),url:url})
+}
+//=====================================
+// add multiple widgets in a container
+//=====================================
+o.fill = function (arrPrms)
+{
+var len = arrPrms.length
+for (var i=0; i<len; i++)
+o.addInPane(arrPrms[i])
+}
+    o.addInPane = function(prms) 
+    {
+        var o=this;
+        o.containerAdd(prms);         
+        var iconItem=o.vertBar.add({id:o.vertBar.id+"_icon_"+o.vertBarIconCount++, type:"iconradio", icontype:_iconVertBarInLeftPanel, 
+                                    icon:prms.icon, clickCB:o.iconClickCB, group:"grp_"+o.vertBar.id, value: prms.value, tooltip:prms.text});
+        o.superIconAcceptClick=iconItem.acceptClick;
+        iconItem.acceptClick=o.iconAcceptClick;
+    }
+o.setRightPartDisplay = function(d)
+{
+var o=this
+if (o.rightPartLyr == null)
+o.rightPartLyr = getLayer(o.id + "_rightPrt")
+o.rightPartLyr.style.display = d ? "" : "none"
+}
+// =====
+// HTML
+// =====
+o.getHTML=function()
+{
+var o=this,s=new Array,k=0
+var absSty = ((o.x!=null)&&(o.y!=null)) ? "position:absolute;left:"+o.x+"px;top:"+o.y+"px;" : ""
+o.selector.resize(o.w)
+o.selector.beforeHTML()
+s[k++] = '<div class="treeZone" id="'+o.id+'" style="'+absSty+'overflow:hidden;width:'+(o.w+(_dtd4?-2:0))+'px;height:'+(o.h+(_dtd4?-2:0))+'px;'+(o.noBorders?'border-width:0px;':'')+'">'
+s[k++] = o.getLabelForAriaHTMLTag() 
+        s[k++]= '<table id="'+o.paneTableId+'" border="0"  cellpadding="0" cellspacing="0"><tbody>' 
+        s[k++]= '<tr>'
+        s[k++]= '<td class="vertBarBGInLeftPanel" valign="top" style="'+o.vertBarSty+'">' + o.vertBar.getHTML() + '</td>' 
+        s[k++]= '<td id="'+o.id+'_rightPrt" valign="top">'
+if (o.paletteOnTop) s[k++] = o.selector.getHTML()
+s[k++] = '<div class="titlepane" id="paneTitleB_'+o.id+'" style="overflow:hidden;background-image:url('+_skin+'panetitle.gif);height:'+(o.topH)+'px"></div>'
+s[k++] = '<div class="treeZone" style="border-width:0px;border-bottom-width:1px;height:'+(Math.max(0,o.h-(o.topH+o.bottomH)-2))+'px"><iframe style="margin:0px;width:'+Math.max(0,o.w-2)+'px;height:'+(Math.max(0,o.h-(o.topH+o.bottomH)-(_dtd4?2:3)))+'px" id="_iframe'+o.id+'" name="_iframe'+o.id+'" title="'+convStr(o.tooltip)+'" frameborder="0" src="'+_skin+'../../empty.html"></iframe></div>' 
+if (!o.paletteOnTop) s[k++] = o.selector.getHTML()
+        s[k++] = '</td>' 
+        s[k++] = '</tr>' 
+        s[k++] = '</tbody></table>'
+s[k++] = '</div>'
+return s.join('')
+}
+// =====
+// init
+// =====
+o.containerInit=o.init
+o.init=function()
+{
+var o=this
+o.containerInit()
+o.selector.init()
+o.iframe.init()
+o.title.init()
+        o.vertBar.init();
+        o.paneTableLyr=getLayer(o.paneTableId);
+}
+// =======
+// resize
+// =======
+o.oldResize=o.resize
+o.resize= function (w,h)
+{        
+var o=this       
+o.w=w
+o.h=h
+o.oldResize(w!=null ? Math.max(0,w+(_dtd4?-2:0)) : null, h!=null ? Math.max(0,h+(_dtd4?-2:0)) : null)
+o.selector.setDisplay(o.showPalette);
+o.title.setDisplay(o.showTitle);
+var contentWidth=w-2-o.vertBarWidth;
+o.selector.resize(Math.max(0,contentWidth));       
+o.title.resize(Math.max(0,contentWidth));
+var parCss=o.iframe.layer.parentNode.style
+if (w!=null)
+parCss.width=""+Math.max(0,contentWidth)+"px"
+if (h!=null)
+parCss.height=""+Math.max(0,o.h-(o.topH+o.bottomH)-2)+"px"
+o.iframe.resize(w!=null ? Math.max(0,contentWidth-2) : null, h !=null ? Math.max(0,o.h - o.topH - o.bottomH-2) : null)
+if (o.iframeVisible())
+{
+var item = o.getItemByValue(o.selection)
+if (item)
+{
+o.safeFrameNav(item.url)
+}
+}
+else
+{
+o.safeFrameNav(_skin+"../../empty.html")
+}
+        if (o.paneTableLyr)
+        {
+            if (w!=null)
+                o.paneTableLyr.style.width=Math.max(0,w+(_dtd4?-2:0))+"px";
+            if (h!=null)
+                o.paneTableLyr.style.height=Math.max(0,h+(_dtd4?-2:0))+"px";
+        }
+}
+// =============
+// getSelection
+// =============
+o.getSelection=function()
+{
+var o=this, item=o.getItemByValue(o.selection)
+if (item)
+return {index:o.items.indexOf(o.selection),value:o.selection}
+else
+return null
+}
+// =======
+// select
+// =======
+o.valueSelect=function(value, updateVertBar, force)
+{
+var o=this      
+        var prevValue=o.selection;
+if (value!=o.selection || force)
+{
+var item = o.getItemByValue(value)
+if (item)
+{
+o.selection = value
+o.selector.select(value)
+if (o.changeCB)
+o.changeCB()
+o.title.setHTML(convStr(item.text))
+if (o.iframeVisible())
+o.safeFrameNav(item.url)
+                if (typeof(updateVertBar)=="undefined" || updateVertBar)
+                    o.updateVertBarSelection(value);            
+                o.updateVertBarSep(prevValue, value);
+}
+else
+{
+o.selection=null
+o.safeFrameNav(_skin+"../../empty.html")
+o.title.setHTML('')
+}
+}
+}
+o.containerSetDisplay=o.setDisplay
+o.setDisplay = function(d)
+{
+var o=this
+o.containerSetDisplay(d)
+if (o.layer && d!=o.__hidden)
+{
+if (o.iframeVisible())
+{
+var item = o.getItemByValue(o.selection)
+if (item)
+{
+o.safeFrameNav(item.url)
+}
+}
+else
+{
+o.safeFrameNav(_skin+"../../empty.html")
+}
+}
+}
+o.iframeVisible=function()
+{
+var o=this
+return (o.__hidden!=true && o.iframe.layer && o.iframe.layer.offsetWidth > 2)
+}
+o.safeFrameNav=function(url)
+{
+var o=this
+if (o.currentURL!=url)
+{
+o.currentURL = url
+if (!o.navigationFreezed) {
+frameNav("_iframe"+o.id, url, false, _curWin)
+}
+}
+}
+o.freezeNavigate=function()
+{
+var o=this
+o.navigationFreezed = true
+}
+o.restoreNavigate=function()
+{
+var o=this
+if (o.navigationFreezed)
+{
+o.navigationFreezed = false
+if (o.layer) {
+frameNav("_iframe"+o.id, o.currentURL, false, _curWin)
+}
+}
+}
+o.updateVertBarSelection=function(currentValue)
+{
+        var o=this;      
+        var checkItem=o.vertBar.getItemByValue(currentValue);
+        if (checkItem)
+        {
+            checkItem.check(true);           
+        }     
+}
+    o.updateVertBarSep=function(prevValue, currentValue)
+{
+        var o=this;   
+        var aboveItem=o.vertBar.getPrevItemByValue(currentValue);
+        if (aboveItem)
+        {
+            aboveItem.layer.parentNode.className="vertBarBGWithoutSep";    
+        }       
+        if (prevValue)
+        {
+            aboveItem=o.vertBar.getPrevItemByValue(prevValue);    
+            if (aboveItem)
+            {
+                aboveItem.layer.parentNode.className="vertBarBGWithSep";    
+            }
+        }    
+}
+    o.iconAcceptClick = function()
+    {
+        var vertBar=this.getParentContainer();
+        var o=vertBar.getUserData();      
+        if (o.workbench)
+        {
+            var pers = o.workbench.getPerspective()
+        if (pers && !pers.isLeftPaneVisible())
+            {
+                return true;
+            }
+        }
+        return o.superIconAcceptClick.call(this);
+    }
+    o.iconClickCB = function()
+    {        
+        var vertBar=this.getParentContainer();
+        var o=vertBar.getUserData();        
+        o.selector.select(this.value); 
+        o.valueSelect(this.value, false);
+        if (o.workbench)
+        {
+            var pers = o.workbench.getPerspective()
+        if (pers && !pers.isLeftPaneVisible() && o.maxCB)
+            {
+                o.maxCB();
+            }
+        }
+    }
+// =============
+// Current Pane
+// =============
+o.getCurrentPane=function()
+{
+return this.getItemByValue(o.selection)
+}
+o.getCurrentWidth=function()
+{
+var o=this;
+var w=0;
+if (o.paneTableLyr)
+        {
+var wd=o.paneTableLyr.style.width;
+wd=wd.toLowerCase();
+var iPos=wd.indexOf('px');
+if (iPos>=0)
+wd=wd.substring(0,iPos);
+w=parseInt(wd);
+        }
+return w;
+}
+// ========================
+// get Frame Window object
+// ========================
+o.getFrame=function()
+{
+return _curWin.frames["_iframe"+this.id]
+}
+// ==========
+// Show/hide
+// ==========
+o.valueShow=function(value,show)
+{
+var o=this
+o.vertBar.setItemDisplay(value,show) 
+o.selector.valueShow(value,show)  
+}
+o.isItemDisplayed=function(value)
+{
+        var o=this;      
+        var item=o.vertBar.getItemByValue(value);
+       return (item!=null && item._parentDisplay);
+}
+return o;
+}
+function newPaneWidget(id,tooltip,w,h,x,y,changeCB)
+{
+return  new_PaneWidget({id:id,text:tooltip,width:w,height:h,x:x,y:y,changeCB:changeCB})
+}
+function new_PaneElement(prms)
+{
+// Base class
+var o = new_Widget(prms);
+o.icon = Widget_param(prms, "icon", null)
+o.text = Widget_param(prms, "text", "")
+o.url  = Widget_param(prms, "url", null)
+o.par  = prms.par
+if (o.icon==null && prms.src)
+{
+o.icon=new_IconDesc(prms)
+}
+o.init=function() {}
+o.getHTML = function() {return ""}
+return o
+}
+function new_IconBarElement(prms)
+{
+// Base class
+var o = new_PaneElement(prms)
+o.iconCheckCB=function()
+{
+o.par.valueSelect(this.value)
+}
+prms.text=""
+prms.tooltip=o.text
+o.par=prms.par
+prms.clickCB=o.iconCheckCB
+var widget = o.checkIcon=new_IconCheckWidget(prms);
+widget.selector = o.par.selector
+widget.shown=true
+o.par.selector.add(o.checkIcon)
+return o
+}
+function new_ComboElement(prms)
+{
+// Base class
+var o = new_PaneElement(prms)
+o.par=prms.par
+o.item = o.par.selector.combo.add(o.text,o.value)
+return o
+}
+function new_PaneComboSelectorWidget(prms)
+{
+prms.className    = "paneTitle"
+prms.rightPadding = 0
+prms.leftPadding  = 5   
+var o=new_PaletteWidget(prms)
+o.minimizeCB=Widget_param(prms, "minimizeCB", null)
+    o.closeIconSrc=_skin+'vertbar_leftpanel.png';
+o.getHeight=function()
+{
+return 20
+}
+o.beforeHTML=function()
+{
+}
+o.select=function(value)
+{
+o.combo.valueSelect(value)
+}
+o.changeCB=function()
+{
+var o=this
+o.getParentContainer().pane.valueSelect(o.getSelection().value, true)
+}
+o.changeStateCB=function(r)
+{
+var o=this.par // Cust combo
+if (r==_iconNormal)
+o.arrow.changeImg(1,773,_skin+"toolbox.png")
+else
+o.arrow.changeImg(1,776,_skin+"toolbox.png")
+}
+o.changeMinStateCB=function(r)
+{
+var o=this
+if (r==_iconNormal)
+o.changeImg(0,213,o.closeIconSrc)
+else
+o.changeImg(0,220,o.closeIconSrc)
+}
+o.valueShow=function(value, show)
+{
+this.combo.valueShow(value, show)
+}
+o.pane=prms.pane
+o.combo=new_CustomCombo({elastic:true,iconType:_paneComboButton, iconTextType:_paneButtonTextCSS ,arrowType:_paneComboArrow, changeCB:o.changeCB, margin:0, vAlign:"top", height:14})
+o.combo.arrow.onChangeState=o.changeStateCB
+o.combo.icon.onChangeState=o.changeStateCB
+o.add(o.combo)
+if (o.minimizeCB)
+{
+o.minimizeIcon = new_IconWidget({customTooltip:{title:_workbenchCloseLeftPane,text:_workbenchCloseLeftPaneDesc},margin:0, icontype:_paneComboRightBtn,  clickCB:o.minimizeCB, icon:{src:o.closeIconSrc, dy:213, dx:0, w:14, h:7}})
+o.minimizeIcon.par=o
+o.minimizeIcon.onChangeState=o.changeMinStateCB
+o.beginRightZone()
+o.add(o.minimizeIcon)
+}
+return o
+}
+function new_PaneIconBarSelectorWidget(prms)
+{
+prms.className = "toolbarBackgnd"
+var o=new_PaletteWidget(prms)
+o.menuCB=function()
+{
+var o=this.selector, l=this.layer
+o.menu.show(true, getPosScrolled(l).x+o.panemenu.getWidth()+1, getPosScrolled(l).y+16)
+}
+o.getHeight=function()
+{
+return 26
+}
+o.menuItemCB=function()
+{
+var o=this.selector
+o.pane.valueSelect(this.id)
+}
+o.beforeHTML=function()
+{
+var o=this
+o.beginRightZone()
+o.menu=newMenuWidget("panemenu_"+o.id);
+var items=o.pane.items, len=items.length
+for (var i=0; i<len; i++)
+{
+var item=items[i], icon=item.icon
+var src = icon ? icon.src : null
+var dx = icon ? icon.dx : null
+var dy = icon ? icon.dy : null
+var m = o.menu.addCheck(item.value,item.text,o.menuItemCB,src,dx,dy)
+m.selector=o
+}
+o.add(o.panemenu)
+}
+o.select=function(value)
+{
+var o=this, items=o.items, len=items.length
+for (var i=0; i<len; i++)
+{
+var item=items[i]
+if (item.isWidget && item.id!=o.paneMenuId)
+{
+item.check(item.value==value)
+mitem=o.menu.getItem(i)
+mitem.check(item.value==value)
+}
+}
+}
+o.resize=function(w)
+{
+var o=this,nbButton=0,items=o.items,len=items.length; maxVisible=Math.floor((w-22)/24),j=0,hasMenu=false
+for (var i=0;i<len;i++)
+{
+var item=items[i],isVis=j<maxVisible,menu=o.menu
+if (item.isWidget && item.id!=o.paneMenuId)
+{
+item.setDisplay(item.shown&&(isVis))
+if (menu)
+{
+var menuItem=menu.getItem(i),show=item.shown&&(!isVis)
+menuItem.show(show)
+if (show)
+hasMenu=true
+}
+if (item.shown) j++
+}
+}
+o.panemenu.setDisplay(hasMenu)
+}
+o.pane=prms.pane
+o.menu = null
+o.paneMenuId = "__panemenu_"+o.id
+o.panemenu = newIconWidget(o.paneMenuId,_skin+'panemenu.gif',o.menuCB,null,null,9,16);
+o.panemenu.selector=o
+return o
+}
+function new_ButtonMenuWidget(prms)
+{
+prms.clickCB = ButtonMenuWidget_clickCB
+prms.src = _skin+"menus.gif"
+prms.w = 7
+prms.h = 16
+prms.dx = 0
+prms.dy = 81
+prms.imgRight = true
+prms.disDx = 0
+prms.disDy = 97
+    var o = new_ButtonWidget(prms)
+    prms.id = "buttonMenu_menu_" + o.id    
+    o.menu = new_MenuWidget(prms);
+    o.getMenu=IconMenuWidget_getMenu
+    return o;
+}
+function newButtonMenuWidget(id,label,width,tooltip,beforeShowCB,tabIndex)
+{
+    return new_ButtonMenuWidget({
+    id:id,
+    label:label,
+    width:width,
+    tooltip:tooltip,
+    beforeShowCB:beforeShowCB,
+    tabIndex:tabIndex
+    })
+}
+function ButtonMenuWidget_clickCB()
+{
+      var o=this,l=o.layer;
+      o.menu.show(!o.menu.isShown(),getPosScrolled(l).x,getPosScrolled(l).y+o.getHeight(),null,null,o)
+}
+_scrollW=20
+_scrollH=20
+_margin=2
+function new_IconTableWidgetElem(prms)
+{
+var parid = Widget_param(prms, "parid", "")
+prms.group = "grp_"+parid
+var o = new_IconRadioWidget(prms)
+// Properties
+o.txtNoPadding=true
+o.txtAlign='center'
+o.margin=0
+o.maxW = Widget_param(prms, "maxW", (2*_margin))
+o.maxH = Widget_param(prms, "maxH", 0)
+o.imgW = Widget_param(prms, "width", 0) + o.border
+o.imgH = Widget_param(prms, "height", 0) + o.border
+o.txtW = o.maxW - (2*_margin)
+// Methods
+o.oldGetHTML=o.getHTML
+o.getHTML=IconTableWidgetElem_getHTML
+o.oldResize=o.resize
+o.resize=IconTableWidgetElem_resize
+return o
+}
+function newIconTableWidgetElem(parid,id,src,clickCB,text,tooltip,width,height,dx,dy,disDx,disDy,maxW,maxH)
+{
+return new_IconTableWidgetElem({
+parid:parid,
+id:id,
+src:src,
+clickCB:clickCB,
+text:text,
+tooltip:tooltip,
+width:width,
+height:height,
+dx:dx,
+dy:dy,
+disDx:disDx,
+disDy:disDy,
+maxW:maxW,
+maxH:maxH
+})
+}
+function IconTableWidgetElem_getHTML()
+{
+var o=this,imgCode=o.src?'<div style="overflow:hidden;width:'+o.imgW+'px;height:'+o.imgH+'">'+simpleImgOffset(o.src,o.w,o.h,o.dis?o.disDx:o.dx,o.dis?o.disDy:o.dy,'IconImg_'+o.id,null,o.tooltip,'margin:2px;cursor:'+(o.clickCB ? (!o.acceptClick() ? 'default' : _hand):'default'))+o.extraHTML+'</div>':'<div class="iconText" style="width:1px;"></div>'
+var txtAtt='style="white-space:normal;'
+txtAtt+='text-overflow:ellipsis;overflow:hidden;width:'+o.txtW+'px;'
+txtAtt+='"'
+var d=o.disp?"":"display:none;"
+return '<table style="'+d+'width:'+o.maxW+'px;height:'+o.maxH+'margin:0px" id="'+o.id+'" class="' + o.nocheckClass + '" cellspacing="0" cellpadding="0" border="0"><tr valign="middle">'+
+'<td align="center">'+ ((o.clickCB&&_ie)?lnk(imgCode,null,null,null, ' tabIndex="-1"' ):imgCode)+'</td></tr><tr>'+
+(o.text?'<td align="center"><div id="IconImg_Txt_'+o.id+'" class="iconTableText'+(o.dis?"Dis":"")+'" '+txtAtt+'>'+convStr(o.text)+'</div></td>':'')+
+'</tr></table>'
+}
+function IconTableWidgetElem_resize(w,h)
+{
+var o=this
+if (w!=null)
+o.oldResize(w-2*_margin,null)
+if (h!=null)
+o.oldResize(null,h-2*_margin)
+}
+function new_IconTableWidget(prms)
+{
+prms.padding=2
+var o = new_ScrolledZoneWidget(prms)
+// Properties
+o.horiz = Widget_param(prms, "horiz", true)
+o.icnTblLayer=null
+o.contCSS=null
+o.elems=new Array
+// Methods
+o.oldInit=o.init
+o.init=IconTableWidget_init
+o.oldResize2=o.resize
+o.resize=IconTableWidget_resize
+o.getHTML=IconTableWidget_getHTML
+o.add=IconTableWidget_add
+o.select=IconTableWidget_select
+return o
+}
+function newIconTableWidget(id,horiz,w,h)
+{
+return new_IconTableWidget({
+id:id,
+horiz:horiz,
+width:w,
+height:h
+})
+}
+function IconTableWidget_init()
+{
+var o=this, len=o.elems.length
+//o.oldInit()
+for (var i=0;i<len;i++)
+o.elems[i].init()
+o.icnTblLayer=getLayer(_codeWinName+'icnTbl'+o.id)
+o.contCSS=o.icnTblLayer.style
+}
+function IconTableWidget_resize(w,h)
+{
+var o=this
+//o.oldResize2(w,h)
+if (w!=null)
+{
+if (o.contCSS!=null)
+o.contCSS.width=''+w+'px'
+}
+if (h!=null)
+{
+if (o.contCSS!=null)
+o.contCSS.height=''+h+'px'
+}
+}
+function IconTableWidget_getHTML()
+{
+var o=this, s= new Array, si = 0
+s[si++] = '<table id="'+_codeWinName+'icnTbl'+o.id+'" width="'+o.w+'" height="'+o.h+'px" class="iconTableZone" cellspacing="0" cellpadding="0"><tbody>'
+s[si++] =  '<tr valign="top"><td>'
+s[si++] = '<table cellspacing="0" cellpadding="'+o.padding+'px"><tbody>'
+if (o.horiz)
+{
+s[si++] =  '<tr>'
+for (var i=0;i<o.elems.length;i++)
+{
+s[si++] =  '<td align="center">'
+s[si++] =  o.elems[i].getHTML()
+s[si++] =  '</td>'
+}
+s[si++] =  '</tr>'
+}
+else
+{
+for (var i=0;i<o.elems.length;i++)
+{
+s[si++] = '<tr><td align="center">'
+s[si++] =  o.elems[i].getHTML()
+s[si++] = '</td></tr>'
+}
+}
+s[si++] = '</tbody></table>'
+s[si++] =  '</td><tr>'
+s[si++] = '</tbody></table>'
+return s.join('')
+}
+function IconTableWidget_add(src,clickCB,text,tooltip,w,h,dx,dy,disDx,disDy)
+{
+var o=this, len=o.elems.length, icn=null
+var maxW=o.horiz?o.h:o.w
+maxW-=2*_margin
+var maxH=maxW
+icn=newIconTableWidgetElem(o.id,"iconTable_icon_"+len+o.id,src,clickCB,text,tooltip,
+w,h,dx,dy,disDx,disDy,maxW,maxH)
+icn.par=this
+o.elems[len]=icn
+}
+function IconTableWidget_select(index)
+{
+var o=this
+var e=o.elems[index]
+if ( e==null )
+return
+e.check(true)
+}
+function new_IconBordersMenuWidget(prms)
+{
+prms.src = _skin+'../borders.gif'
+prms.clickCB = IconBordersMenuWidget_iconInternalClickCB
+prms.imgRight = true
+prms.menuType = _menuType_border
+var o = new_IconMenuWidget(prms)
+// properties
+o.selectedBorder=new Object
+o.selectedBorder.top=0
+o.selectedBorder.bot=0
+o.selectedBorder.left=0
+o.selectedBorder.right=0
+o.lastSelectedBorder=new Object
+o.lastSelectedBorder.top=0
+o.lastSelectedBorder.bot=0
+o.lastSelectedBorder.left=0
+o.lastSelectedBorder.right=0
+o.bordersClickCB=Widget_param(prms, "bordersClickCB", null);
+o.beforeShowCB=Widget_param(prms, "beforeShowCB", null);
+// methods
+o.getSelectedBorder=IconBordersMenuWidget_getSelectedBorder
+o.getLastSelectedBorder=IconBordersMenuWidget_getLastSelectedBorder
+return o
+}
+function newIconBordersMenuWidget(id,clickCB,beforeShowCB, tooltip)
+{
+return new_IconBordersMenuWidget({
+id:id,
+bordersClickCB:clickCB,
+beforeShowCB:beforeShowCB,
+tooltip:tooltip
+})
+}
+function IconBordersMenuWidget_getSelectedBorder()
+{
+var o=this
+return o.selectedBorder
+}
+function IconBordersMenuWidget_getLastSelectedBorder()
+{
+var o=this
+return o.lastSelectedBorder
+}
+function IconBordersMenuWidget_iconInternalClickCB()
+{
+var o=this
+o.selectedBorder.top=o.lastSelectedBorder.top
+o.selectedBorder.bot=o.lastSelectedBorder.bot
+o.selectedBorder.left=o.lastSelectedBorder.left
+o.selectedBorder.right=o.lastSelectedBorder.right
+if (o.bordersClickCB)
+o.bordersClickCB()
+}
+function IconBordersMenuWidget_internalClickCB()
+{
+var o=this
+var top=bot=left=right=-1
+switch (o.id)
+{
+case "border_0":
+top=bot=left=right=0
+break;
+case "border_1":
+bot=1
+break;
+case "border_2":
+left=1
+break;
+case "border_3":
+right=1
+break;
+case "border_4":
+bot=2
+break;
+case "border_5":
+bot=3
+break;
+case "border_6":
+top=bot=1
+break;
+case "border_7":
+top=1;bot=2
+break;
+case "border_8":
+top=1;bot=3
+break;
+case "border_9":
+top=bot=left=right=1
+break;
+case "border_10":
+top=bot=left=right=2
+break;
+case "border_11":
+top=bot=left=right=3
+break;
+case "border_12":
+top=bot=left=right=-2
+break;
+}
+// Set the selection
+var pp=o.par.parIcon
+pp.selectedBorder.top=top
+pp.selectedBorder.bot=bot
+pp.selectedBorder.left=left
+pp.selectedBorder.right=right
+if (o.id!="border_12")
+{
+// Update the menu icon
+pp.icon.changeImg(16*o.idx,0)
+// Save the previous border
+pp.lastSelectedBorder.top=top
+pp.lastSelectedBorder.bot=bot
+pp.lastSelectedBorder.left=left
+pp.lastSelectedBorder.right=right
+}
+// Call the menu callback
+if (pp.bordersClickCB)
+pp.bordersClickCB()
+}
+function new_IntComboWidget(prms)
+{
+prms.dataType = "int"
+var o = new_TextComboWidget(prms)
+o.setMin=IntComboWidget_setMin
+o.setMax=IntComboWidget_setMax
+o.getValue=TextComboWidget_getTextValue
+return o
+}
+function newIntComboWidget(id,maxChar,tooltip,width,changeCB,checkCB,beforeShowCB,formName)
+{
+return new_IntComboWidget({
+id:id,
+maxChar:maxChar,
+tooltip:tooltip,
+width:width,
+changeCB:changeCB,
+checkCB:checkCB,
+beforeShowCB:beforeShowCB,
+formName:formName
+})
+}
+function IntComboWidget_setMin(min)
+{
+if (!isNaN(min))
+this.text.setMin(min)
+}
+function IntComboWidget_setMax(max)
+{
+if (!isNaN(max))
+this.text.setMax(max)
+}
+function new_SpinnerIconWidget(prms)
+{
+prms.src = _skin+'toolbar_elements.png'
+prms.width = 5
+prms.height = 3
+var inc = Widget_param(prms, "inc", true)
+prms.dy = inc?295:298
+prms.disDy = inc?528:531
+prms.allowDblClick=true;
+prms.mousedownCB = SpinnerIconWidget_start
+prms.mouseupCB = SpinnerIconWidget_stop
+if (prms.calendarSpin)
+{
+    prms.icontype = (inc==true)?_iconCalendarSpinUp:_iconCalendarSpinDown
+}
+else
+{
+    prms.icontype = (inc==true)?_iconSpinnerUp:_iconSpinnerDown
+}
+var o = new_IconWidget(prms);
+    o.mouseOutCB=SpinnerIconWidget_mouseOutCB;
+o.margin=0;
+o.keepSpin=false;
+o.inc=inc;
+o.first=true;
+return o;
+}
+function newSpinnerIconWidget(id, clickCB, inc, tooltip)
+{
+return new_SpinnerIconWidget({
+id:id,
+clickCB:clickCB,
+inc:inc,
+tooltip:tooltip
+})
+}
+function SpinnerIconWidget_mouseOutCB()
+{
+    var o=this;
+o.keepSpin = false;
+    //debuggingLogger("SpinnerIconWidget_mouseOutCB",500,0,200,500); 
+}
+function SpinnerIconWidget_start()
+{
+var o=this;
+o.keepSpin = true;
+SpinnerIconWidget_setTimer(o);
+} 
+function SpinnerIconWidget_stop()
+{
+var o=this;
+o.keepSpin = false;
+//debuggingLogger("SpinnerIconWidget_stop",500,0,200,500); 
+var parent=o.parent;
+if (parent && parent.changeOnlyOnMouseUp)
+{
+    if (parent.changeCB) parent.changeCB();
+}
+}
+function SpinnerIconWidget_setTimer(o)
+{
+if (!o.keepSpin) return;
+if (o.clickCB) o.clickCB();
+var first=o.first;
+if (o.first) o.first=false;
+    setTimeout(function(){SpinnerIconWidget_setTimer(o)},first?250:150);
+}
+function new_SpinnerWidget(prms)
+{
+var o = new_Widget(prms);
+    o.changeOnlyOnMouseUp= Widget_param(prms, "changeOnlyOnMouseUp", false);
+o.widgetInit=o.init;
+// Public Methods
+o.init=SpinnerWidget_init
+o.getHTML=SpinnerWidget_getHTML
+o.getValue=SpinnerWidget_getValue
+o.setValue=SpinnerWidget_setValue
+o.setDisabled=SpinnerWidget_setDisabled
+o.isDisabled=SpinnerWidget_isDisabled
+o.resize=SpinnerWidget_resize
+o.setLabelValue=SpinnerWidget_setLabelValue
+//internal usage
+var v=parseFloat( Widget_param(prms, "value", 0));
+var m=parseFloat( Widget_param(prms, "min", 0));
+var precision = Widget_param(prms, "precision", 0)
+o.value=(v<m)?m:v;
+o.value=(parseFloat(precision)!=0)?parseFloat(o.value):parseInt(o.value);
+var interval = Widget_param(prms, "interval", 1)
+interval=(parseFloat(precision)!=0)?parseFloat(interval):parseInt(interval);
+o.interval=!isNaN(interval)?Math.abs(interval):1;
+if (!o.interval) o.interval=1;
+var s1=Widget_param(prms, "max", 100000);
+var sMAx=''+ Widget_param(prms, "max", 100000);
+var s2=sMAx.split("");
+o.changeCB=Widget_param(prms, "changeCB", null);
+o.enterCB=Widget_param(prms, "enterCB", null);
+prms.id = o.id+"_valueField"
+prms.maxChar = s2.length + precision + 1 //separator 
+prms.changeCB = o.changeCB?SpinnerWidget_internalChangeCB:null;
+prms.enterCB = o.enterCB?SpinnerWidget_internalEnterCB:null;
+o.valueField = new_FloatFieldWidget(prms);
+o.valueField.parentWidget = o
+o.valueField.setMin(m);
+o.valueField.setMax(parseFloat(s1));
+o.valueField.setPrecision(precision);
+o.valueField.setOuterClass("spinnerTextField");
+//because of javascript float division error: ex: 1.9/0.1=1.899999999999 instead of 19
+o.precision=parseInt(precision);
+o.coeff=precision?Math.pow(10, precision):1;
+o.n=new_SpinnerIconWidget({id:o.id+"_n", clickCB:SpinnerWidget_clickCB, inc:true, tooltip:_increaseTooltip});
+o.p=new_SpinnerIconWidget({id:o.id+"_p", clickCB:SpinnerWidget_clickCB, inc:false, tooltip:_decreasetooltip});
+o.n.parent=o.p.parent=o;
+o.disabled=false;
+return o;
+}
+function newSpinnerWidget(id, changeCB, value, min, max, interval, precision, noMargin, width, tooltip)
+{
+return new_SpinnerWidget({
+id:id, changeCB:changeCB,
+value:value,
+min:min,
+max:max,
+interval:interval,
+precision:precision,
+noMargin:noMargin,
+width:width,
+tooltip:tooltip
+})
+}
+function SpinnerWidget_init(layer)
+{
+var o=this;
+o.widgetInit(layer);
+var tr1 = o.layer.childNodes[0].childNodes[0];
+o.valueField.init(tr1.childNodes[0].childNodes[0]);
+var tbody2 = tr1.childNodes[1].childNodes[0].childNodes[0];
+o.n.init(tbody2.childNodes[0].childNodes[0].childNodes[0]);
+o.p.init(tbody2.childNodes[1].childNodes[0].childNodes[0]);
+o.valueField.setValue(!isNaN(o.value)?o.value:0);
+}
+function SpinnerWidget_getHTML()
+{
+var o=this, s= new Array, i = 0
+s[i++] = '<table id="'+o.id+'" cellpadding="0" border="0" cellspacing="0"><tbody><tr style="height:20px;">'
+s[i++] = '<td style="height:20px;" valign="top">'+o.valueField.getHTML()+'</td>'
+s[i++] = '<td><table cellpadding="0" border="0" cellspacing="0" height="20"><tbody>'
+s[i++] = '<tr><td  valign="bottom">'+o.n.getHTML()+'</td></tr>'
+s[i++] = '<tr><td  valign="top">'+o.p.getHTML()+'</td></tr>'
+s[i++] = '</tbody></table></td>'
+s[i++] = '</tr></tbody></table>'
+return s.join('')
+}
+function SpinnerWidget_clickCB()
+{
+var o=this.parent;
+var vField=o.valueField;
+var value = vField.getValue();
+var isInt = isInteger(value);
+var v=parseFloat(value);
+if (isInt)
+{
+v = (this.inc)?v+o.interval:v-+o.interval;
+}
+else
+{
+//convert into integer first
+var n= (v*o.coeff);
+//Fix for BOEWEBI-15541
+var increment = o.interval * o.coeff;
+n= this.inc? (n + increment):(n - increment);
+v = n / o.coeff;
+}
+//For checking min and max value
+if( !this.inc && v < vField.min ){
+v=vField.min;
+}else if( this.inc && v > vField.max ){
+v=vField.max; 
+} 
+vField.setValue(v,true);
+var bCallCB=o.changeOnlyOnMouseUp?false:true;
+if (bCallCB && o.changeCB)
+{
+    o.changeCB();
+}
+}
+function SpinnerWidget_internalChangeCB()
+{
+var o=this.parentWidget;
+if ( o.changeCB)
+{
+    o.changeCB();        
+}
+}
+function SpinnerWidget_internalEnterCB()
+{
+    var o=this.parentWidget;
+    if (o.enterCB)
+{
+    o.enterCB();        
+}
+}
+function SpinnerWidget_setLabelValue(value,label)
+{
+var o=this
+// this function maps a text value to a given value
+// ex: pas "auto" to 0 use : setLabelValue(0, "auto")
+// if no parameters, reset the values
+// it's better to map to a minimum or maximum value
+o.valueField.setLabelValue(value,label);
+}
+function SpinnerWidget_getValue()
+{
+var o=this
+return o.valueField.getValue();
+}
+function SpinnerWidget_setValue(s)
+{
+var o=this
+    o.value=s;
+o.valueField.setValue(s,true);
+}
+function SpinnerWidget_setDisabled(d)
+{
+var o=this;
+o.disabled=d;
+o.valueField.setDisabled(d);
+o.n.setDisabled(d);
+o.p.setDisabled(d);
+}
+function SpinnerWidget_isDisabled()
+{
+return this.disabled;
+}
+function SpinnerWidget_resize(w,h)
+{
+var o=this;
+if (w!=null)
+{
+w=parseInt(w)-15;
+o.w=(_dtd4?-2:0)+o.w;
+o.valueField.resize(w,h);
+}
+}
+function new_TreeComboWidget(prms)
+{
+// Base class
+var o=new_Widget(prms)
+// Parameters Parsing
+o.clickCB = Widget_param(prms, "clickCB", null);
+o.iconType = Widget_param(prms, "iconType", _iconComboButton);
+o.arrowType = Widget_param(prms, "arrowType", _iconComboArrow);
+o.iconTextType = Widget_param(prms, "iconTextType", null)
+o.changeCB = Widget_param(prms, "changeCB", null);
+o.beforeShowCB = Widget_param(prms, "beforeShowCB", null);
+o.preventSelectionCB = Widget_param(prms, "preventSelectionCB", null);
+o.treePopup = Widget_param(prms, "tree", null);
+if(o.treePopup)
+{
+o.treePopup.cancelCB=function(e){this.show(false);eventCancelBubble(e);}
+o.treePopup.selectCB=function(data)
+{
+var o = this.parCombo;
+if(o)
+{
+var canSelect = (data && data.id);
+if(o.preventSelectionCB) //specific condition to accept the selection in the tree
+canSelect = o.preventSelectionCB();
+if(canSelect)
+{ 
+//o.setSelection(data.id,data.name,icn) //done by client side to have all the information
+if(o.changeCB)
+o.changeCB(data);
+}
+}
+}
+}
+o.icon=new_IconWidget({id:"tc_icon_"+o.id,
+                        src:prms.src,
+                        icon:prms.icon,
+                        clickCB:TreeComboWidget_iconClickCB,
+                        text:(prms.text!=null?prms.text:""),
+                        tooltip:prms.tooltip,
+        width:prms.w,
+        height:prms.h,
+        dx:prms.dx,
+        dy:prms.dy,
+        disDx:prms.disDx,
+        disDy:prms.disDy,
+            icontype:o.iconType, 
+            iconTextType:o.iconTextType });
+o.arrow=newIconWidget("tc_arrow_"+o.id,_skin+"toolbar_elements.png",TreeComboWidget_arrowClickCB,null,(_openMenuPart1+(prms.text?prms.text:(prms.tooltip?prms.tooltip:""))+_openMenuPart2),
+5,3,0,132,0,361, null,null, null, o.arrowType)
+o.width = Widget_param(prms, "width",50);
+o.icon.width=Math.max(0,o.width-13);
+if (o.clickCB==null)
+{
+o.icon.oldInternalDownCB=o.icon.internalDownCB
+o.icon.internalDownCB=IconMenuWidget_internalDownCB
+o.arrow.oldInternalDownCB=o.arrow.internalDownCB
+o.arrow.internalDownCB=IconMenuWidget_internalDownCB
+}
+o.setIconTextType = function(iconTextType)
+{
+this.icon.setTextType(iconTextType)
+}
+o.icon.par=o
+o.arrow.par=o
+o.icon.margin=0
+o.arrow.margin=0
+o.icon.overCB="IconWidget_none"
+o.icon.outCB="IconWidget_none"
+o.arrow.overCB="IconWidget_none"
+o.arrow.outCB="IconWidget_none"
+o.getHTML=TreeComboWidget_getHTML
+o.treeComboOldInit=o.init
+o.init=TreeComboWidget_init
+o.index=_allBOIconsMenus.length++
+_allBOIconsMenus[o.index]=o
+o.setDisabled=IconMenuWidget_setDisabled
+o.isDisabled=IconMenuWidget_isDisabled
+o.disableMenu=IconMenuWidget_disableMenu
+o.changeText=function(s){this.icon.changeText(s)}
+o.changeIcon=function(icn){if (icn!=null) this.icon.changeImg(icn.dx,icn.dy,icn.src,icn.disDx,icn.disDy);}
+o.changeTooltip=function(tooltip){if ((tooltip!=null) && (this.icon != null)) this.icon.changeTooltip(tooltip,false);}
+o.changeArrowTooltip=function(tooltip){ this.arrow.changeTooltip(tooltip,false);}
+o.selectTreeItem=function(id) //select the item in the treePopup
+{
+var o=this, tree = o.treePopup.tree;
+if(id==null) //deselect all
+{
+tree.unselect();
+//BITBIWEBISL3-107 Sprintlvl - Insert report Element (DHTML) : Pick... list is badly displayed when scrolling.
+if (!_ie9R)
+{
+tree.layer.tabIndex=0
+}
+safeSetFocus(tree.layer)
+}
+else
+{
+var item= tree.findInData(id,"id");
+if(item) {
+item.select(true,null,true);//no send clickCB event
+} else{
+tree.unselect();
+safeSetFocus(tree.layer)
+}
+}
+}
+o.selection=null;
+o.setSelection=function(id,text,icn) 
+{
+o.selection=(id==null)?null:{id:id}
+o.changeText(text?text:"");
+o.changeTooltip(text?text:"");
+if (null != icn) {
+o.changeIcon(icn);
+}
+}
+o.getSelection=function() 
+{
+return this.selection;
+}
+//o.resize=TreeComboWidget_resize
+//o.focus=IconMenuWidget_focus
+//o.setClickCallback=IconMenuWidget_setClickCallback
+o.disp=true
+o.isDisplayed=IconWidget_isDisplayed
+o.setDisplay=IconWidget_setDisplay
+o.isShown=false
+return o
+}
+function TreeComboWidget_init()
+{
+var o=this;
+o.treeComboOldInit();
+o.icon.init();
+o.arrow.init();
+var l=o.layer;
+addEvent(l, "mouseover", IconMenuWidget_OverCB);
+addEvent(l, "mouseout", IconMenuWidget_OutCB);
+}
+function TreeComboWidget_getHTML()
+{
+var o=this
+return '<table id="'+o.id+'" cellspacing="0" cellpadding="0" border="0"><tr><td>'+
+o.icon.getHTML()+'</td><td  style="padding-left:'+o.spc+'px" width="'+(13+o.spc)+'">'+o.arrow.getHTML()+'</td></table>'
+}
+function TreeComboWidget_iconClickCB() {}
+function TreeComboWidget_arrowClickCB()
+{
+var o=this.par,l=o.layer,tp=o.treePopup
+if(tp)
+{
+//we want to close the popup when we click again on the arrow
+//eventCancelBubble is used in IconListPopupWidget_globalClick to avoid closing popup
+this.eventCancelBubble=true
+tp.parCombo=o; //save current TreeComboWidget associated to the treePopup
+if(o.beforeShowCB)
+o.beforeShowCB();
+tp.show(!tp.isShown(),getScrolledPos(l).x+2, getScrolledPos(l).y+o.getHeight()+4);
+tp.focus();
+}
+}

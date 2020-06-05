@@ -1,0 +1,47 @@
+/*
+©2010 - 2013 SAP AG or an SAP affiliate company.  All rights reserved.
+ 
+SAP and other SAP products and services mentioned herein as well as their respective logos are trademarks or registered trademarks of SAP AG in Germany and other countries.  Please see http://www.sap.com/corporate-en/legal/copyright/index.epx#trademark for additional trademark information and notices.
+*/
+
+/**
+ * @fileoverview Utility to indicate current language direction
+ */
+
+
+/**
+ * Namespace for this file:  businessobjects.core
+ * 
+ * (Must bootstrap the businessobjects namespace; sub-namespaces are created only if they don't exist.)
+ */
+
+if ('undefined' == typeof businessobjects) {
+    var businessobjects = {};
+}
+businessobjects['core'] = businessobjects['core'] || {};
+
+
+/**
+ * Indicate whether the current language direction is left to right
+ * @return true for left to right, otherwise false
+ * @type boolean
+ * 
+ * Note that the module system is used to load the correct JavaScript file (langDirection.js or langDirection_RTL.js)
+ */
+
+businessobjects.core.isLtr = function() {
+    return true;    
+}
+
+
+/**
+ * Indicate whether the current language direction is right to left
+ * @return true for right to left, other false 
+ * @type boolean
+ * 
+ * Note that the module system is used to load the correct JavaScript file (langDirection.js or langDirection_RTL.js)
+ */
+
+businessobjects.core.isRtl = function() {
+    return !businessobjects.core.isLtr();    
+}

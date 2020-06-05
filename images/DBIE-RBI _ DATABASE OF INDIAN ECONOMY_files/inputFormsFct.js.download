@@ -1,0 +1,2207 @@
+/*
+=============================================================
+WebIntelligence(r) Report Panel
+Copyright(c) 2001-2005 Business Objects S.A.
+All rights reserved
+
+Use and support of this software is governed by the terms
+and conditions of the software license agreement and support
+policy of Business Objects S.A. and/or its subsidiaries. 
+The Business Objects products and technology are protected
+by the US patent number 5,555,403 and 6,247,008
+
+=============================================================
+*/_text = "TEXT_FIELD";
+_combo = "COMBO_BOX";
+_radio = "RADIO_BUTTON";
+_check = "CHECK_BOX";
+_list = "LIST_BOX";
+_list_multiselection = "LIST_BOX_MULTISELECTION";
+_spinner = "SPINNER";
+_slider = "SLIDER";
+_calendar = "CALENDAR";
+_multiple_slider = "MULTIPLE_SLIDER";
+_custom = "CUSTOM";
+_block = "BLOCK";
+_tree_list  = "TREE_LIST";
+_tree_list_multiselection = "TREE_LIST_MULTISELECTION";
+ENTRY_FIELD = 0
+COMBO_BOX= 1
+RADIO_BTT   = 2
+LIST_BOX= 3
+CALENDAR    = 4
+SPINNER     = 5
+SLIDER      = 6
+CHECK_BOX   = 8
+LIST_BOX_MULT  = 9
+DBL_SLIDER   = 10
+BLK_CTRL= 12
+TREE_LIST= 7
+TREE_LIST_MULT= 11
+var _widgetInfo = {
+text: {
+type: _text,
+index:ENTRY_FIELD,
+icon: toolboxImg(315),
+text: "Entry field",
+tooltip:"Type any value",
+explanation:"Entry field"+": "+"Enter the name of a value in a text field."
+},
+combo: {
+type: _combo,
+index:COMBO_BOX,
+icon: toolboxImg(316),
+text: "Combo box",
+tooltip:"Select a value from a dropdown list",
+explanation:"Combo box"+": "+"Select a value from a drop-down list.\nClick the combo box to display the entire list of possible values."
+},
+radio: {
+type: _radio,
+index:RADIO_BTT,
+icon: toolboxImg(318),
+text: "Radio buttons",
+tooltip:"Select single values from a list",
+explanation:"Radio buttons"+": "+"Select a value from a list via radio buttons. Every possible value is displayed."
+},
+check: {
+type: _check,
+index:CHECK_BOX,
+icon: toolboxImg(319),
+text: "Check box",
+tooltip:"Select multiple values from a list",
+explanation:"Check box"+": "+"Select several from a list via checkboxes. Every possible value is displayed."
+},
+list: {
+type: _list,
+index:LIST_BOX,
+icon: toolboxImg(317),
+text: "List box",
+tooltip:"Select values from a scrollable list",
+explanation:"List box"+": "+"Select a value from a scrollable list."
+},
+list_multiselection: {
+type: _list_multiselection,
+index:LIST_BOX_MULT,
+icon: toolboxImg(320),
+text: "List box",
+tooltip:"Select values from a scrollable list",
+explanation:"List box"+": "+"Select a value from a scrollable list."
+},
+spinner: {
+type: _spinner,
+index:SPINNER,
+icon: toolboxImg(321),
+text: "Spinner",
+tooltip:"Increase or decrease a number in increments",
+explanation:"Spinner"+": "+"Enter a value and increment or decrement it using up and down arrows.\nYou must declare a default value."
+},
+slider: {
+type: _slider,
+index:SLIDER,
+icon: toolboxImg(323),
+text: "Simple slider",
+tooltip:"Increase or decrease a number",
+explanation:"Simple slider"+": "+"Enter a value and use a slider to increment or decrement it.\nYou must declare a default value and interval bounds."
+},
+calendar: {
+type: _calendar,
+index:CALENDAR,
+icon: toolboxImg(320),
+text: "Calendar",
+tooltip:"Select a date",
+explanation:"Calendar"+": "+"Use a multiple list box to select several values from a list of possible values. All alternatives are always displayed and the chosen values are selected."
+},
+multiple_slider: {
+type: _multiple_slider,
+index:DBL_SLIDER,
+icon: toolboxImg(324),
+text: "Double slider",
+tooltip:"Increase or decrease two numbers",
+explanation:"Double slider"+": "+"Enter two values and use a slider to increment or decrement it.\nYou must declare default values and interval bounds."
+},
+block: {
+type: _block,
+index:BLK_CTRL,
+icon: toolboxImg(315),
+text: "Block as control",
+tooltip:"Select values in the block (table or chart) to filter dependent report elements",
+explanation:"Block as control"+": "+"Select values in the block (table or chart) to filter dependent report elements"
+},
+tree: {
+type: _tree_list,
+index:TREE_LIST,
+icon: toolboxImg(315),
+text: "Block as control",
+tooltip:"Select values in the block (table or chart) to filter dependent report elements",
+explanation:"Block as control"+": "+"Select values in the block (table or chart) to filter dependent report elements"
+},
+tree_multiselection: {
+type: _tree_list_multiselection,
+index:TREE_LIST_MULT,
+icon: toolboxImg(315),
+text: "Block as control",
+tooltip:"Select values in the block (table or chart) to filter dependent report elements",
+explanation:"Block as control"+": "+"Select values in the block (table or chart) to filter dependent report elements"
+},  
+custom: {
+type: _custom
+}
+}
+var _widgetMap= new Hash()
+_widgetMap.set(_text,_widgetInfo.text);
+_widgetMap.set(_combo,_widgetInfo.combo);
+_widgetMap.set(_radio,_widgetInfo.radio);
+_widgetMap.set(_check,_widgetInfo.check);
+_widgetMap.set(_list,_widgetInfo.list);
+_widgetMap.set(_list_multiselection,_widgetInfo.list_multiselection);
+_widgetMap.set(_spinner,_widgetInfo.spinner);
+_widgetMap.set(_slider,_widgetInfo.slider);
+_widgetMap.set(_calendar,_widgetInfo.calendar);
+_widgetMap.set(_multiple_slider,_widgetInfo.multiple_slider);
+_widgetMap.set(_block,_widgetInfo.block);
+_widgetMap.set(_tree_list,_widgetInfo.tree);
+_widgetMap.set(_tree_list_multiselection,_widgetInfo.tree_multiselection);
+_widgetMap.set(_custom,_widgetInfo.custom);
+_widgetMap.set(ENTRY_FIELD,_widgetInfo.text);
+_widgetMap.set(COMBO_BOX,_widgetInfo.combo);
+_widgetMap.set(RADIO_BTT,_widgetInfo.radio);
+_widgetMap.set(CHECK_BOX,_widgetInfo.check);
+_widgetMap.set(LIST_BOX,_widgetInfo.list);
+_widgetMap.set(LIST_BOX_MULT,_widgetInfo.list_multiselection);
+_widgetMap.set(SPINNER,_widgetInfo.spinner);
+_widgetMap.set(SLIDER,_widgetInfo.slider);
+_widgetMap.set(CALENDAR,_widgetInfo.calendar);
+_widgetMap.set(DBL_SLIDER,_widgetInfo.multiple_slider);
+_widgetMap.set(TREE_LIST,_widgetInfo.tree);
+_widgetMap.set(TREE_LIST_MULT,_widgetInfo.tree_multiselection);
+_widgetMap.set(BLK_CTRL,_widgetInfo.block);
+warningIcon = toolboxImg(126);
+sAllValues="All values";
+sSelectAll="Select (All)";
+arrLabFil=new Array;
+arrLabFil[EQUAL]="Equal to";
+arrLabFil[NOT_EQUAL]="Not Equal to";
+arrLabFil[GREATER]="Greater than";
+arrLabFil[GREATER_OR_EQUAL]="Greater than or Equal to";
+arrLabFil[LESS]="Less than";
+arrLabFil[LESS_OR_EQUAL]="Less than or Equal to";
+arrLabFil[BETWEEN]="Between";
+arrLabFil[NOT_BETWEEN]="Not Between";
+arrLabFil[IN_LIST]="In List";
+arrLabFil[NOT_IN_LIST]="Not In List"
+arrLabFil[IS_NULL]="Is Null"
+arrLabFil[NOT_IS_NULL]="Is not Null"
+arrLabFil[LIKE]="Matches pattern"
+arrLabFil[NOT_LIKE]="Different from pattern"
+arrLabFil[BOTH]="Both"
+arrLabFil[EXCEPT]="Except"
+function newIFormElement(id,name,desc)
+{
+var o=new Object;
+o.id=id;
+o.name=name;
+o.description=(desc!=null)?desc:"";
+o.index=-1; 
+o.operator=EQUAL;
+o.isVisible=true;
+o.isRestrictedLov=true;
+o.allowAllValues=true;
+o.allowNullValues=false;
+o.selectedValues=null;
+o.addDataPath= function (name,value)
+{
+if(this.selectedValues == null) 
+this.selectedValues=new Array;
+var dataPath=new Object; 
+dataPath.name=name;
+dataPath.value=value;
+this.selectedValues[this.selectedValues.length]=dataPath;
+}
+o.lov=null; 
+o.blockID='';
+o.bindedObject=null; 
+o.addBindedObject=function (id,name,dType,qualif,isVariable,isConstant)
+{
+var boif=new Object;
+boif.id=id;
+boif.name=name;
+boif.dType=_txt;
+switch(dType)
+{
+case "NUMBER":
+boif.dType=_num;
+break;
+case "DATE":
+boif.dType=_date;
+break;
+}
+boif.qualification=_dim;
+switch(qualif)
+{
+case "MEASURE":
+boif.qualification=_msr;
+break;
+case "DETAIL":
+boif.qualification=_dtl;
+break;
+case "LINKED_DIMENSION":
+boif.qualification=_linkDim;
+break;
+case "HIERARCHY":
+boif.qualification=_hchy;
+break;
+}
+boif.isVariable=(isVariable!=null)?isVariable:false;
+boif.isConstant=(isConstant!=null)?isConstant:false;
+this.bindedObject=boif;
+return boif;
+}
+o.widget=null;
+o.addWidget=function (id,type)
+{
+var wif=new Object;
+wif.id=id;
+wif.type=type;
+wif.isList=(this.operator==IN_LIST || this.operator==NOT_IN_LIST);
+wif.hasLov=(type == _combo ||type == _radio ||type == _check  || type == _list || type == _list_multiselection || type == _tree_list || type == _tree_list_multiselection); 
+wif.increment=1;
+wif.defaultValues=null;
+wif.customValues=null; 
+wif.minValue=null;
+wif.maxValue=null;
+wif.setValues=function(defaultValues,minValue,maxValue,customValues,enableComplexSelections)
+{
+if(defaultValues!=null)
+this.defaultValues=defaultValues;
+if(minValue!=null)
+this.minValue=minValue;
+if(maxValue!=null)
+this.maxValue=maxValue;
+if(customValues!=null)
+this.customValues=customValues;
+if(enableComplexSelections!=null)
+this.enableComplexSelections=enableComplexSelections;
+}
+wif.setParams=function(prms)
+{
+if(prms==null) return;
+var w=this;
+if(prms.defaultValues!=null)
+w.defaultValues=prms.defaultValues;
+if(prms.minValue!=null)
+w.minValue=prms.minValue;
+if(prms.maxValue!=null)
+w.maxValue=prms.maxValue;
+if(prms.customValues!=null)
+w.customValues=prms.customValues;
+if(prms.enableComplexSelections!=null)
+w.enableComplexSelections=prms.enableComplexSelections;
+}
+wif.numberOfLines=5;
+this.widget=wif;
+return wif;
+}
+o.targets=new Array;
+o.addTarget=function (id,bid)
+{
+var arr=this.targets; 
+var tif=new Object;
+tif.id=id;
+tif.bid=bid;  
+arr[arr.length]=tif;
+return tif;
+}
+return o;
+}
+function getCurrentInputForm()
+{
+var o=null;
+if (typeof(_editCallbackFrame)!="undefined" && _editCallbackFrame=='report')
+{
+var fr = p.getReportFrame();
+if (fr.getCurrentInputForm)
+return fr.getCurrentInputForm();
+}
+else
+{
+var pane = p.leftPane.getFrame();
+if (pane.iFormContainer)
+{
+var ifpane = pane.iFormContainer_getSelection();
+if(ifpane)
+return findIFormById(ifpane.value);
+}
+return null
+}
+}
+function findIFormById(id)
+{
+var pane = p.leftPane.getFrame();
+var len = pane.arrIForms.length;
+for (var i =0; i<len ; i++)
+{
+if( pane.arrIForms[i].id == id) 
+{
+return   pane.arrIForms[i];
+}
+}
+return null;
+}
+function getPredefinedValues(iform)
+{
+if(iform == null ) 
+return null;
+return iform.selectedValues;
+}
+function isValueFromLov(value, arrLov)
+{
+if(arrLov == null || arrLov.length==0) return false;
+for(var i=0;i<arrLov.length;i++)
+{
+if(arrLov[i]==value) return true;
+}
+return false;
+}
+function hasNoMoreDependancies(iform)
+{
+if(iform == null)
+ return false;
+if(!p.isInteractive) return false; 
+if((iform.bindedObject!=null) && (iform.bindedObject.isVariable) )
+return false;
+if((iform.isGlobalIC!=null) && (iform.isGlobalIC) )
+return false;
+var ret=true;
+var targets =  iform.targets, len = targets.length, bid=null;
+for(var i=0;i<len;i++)
+{
+bid = targets[i].bid;
+if(bid!="" && p.bidTable.get(bid)!=null )
+return false;
+}
+return true;
+}
+function isObjectInBlock(blockId,objId)
+{
+var block = p.findByBID(p.doc,blockId);
+if(block!=null)
+{
+if (block.axis)
+{
+var len = block.axis.length,len2,len3,itemId;
+for(var i=0;i<len;i++)
+{
+if (typeof( block.axis[i].crdr) !=  "undefined")
+{
+len3 = block.axis[i].crdr.length;
+for(var k=0;k<len3;k++)
+{
+  itemId = block.axis[i].crdr[k];
+  if(itemId == objId)  
+  return true;
+}
+}   
+if (typeof(block.axis[i].vars) != "undefined")
+{
+len2 = block.axis[i].vars.length;
+for (var j = 0; j < len2; j++)
+{
+var item = block.axis[i].vars[j];
+if(item && item.id && item.id == objId)
+{
+return true;
+}
+}
+}
+}
+}
+else if (block.feeds)
+{
+for(var i=0; i<block.feeds.length; i++)
+{
+var feed = block.feeds[i];
+if (feed.exps)
+{
+for(var j=0; j<feed.exps.length; j++)
+{
+var expr = feed.exps[j];
+if (expr.id == objId)  
+return true;
+}
+}
+}
+}
+}
+return false;
+}
+function IFormCreateCB()
+{
+p.wt();
+p.frameNav('DlgFrame',p._root+'language/' + p._lang + '/html/inputFormWizard.html?action=0')
+}
+function IFormCreate(iform)
+{
+var pane = p.leftPane.getFrame();
+if(pane &&  pane.iFormAdd )
+pane.iFormAdd(iform);
+else
+{
+if(p.IF_applyFilter)
+p.IF_applyFilter(iform);
+}
+p._IFarr[iform.id]={type:iform.widget.type,widget:{id:iform.widget.id,listView:true}};
+}
+function IFormEditCB(sf)
+{
+sf=(sf==null)?'leftpane':sf;
+var _IFormElem = getCurrentInputForm();
+if(_IFormElem && (_IFormElem.widget.type == _tree_list || _IFormElem.widget.type == _tree_list_multiselection))
+{
+var list = (getLayer(_IFormElem.widget.id+"_List").style.display=='none'?false:true)
+if(typeof(p._IFarr[_IFormElem.id])=="undefined")
+p._IFarr[_IFormElem.id]={type:iform.widget.type,widget:{id:_IFormElem.widget.id,listView:list}};
+else
+p._IFarr[_IFormElem.id].widget = {id:_IFormElem.widget.id,listView:list};
+}
+p.wt();
+var url = p._root+'language/' + p._lang + '/html/inputFormEditWizard.html?callback=' + sf;  
+p.frameNav('DlgFrame', url);  
+}
+function IFormEdit(iform,inputFormIDNew)
+{
+var pane = p.leftPane.getFrame();
+if (pane.iFormModify)
+pane.iFormModify(iform,inputFormIDNew);
+}
+function writeWarningZoneHTML(id)
+{
+var html='<div id="'+id+'_warning" style="padding-top:2px;padding-left:2px;display:none"><table><tbody><tr><td>'+simpleImgOffset(p._root+warningIcon.src,16,16,warningIcon.dx,warningIcon.dy) +'</td><td class="iconText" style="font-style:italic;color:black"></td></tr><tbody></table></div>';
+return html;
+}
+function IForm_showWarning(show,message)
+{
+var wz =this.warningzone; 
+if(wz == null) return ; 
+wz.layer.childNodes[0].childNodes[0].childNodes[0].childNodes[1].innerHTML=convStr(show?message:"");
+wz.setDisplay(show);
+}
+function IFormText_getHTML(par,id,value,w,cb)
+{
+    var text = newTextFieldWidget(id+"_txt",null,250,null,cb,true,null,w,null,null);    
+    var btn = newButtonWidget(id+"_btn","OK",cb,null,null);
+    par.widgets[0]=text;
+    par.widgets[1]=btn;
+    par.warningzone=newWidget(id+"_warning");
+    var s=new Array,i=0
+    s[i++]= writeWarningZoneHTML(id);
+    s[i++]='<table cellspacing=0 cellpadding=0 border=0 style="padding-top:5px;padding-left:5px;padding-bottom:5px"><tr><td>';
+    s[i++]= text.getHTML();    
+    s[i++]='</td><td style="padding-left:5px">';
+    s[i++]=btn.getHTML();
+    s[i++]='</td></tr></table>';
+    return s.join("");
+}
+function IFormText_init(par)
+{
+    if(par == null ) return;
+    par.widgets[0].init(); 
+    par.widgets[1].init(); 
+    par.warningzone.init(); 
+    par.innerSelection=function () 
+    {
+    var v = this.widgets[0].getValue();
+if (v == "")
+return null; 
+return [v];
+    }
+    par.setSelection=function (values) 
+    {    
+    var par =this;
+    par.widgets[0].setValue("");  
+    if(values != null)
+    {
+    if(values.length >0)    
+    par.widgets[0].setValue(values.join(";"));
+    }    
+    }
+    par.showWarning=IForm_showWarning;
+    var iForm = findIFormById(par.value);
+    var values = getPredefinedValues(iForm);
+    if(values != null)
+    {
+    par.widgets[0].setValue(values.join(";"));
+    }
+}
+function IFormText_resize(par,w,h)
+{
+    if(par == null ) return;
+    var btn_size = 30 ;
+    var btn_lyr = getLayer(par.widgets[1].id);
+    if(btn_lyr.clientWidth)
+    btn_size += btn_lyr.clientWidth;
+    else
+    {
+    if (btn_lyr.offsetWidth)
+    btn_size += btn_lyr.offsetWidth;
+    }
+    par.widgets[0].resize(Math.max(10,w-btn_size),h);
+}
+function IFormCombo_getHTML(par,id,value,w,cb)
+{
+    var combo = newComboWidget(id+"_combo",cb,true,w,null);    
+    par.widgets[0]=combo;   
+    par.warningzone=newWidget(id+"_warning");
+    var s=new Array,i=0
+    s[i++]= writeWarningZoneHTML(id);
+    s[i++]='<table cellspacing=0 cellpadding=0 border=0 style="padding-top:5px;padding-left:5px;padding-bottom:5px"><tr><td>';
+    s[i++]= combo.getHTML();    
+    s[i++]='</td></tr></table>';
+    return s.join("");
+}
+function IFormCombo_init(par)
+{
+    if(par == null ) return;
+    par.widgets[0].init();  
+    par.warningzone.init();
+    par.innerSelection=IFormCombo_getSelection;
+    par.setSelection=IFormCombo_setSelection;
+    par.showWarning=IForm_showWarning;   
+    IFormCombo_fillValues(par);
+}
+function IFormCombo_fillValues(par)
+{
+    if (par == null ) return;
+    var combo = par.widgets[0];  
+    var value = par.value;
+    var iForm = findIFormById(value);
+    if (iForm != null)
+    {
+    var values = getIFLov(iForm), hasKeys = false 
+    if (null != values) {
+    hasKeys = hasKeysFn(values)
+    }
+    var prevValues = getPredefinedValues(iForm), useCaptionAsKey=false    
+        if ((null != prevValues) && hasKeys) { 
+        for (var i=0; i < prevValues.length; i++) {
+        var arValue = prevValues[i]
+        if (arValue instanceof Array) {
+        prevValues[i] = new Array
+        prevValues[i].push(arValue[1])
+        } else { 
+        useCaptionAsKey = true
+        break
+        } 
+        }
+        }
+    var s=new Array,j=0;
+    var allowAllValuesOption = getAllowAllValuesOption(iForm);
+    var allowNullValuesOption = getAllowNullValuesOption(iForm);
+    if(allowAllValuesOption)
+    {
+        {
+        var selected=false;
+        selected=(prevValues==null?true:false)        
+        s[j++]='<option value="' + sAllValues + '"  title="' + sAllValues + '"' + (selected?' selected':'') + ' >' + sAllValues + '</option>'
+        }
+    }
+    if (values != null)
+    {    
+    for (var i=0; i < values.length; i++)
+    {
+    var caption = values[i].caption;
+    var key = hasKeys?values[i].key:null
+    if (hasKeys) {
+    var selected=false;
+    selected=isValueFromLov(useCaptionAsKey?caption:key, prevValues)
+      s[j++]='<option value="'+key+'" title="'+caption + ' (' + key + ')'+'" ' + (selected?' selected':'') + '>' +convToHTMLEntities(caption,true)+   '</option>';
+    } else {
+    var selected=false;
+    selected=isValueFromLov(caption, prevValues)
+    s[j++]='<option value="'+convToHTMLEntities(caption)+'" title="'+caption +'"' + (selected?' selected':'') + '>' + convToHTMLEntities(caption,true)+ '</option>';
+    }
+    }
+    } else if (null != iForm.lov) { 
+    var lov = iForm.lov, len = lov.length
+    for (var i=0; i < len; i++)
+    {    
+    var v = lov[i]
+    combo.add(v, v, isValueFromLov(v, prevValues), null, null, v)    
+    }    
+    }
+if (p._ie)
+{
+var h = combo.getHTML();
+var iPos = h.indexOf('>');
+combo.layer.parentNode.innerHTML = h.substring(0, iPos+1) + s.join("") + '</select>';
+combo.init();
+}
+else
+    combo.layer.innerHTML = s.join(""); 
+    if (combo.getSelection().value==sAllValues && prevValues!=null)
+    par.showWarning(true,"The list of values has changed. The selected values could be obsolete.");
+    }
+}
+function IFormCombo_resize(par,w,h)
+{
+    if(par == null ) return;
+    par.widgets[0].resize(Math.max(10,w-30),h);     
+}
+function IFormCombo_getSelection()
+{   
+var sel = this.widgets[0].getSelection(), text = sel.text, value = sel.value
+var retVal = (text != value)?value:text
+return new Array(retVal);
+}
+function IFormCombo_setSelection(values)
+{
+var par = this;
+par.widgets[0].select(0);
+if(values!=null)
+{
+if (values.length>0)
+par.widgets[0].valueSelect(values[0]);
+}
+if(par.widgets[0].getSelection().value==sAllValues && values!=null)
+par.showWarning(true,"The list of values has changed. The selected values could be obsolete.");
+}
+function IFormList_getHTML(par,id,value,multi,w,cb,nbLines)
+{
+if(nbLines == null ) nbLines=5;
+    var list =newListWidget(id+"_list",multi?null:cb,multi,w,nbLines);    
+    var LabelButton = "OK" ;
+    var longueur = LabelButton.length * 6;
+    var btn = newButtonWidget(id+"_btn",LabelButton,cb,longueur,null);
+    par.widgets[0]=list;  
+    if(multi)
+    par.widgets[1]=btn;
+    par.warningzone=newWidget(id+"_warning");
+    var s=new Array,i=0
+    s[i++]= writeWarningZoneHTML(id);
+    s[i++]='<table class="listinputs" style="padding-top:5px;padding-left:5px;padding-bottom:5px"><tr><td>';
+    s[i++]= list.getHTML();
+    if(multi)
+    s[i++]= '</td><td>'+btn.getHTML();
+    s[i++]='</td></tr></table>';
+    return s.join("");
+}
+function IFormList_init(par)
+{
+    if(par == null ) return;
+    var list =par.widgets[0];
+    list.init();
+    if(list.multi)
+    par.widgets[1].init(); 
+    par.warningzone.init();
+    par.innerSelection=IFormList_getSelection;
+    par.setSelection=IFormList_setSelection;
+    par.showWarning=IForm_showWarning;
+IFormList_fillValues(par);
+}
+function IFormList_fillValues(par)
+{
+    if(par == null ) return;
+    var list = par.widgets[0];
+    var value = par.value;
+    var iForm = findIFormById(value);
+    if(iForm != null)
+    {
+    var values = getIFLov(iForm), hasKeys = false 
+    if (null != values) {
+     hasKeys = hasKeysFn(values)
+    }
+    var prevValues = getPredefinedValues(iForm), useCaptionAsKey=false    
+        if ((null != prevValues) && hasKeys) { 
+        for (var i=0; i < prevValues.length; i++) {
+        var arValue = prevValues[i]
+        if (arValue instanceof Array) {
+        prevValues[i] = new Array
+        prevValues[i].push(arValue[1])
+        } else { 
+        useCaptionAsKey = true
+        break
+        } 
+        }
+        }
+    var s=new Array,j=0;
+    var allowAllValuesOption = getAllowAllValuesOption(iForm);
+    if(allowAllValuesOption)
+    {
+    var selected=false;
+    selected=(prevValues==null?true:false)
+    s[j++]='<option value="' + sAllValues + '"  title="' + sAllValues + '"' + (selected?' selected':'') + ' >' + sAllValues + '</option>'
+    }
+    if(values != null)
+    {
+    for(var i=0;i<values.length;i++)
+    {    
+    var caption = values[i].caption;
+    var key = hasKeys?values[i].key:null
+    if (hasKeys) 
+    {           
+    var selected=false;
+    selected=isValueFromLov(useCaptionAsKey?caption:key, prevValues)
+    s[j++]='<option value="'+key+'" title="'+caption + ' (' + key + ')'+'" ' + (selected?' selected':'') + '>' +convToHTMLEntities(caption,true)+   '</option>';
+    } else 
+    {
+    var selected=false;
+    selected=isValueFromLov(caption, prevValues)
+    s[j++]='<option value="'+convToHTMLEntities(caption)+'" title="'+caption +'"' + (selected?' selected':'') + '>' +convToHTMLEntities(caption,true) +  '</option>';
+    }
+    }
+    } else if (null != iForm.lov) { 
+    var lov = iForm.lov, len = lov.length
+    for (var i=0; i < len; i++)
+    {    
+    var v = lov[i]
+    list.add(v, v, isValueFromLov(v, prevValues), null, null, v)    
+    }    
+    }
+if (p._ie)
+{
+var h = list.getHTML();
+var iPos = h.indexOf('>');
+list.layer.parentNode.innerHTML = h.substring(0, iPos+1) + s.join("") + '</select>';
+list.init();
+}
+else
+    list.layer.innerHTML = s.join(""); 
+    var sels = list.getMultiSelection(), len = sels.length;
+    if(len==0 && !allowAllValuesOption) 
+    {
+    list.select(0);
+    len=1;
+    }    
+    if(prevValues!=null && len==0)
+    par.showWarning(true,"The list of values has changed. The selected values could be obsolete.");
+    }     
+}
+function IFormList_resize(par,w,h)
+{
+    if(par == null ) return;
+    var SizeLabelBtnOK=0;
+    if (par.widgets[1])
+    SizeLabelBtnOK = par.widgets[1].label?par.widgets[1].label.length:0;
+    SizeLabelBtnOK = SizeLabelBtnOK * 12;
+    var marge = par.widgets[0].multi?64:20; 
+    if (SizeLabelBtnOK>marge) marge=SizeLabelBtnOK;
+    par.widgets[0].resize( Math.max(10,w-marge),null);
+}
+function IFormList_getSelection()
+{
+var selsValues= new Array;
+var list = this.widgets[0];
+var sels = list.getMultiSelection();
+for(var i = 0; i<sels.length;i++)
+{
+var sel = sels[i], text = sel.text, value = sel.value
+var retVal = (text != value)?value:text
+selsValues.push(retVal)
+if(list.multi && sels[i].value==sAllValues)
+{
+list.unselect();
+list.select(0); 
+break;
+}
+}
+    return selsValues;
+}
+function IFormList_setSelection(values)
+{
+var par = this;
+var list = this.widgets[0];
+if (values!=null )
+{
+var id = par.value;
+var iForm = findIFormById(id);
+par.widgets[0].unselect();
+for(var i = 0; i<values.length;i++)
+{
+ par.widgets[0].valueSelect(values[i]);
+}
+    var sels = list.getMultiSelection();
+    if(sels.length==0)
+    par.showWarning(true,"The list of values has changed. The selected values could be obsolete.");
+}
+else
+{
+par.widgets[0].unselect();
+par.widgets[0].select(0); 
+}
+}
+function IFormTreeList_getHTML(par,multi,w,cb,nbLines,iform)
+{
+var view =(typeof(p._IFarr[iform.id])!="undefined"? p._IFarr[iform.id].widget.listView :true);
+    var treeList = new_TreeListWidget({id:iform.id+"_list", w:w, nbLines:nbLines, values:iform.selectedValues, applyCB:cb, multi:multi, complexe:iform.widget.enableComplexSelections, Uuid:iform.bindedObject.id, listView:view}); 
+    par.widgets[0]=treeList;     
+    par.warningzone=newWidget(iform.id+"_warning");
+    var s=new Array,i=0
+    s[i++]= writeWarningZoneHTML(iform.id);
+    s[i++]='<table style="padding-top:5px;padding-left:5px;padding-bottom:5px"><tr><td>';
+    s[i++]= treeList.getHTML();
+    s[i++]='</td></tr></table>';
+iform.widget.id = treeList.id;
+    return s.join("");
+}
+function IFormTreeList_init(par)
+{
+    if(par == null ) return;
+    var treeList =par.widgets[0];
+    treeList.init();
+    par.warningzone.init();
+    par.showWarning=IForm_showWarning;
+par.setSelection = IFormTreeList_setSelection;
+par.innerSelection = IFormTreeList_getSelection;
+IFormTreeList_fillValues(par);
+}
+function IFormTreeList_fillValues(par)
+{
+    if(par == null ) return;
+    var treeList = par.widgets[0];
+    var value = par.value;
+    var iForm = findIFormById(value);     
+}
+function IFormTreeList_resize(par,w,h)
+{
+    if(par == null ) return;   
+    par.widgets[0].resize( Math.max(10,w-10),null);            
+}
+function IFormTreeList_getSelection()
+{
+var selsValues= new Array;
+var sels = this.widgets[0].getSelection();
+    return sels;
+}
+function IFormTreeList_setSelection(values)
+{
+var par = this;
+par.widgets[0].restore();
+}
+function IFormCalendar_getHTML(par,id,value,w,format,cb)
+{
+    calendarText=new_CalendarTextFieldButton({ 
+id:(id+"_cal"), 
+                                                width:w, 
+                                                noMargin:true,
+                                                keyUpCB:cb,
+                                                changeCB:cb
+}); 
+    calendarText.setFormatInfo(format);
+calendarText.setHelpTxt(format);
+    par.widgets[0]=calendarText;
+    par.warningzone=newWidget(id+"_warning");
+    var s=new Array,i=0
+    s[i++]= writeWarningZoneHTML(id);
+    s[i++]='<div width="100%" align="center" valign="middle" style="padding-top:5px;">';
+    s[i++]='<table><tr><td style="padding-left:5px">';
+    s[i++]= calendarText.getHTML();    
+    s[i++]='</td></tr></table></div>';
+    return s.join("");
+}
+function IFormCalendar_init(par)
+{
+    if(par == null ) return;
+    par.widgets[0].init();     
+    par.warningzone.init();
+    IFormCalendar_fillValues(par);
+    par.innerSelection=function ()
+    {  
+    var s = par.widgets[0].getValue();
+    if(s=="")
+    return null;
+    return new Array(s);
+    }
+    par.setSelection=function (values)
+    {
+    var par=this;
+    par.widgets[0].setValue("");
+    if(values!=null && values.length>0)
+    par.widgets[0].setValue(values[0]);
+    }
+    par.showWarning=IForm_showWarning;
+}
+function IFormCalendar_fillValues(par)
+{
+    if(par == null ) return;
+    var iForm = findIFormById(par.value);
+    if(iForm != null)
+    {
+var prevValues = getPredefinedValues(iForm);
+if(prevValues!=null && prevValues.length>0)
+{
+par.widgets[0].setValue(prevValues[0]);
+}
+else
+par.widgets[0].setHelpTxt("");
+    }
+}
+function IFormCalendar_resize(par,w,h)
+{
+if(par == null ) return;
+par.widgets[0].resize(Math.max(10,w-15),null);
+}
+function IFormSpinner_getHTML(par,id,value,w,cb,min,max,increment,decChar,enterCB)
+{    
+if(min==null || min == "" )
+    min=0;
+    if(max==null || max == "" )
+    max=Number.MAX_VALUE
+var spinner = new_SpinnerWidget({
+id:id+"_spin", 
+changeCB:cb,
+enterCB:enterCB,
+value:value,
+min:min,
+max:max,
+interval:increment,
+precision:2,
+noMargin:true,
+width:w,
+tooltip:null,
+changeOnlyOnMouseUp:true,
+decChar:decChar});
+    par.widgets[0]=spinner;
+    par.warningzone=newWidget(id+"_warning");
+    var s=new Array,i=0
+    s[i++]= writeWarningZoneHTML(id);
+    s[i++]='<table cellspacing=0 cellpadding=0 border=0 style="padding-top:5px;padding-left:5px;padding-bottom:5px"><tr><td>';
+    s[i++]=spinner.getHTML();    
+    s[i++]='</td></tr></table>';
+    return s.join("");
+}
+function IFormSpinner_init(par)
+{
+    if(par == null ) return;
+    par.widgets[0].init();
+    par.warningzone.init();
+    par.innerSelection=function ()
+    {
+    var arr=new Array();
+    arr[0]=this.widgets[0].getValue();
+    return arr;
+    }    
+    par.setSelection=function (values) 
+    {    
+    if(values!=null && values.length>0)
+    this.widgets[0].setValue(values[0]);
+    else
+    this.widgets[0].setValue(par.widgets[0].min);
+    }    
+    par.showWarning=IForm_showWarning;
+    var iform = findIFormById(par.value);
+    if(iform != null)
+    {
+var prevValues = getPredefinedValues(iform);
+if(prevValues!=null &&  prevValues.length>0)
+par.widgets[0].setValue(prevValues[0]);
+else
+par.widgets[0].setValue(par.widgets[0].min);
+}
+}
+function IFormSpinner_resize(par,w,h)
+{
+    if(par == null ) return;    
+    par.widgets[0].resize(Math.max(10,w-20),h); 
+}
+function IFormSlider_getHTML(par,id,values,w,cb,min,max,increment,decChar)
+{
+    var value=(values!=null && values.length>0)?values[0]:null;
+    value=(values!=null)?Number(value):null;
+    min=(min!=null)?Number(min):null;
+    max=(max!=null)?Number(max):null;
+increment=(increment!=null)?Number(increment):null;
+    var slider = newSliderWidget(id+"_sld",value,min,max,increment,cb,"",w,decChar);      
+    par.widgets[0]=slider;   
+    par.warningzone=newWidget(id+"_warning");
+    var s=new Array,i=0
+    s[i++]= writeWarningZoneHTML(id);
+    s[i++]='<table cellspacing=0 cellpadding=0 border=0 style="padding-top:5px;padding-left:5px;padding-bottom:5px"><tr><td>';
+    s[i++]= slider.getHTML();    
+    s[i++]='</td></tr></table>';
+    return s.join("");
+}
+function IFormSlider_init(par)
+{
+    if(par == null ) return;
+    par.widgets[0].init();
+    par.warningzone.init();
+    par.innerSelection=function()
+    {
+        par=this;
+        var arr=new Array();
+        arr[0]=''+par.widgets[0].getValue();
+        return arr;
+    }
+    par.setSelection=function(values) 
+    {
+    if(values!=null && values.length>0)
+    this.widgets[0].setValue(values[0]);
+    }
+    par.showWarning=IForm_showWarning;
+    var iform = findIFormById(par.value);
+    if(iform != null)
+    {
+var prevValues = getPredefinedValues(iform);
+if(prevValues!=null &&  prevValues.length>0)
+{
+par.widgets[0].setValue(prevValues[0]);
+par.widgets[0].saveLastAppliedValue(prevValues[0]);
+}
+}
+}
+function IFormSlider_resize(par,w,h)
+{
+    if(par == null ) return;    
+    par.widgets[0].resize(Math.max(10,w-33)); 
+}
+function IFormMultipleSlider_getHTML(par,id,values,w,cb,min,max,increment,decChar)
+{
+var value1=null,value2=null;
+    if (values!=null && values.length>0)
+{
+value1=Number(values[0]);
+value2=Number(values[1]);
+}
+    min=(min!=null)?Number(min):null;
+    max=(max!=null)?Number(max):null;
+increment=(increment!=null)?Number(increment):null;
+    var mSlider = newDoubleSliderWidget(id+"_msld",value1,value2,min,max,increment,cb,"",w,decChar);      
+    par.widgets[0]=mSlider; 
+    par.warningzone=newWidget(id+"_warning");
+    var s=new Array,i=0
+    s[i++]= writeWarningZoneHTML(id);
+    s[i++]='<table cellspacing=0 cellpadding=0 border=0 style="padding-top:5px;padding-left:5px;padding-bottom:5px"><tr><td>';
+    s[i++]= mSlider.getHTML();
+    s[i++]='</td></tr></table>';
+    return s.join("");
+}
+function IFormMultipleSlider_init(par)
+{
+    if(par == null ) return;
+    par.widgets[0].init();
+    par.warningzone.init();
+    par.innerSelection=function()
+    {
+        par=this;
+        var arr=new Array();
+        arr=par.widgets[0].getValues();
+        return arr;
+    }
+    par.setSelection=function(values) 
+    {
+    if(values!=null && values.length>0)
+    this.widgets[0].setValues(values);
+    }
+    par.showWarning=IForm_showWarning;
+    var iform = findIFormById(par.value);
+    if(iform != null)
+    {
+var prevValues = getPredefinedValues(iform);
+if(prevValues!=null &&  prevValues.length>0)
+{
+par.widgets[0].setValues(prevValues);
+par.widgets[0].saveLastAppliedValues(prevValues);
+}
+}
+}
+function IFormMultipleSlider_resize(par,w,h)
+{
+    if(par == null ) return;    
+    par.widgets[0].resize(Math.max(10,w-33)); 
+}
+function IFormRadioBtn_getHTML(par,id,value,w,cb)
+{  
+var s=new Array,i=0,radio=null;
+    var value = par.value;
+    var iForm = findIFormById(value);
+    s[i++]= writeWarningZoneHTML(id);
+    par.warningzone=newWidget(id+"_warning");
+    if(iForm != null)
+    {
+    var values = getIFLov(iForm);
+    var fixedHeight=false;
+    var nbLines = parseInt(iForm.widget.numberOfLines);
+        if(values != null && values.length>nbLines) 
+        {
+        s[i++]='<div style="height:'+(20*nbLines)+'px;overflow-y:auto; overflow-x:hidden">'; 
+        fixedHeight=true;
+        }
+    s[i++]='<table cellspacing=0 cellpadding=0 border=0 width="100%"><tr><td>';        
+    var hasKeys = false
+    if (null != values) {
+    hasKeys = hasKeysFn(values)
+    }
+    var allowAllValuesOption = getAllowAllValuesOption(iForm);
+    var indexWidget=0;
+radio= newRadioWidget(id+"_radioAll",value,sAllValues,cb);
+    if(allowAllValuesOption)
+    {
+    radio= newRadioWidget(id+"_radioAll",value,sAllValues,cb);
+    if (hasKeys) {
+    radio._lovKey = sAllValues
+    }
+    radio.layerClass="bodyInputForm";
+    s[i++]=radio.getHTML();
+    par.widgets[indexWidget++]=radio;      
+    }
+    if (values != null)
+    {
+    for(var j=0;j<values.length;j++)
+    {
+    if(j>0)
+    s[i++]='</td></tr><tr><td>';
+    radio = newRadioWidget(id+"_radio"+j,value, values[j].caption, cb,null,null,null,null,true,true);
+    if (hasKeys) {
+    radio._lovKey = values[j].key
+    }
+    radio.layerClass="bodyInputForm";
+    s[i++]=radio.getHTML();
+    par.widgets[indexWidget++]=radio;    
+    }
+    }
+    s[i++]='</td></tr></table>';
+    if(fixedHeight)
+    s[i++]='</div>';
+    }
+    return s.join("");   
+}
+function IFormRadioBtn_init(par)
+{
+if(par == null ) return;    
+var iForm = findIFormById(par.value);       
+var values = getIFLov(iForm), hasKeys = false
+if (null != values) {
+hasKeys = hasKeysFn(values)
+}
+var prevValues = getPredefinedValues(iForm), useCaptionAsKey=false    
+    if ((null != prevValues) && hasKeys) { 
+    for (var i=0; i < prevValues.length; i++) {
+    var arValue = prevValues[i]
+    if (arValue instanceof Array) {
+    prevValues[i] = new Array
+    prevValues[i].push(arValue[1])
+    } else { 
+    useCaptionAsKey = true
+    break
+    } 
+    }
+    }
+var len = par.widgets.length;
+for(var i=0;i<len;i++)
+{
+var sel=false;
+par.widgets[i].init();
+if (i == 0) 
+sel = true;
+if(i>0 && prevValues!=null)
+{
+var v = (hasKeys && !useCaptionAsKey)?par.widgets[i]._lovKey:par.widgets[i].text;
+sel = isValueFromLov(v,prevValues);
+}
+var ttp = par.widgets[i].text
+if (hasKeys) {
+ttp += (null != par.widgets[i]._lovKey)?" (" + par.widgets[i]._lovKey + ")":""
+}
+par.widgets[i].setTooltip(ttp)
+par.widgets[i].check(sel);
+}
+par.warningzone.init();
+par.innerSelection=IFormRadioBtn_getSelection;
+par.setSelection=IFormRadioBtn_setSelection;
+par.showWarning=IForm_showWarning;
+if (prevValues != null && par.widgets[0].isChecked() && par.widgets[0].text==sAllValues)
+par.showWarning(true,"The list of values has changed. The selected values could be obsolete.");
+}
+function IFormRadioBtn_getSelection()
+{
+var par=this;    
+var iForm = findIFormById(par.value);
+var values = getIFLov(iForm), hasKeys = false
+if (null != values) {
+hasKeys = hasKeysFn(values)
+}
+var len = par.widgets.length;
+for(var i=0;i<len;i++) 
+{
+if (par.widgets[i].isChecked()) {
+return new Array(hasKeys?par.widgets[i]._lovKey:par.widgets[i].text);
+}
+}
+}
+function IFormRadioBtn_setSelection(values)
+{
+var par = this;
+par.widgets[0].check(true);
+var iForm = findIFormById(par.value);
+var lovValues = getIFLov(iForm), hasKeys = false
+if (null != lovValues) {
+hasKeys = hasKeysFn(lovValues)
+}
+if(values!=null)
+{
+var len = par.widgets.length;
+for(var i=0;i<len;i++) 
+{
+var val = hasKeys?par.widgets[i]._lovKey:par.widgets[i].text 
+if (values[0] == val)
+{
+par.widgets[i].check(true);
+break;
+}
+}
+if (par.widgets[0].isChecked() && par.widgets[0].text==sAllValues )
+par.showWarning(true,"The list of values has changed. The selected values could be obsolete.");
+}
+}
+function IFormCheckBox_getHTML(par,id,value,w,cb)
+{  
+var s=new Array,i=0,check=null;
+  var value = par.value;
+  var iForm = findIFormById(value);
+  s[i++]= writeWarningZoneHTML(id);
+  par.warningzone=newWidget(id+"_warning");
+  if (iForm != null)
+  {
+var values = getIFLov(iForm);
+  var fixedHeight=false;
+  var nbLines = parseInt(iForm.widget.numberOfLines);
+      if(values != null && values.length>nbLines) 
+      {    
+      s[i++]='<div style="height:'+(20*nbLines)+'px;overflow-y:auto; overflow-x:hidden">'; 
+      fixedHeight=true;
+      }
+    s[i++]='<table cellspacing=0 cellpadding=0 border=0 width="100%"><tr><td>';        
+  if(values != null)
+  {
+  var hasKeys = hasKeysFn(values);
+    var allowAllValuesOption = getAllowAllValuesOption(iForm);
+    var indexWidget=0;
+    if(allowAllValuesOption)
+    {
+  check= newCheckWidget(id+"_checkSelectAll",sSelectAll,cb);
+  check.layerClass="bodyInputForm";
+  check.par=par;
+  par.widgets[indexWidget++]=check; 
+  s[i++]=check.getHTML()+'</td></tr><tr><td>';
+    }
+  for(var j=0;j<values.length;j++)
+  {
+  if(j>0)
+  s[i++]='</td></tr><tr><td>';
+  check = newCheckWidget(id+"_check"+j, values[j].caption, cb,null,null,null,null,true,true);
+if (hasKeys) {
+check._lovKey = values[j].key
+}
+  check.layerClass="bodyInputForm";
+  check.par=par;
+  s[i++]=check.getHTML();
+  par.widgets[indexWidget++]=check;    
+  }
+  }
+  s[i++]='</td></tr></table>';
+  if(fixedHeight)
+  s[i++]='</div>';
+  }
+  return s.join("");
+}
+function IFormCheckBox_init(par)
+{
+if (par == null) return;    
+var iForm = findIFormById(par.value);   
+var values = getIFLov(iForm)
+    var prevValues = getPredefinedValues(iForm), hasKeys = false, useCaptionAsKey = false
+if (null != values) {
+hasKeys = hasKeysFn(values)
+} 
+if ((null != prevValues) && hasKeys) { 
+    for (var i=0; i < prevValues.length; i++) {
+    var arValue = prevValues[i]
+    if (arValue instanceof Array) {
+    prevValues[i] = new Array
+    prevValues[i].push(arValue[1])
+    } else { 
+    useCaptionAsKey = true
+    break
+    } 
+    }
+    }
+var allowAllValuesOption = getAllowAllValuesOption(iForm);
+    var checkSelectAll = true;
+    var checkNone = true;
+var len = par.widgets.length;
+var startIndex = allowAllValuesOption?1:0; 
+for(var i=startIndex;i<len;i++)
+{
+par.widgets[i].init();
+var sel=false;
+if(prevValues!=null)
+{
+var v = (hasKeys && !useCaptionAsKey)?par.widgets[i]._lovKey:par.widgets[i].text;
+sel = isValueFromLov(v,prevValues);
+if(!sel) checkSelectAll=false;
+if(sel) checkNone=false;
+}
+else
+{
+sel=(allowAllValuesOption?true:(i==0)); 
+}
+par.widgets[i].setTooltip(hasKeys?(par.widgets[i].text + "(" + par.widgets[i]._lovKey + ")"):par.widgets[i].text)
+par.widgets[i].check(sel);
+}
+if(allowAllValuesOption)
+{
+par.widgets[0].init();
+par.widgets[0].check(checkSelectAll);
+par.widgets[0].setTooltip(sSelectAll)
+}
+par.warningzone.init();
+par.isRestrictedLov = iForm.isRestrictedLov
+par.innerSelection=IFormCheckBox_getSelection;
+par.setSelection=IFormCheckBox_setSelection;
+par.showWarning=IForm_showWarning;
+if(prevValues!=null && prevValues.length>0 && checkNone )
+par.showWarning(true,"The list of values has changed. The selected values could be obsolete.");
+}
+function IFormCheckBox_getSelection()
+{
+var par =this;
+var iForm = findIFormById(par.value);
+var values = getIFLov(iForm), hasKeys = false
+if (null != values) {
+hasKeys = hasKeysFn(values)
+}
+var len = par.widgets.length;
+if(len==0) return null; 
+var isRestrictedLov = par.isRestrictedLov
+var checkAll = (par.widgets[0].isChecked() && par.widgets[0].text==sSelectAll); 
+var sels = new Array;
+if (checkAll && !isRestrictedLov)
+{
+return null; 
+} else if (checkAll && isRestrictedLov) {
+for(var i=1;i<len;i++) 
+{
+sels.push(hasKeys?par.widgets[i]._lovKey:par.widgets[i].text);
+}
+return sels;
+} else {
+for(var i=0;i<len;i++) 
+{
+if (par.widgets[i].isChecked())
+{
+sels.push(hasKeys?par.widgets[i]._lovKey:par.widgets[i].text);
+}
+}
+return sels;
+}
+}
+function IFormCheckBox_setSelection(values)
+{
+var par = this;
+var iForm = findIFormById(par.value);
+var lovValues = getIFLov(iForm), hasKeys = false
+if (null != lovValues) {
+hasKeys = hasKeysFn(lovValues)
+}
+var allowAllValuesOption = getAllowAllValuesOption(iForm);
+if(values!=null)
+{
+var len = par.widgets.length;
+for(var i=0;i<len;i++) 
+{
+par.widgets[i].check(false);
+for (var j =0;j<values.length;j++)
+{
+var val = hasKeys?par.widgets[i]._lovKey:par.widgets[i].text 
+if(val == values[j])
+{
+par.widgets[i].check(true);
+break;
+}
+}
+}
+var checkAll=true;
+var checkNone=true;
+for(var i=1;i<len;i++) 
+{
+if(par.widgets[i].isChecked())
+{
+checkNone=false;
+}
+else
+{
+checkAll=false;
+}
+if(allowAllValuesOption)
+par.widgets[0].check(checkAll);
+}
+if(checkNone && values.length>0)
+par.showWarning(true,"The list of values has changed. The selected values could be obsolete.");
+}
+else 
+{
+var len = par.widgets.length;
+for(var i=0;i<len;i++) 
+{
+par.widgets[i].check(allowAllValuesOption?true:(i==0));
+}
+}
+}
+function IFormCheckBoxOKButton_getHTML(par,id,value,w,cb)
+{  
+var s=new Array,i=0,check=null;
+var okbtn=null;
+    var value = par.value;
+    var iForm = findIFormById(value);
+    s[i++]= writeWarningZoneHTML(id);
+    par.warningzone=newWidget(id+"_warning");
+    s[i++]='<table class="listinputs" style="padding-top:5px;padding-left:5px;padding-bottom:5px"><tr><td>';
+    s[i++]='<div id="'+id+'_checkList" style="overflow-x:auto;">';
+    if (iForm != null)
+    {
+   var values = getIFLov(iForm);
+   var fixedHeight=false;
+   var nbLines = parseInt(iForm.widget.numberOfLines);
+       if(values != null && values.length>nbLines) 
+       {    
+       s[i++]='<div style="height:'+(20*nbLines)+'px;overflow-y:auto; overflow-x:hidden">'; 
+       fixedHeight=true;
+       }
+       var LabelButton = "OK" ;
+       var longueur = LabelButton.length * 6;
+       var btn = newButtonWidget(id+"_btnOK",LabelButton,cb,longueur,null);
+       btn.par = par;
+       s[i++]='<table cellspacing=0 cellpadding=0 border=0><tr><td>'; 
+   if(values != null)
+       {
+   var hasKeys = hasKeysFn(values);
+         var allowAllValuesOption = getAllowAllValuesOption(iForm);
+         var indexWidget=0;
+         if(allowAllValuesOption)
+         {
+      check= newCheckWidget(id+"_checkSelectAll",sSelectAll,cb);
+      check.layerClass="bodyInputForm";
+      check.par=par;
+      par.widgets[indexWidget++]=check; 
+      s[i++]=check.getHTML()+'</td></tr><tr><td>';
+         }
+   for(var j=0;j<values.length;j++)
+   {
+    if(j>0)
+     s[i++]='</td></tr><tr><td>';
+  check = newCheckWidget(id+"_check"+j, values[j].caption, cb,null,null,null,null,true,true);
+    if (hasKeys) {
+     check._lovKey = values[j].key
+    }
+    check.layerClass="bodyInputForm";
+    check.par=par;
+    s[i++]=check.getHTML();
+    par.widgets[indexWidget++]=check;    
+   }
+   }
+   s[i++]='</div></td></tr></table>';
+   par.widgets[indexWidget++]=btn;
+   s[i++]= '</td><td>'+btn.getHTML();
+       s[i++]='</td></tr></table>';
+   if(fixedHeight)
+       s[i++]='</div>';
+     }
+     return s.join("");
+}
+function IFormCheckBoxOKButton_init(par)
+{
+if (par == null) return;    
+var iForm = findIFormById(par.value);   
+var values = getIFLov(iForm)
+    var prevValues = getPredefinedValues(iForm), hasKeys = false, useCaptionAsKey = false
+if (null != values) {
+hasKeys = hasKeysFn(values)
+} 
+if ((null != prevValues) && hasKeys) { 
+     for (var i=0; i < prevValues.length; i++) {
+     var arValue = prevValues[i]
+     if (arValue instanceof Array) {
+     prevValues[i] = new Array
+     prevValues[i].push(arValue[1])
+     } else { 
+     useCaptionAsKey = true
+     break
+     } 
+     }
+    }
+var allowAllValuesOption = getAllowAllValuesOption(iForm);
+    var checkSelectAll = true;
+    var checkNone = true;
+var len = par.widgets.length;
+var startIndex = allowAllValuesOption?1:0; 
+for(var i=startIndex;i<(len-1);i++)
+{
+par.widgets[i].init();
+var sel=false;
+if(prevValues!=null)
+{
+var v = (hasKeys && !useCaptionAsKey)?par.widgets[i]._lovKey:par.widgets[i].text;
+sel = isValueFromLov(v,prevValues);
+if(!sel) checkSelectAll=false;
+if(sel) checkNone=false;
+}
+else
+{
+sel=(allowAllValuesOption?true:(i==0)); 
+}
+par.widgets[i].setTooltip(hasKeys?(par.widgets[i].text + "(" + par.widgets[i]._lovKey + ")"):par.widgets[i].text)
+par.widgets[i].check(sel);
+}
+if(allowAllValuesOption)
+{
+par.widgets[0].init();
+par.widgets[0].check(checkSelectAll);
+par.widgets[0].setTooltip(sSelectAll)
+}
+if (len > 1){
+par.widgets[len-1].init();
+    }
+par.warningzone.init();
+par.isRestrictedLov = iForm.isRestrictedLov
+par.innerSelection=IFormCheckBoxOKButton_getSelection;
+par.setSelection=IFormCheckBoxOKButton_setSelection;
+par.showWarning=IForm_showWarning;
+if(prevValues!=null && prevValues.length>0 && checkNone )
+par.showWarning(true,"The list of values has changed. The selected values could be obsolete.");
+}
+function IFormCheckBoxOKButton_getSelection()
+{
+var par =this;
+var iForm = findIFormById(par.value);
+var values = getIFLov(iForm), hasKeys = false
+if (null != values) {
+hasKeys = hasKeysFn(values)
+}
+var len = par.widgets.length;
+if(len==0) return null; 
+var isRestrictedLov = par.isRestrictedLov
+var checkAll = (par.widgets[0].isChecked() && par.widgets[0].text==sSelectAll); 
+var sels = new Array;
+if (checkAll && !isRestrictedLov)
+{
+return null; 
+} else if (checkAll && isRestrictedLov) {
+for(var i=1;i<(len-1);i++) 
+{
+sels.push(hasKeys?par.widgets[i]._lovKey:par.widgets[i].text);
+}
+return sels;
+} else {
+for(var i=0;i<(len-1);i++) 
+{
+if (par.widgets[i].isChecked())
+{
+sels.push(hasKeys?par.widgets[i]._lovKey:par.widgets[i].text);
+}
+}
+return sels;
+}
+}
+function IFormCheckBoxOKButton_setSelection(values)
+{
+var par = this;
+var iForm = findIFormById(par.value);
+var lovValues = getIFLov(iForm), hasKeys = false
+if (null != lovValues) {
+hasKeys = hasKeysFn(lovValues)
+}
+var allowAllValuesOption = getAllowAllValuesOption(iForm);
+if(values!=null)
+{
+var len = par.widgets.length;
+for(var i=0;i<len;i++) 
+{
+par.widgets[i].check(false);
+for (var j =0;j<values.length;j++)
+{
+var val = hasKeys?par.widgets[i]._lovKey:par.widgets[i].text 
+if(val == values[j])
+{
+par.widgets[i].check(true);
+break;
+}
+}
+}
+var checkAll=true;
+var checkNone=true;
+for(var i=1;i<(len-1);i++) 
+{
+if(par.widgets[i].isChecked())
+{
+checkNone=false;
+}
+else
+{
+checkAll=false;
+}
+if(allowAllValuesOption)
+par.widgets[0].check(checkAll);
+}
+if(checkNone && values.length>0)
+par.showWarning(true,"The list of values has changed. The selected values could be obsolete.");
+}
+else 
+{
+var len = par.widgets.length;
+for(var i=0;i<(len-1);i++) 
+{
+par.widgets[i].check(allowAllValuesOption?true:(i==0));
+}
+}
+}
+function IFormCheckBoxOKButton_resize(par,w,h)
+{
+if(par == null ) return;
+    var SizeLabelBtnOK=0;
+    var len = par.widgets.length;
+    var btn = par.widgets[len - 1];
+    if (btn)
+    SizeLabelBtnOK = btn.label?btn.label.length:0;
+    SizeLabelBtnOK = SizeLabelBtnOK * 12;
+    var marge = 64;    
+    if (SizeLabelBtnOK>marge) marge=SizeLabelBtnOK;
+    var id = par.widgets[0].id;
+    var iPos = id.indexOf('_');
+    if (iPos >= 0)
+    { 
+    id = id.substring(0, iPos) + "_checkList";
+    var ckList = document.getElementById(id);
+    if (ckList)
+    {
+    ckList.style.width = "" + Math.max(10,w-marge) + "px";
+    }
+    }
+}
+function IFormBlock_getHTML(par,id,value,cb)
+{
+    var btn = newButtonWidget(id+"_btn","Clear Filters",cb,null,null);
+    var div = newWidget(id+"_values");
+    par.widgets[0]=btn;
+    par.widgets[1]=div;
+    par.warningzone=newWidget(id+"_warning");    
+    var s=new Array,i=0
+    s[i++]= writeWarningZoneHTML(id);
+    s[i++]='<div width="100%" align="center" valign="middle" style="padding-top:5px;">';
+    s[i++]= btn.getHTML();
+    s[i++]='</div>';
+    s[i++]='<div id="'+id+'_values" class="iconText" style="padding-left:5px"><br>No filters applied</div>'
+    return s.join("");
+}
+function IFormBlock_init(par)
+{
+    if(par == null ) return;
+    par.widgets[0].init(); 
+    par.widgets[1].init(); 
+    par.warningzone.init(); 
+    par.innerSelection=function(){return null;} 
+    par.setSelection=function (values) 
+    {    
+    var par =this;
+    if(values != null)
+    {
+    var s="<table cellpadding=0 border=0 class='iconText'><tbody>";
+    for(var i=0;i<values.length;i++)
+    {
+    s+="<tr><td>"+convStr(values[i].name)+"</td><td> = </td><td>"+convStr(values[i].value)+"</td></tr>";
+    }
+    s+="</tbody></table>";
+    par.widgets[1].layer.innerHTML=s;
+    } 
+    else
+    par.widgets[1].layer.innerHTML="<br>No filters applied";
+    }
+    par.showWarning=IForm_showWarning;
+    var iForm = findIFormById(par.value);
+    var values = getPredefinedValues(iForm);
+    if(values != null)
+    {
+    this.setSelection(values);
+    }
+}
+function IFormBlock_checkWarning(par)
+{
+if(par == null ) return;
+ var iform = findIFormById(par.value);
+if(iform.blockID && p._bDrillMode) 
+{
+par.showWarning(true,"Control not usable while the report is in drill mode.");
+return;
+} 
+if(iform.blockID && p.isInteractive && p.bidTable.get(iform.blockID)==null )
+{ 
+par.showWarning(true,"The table or chart is not in the report.");
+return;
+}
+if(iform.blockID && iform.bindedObject && p.isInteractive)
+{ 
+if(!isObjectInBlock(iform.blockID,iform.bindedObject.id))
+{
+par.showWarning(true,"The filtering dimensions are not in the table or chart.");
+return;
+}
+}
+if(hasNoMoreDependancies(iform))
+{
+par.showWarning(true,"There are no dependent elements in the report.");
+return;
+}
+par.showWarning(false); 
+}
+function highlightBlock(bids)
+{
+if (p.iForm_highlightBlock)
+{
+p.iForm_highlightBlock(bids);
+return;
+}
+var reportFr = p.getReportFrame();
+p.deselectAll(reportFr);
+var len = bids.length, bid="";
+for(var i=0;i<len;i++)
+{
+bid = bids[i];
+p.selectSingle(reportFr, bid,i==0)
+}
+p.selectionChanged(false);
+}
+function submitInputForm(oif, action, undoEnabled, dontCallBack)
+{
+if(oif == null) return;
+_inputFormToUpdate = oif;
+var encodeString = function(s)
+{
+var ret = null;
+if (s)
+{
+ret = '';
+var len = s.length;
+for (var i=0; i<len; i++)
+{
+var c = s.charAt(i);
+if (c == '\\')
+ret += '\\' + c;
+else if (c == '&')
+ret += '\\1';
+else if (c == ',')
+ret += '\\2';
+else if (c == ';')
+ret += '\\3';
+else
+ret += c;
+}
+}
+return ret;
+}
+var isString = function(obj)
+{
+return ((obj != null) && (typeof(obj) == "string"));
+}
+var isArray = function(obj)
+{
+return ((obj != null) && (typeof(obj) == "object") && (obj instanceof Array));
+}
+var serialize = function(arr)
+{
+var s = null;
+if (arr != null)
+{
+s = '';
+for (var i=0; i<arr.length; i++)
+{
+if (i > 0) s += ';';
+if (isString(arr[i])) {
+s += encodeString(arr[i]);
+} else {
+s += encodeString(arr[i][0]) + '|' + encodeString(arr[i][1]);
+}
+}
+}
+return s;
+}
+var append = function(k,v) {return (v!=null)?k+'='+v:'';}
+var appendN = function(k,v) {var v=append(k,v);return (v!='')?'&'+v:'';}
+var els = document.frmInputForms.elements;
+param = append('id', oif.id);
+param += appendN('index', oif.index);
+param += appendN('operator', ((oif.operator!=null)?getOperatorString(oif.operator):null));
+param += appendN('label', encodeString(oif.name));
+param += appendN('description', encodeString(oif.description));
+param += appendN('visible', (oif.isVisible?'true':'false'));
+param += appendN('selectedValues', ((oif.selectedValues!=null)?serialize(oif.selectedValues):null));
+var blockID = (typeof(oif.blockID)!="undefined")?oif.blockID:'';
+var isBIF = (blockID!='')?true:false;
+if (isBIF)
+{
+param += appendN('restrictedLov', 'false');
+param += appendN('blockID', oif.blockID);
+}
+else
+param += appendN('restrictedLov', (oif.isRestrictedLov?'true':'false'));
+if (typeof(oif.allowAllValues)!="undefined")
+param += appendN('allowAllValues', ''+oif.allowAllValues);
+if (typeof(oif.allowNullValues)!="undefined")
+param += appendN('allowNullValues', ''+oif.allowNullValues);
+els["InputFormParam"].value = param;
+var bo = oif.bindedObject;
+param = '';
+if (bo != null) 
+{
+param = append('id', bo.id);
+param += appendN('name', encodeString(bo.name));
+param += appendN('dataType', ((bo.dType != null) ? getDataTypeString(bo.dType) : null));
+param += appendN('qualification', ((bo.qualification != null) ? getQualificationString(bo.qualification) : null));
+param += appendN('isVariable', (bo.isVariable ? 'true' : 'false'));
+}
+els["BindedObjectParam"].value = param;
+var wd = oif.widget;
+param = append('type', wd.type);
+param += appendN('maxValue', wd.maxValue);
+param += appendN('minValue', wd.minValue);
+param += appendN('increment', wd.increment);
+if (isBIF)
+{
+param += appendN('defaultValues', null);
+param += appendN('customValues', null);
+}
+else
+{
+param += appendN('defaultValues', ((wd.defaultValues!=null)?serialize(wd.defaultValues):null));
+param += appendN('customValues', ((wd.customValues!=null)?serialize(wd.customValues):null));
+}
+if (typeof(wd.numberOfLines)!="undefined")
+param += appendN('numberOfLines', ''+wd.numberOfLines);
+if (typeof(wd.enableComplexSelections)!="undefined")
+param += appendN('enableComplexSelections', ''+wd.enableComplexSelections);
+if (typeof(wd.enableOkButton)!="undefined")
+param += appendN('enableOkButton', ''+wd.enableOkButton);
+els["WidgetParam"].value = param;
+param = '';
+var tgs = oif.targets;
+if (tgs)
+{
+for (var i=0; i<tgs.length; i++)
+{
+var tg = tgs[i];
+if (i > 0) param += ',';
+param += append('id', tg.id);
+param += appendN('bid', tg.bid);
+param += appendN('type', tg.type);
+}
+}
+els["TargetsParam"].value = param;
+var url = p._root + 'updateInputForm' + p._appExt + p.urlParamsNoBID() + "&action=" + action;
+if (undoEnabled) url += "&sUndoEnabled=true";
+if (dontCallBack) url += "&dontCallBack=true";
+if (typeof(globalICRadio)!="undefined")
+url += "&isGlobalIC="+globalICRadio.isChecked() + "&isGlobalICOriginal="+oif.isGlobalICOriginal;
+else
+url += "&isGlobalIC="+oif.isGlobalIC + "&isGlobalICOriginal="+oif.isGlobalICOriginal;
+document.frmInputForms.action = url;
+document.frmInputForms.submit();
+}
+function getOperatorString(op)
+{
+var op=(op!=null)?parseInt(op):null; 
+var s="";
+switch (op)
+{
+case EQUAL:
+s="EQUAL";
+break;
+case NOT_EQUAL:
+s="NOT_EQUAL";
+break;
+case GREATER:
+s="GREATER";
+break;
+case GREATER_OR_EQUAL:
+s="GREATER_OR_EQUAL";
+break;
+case LESS:
+s="LESS";
+break;
+case LESS_OR_EQUAL:
+s="LESS_OR_EQUAL";
+break;
+case BETWEEN:
+s="BETWEEN";
+break;
+case NOT_BETWEEN:
+s="NOT_BETWEEN";
+break;
+case IN_LIST:
+s="IN_LIST";
+break;
+case NOT_IN_LIST:
+s="NOT_IN_LIST";
+break;
+case IS_NULL:
+s="IS_NULL";
+break;
+case NOT_IS_NULL:
+s="NOT_IS_NULL";
+break;
+case LIKE:
+s="LIKE";
+break;
+case NOT_LIKE:
+s="NOT_LIKE";
+break;
+case BOTH:
+s="BOTH";
+break;
+case EXCEPT:
+s="EXCEPT";
+break;
+}
+return s;
+}
+function getDataTypeString(dtype)
+{
+var dtype=(dtype!=null)?parseInt(dtype):null;
+var s="";
+switch (dtype)
+{
+case _txt:
+s="TEXT";
+break;
+case _num:
+s="NUMBER";
+break;
+case _date:
+s="DATE";
+break;
+case _hchy:
+s="HIERARCHY";
+break
+}
+return s;
+}
+function getQualificationString(qf)
+{
+var qf=(qf!=null)?parseInt(qf):null;
+var s="";
+switch (qf)
+{
+case _dim:
+s="DIMENSION";
+break;
+case _linkDim:
+s="LINKED_DIMENSION";
+break;
+case _msr:
+s="MEASURE";
+break;
+case _dtl:
+s="DETAIL";
+break;
+case _hchy:
+s="HIERARCHY";
+break;
+}
+return s;
+}
+function packageXMLParameter(xml)
+{
+var xmlParam = '<REQUEST><INPUTFORMS>';
+    xmlParam += xml;       
+    xmlParam += '</INPUTFORMS></REQUEST>';
+    return xmlParam;
+}
+function buildXMLParameter(o,action,multi,bRestrictedLov)
+{
+var bids="",targets=o.targets,lenT=targets.length;
+for(var i=0;i<lenT;i++)
+{
+if(i>0) bids+=";";
+ bids+=targets[i].bid;
+}
+var xmlParam="";
+var values=o.selectedValues
+var originalValuesList = null, hasKey = false
+if (o.values) {
+originalValuesList = o.values
+if (originalValuesList.length > 0) {
+hasKey = (null != originalValuesList[0].key)
+}
+}
+var op=o.operator,id=o.id;
+var isBlockIF = (o.blockID!=null && o.blockID!="")
+if(bRestrictedLov)
+{
+id=o.id+".lov";
+op=IN_LIST;
+values=o.widget.customValues;
+}
+if(isBlockIF) 
+{
+if(values==null) action="remove";
+if(action=="remove")
+{
+xmlParam ='<INPUTFORM ACTION="'+action+'" ID="'+id+'" OBJECTID=""';            
+    xmlParam +=' BIDS="'+bids+'" OPERATOR="'+getOperatorString(op)+'">';
+    xmlParam += '<VALUES></VALUES></INPUTFORM>';    
+}
+else
+{
+ for (var i=0; i<values.length; i++)
+{
+var objName=values[i].name;
+var objValue=values[i].value;
+xmlParam +='<INPUTFORM ACTION="'+action+'" ID="'+id+'" OBJECTID="" OBJECTNAME="'+convToHTMLEntities(objName)+'"';            
+xmlParam +=' BIDS="'+bids+'" OPERATOR="'+getOperatorString(op)+'">';
+xmlParam +='<VALUES><VALUE TEXT="'+convToHTMLEntities(objValue)+'"/></VALUES></INPUTFORM>';
+}
+}
+}
+else 
+{
+var xmlvalues="",valuesBetween="";
+if(values==null || (values!=null && values[0]==sAllValues)) 
+action="remove";
+if((action!="remove") && (values!=null))
+{
+if(op==BETWEEN || op==NOT_BETWEEN)
+{
+valuesBetween = 'VALUEMIN="'+convToHTMLEntities(values[0])+'" VALUEMAX="'+convToHTMLEntities(values[1])+'"';
+}
+else
+{
+var len = values.length;
+if (o.widget.type == _tree_list || o.widget.type == _tree_list_multiselection)
+{
+for (var i=0; i<len; i++)
+{
+var row = values[i];
+xmlvalues +='<VALUE TEXT="' + convToHTMLEntities(row[0]) + '" ';
+xmlvalues +='KEY ="' + convToHTMLEntities(row[1]) + '"/>';
+}
+}
+else
+{
+for(var i=0;i<len;i++ )
+{
+if (hasKey) {
+xmlvalues += '<VALUE TEXT="' + convToHTMLEntities(getValFromKey(originalValuesList, values[i])) + '" ';
+xmlvalues += 'KEY ="' + convToHTMLEntities(values[i]) + '"/>';
+} else {
+xmlvalues += '<VALUE TEXT="' + convToHTMLEntities(values[i]) + '"/>';
+}
+}
+}
+}
+}
+    xmlParam ='<INPUTFORM ACTION="'+action+'" ID="'+id+'" OBJECTID="';            
+    xmlParam += ((o.bindedObject!=null)?o.bindedObject.id:"") + '" BIDS="'+bids+'" OPERATOR="'+getOperatorString(op)+'" '+valuesBetween+'>';
+xmlParam += '<VALUES>'+xmlvalues+'</VALUES></INPUTFORM>';          
+}
+    if(!multi) 
+    return packageXMLParameter(xmlParam)
+    return xmlParam;
+}
+function convToHTMLEntities(val,encodeSpace)
+{
+var s = '';
+if (val != null)
+{
+var sVal = '' + val;
+for (var i=0; i < sVal.length; i++)
+{
+var c = sVal.charAt(i);
+switch (c)
+{
+case "\"":
+s += '&quot;';
+break;
+case "\'":
+s += '&#39;'; 
+break;
+case "&":
+s += '&amp;';
+break;
+case "<":
+s += '&lt;';
+break;
+case ">":
+s += '&gt;';
+break;
+case " ":
+if (encodeSpace)
+s += '&nbsp;';
+else
+s += c;
+break;
+default:
+s += c;
+}
+}
+}
+return s;
+}
+function getValFromKey(valueKeysAr, key) {
+for (var i=0; i < valueKeysAr.length; i++) {
+if (key == valueKeysAr[i].key) return valueKeysAr[i].caption
+}
+}
+function getKeyFromVal(valueKeysAr, val) {
+for (var i=0; i < valueKeysAr.length; i++) {
+if (val == valueKeysAr[i].caption) return valueKeysAr[i].key
+}
+return null
+}
+function hasKeysFn(values) {
+var hasKeys = false
+if (values.length > 0) {
+hasKeys = (null != values[0].key)
+}
+return hasKeys
+}
+function getIFLov(iform)
+{
+if(iform.isRestrictedLov)
+{
+var flatLov = iform.lov
+if(flatLov!=null && iform.tempLov==null)
+{
+var len=flatLov.length;
+var arr=[];
+for(var i=0; i<len; i++)
+{
+arr[i]={caption:flatLov[i]};
+}
+iform.tempLov = arr;
+}
+return  iform.tempLov;
+}
+else
+return iform.values;
+}
+function getAllowAllValuesOption(iform)
+{
+if(iform.allowAllValues==null || iform.allowAllValues==true)
+return true;
+else
+return false;
+}
+function getAllowNullValuesOption(iform)
+{
+if(iform.allowNullValues==null || iform.allowNullValues==true)
+return true;
+else
+return false;
+}
+function updateInputFormsCount()
+{
+var global_cnt=globalIFormContainer.items.length;
+var sepGlobal = _curDoc.getElementById("groupSeparatorGlobalcount");
+if (sepGlobal!=null)
+sepGlobal.innerHTML=" (" + global_cnt + ")";
+var local_cnt=localIFormContainer.items.length;
+var sepLocal = _curDoc.getElementById("groupSeparatorLocalcount");
+if (sepLocal!=null)
+sepLocal.innerHTML=" (" + local_cnt + ")";
+}

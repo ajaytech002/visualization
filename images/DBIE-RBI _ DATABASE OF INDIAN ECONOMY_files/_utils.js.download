@@ -1,0 +1,724 @@
+/*
+	File Version Start - Do not remove this if you are modifying the file
+	Build: 10.0.0
+	File Version End
+
+	(c) Business Objects 2003-2004.  All rights reserved.
+*/
+
+var BROWSER_INTERNET_EXPLORER = ( window.navigator.userAgent.toLowerCase().indexOf('msie') != -1);
+var BROWSER_SAFARI = ( window.navigator.userAgent.toLowerCase().indexOf('applewebkit') != -1);
+var BROWSER_GECKO = ( window.navigator.userAgent.toLowerCase().indexOf('gecko') != -1) && (!BROWSER_SAFARI);
+
+var IE_CLOSE_SCREEN_LEFT = 10004; // IE magic number for closing browser window.
+var IE_CLOSE_MIN_SCREEN_LEFT = -32000; // IE magic number for closing browser window while minimized.
+
+var DEFAULT_NAV_WIDTH = "200";
+//
+// utility functions
+//
+
+function getUrlBase () {
+      /*
+      var port = document.location.port;
+      var scheme = document.location.protocol;
+      scheme = scheme.substring(0, scheme.length-1);
+      if (port == "" && scheme == "http") {
+            port = "80";
+      }
+      else if (port == "" && scheme == "https") {
+            port = "443";
+      }
+      var uri = document.location.pathname;    
+      var httpserver = document.location.hostname;
+      if(httpserver.indexOf(":")>=0) // ipv6 contains ':' instead of '.', we must escape by []
+            httpserver="["+httpserver+"]";
+            
+      return scheme + "://" + httpserver + (((port == "80" && scheme == "http") || (port == "443" && scheme == "https")) ? "" : ":" + port) + "/" + uri;
+      */
+      var urlBase = document.location.href;
+      var iPos = urlBase.indexOf('/AnalyticalReporting');
+      if (iPos >= 0) {
+            urlBase = urlBase.substring(0, iPos);
+      }
+      return urlBase;
+}
+
+function getHeaderPlusFrame() {
+	if (isNetscape70() || BROWSER_GECKO)
+		return top;
+	else
+		return findFrame('headerPlusFrame');
+}
+function getDataController() {
+	if (isNetscape70() || BROWSER_GECKO) return findFrame('dataWrapperFrame');
+	return findFrame('dataFrame');
+}
+function getNavWorkController() {
+	return findFrame('navWorkFrame');
+}
+function getWorkspaceController() {
+	return findFrame('workspaceBodyFrame');
+}
+
+function findElementById(Id) {
+	var mywin = window;
+	while (mywin != mywin.parent && mywin.parent && mywin.parent.document) {
+		mywin = mywin.parent;
+	}
+	var f = mywin.document.getElementById(Id);
+	if (f != null) return f;
+
+	for (var i = 0; i < mywin.length; i++) {
+		f = findElementHelper(mywin.frames[i], Id);
+		if (f != null) return f;
+	}
+	return null;
+}
+function findElementHelper(frame, Id) {
+	// frames with certain plugins (word, excel) will cause a js error because the frame document doesn't exist
+	if ((typeof(frame.document)).toLowerCase() == "unknown") return null;
+
+	var f = null;
+	try {
+		f = frame.document.getElementById(Id);
+	} catch(ex) {
+		// Ignore this frame if we can't access it.  NS will return "Permission denied to get property
+		// HTMLDocument.getElementById" on some frames (eg: external hyperlink page)
+	}
+
+	if (f != null) return f;
+
+	for (var i = 0; i < frame.length; i++) {
+		f = findElementHelper(frame.frames[i], Id);
+		if (f != null) return f;
+	}
+	return null;
+}
+function findFrame(frame) {
+	var f = findElementById(frame);
+	if (f) {
+		// safari lies and tries to identify itself as Mozilla/Gecko..
+		// however, it sets its vendor to Apple
+		if (isSafari())
+			return f;
+		return f.contentWindow;
+	}
+	else
+		return null;
+}
+
+function getSelectedId() {
+	var navWork = getNavWorkController();
+	var hplus = getHeaderPlusFrame();
+	if (hplus.showFolders) {
+		return navWork.selectedFolder;
+	} else {
+		return navWork.selectedCategories;
+	}
+}
+
+function showListing() {
+	var navWorkFrame = getNavWorkController();
+	var hplus = getHeaderPlusFrame();
+	if( hplus != null && navWorkFrame != null )
+	{
+		if (hplus.showFolders) {
+			navWorkFrame.displaySelectedFolderContents();
+		} else {
+			navWorkFrame.displaySelectedCategoryContents();
+		}
+	}
+}
+
+function replaceContext( url, context, lowercaseApproot ) {
+    if( context && (context.length > 0 ) ) {
+        var startIndex = url.toLowerCase().lastIndexOf(lowercaseApproot);
+        if( startIndex > -1 )
+            url = context + url.substring( startIndex );
+    }
+    return url;
+}
+
+function getLastWorkspace() {
+	var navWorkFrame = getNavWorkController();
+	if (navWorkFrame.lastWorkspacePage && (navWorkFrame.lastWorkspacePage.length > 0))
+		return navWorkFrame.lastWorkspacePage;
+	else
+		return navWorkFrame.defaultWorkspacePage;       // home page
+}
+
+//This function is to fix the bug in IE/XP where in full screen mode all toolbars are hidden (Can't close window)
+function ieFixWindowProps(windowProps){
+    if (windowProps.indexOf('fullscreen') > -1){
+      var newFullScreenString = "left=0,top=0,width=" + (screen.width-10) + ",height=" + (screen.height-70);
+      var fullIndex = windowProps.indexOf('fullscreen');
+      if (windowProps.indexOf(',', fullIndex) > -1){
+        windowProps = windowProps.substring(0, fullIndex - 1) + newFullScreenString
+                      + windowProps.substring(windowProps.indexOf(',', fullIndex));
+      }else{
+        windowProps = windowProps.substring(0, fullIndex - 1) + newFullScreenString;
+      }
+    }
+    return windowProps;
+}
+
+function resetLastActionId() {
+    var f = getHeaderPlusFrame();
+    if( f != null )
+        f.setLastActionId(null);
+}
+function setLastActionId(id) {
+	var f = getHeaderPlusFrame();
+	if( f != null )
+		f.setLastActionId(id);
+}
+function getLastActionId() {
+	var f = getHeaderPlusFrame();
+	if (f != null && f.lastActionId)
+        return String(f.lastActionId);
+	else
+        return null;
+}
+function saveLastActionId() {
+	var f = getHeaderPlusFrame();
+    if( f != null )
+        f.setSavedLastActionId(f.lastActionId);
+}
+function restoreLastActionId() {
+	var f = getHeaderPlusFrame();
+    if( f != null )
+        f.setLastActionId(f.savedLastActionId);
+}
+
+function addQueryStrSep(url)
+{
+    if (url.length == 0)
+        return "?";
+
+    if (-1 == url.indexOf('?'))
+    {
+        return url + "?";
+    }
+    else
+    {
+        if ('&' != url.charAt(url.length - 1))
+            return url + "&";
+        else
+            return url;
+    }
+}
+
+function _HtmlEncode (s)
+{
+	es = s.replace(/\&/g,"&amp;");
+	es = es.replace(/\</g,"&lt;");
+	es = es.replace(/\>/g,"&gt;");
+	es = es.replace(/\'/g,"&apos;");
+	es = es.replace(/\"/g,"&quot;");
+	return es;
+}
+
+function getJSDate(calendarName)
+{
+	var dateString = (document.getElementsByName(calendarName + ".date"))[0].value; 
+	var dateArray = dateString.split("."); 
+	var hour = (document.getElementsByName(calendarName + ".hour"))[0].selectedIndex; 
+	var min = (document.getElementsByName(calendarName + ".minute"))[0].selectedIndex; 
+	var AMorPM = document.getElementsByName(calendarName + ".ampm"); 
+	if(AMorPM) {
+		hour += 1; 
+		if((AMorPM[0]).selectedIndex == 0 && hour == 12) hour = 0;  
+		if((AMorPM[0]).selectedIndex == 1 && hour != 12) hour = hour + 12;  
+	}
+	var date = new Date(dateArray[0], dateArray[1] -1, dateArray[2], hour, min, 0); 
+	return date;
+}
+
+function toggleNav (bShow)
+{
+	// do nothing for netscape 7.0 since it refreshes the whole page
+	if (isNetscape70())
+		return;
+
+	if (bShow != undefined)
+	{
+		toggleNavBase(bShow);
+	}
+	else
+	{
+		toggleNavBase();
+		var navWorkFrame = getNavWorkController();
+		bShow = navWorkFrame.navFrameShown;
+	}
+	setPanelStateForRestoredWorkspace ('nav', bShow);
+}
+
+function toggleNavBase(bShow)
+{
+	// do nothing for netscape 7.0 since it refreshes the whole page
+	if (isNetscape70())
+		return;
+
+	var navWork = getNavWorkController();
+	if(navWork == null)
+		return;
+	if (bShow != undefined) {
+		navWork.setNavFrameShown(bShow);
+	} else {
+		navWork.setNavFrameShown(!navWork.navFrameShown);
+	}
+	var fs = navWork.document.getElementById('navWorkFrameSet');
+	var frame = navWork.document.getElementById('navigationFrame');
+
+	var navFrameCol = fs.cols.substr(0, fs.cols.indexOf(','));
+    var restOfCols = fs.cols.substr(fs.cols.indexOf(','));
+
+    //Make sure the centre frame is always *
+    restOfCols = restOfCols.replace(/,.*,/, ",*,");
+	if (navWork.navFrameShown) {
+		frame.noResize=false;
+		if (navWork.navCols)
+            fs.cols = navWork.navCols + restOfCols;
+		else
+			fs.cols = DEFAULT_NAV_WIDTH + restOfCols;
+	} else {
+		// save the last state
+		if (navFrameCol != "0")
+			navWork.setNavCols(navFrameCol);
+		fs.cols="0" + restOfCols;
+		frame.noResize=true;
+	}
+	var headerPlus = getHeaderPlusFrame(); 
+	if(headerPlus != null && headerPlus.btnNav != null) 
+	 	headerPlus.btnNav.check(navWork.navFrameShown, false); 
+}
+
+
+function toggleDiscussionsBase(bShow) {
+  var discussHeader = findFrame('discussionsHeaderFrame');
+	discussHeader.toggleDiscussionsFrameBase(bShow);
+}
+
+function toggleFoldersCategories(bShowFolders, id)
+{
+	var navHeaderFrame = findFrame('navigationHeaderFrame');
+	if (navHeaderFrame) {
+		var navWork = getNavWorkController();
+		if (bShowFolders) {
+			navWork.setSelectedFolder(id);
+			navHeaderFrame.displayFolders(id);
+		} else {
+			navWork.setSelectedCategories(id);
+			navHeaderFrame.displayCategories(id);
+		}
+	}
+}
+
+function selectNavNodeAndDisplay(bShowFolders, id) {
+	toggleFoldersCategories(bShowFolders, id);
+	showListing();
+}
+
+function refreshEntireNavTree(){
+	var f = findFrame('navigationBodyFrame');
+	if (f) {
+		if (f != window)
+			f.refreshEntireNavTree();
+		else
+			f.refreshEntireNavTree_Impl();
+	}
+}
+
+function refreshSelectedNavNode(){
+	var f = findFrame('navigationBodyFrame');
+	f.refreshSelectedNavNode();
+}
+
+function refreshSelectedNavNodeChildren(){
+	var f = findFrame('navigationBodyFrame');
+	f.refreshSelectedNavNodeChildren();
+}
+
+function selectSelectedNavNodeParent(){
+	var f = findFrame('navigationBodyFrame');
+	f.selectSelectedNavNodeParent();
+}
+
+function expandSelectedNavNode(){
+	var f = findFrame('navigationBodyFrame');
+	f.expandSelectedNavNode();
+}
+
+function refreshNodeDisplayContents()
+{
+	toggleNav(true);
+	refreshSelectedNavNodeChildren();
+	showListing();
+}
+
+function setWorkspaceHeaderTitle(title) {
+	var wsHeaderFrame = findFrame('workspaceHeaderFrame');
+	if (wsHeaderFrame && wsHeaderFrame.setTitle) {
+		wsHeaderFrame.setTitle(title);
+	    wsHeaderFrame.hideNewWindowButton(); 
+	}
+	var f = getHeaderPlusFrame();
+    if( f != null && f.setSavedWorkspaceHeaderTitle)
+        f.setSavedWorkspaceHeaderTitle (title);
+}
+
+function setWorkspaceHeaderTitle2(title, link) {
+	var wsHeaderFrame = findFrame('workspaceHeaderFrame');
+	if (wsHeaderFrame && wsHeaderFrame.setTitle2) {
+		wsHeaderFrame.setTitle2(title, link);
+	    wsHeaderFrame.hideNewWindowButton(); 
+	}
+	var f = getHeaderPlusFrame();
+    if( f != null && f.setSavedWorkspaceHeaderTitle2)
+        f.setSavedWorkspaceHeaderTitle2 (title,link);
+}
+
+function showDiscussions(id) {
+	var frame = getDataController();
+	if( frame != null )
+		frame.showDiscussions(id);
+}
+
+// TOOLBAR: creation helper functions
+// Id map for menu items
+function createIdMap (theArray) {
+	var map = new Object();
+	for (var i = 0; i < theArray.length; i++) {
+		map[theArray[i].id] = i;
+	}
+	return map;
+}
+
+function panelButtonHover(id, newImg) {
+	var img = document.getElementById(id);
+	if (img && img.src) {
+		img.src = newImg.src;
+	}
+}
+
+//  -comma separated lists-
+// input is a (probably) a hidden input
+// item is a string
+// only adds unique items
+function addToCSList(input, item)
+{
+	if (input.value.length > 0) {
+		var oldvalue = "," + input.value + ",";
+		if (oldvalue.indexOf("," + item + ",") == -1) {
+			input.value += "," + item;
+		}
+	} else {
+		input.value = item;
+	}
+}
+function removeFromCSList(input, item)
+{
+	var items = input.value.split(",");
+	var i;
+	input.value = "";
+	for (i = 0; i < items.length; i++) {
+		if (items[i] != item && items[i] != "") {
+			addToCSList(input, items[i]);
+		}
+	}
+}
+
+function _URIEncode(s)
+{
+   if( (typeof(encodeURIComponent)).toLowerCase() == "function" ) {
+      //escape behaves differently in IE and Netscape; besides it's been deprecated and removed from the standard.
+	  //Therefore use encodeURIComponent when we can.
+	  return encodeURIComponent(s);
+   } else {
+	   //for Safari, which does not support encodeURIComponent;
+	  var tmp = escape(s);
+      // encode "+", since escape will not do it for us...
+      return tmp.replace(/\+/g, "%2b");
+   }
+}
+
+function isNetscape70() {
+	return (navigator.product == "Gecko" && navigator.userAgent.indexOf("Netscape/7") != -1);
+}
+
+function isSafari() {
+	return (navigator.vendor == "Apple Computer, Inc.");
+}
+
+function netscapeOnScroll() {
+	// Netscape 7.x has issues with scrolling where vertical lines appear when scrolling down
+	// this seems to fix the problem...
+	self.document.bgColor = self.document.bgColor;
+}
+
+if (isNetscape70()) {
+	self.window.onscroll = netscapeOnScroll;
+}
+
+function resetListingVariables() {
+	var headerFrame = getHeaderPlusFrame();
+	if (headerFrame && headerFrame.resetListingVariables) {
+		headerFrame.resetListingVariables();
+	}
+}
+
+function toggleRightFrame(bShow)
+{
+	if (bShow != undefined)
+	{
+		toggleRightFrameBase(bShow);
+	}
+	else
+	{
+		toggleRightFrameBase();
+		var navWorkFrame = getNavWorkController();
+    	bShow = navWorkFrame.rightFrameShown;
+	}
+	setPanelStateForRestoredWorkspace ('right', bShow);
+}
+
+function toggleRightFrameBase(bShow)
+{
+    var navWork = getNavWorkController();
+    if(navWork == null)
+        return;
+
+    var frame = findFrame('rightFrame');
+    if (frame == null) {
+        return;
+    }
+
+    if (bShow == undefined) {
+        bShow = !navWork.rightFrameShown;
+    }
+
+    var fs = navWork.document.getElementById('navWorkFrameSet');
+    var rf = navWork.document.getElementById('rightFrame');
+    var rightCols = fs.cols.substr(fs.cols.lastIndexOf(',') + 1);
+    var restOfCols = fs.cols.substr(0, fs.cols.lastIndexOf(',') + 1);
+
+    //Make sure the centre frame is always *
+    restOfCols = restOfCols.replace(/,.*,/, ",*,");
+
+    if (bShow) {
+        rf.noResize=false;
+        fs.cols = restOfCols + navWork.rightFrame;
+    } else {
+        if (navWork.rightFrameShown) {
+            rf.noResize=true;
+	    	if (rightCols != "0")
+                navWork.setRightFrameCols(rightCols);
+            fs.cols = restOfCols + "0";
+        }
+    }
+
+    navWork.setRightFrameShown(bShow);
+   	var headerPlus = getHeaderPlusFrame();
+	if (navWork.rightFrameShown)
+		updateRightFrame(-1);
+}
+
+function updateRightFrame(id, context, lowercaseApproot)
+{
+	var navWork = getNavWorkController();
+	if(navWork == null)
+		return;
+
+    var frame = findFrame('rightFrame');
+    if (frame == null)
+    return;
+
+    if (id == undefined) {
+	    navWork.setRightFrameRequestedId(0);
+    } else if (id != -1) {
+	    navWork.setRightFrameRequestedId(id);
+    }
+
+
+    if (!navWork.rightFrameShown)
+    	return;
+
+    if (navWork.rightFrameCurrentId != navWork.rightFrameRequestedId || navWork.rightFrameUrlChanged) {
+	    navWork.setRightFrameCurrentId(navWork.rightFrameRequestedId);
+	    navWork.setRightFrameUrlChanged(false);
+	    var url =  replaceContext( navWork.rightFrameURL, context, lowercaseApproot );
+		frame.location = url + "?repID=" + navWork.rightFrameCurrentId + "&LOCALE=" + navWork.rightLocale;
+    }
+}
+
+function opendocumentCallback(id) {
+    showDiscussions(id);
+    updateRightFrame(id);
+}
+
+function ignoreErrors() {
+	return true;
+}
+
+function isWindowClosing()
+{
+	// Determine if window is closing according to browser type.
+	// NOTE: Currently no official way in javascript to determine if window is closing.
+	if (BROWSER_INTERNET_EXPLORER) {
+		if (window.screenLeft == IE_CLOSE_SCREEN_LEFT) return true;
+		if (window.screenLeft == IE_CLOSE_MIN_SCREEN_LEFT) return true;
+	}
+	else if (BROWSER_GECKO || BROWSER_SAFARI)
+	{
+		// TODO: Figure out how to check for Netscape and/or Safari.
+	}
+
+	return false;
+}
+
+function setPanelStateForRestoredWorkspace (panelId, isShown)
+{
+	var wsHeaderFrame = findFrame('workspaceHeaderFrame');
+	if (wsHeaderFrame && wsHeaderFrame.setPanelStateForRestoredWorkspaceImpl)
+			wsHeaderFrame.setPanelStateForRestoredWorkspaceImpl (panelId, isShown);
+}
+
+// Encodes delimiters "=" and ","
+// Identical to codebehind function
+function encodeDelimiters (s)
+{
+	es = s.replace(/\|/g,"*|");
+	es = es.replace(/\&/g,"*||");
+	es = es.replace(/\=/g,"*|||");
+	es = es.replace(/\,/g,"*||||");
+	return es;
+}
+
+// Decodes strings previously encoded with encodeDelimiters()
+// Identical to codebehind function
+function decodeDelimiters (es)
+{
+	s = es.replace(/\*\|\|\|\|/g,",");
+	s = s.replace(/\*\|\|\|/g,"=");
+	s = s.replace(/\*\|\|/g,"&");
+	s = s.replace(/\*\|/g,"|");
+	return s;
+}
+
+function moveListBoxItems (fromListBox, toListBox, moveAll)
+{
+	// Iterate forward thru "fromListBox", copying to "toListBox"
+	for (count = 0; count < fromListBox.options.length; ++count)
+	{
+		var currentItem = fromListBox.options[count];
+		if (moveAll || currentItem.selected)
+		{
+			var option = new Option (currentItem.text, currentItem.value, false, false);
+			toListBox.options[toListBox.options.length] = option;
+		}
+	}
+
+	// Iterate backwards thru "fromListBox", removing copied items
+	for (count = fromListBox.options.length -1;  count >= 0; --count)
+	{
+		if (moveAll || fromListBox.options[count].selected)
+			fromListBox.options[count] = null;
+	}
+}
+
+function enableButton (buttonId, enable)
+{
+	if (enable)
+		document.getElementById(buttonId).className = "clsButton";
+	else
+		document.getElementById(buttonId).className = "clsButtonDisabled";
+}
+
+function onClick (buttonId, arg)
+{
+	if (document.getElementById(buttonId).className == "clsButtonDisabled")
+		return;
+
+	var myfunc=this["onClick" + buttonId];
+	if (arg != undefined)
+		myfunc(arg);
+	else
+		myfunc();
+}
+
+// ADAPT00597903  
+// http://msdn.microsoft.com/library/default.asp?url=/workshop/author/dhtml/overview/activating_activex.asp
+// baically delegate the document.writeline(...) call to an exteral javascript file form appletPopup.jsp
+// see ADAPT00597903 for more detials
+function writeActiveX(activeXParams)
+{
+	document.writeln(activeXParams);
+}
+
+// ADAPT00789732
+function isPopupWindow(win)
+{
+	var bRet = false;
+	if (win == null) win = window;
+	if (win == win.parent)
+	{
+	   // Check the window has an opener
+	   bRet = (win.opener)? true : false;
+	}
+	if (!bRet) {
+	   //Check if we are in CMC dialog box
+
+	/*
+	   if (typeof(parent.cmcDialog) != "undefined") {
+					   bRet = true;
+	   }*/
+	   try {
+		   if (typeof(parent.cmcDialog) != "undefined") {
+						   bRet = true;
+		   }
+	   }
+	   catch(e)
+	   {
+	   }
+	}
+
+	return bRet;
+
+}
+
+function getWebappRootPath(contextPath)
+{
+	if (contextPath == null) contextPath = '';
+	
+	var iPos = contextPath.lastIndexOf('/');
+	if (iPos >= 0) {
+		contextPath = contextPath.substring(iPos + 1);
+	}
+	else {
+		//Encode '/' character
+		iPos = contextPath.lastIndexOf('&#x2f;');
+		if (iPos >= 0) {
+			contextPath = contextPath.substring(iPos + 6);
+		}	
+	}
+	
+	var urlBase = document.location.href;
+	var iPos = urlBase.indexOf('/' + contextPath);
+	if (iPos >= 0) urlBase = urlBase.substring(0, iPos);
+	return urlBase;
+}
+
+//ADAPT00852338
+function editDocInPlace(url, actionId, objIds, containerId, actionType, actionSetPageType, extraParams)
+{
+    var invokeCallback = findCallback("caf_appendQueryString");
+    if (invokeCallback != null)
+    {
+        url = invokeCallback(url, actionId, objIds, containerId, actionType, actionSetPageType, 'standalone', extraParams);
+        window.location.replace(url);
+    }
+    else
+        alert("Internal error occured: callback function 'caf_appendQueryString' not found!");
+}
+

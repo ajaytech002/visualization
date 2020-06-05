@@ -1,0 +1,133 @@
+/*
+=============================================================
+WebIntelligence(r) Report Panel
+Copyright(c) 2001-2005 Business Objects S.A.
+All rights reserved
+
+Use and support of this software is governed by the terms
+and conditions of the software license agreement and support
+policy of Business Objects S.A. and/or its subsidiaries. 
+The Business Objects products and technology are protected
+by the US patent number 5,555,403 and 6,247,008
+
+=============================================================
+*/function registerBidsForInputForm()
+{
+var frm=getReportFrame();
+var els=frm.document.getElementsByTagName("body");
+var bodyEl=els.item(0);
+iForm_registerBids(bodyEl);
+}
+function iForm_registerBids(l,bid)
+{
+if (l.nodeType==3)
+return;
+var bid=l.getAttribute?l.getAttribute("bid"):null;
+var n=l.childNodes;
+if (bid!=null && n.length>0)
+registerBid(bid,l);
+if (n!=null)
+{
+var len=n.length;
+for (var i=0;i<len;i++)
+{
+iForm_registerBids(n[i],bid);
+}
+}
+return null;
+}
+function iForm_highlightBlock(bids)
+{
+var reportFr=getReportFrame();
+if (isInteractive)
+deselectAll(reportFr);
+else
+iForm_deselectAll(reportFr);
+var len=bids.length, bid="";
+for (var i=0;i<len;i++)
+{
+var bid=bids[i];
+selectedBid.set(bid, 1);
+if (isInteractive)
+selectSingle(reportFr, bid, true);
+else
+iForm_selectObj(reportFr, bidTable.get(bid), true, bid, true);
+}
+}
+function iForm_deselectAll(fr)
+{
+if (selectedBid == null) return
+selectedBid.each(function(pair) {
+var i = pair.key;
+selectedBid.unset(i);
+iForm_selectObj(fr, bidTable.get(i), false, i);
+});
+}
+function iForm_selectObj(fr, objs, sel, bid, forceScroll)
+{
+if (objs==null)
+return
+var count=objs.length;
+for (var i=0;i<count;i++)
+{
+inputForm_selectObjInstance(fr, objs[i], sel, bid, forceScroll);
+}
+}
+function inputForm_selectObjInstance(fr, o, sel, bid, forceScroll)
+{
+var selW=4
+var dselW=selW*2
+if (forceScroll)
+{
+if (fr == null) return
+var absPos =  getPos(o)
+var absPosX = absPos.x, absPosY = absPos.y, scrX = getScrollX(fr), scrY = getScrollY(fr)
+var scrToX = -1, scrToY = -1
+if (((absPosX - scrX) < 0) || ((absPosX - scrX) > winWidth(fr))) {
+scrToX = absPosX
+}
+if (((absPosY - scrY) < 0) || ((absPosY - scrY) > winHeight(fr))) {
+scrToY = absPosY
+}
+winScrollTo(((scrToX != -1)? scrToX : scrX), ((scrToY != -1)? scrToY : scrY), fr)
+}
+var behavior={"resizable":false,"movable":false,"select":true,"isSelectedInstance":false}
+var isChart = iForm_isChart(o);
+if (isChart)
+{
+if (sel)
+_feedbackManager.select(o, fr, null, behavior)
+else
+_feedbackManager.unselect()
+}
+else
+{
+if (sel)
+{
+behavior.resizableW=false
+behavior.resizableH=false
+_feedbackManager.select(o, fr, null, behavior)
+}
+else
+_feedbackManager.unselect()
+}
+}
+function iForm_isChart(bl)
+{
+var ret=false;
+if (bl!=null)
+{
+var n=bl.childNodes;
+var len=n.length;
+for (var i=0;i<len;i++)
+{
+var l=n[i];
+if (l.tagName=="MAP" || l.tagName=="IMG")
+{
+ret=true;
+break;
+}
+}
+}
+return ret;
+}

@@ -1,0 +1,2237 @@
+if (window._DHTML_LIB_MULTILIST_JS_LOADED==null)
+{
+//header image file: multih.png
+//background image file for body:tablebg.png
+_multiHeaderFile='multih.png'
+_multiHeaderHeight=21;
+_multiHeaderArrowW=5;
+_multiHeaderArrowH=3;
+_multiHeaderLImgW=3;
+_multiHeaderSortIconW=10;
+_multiHeaderSepW=3;
+_multiHeaderTrailW=300;
+//please dont delete it!
+//x,y,width
+//separator:1,0,3
+//left:1,21,3
+//middle:0, 42,5
+//right:1,63,3
+//arrow down:0,84, 5 //descending sort
+//arrow up:0, 87, 5 //ascending
+_multiHLCSS=0;
+_multiHMCSS=1;
+_multiHRCSS=2;
+_multiHSepCSS=3;
+_multiHDownCSS=5;
+_multiHUpCSS=4;
+_multiHCSS=['multiL', 'multiM', 'multiR', 'multiSep', 'multiArrowDown', 'multiArrowUp']
+_multiRowHeight=14
+}
+function getMultiRowHeight(){
+return isFarEast() && (_ie9R || _ie10R || _ie11R) ? 15:_multiRowHeight;
+}
+function new_MultiColumnList(prms)
+{
+var o = new_Widget(prms);
+// From params
+o.changeCB=Widget_param(prms, "changeCB", null); 
+o.multi=Widget_param(prms, "multi", false);  
+o.w=Widget_param(prms, "w", 100);   
+o.h=Widget_param(prms, "h", 400);    
+o.dblClickCB=Widget_param(prms, "dblClickCB", null);     
+o.sortCB=Widget_param(prms, "sortCB", null);    
+o.noHeader=Widget_param(prms, "noHeader", false);     
+o.keyDownCB=Widget_param(prms, "keyDownCB", null);   
+o.checkCB=Widget_param(prms, "checkCB", null);   
+o.rowHeight=Widget_param(prms, "rowHeight", getMultiRowHeight());   
+o.showTooltip=Widget_param(prms, "showTooltip", false);  
+o.getTooltipCB=Widget_param(prms, "getTooltipCB", null);  
+    o.defaultHeight=(o.rowHeight==getMultiRowHeight());
+// Can be changed after calling this constructor and before write HTML
+o.borderW=1
+o.bgClass='solidBorder'
+o.innerW=Math.max(0,o.w-(2*(o.borderW)))
+o.innerH=Math.max(0,o.h-(2*(o.borderW)))
+// Public API widget common API
+o.getHTML=MultiColumnList_getHTML;
+o.oldInit=o.init;
+o.init=MultiColumnList_init;
+o.rebuildHTML=MultiColumnList_rebuildHTML
+o.oldResize=o.resize
+o.resize=MultiColumnList_resize
+o.resizeCol=MultiColumnList_resizeCol
+// Public API colums and rows
+o.resetColums=MultiColumnList_resetColums;
+o.addColumn=MultiColumnList_addColumn;
+o.setColumn=MultiColumnList_setColumn;
+o.addRow=MultiColumnList_addRow;
+o.add=MultiColumnList_add;
+o.del=MultiColumnList_del
+o.move=MultiColumnList_move
+o.getColumsCount=MultiColumnList_getColumsCount
+o.getCount=MultiColumnList_getCount
+o.freeze=MultiColumnList_freeze
+o.change=MultiColumnList_change
+o.setMulti=MultiColumnList_setMulti
+    o.getColumnSortType=MultiColumnList_getColumnSortType
+    o.getFirstSortType=MultiColumnList_getFirstSortType;
+    o.getColumnWidth=MultiColumnList_getColumnWidth
+// Public API: selection
+o.getSelection=MultiColumnList_getSelection
+o.getMultiSelection=MultiColumnList_getMultiSelection
+o.getCheckSelection=MultiColumnList_getCheckSelection
+o.setCheck=MultiColumnList_setCheck
+o.setCheckAll=MultiColumnList_setCheckAll
+o.setHeaderCheck=MultiColumnList_setHeaderCheck
+o.select=MultiColumnList_select
+o.valueSelect=MultiColumnList_valueSelect
+// Other plublic API
+o.getValue=MultiColumnList_getValue
+o.setLines=MultiColumnList_setLines
+o.getLines=MultiColumnList_getLines
+o.getRow=MultiColumnList_getRow
+o.getRowByValue=MultiColumnList_getRowByValue
+o.findByValue=MultiColumnList_findByValue
+o.findByText=MultiColumnList_findByText
+o.findByValueAndKey=MultiColumnList_findByValueAndKeys  // SRI
+o.isEqual=MultiColumnList_isEqual
+o.setIsEqualCB=MultiColumnList_setIsEqualCB
+    o.isEqualCB=null;
+// Private fields
+o.headH=o.noHeader?0:_multiHeaderHeight;
+o.chunkSize=50;
+o.cols=new Array;
+o.chunks=new Array;
+o.chunks[0]=new Array
+o.minWidth=20
+o.defaultWidth=150
+o.listBody=newScrolledZoneWidget("mlst_body"+o.id,0,0,o.innerW,o.innerH-o.headH, "solidBorder");
+o.listBody.par=o;
+o.header=null
+o.body=null
+o.selectionIndex=-1
+o.oldSelectIdx=-1
+o.frozen=true
+o.tabIndexWritten=null;
+o.oldFocus=null;
+o.header1stColId="0"
+// Private methods
+o.fillBody=MultiColumnList_fillBody
+o.fillHeader=MultiColumnList_fillHeader
+o.fillChunk=MultiColumnList_fillChunk
+o.generateRow=MultiColumnList_generateRow
+o.getRowHTML=MultiColumnList_getRowHTML
+o.invert=MultiColumnList_invert
+o.setRowFocus=MultiColumnList_setRowFocus
+o.setItemVisible=MultiColumnList_setItemVisible
+o.internalSelect=MultiColumnList_internalSelect
+o.internalUnselectAll=MultiColumnList_internalUnselectAll
+o.internalSelectRange=MultiColumnList_internalSelectRange
+o.getTR=MultiColumnList_getTR
+o.computeHeight=MultiColumnList_computeHeight
+o.computeTRHeight=MultiColumnList_computeTRHeight
+o.getIndexFromY=MultiColumnList_getIndexFromY
+o.getYPosFromEvent=MultiColumnList_getYPosFromEvent
+o.getVisibleItemCount=MultiColumnList_getVisibleItemCount
+o.rewriteLine=MultiColumnList_rewriteLine
+o.rewriteRow=MultiColumnList_rewriteRow
+o.getRowHTMLWithTextStyle=MultiColumnList_getRowHTMLWithTextStyle;
+o.columnHasExtraTextStyle=MultiColumnList_columnHasExtraTextStyle;
+//custom tooltip on row
+o.customTooltipWidget=null;
+o.setCustomTooltipWidget=function(customTooltipWidget)
+{
+    var o=this;
+    o.customTooltipWidget=customTooltipWidget;
+}
+//<td>
+o.getColumnLyr=function(rowIndex, colIndex)
+{
+    var o=this;
+    if (colIndex>=o.getColumsCount() || colIndex<0) return null;
+    var trLyr=o.getTR(rowIndex);
+    if (!trLyr) return null;           
+    return trLyr.childNodes[colIndex];    
+}
+//<div>:no extra text style
+//<div><span>:have extra text style
+o.getSegmentLyrInColumn=function(rowIndex, colIndex, segmentIndex)
+{
+    var o=this;
+    var nbColumn=o.getColumsCount();
+    if (colIndex>=nbColumn || colIndex<0) return null;
+    var colLyr=o.getColumnLyr(rowIndex, colIndex);
+    if (!colLyr) return null;
+    var divNode=colLyr.childNodes[0];   
+    if (segmentIndex <divNode.childNodes.length)
+    {       
+        return divNode.childNodes[segmentIndex];   
+    }
+    return null;
+}
+o.getTrClassName=function(rowIndex, selected)
+{
+    var o=this;
+    if (o.defaultHeight)
+    {
+        return selected?"mclS":"mcl"; 
+    }
+    else
+    if (rowIndex>=0)
+    {
+        var isEven=(rowIndex %2 ==0)?true:false;
+    return (selected?"mclS":(isEven?"mcl multiColListEven":"mcl multiColListOdd"))
+}
+return "";
+}
+o.getRowTRFromRowIndex=function(i)
+    {
+        var o=this;
+        var tr=_ie?o.body.childNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[i]: o.body.childNodes[0].childNodes[0].childNodes[0].childNodes[i]
+        return tr;
+    }
+return o
+}
+function newMultiColumnList(id,changeCB,multi,w,h,dblClickCB,sortCB,noHeader,keyDownCB)
+{
+return new_MultiColumnList({
+id:id,
+changeCB:changeCB,
+multi:multi,
+w:w,
+h:h,
+dblClickCB:dblClickCB,
+sortCB:sortCB,
+noHeader:noHeader,
+keyDownCB:keyDownCB
+})
+}
+function MultiColumnList_getHTML()
+{
+var o=this,s=new Array,i=0;
+if (o.cols.length==0)
+{
+// If not initialized correctly, set mono colum
+o.resetColums()
+o.addColumn("",50,false)
+}
+var w=""+(_dtd4?o.innerW:o.w)+"px"
+var h=""+(_dtd4?o.innerH:o.h)+"px"
+// Containing DIV
+s[i++]='<div align="'+(_rtl ? 'right' : 'left')+'" onselectstart="return false" class="' + o.bgClass + '" id="'+o.id+'" style="border-width:'+o.borderW+'px;padding:0px;'+sty("width",w)+sty("height",h)+'">'
+// Header part
+s[i++]='<div id="mlst_header'+o.id+'" style="'+sty("width",""+o.innerW+"px")+'overflow:hidden;height:'+o.headH+'px">'
+o.fillHeader(s)
+i=s.length
+s[i++]='</div>'
+// Body Part
+s[i++]=o.listBody.beginHTML()
+o.fillBody(s)
+i=s.length
+s[i++]=o.listBody.endHTML()
+// End Containing DIV
+s[i++]='</div>'
+// Return all HTML
+return s.join("")
+}
+function MultiColumnList_rebuildHTML()
+{
+var o=this
+if (o.layer)
+{
+if (o.cols.length==0)
+{
+// If not initialized correctly, set mono colum
+o.resetColums()
+o.addColumn("",50,false)
+}
+var s=new Array
+o.fillHeader(s)
+o.header.innerHTML=s.join('')
+s.length=0
+o.fillBody(s)
+o.body.innerHTML=s.join('')
+o.header.scrollLeft=0
+o.body.scrollLeft=0
+o.layer=null
+o.init()
+}
+}
+function MultiColumnList_resize(w,h)
+{
+var o=this
+if (w!=null) o.w=w
+if (h!=null) o.h=h
+o.innerW=Math.max(0,o.w-(2*(o.borderW)))
+o.innerH=Math.max(0,o.h-(2*(o.borderW)))
+if (_dtd4)
+o.oldResize(o.innerW,o.innerH)
+else
+o.oldResize(o.w,o.h)
+o.listBody.resize(o.innerW, Math.max(0,o.innerH-o.headH))
+if (o.layer)
+{
+o.header.style.width=""+o.innerW+"px"
+o.header.style.height=""+o.headH+"px"
+if (o.noHeader) return;
+var tr=o.header.childNodes[0].childNodes[0].childNodes[0];    
+var trailTdLen=getHeaderTrailWidth.call(o);
+var trailTd=tr.childNodes[tr.childNodes.length-2];
+trailTd.width=trailTdLen;
+updateHeaderTableWidth.call(o);
+o.header.scrollLeft=o.listBody.layer.scrollLeft
+}
+}
+function MultiColumnList_init()
+{
+var o=this
+o.oldInit()
+o.listBody.init()
+o.listBodyInner=o.listBody.layer.childNodes[0]
+o.listBody.layer.onscroll=MultiColumnList_ScrollTitle
+var inner=o.listBodyInner
+inner.onmousedown=MultiColumnList_mouseDown
+inner.onkeydown=MultiColumnList_onkeydown
+inner.onmouseover=MultiColumnList_mover;
+inner.onmousemove=MultiColumnList_mover;
+inner.onmouseout=MultiColumnList_mover;
+addDblClickCB(inner,MultiColumnList_ondblclick)
+o.header=getLayer('mlst_header'+o.id)
+o.body=o.listBody.layer
+//o.oldFocus=null
+o.frozen=false
+//508
+o.setRowFocus(o.tabIndexWritten?o.tabIndexWritten:0,false);
+if (o.headH==0) return;
+//col resize purpose:set header text width in o.cols[].titleWidth
+var tr=o.header.childNodes[0].childNodes[0].childNodes[0];
+var td;
+var tr_title_sorticn;
+var td_title;
+var div_txt;
+var tW;
+var headerTableLen=0, updateTableLen=false;
+for (var i=0; i<o.cols.length; i++)
+{
+td=tr.childNodes[i*2+1];
+td.onmouseover=MultiColumnList_moverHeader;
+td.onmouseout=MultiColumnList_moverHeader;
+td.onmousedown=MultiColumnList_mdownHeader;
+td.onmouseup=MultiColumnList_mdownHeader;
+//align header td with with body column with
+headerTableLen+=o.cols[i].width;
+var headerColWidth=td.style.width;
+if (headerColWidth!="")
+{
+    if (parseInt(headerColWidth)+_multiHeaderSepW!=o.cols[i].width)
+    {
+        //header column has been resized
+        td.style.width=o.cols[i].width-_multiHeaderSepW+"px";
+        updateTableLen=true;                
+    }
+}
+tr_title_sorticn=td.childNodes[0].childNodes[0].childNodes[0];
+td_title=tr_title_sorticn.childNodes[0];
+div_txt=td_title.childNodes[0];
+//to be used in resize title
+o.cols[i].titleWidth=div_txt.offsetWidth;
+tW=o.cols[i].width - ((o.cols[i].sortIcn>=0)?_multiHeaderSortIconW:0) - _multiHeaderSepW;
+tW=_dtd4?tW-4:tW;
+if (tW < div_txt.offsetWidth || tW < div_txt.clientWidth || div_txt.offsetWidth==0)
+div_txt.style.width=""+tW+"px"
+}
+if (updateTableLen)
+{
+    headerTableLen+=Math.max(_multiHeaderTrailW, o.w - o.cols.length*o.minWidth);
+    o.header.childNodes[0].style.width=headerTableLen+"px"       
+}
+}
+function MultiColumnList_changeLRClass(lyr, cls, change)
+{
+if (lyr.id!="" && (lyr.id=="0"))
+{
+var tr=lyr.parentNode;
+var left=tr.childNodes[0];
+left.className=change? cls : (_rtl ? 'multiR' : 'multiL');
+//mono col
+if (tr.childNodes.length==3)
+{
+var right=tr.childNodes[2];
+right.className=change  ?cls : (_rtl ? 'multiL' : 'multiR');
+}
+}
+}
+function MultiColumnList_moverHeader(evt)
+{
+var evt=getEvent(evt);
+var over=(evt && evt.type=="mouseover")?true:false;
+this.className=over?'multiHeaderHover':'multiM';
+MultiColumnList_changeLRClass(this, 'multiHeaderLRHover', over);
+}
+function MultiColumnList_mdownHeader(evt)
+{
+var evt=getEvent(evt);
+var down=(evt && evt.type=="mousedown")?true:false;
+this.className=down?'multiHeaderPressed':'multiM';
+MultiColumnList_changeLRClass(this, 'multiHeaderLRPressed', down);
+}
+function MultiColumnList_mover(evt)
+{
+var evt=getEvent(evt);
+var over=(evt && (evt.type=="mouseover" || evt.type=="mousemove"));
+var o=getWidget(this.parentNode.parentNode);
+var idx=o.getIndexFromY(o.getYPosFromEvent(evt),false)
+var chunk=o.chunks[0]
+if (chunk && (o.oldOverIndex>=0) && (o.oldOverIndex!=idx))
+{
+var trOld=o.getTR(o.oldOverIndex)
+var rowOld=chunk[o.oldOverIndex];
+if (trOld && rowOld)
+    trOld.className=o.getTrClassName(o.oldOverIndex, rowOld.sel);      
+o.oldOverIndex=-1;
+}
+var text=''
+var row;
+if ((idx>=0) && chunk)
+{
+var tr=o.getTR(idx)
+row=chunk[idx];
+tr.className=over?'mclHover':(o.getTrClassName(idx, row.sel));        
+o.oldOverIndex=idx;
+text=row.cols[0];
+}
+//show tooltip
+if (o.showTooltip && o.customTooltipWidget)
+{
+    if (over && row && (idx>=0))
+    {
+        var tooltip;
+        if (o.getTooltipCB)
+        {
+            tooltip=o.getTooltipCB(row);
+        }
+        else
+        {
+            tooltip={title:text};
+        }
+        o.mousePos={x:evt.clientX, y:evt.clientY}
+        o.customTooltipWidget.showCustomTooltip(evt,o, tooltip, idx);
+    }
+    else
+    {
+        o.customTooltipWidget.hideCustomTooltip();
+    }
+}
+}
+function MultiColumnList_resetColums()
+{
+var o=this
+o.cols.length=0
+o.chunks[0].length=0
+o.oldSelectIdx=o.selectionIndex=-1
+}
+function MultiColumnList_getColumnSortType(columnIndex)
+{
+var o=this;
+var cols=o.cols;
+if (columnIndex>=0 && columnIndex <cols.length)
+{
+    var c=cols[columnIndex];
+    if (c.sortable)
+    {
+        return c.sortIcn;
+    }              
+}
+return -1;
+}
+function MultiColumnList_getFirstSortType()
+{
+    var o=this;
+    var colNb=o.getColumsCount();
+    var sortType;
+    for (var i=0; i<colNb; i++)
+    {
+        sortType=o.getColumnSortType(i);
+        if (sortType==0 || sortType==1)
+        {
+            return {sortType:sortType, colIndex:i};
+        }
+    }
+    return null;
+}
+function MultiColumnList_setColumn(columnIndex, name,width,sortable,sortIcn,tooltip)
+{
+var o=this;
+var cols=o.cols;
+if (columnIndex>=0 && columnIndex <cols.length)
+{
+    var c=cols[columnIndex];
+    c.name=name
+    if (width!=null)
+    {
+        c.width=Math.max(width?width:o.defaultWidth,o.minWidth)
+        }        
+    c.sortable=(sortable==null?false:sortable)
+    c.sortIcn=(sortIcn==null?-1:sortIcn)
+    if (tooltip)
+        c.tooltip=tooltip
+}
+}
+function MultiColumnList_addColumn(name,width,sortable,sortIcn,tooltip,checkable)
+{
+var o=this,cols=o.cols,c=cols[cols.length]=new Object;
+c.name=name
+c.width=Math.max(width?width:o.defaultWidth,o.minWidth)
+c.sortable=(sortable==null?false:sortable)
+c.sortIcn=(sortIcn==null?-1:sortIcn)
+c.tooltip=tooltip
+c.titleWidth=0;
+c.checkable=checkable;
+}
+function MultiColumnList_addRow(value,sel /* add col strings, var args */)
+{
+var o=this
+if (o.cols.length==0)
+{
+// If not initialized correctly, set mono colum
+o.resetColums()
+o.addColumn("",50,false)
+}
+if (o.chunks[0]==null)
+o.chunks[0]=new Array
+var chunk=o.chunks[0]
+var c=chunk[chunk.length]=new Object
+var cols=c.cols=new Array
+c.value=value
+c.sel=sel
+c.textStyleArr=null;
+if (sel)
+{
+o.selectionIndex = o.oldSelectIdx = chunk.length-1
+}
+var args=MultiColumnList_addRow.arguments,argc=args.length
+//the third or the fouth argument is array, not string or number
+if ((argc==3 || argc==4) && (typeof(args[2])!="string") && (typeof(args[2])!="number"))
+{
+var arr=args[2]
+for (var i=0; i<arr.length; i++)
+{
+    cols[i]=arr[i];
+}
+if (argc==4)
+{
+    c.textStyleArr=args[3];
+}
+}
+else
+{
+for (var l=2;l<argc;l++)
+{
+    if (typeof(args[l])=="string" || typeof(args[l])=="number")
+    {
+    cols[cols.length]=args[l];
+            }    
+        }
+        //type is object for array
+        if (typeof(args[argc-1])!="string" && typeof(args[argc-1])!="number")
+{
+    c.textStyleArr=args[argc-1];
+}
+}
+if ((!o.frozen)&&o.layer)
+{
+var table=o.body.childNodes[0].childNodes[0],trParent=table.childNodes[0],tr=trParent.insertRow(-1);
+tr.className=o.getTrClassName(o.chunks[0].length - 1, c.sel);
+o.generateRow(c,tr)
+//508
+if(o.tabIndexWritten==null) //should improve with selection tabIndex and not always the first item
+o.setRowFocus(0,false);
+}
+}
+function MultiColumnList_add(s,value,sel, textStyleArr)
+{
+this.addRow(value,sel,s, textStyleArr)
+}
+function MultiColumnList_del(i)
+{
+var o=this,chunk=o.chunks[0],mustUpdate=false
+//delete all
+if (i==null)
+{
+    o.oldSelectIdx=-1;
+o.chunks[0].length=0
+if ((!o.frozen)&&(o.layer))
+{
+var s=new Array
+o.fillBody(s)
+o.body.innerHTML=s.join('')
+o.init()
+}
+}
+else
+if (i>=0&&i<chunk.length)
+{
+arrayRemove(o.chunks,0,i)
+if ((!o.frozen)&&(o.layer))
+o.body.childNodes[0].childNodes[0].childNodes[0].deleteRow(i)
+//508: set selection and focus to the next or last item if the focus was on the deleted item
+var indexSel = ((i<o.chunks[0].length)?i:i-1);
+if(indexSel>=0 && o.tabIndexWritten==i)
+{
+o.internalSelect(indexSel);
+}
+//empty list, reset tabIndexWritten info
+if(o.chunks[0].length==0)
+{
+o.tabIndexWritten=null;
+}
+}
+}
+function MultiColumnList_move(delta)
+{
+  var o=this,i=o.selectionIndex,len=o.getCount()-1,newI=i+delta
+  if ((i==-1)||(newI<0)||(newI>len))
+      return false
+var chunk=o.chunks[0],temp=chunk[i]
+o.internalSelect()
+chunk[i]=chunk[newI]
+chunk[newI]=temp
+o.rewriteLine(i)
+o.rewriteLine(newI)
+o.internalSelect(newI)
+}
+function MultiColumnList_rewriteLine(i)
+{
+var o=this,cols=o.chunks[0][i].cols,colsH=cols.length;
+var tr= o.getRowTRFromRowIndex(i);
+for (var j=0;j<colsH;j++)
+{
+tr.childNodes[j].childNodes[0].innerHTML=convStr(cols[j])
+}
+}
+function MultiColumnList_rewriteRow(index, textStyleArr, arr)
+{
+var o=this,cols=o.chunks[0][index].cols,colsH=cols.length
+var tr= o.getRowTRFromRowIndex(index);
+if (arr)
+{
+    for (var i=0; i<arr.length; i++)
+        cols[i]=arr[i];
+}
+for (var j=0;j<colsH;j++)
+{
+    var row= o.getRow(index);  
+        if ( o.columnHasExtraTextStyle(row, j))
+        {      
+            if (textStyleArr && textStyleArr.length>j)
+            {
+                //for one column            
+                var styInfo=row.textStyleArr[j];   
+                if (!styInfo)
+                {
+                    row.textStyleArr=textStyleArr;
+                }
+                else
+                {
+                    var newStyle=textStyleArr[j];
+                    if (newStyle.styleArr)
+                        styInfo.styleArr=newStyle.styleArr;
+                    if (newStyle.textArr)
+                        styInfo.textArr=newStyle.textArr;  
+                    if (newStyle.clsArr)
+                        styInfo.clsArr=newStyle.clsArr; 
+                    if (newStyle.separator)  
+                        styInfo.separator=newStyle.separator;
+                    if (newStyle.checkParams)  
+                        styInfo.checkParams=newStyle.checkParams;
+                }
+                tr.childNodes[j].childNodes[0].innerHTML=o.getRowHTMLWithTextStyle(row, j);
+            }
+        }
+        else
+        {
+            tr.childNodes[j].childNodes[0].innerHTML=convStr(cols[j])
+        }    
+}
+}
+function MultiColumnList_getColumsCount()
+{
+return this.cols.length
+}
+function MultiColumnList_getCount()
+{
+return (this.chunks[0]==null ? 0 : this.chunks[0].length)
+}
+function MultiColumnList_freeze()
+{
+if (this.layer)
+this.frozen=true
+}
+function MultiColumnList_change(multi,lines)
+{
+var o=this
+o.setMulti(multi)
+if (lines!=null)
+o.setLines(lines)
+}
+function MultiColumnList_setMulti(multi)
+{
+var o=this
+if (multi!=o.multi)
+{
+if (!multi)
+{
+var sel=o.getSelection()
+if (sel)
+{
+var idx=sel.index
+o.select(null)
+o.select(idx)
+}
+}
+o.multi=multi
+}
+}
+function MultiColumnList_getSelection()
+{
+var o=this,chunk=o.chunks[0]
+if (chunk)
+{
+var idx=o.selectionIndex
+if (idx>=0)
+{
+var row=chunk[idx]
+if (row && row.sel)
+{
+var cols=row.cols,s=cols.length>1?cols:cols[0]
+return { value:row.value, text:s, index: idx }
+}
+}
+}
+return null
+}
+function MultiColumnList_getMultiSelection()
+{
+var o=this,chunk=o.chunks[0],rets=new Array,len=chunk.length
+for (var i=0;i<len;i++)
+{
+var row=chunk[i]
+if (row.sel)
+{
+var cols=row.cols,ret=new Object;
+ret.index=i;
+ret.value=row.value;
+ret.text=cols.length>1?cols:cols[0];
+ret.cols=cols;
+rets[rets.length]=ret
+}
+}
+return rets
+}
+function MultiColumnList_select(i)
+{
+var o=this,len=o.getCount()
+if (i==null)
+o.internalSelect(null)
+else
+{
+if (typeof(i)=="object")
+{
+o.internalUnselectAll(true)
+var len=i.length
+if (len > 0)
+{
+if (o.multi)
+{
+for (var j=0;j<len;j++)
+o.internalSelect(i[j],true)
+}
+else
+{
+o.internalSelect(i[len-1])
+}
+}
+}
+else
+{
+if (i<0||i>=len)
+o.internalSelect(len-1)
+else
+o.internalSelect(i)
+}
+}
+}
+function MultiColumnList_isEqual(lookFor, v2)
+{
+    var o=this;
+    var found=false;
+    if (o.isEqualCB)
+    {
+        found=o.isEqualCB(lookFor, v2);
+    }
+    else
+    found=(lookFor==v2)?true:false;
+    return found;    
+}    
+function MultiColumnList_valueSelect(v)
+{
+var o=this,chunk=o.chunks[0],len=chunk.length
+if (typeof(v)=="object")
+{
+var vlen=v.length
+o.internalUnselectAll(true)
+if (vlen>0)
+{
+for (var i=0;i<len;i++)
+{
+var chunkVal=chunk[i].value
+if (o.multi)
+{
+for (var j=0;j<vlen;j++)
+{  
+if (o.isEqual(v[j], chunkVal))
+{
+o.internalSelect(i,true)
+break
+}
+}
+}
+else
+{        
+if (o.isEqual(v[vlen-1], chunkVal))
+{
+o.select(i)
+break
+}
+}
+}
+}
+}
+else
+{
+for (var i=0;i<len;i++)
+{
+if (o.isEqual(v,chunk[i].value))
+{
+o.select(i)
+break
+}
+}
+}
+}
+function MultiColumnList_getValue(i)
+{
+var o=this,len=o.getCount()
+if(i==null || i<0 || i>len)
+return null;
+else
+return o.chunks[0][i].value
+}
+function MultiColumnList_setLines(lines)
+{
+var o=this
+o.h=Math.max(0,(lines*o.rowHeight)+2*(o.borderW)) + o.headH
+o.resize(null,o.h)
+}
+function MultiColumnList_getLines()
+{
+var o=this
+return Math.floor(((o.h-o.headH)-(2*o.borderW))/o.rowHeight)
+}
+function MultiColumnList_getRow(i)
+{
+return this.chunks[0][i]
+}
+function MultiColumnList_getRowByValue(val)
+{
+var ret = this.findByValue(val);
+var row = null;
+if(ret)
+{
+row = this.getRow(ret.index);
+}
+return row;
+}
+function MultiColumnList_findByValue(val)
+{
+var o=this,chunk=o.chunks[0],len=chunk.length
+for (var i=0;i<len;i++)
+{
+if (o.isEqual(val, chunk[i].value))
+{
+var ret=new Object;
+ret.index=i;
+ret.value=chunk[i].value;
+return ret
+}
+}
+return null
+}
+function MultiColumnList_findByText(colIndex,text,matchCase,matchWholeW,starWith,tryNextIndex)
+{
+var ret=null;
+if(text=="" || text==null) return;
+var o=this,chunk=o.chunks[0],len=chunk.length;
+colIndex=(colIndex!=null)?colIndex:0;
+tryNextIndex = tryNextIndex==null ? true : tryNextIndex
+var startFrom=0;
+var sel=o.getSelection();
+if (sel)
+startFrom=sel.index+ (tryNextIndex ? 1 : 0);
+var isMatchWholeWord = function(val,txt)
+{
+var isMatch = false;
+if (matchCase)
+isMatch=(val==txt); 
+else
+isMatch=(val.toLowerCase()==txt.toLowerCase());
+return isMatch;
+}
+var isStartWith = function(val,txt)
+{
+    if (!txt) return false;
+var isMatch = false;
+var idx = -1;
+if (matchCase)
+idx = val.indexOf(txt);
+else
+idx = val.toLowerCase().indexOf(txt.toLowerCase());
+if (starWith) 
+isMatch = (idx == 0);
+else
+isMatch = (idx >= 0);
+return isMatch;
+}
+var found = false;
+if (matchWholeW)
+{
+for (var i=startFrom;i<len;i++)
+{
+var val = chunk[i].cols[colIndex];
+if (isMatchWholeWord(val,text))
+{
+found = true;
+ret={"index":i,"value":val};
+break;
+}
+}
+if (!found)
+{
+for (var i=0;i<startFrom;i++)
+{
+var val = chunk[i].cols[colIndex];
+if (isMatchWholeWord(val,text))
+{
+ret={"index":i,"value":val};
+break;
+}
+}
+}
+}
+else
+{
+for (var i=startFrom;i<len;i++)
+{
+var val = "" + chunk[i].cols[colIndex];
+if (isStartWith(val,text))
+{
+found = true;
+ret={"index":i,"value":val};
+break;
+}
+}
+if (!found)
+{
+for (var i=0;i<startFrom;i++)
+{
+var val =  "" + chunk[i].cols[colIndex];
+if (isStartWith(val,text))
+{
+ret={"index":i,"value":val};
+break;
+}
+}
+}
+}
+return ret;
+}
+function MultiColumnList_getVisibleItemCount()
+{
+var o=this
+if (o.layer)
+{
+var tr=o.getTR()
+if (tr)
+{
+return Math.floor(o.body.offsetHeight/tr.offsetHeight)
+}
+}
+return 0
+}
+function MultiColumnList_getYPosFromEvent(e)
+{
+return ypos(this.listBody.layer,e)
+}
+function MultiColumnList_getIndexFromY(y,isSafe)
+{
+var o=this,tr=o.getTR()
+y=_ie?y-3:(_webKit?y-2:y-1)
+if (tr)
+{
+var trH=o.computeTRHeight(tr),idx=Math.floor(y/trH);
+if (idx<0)
+{
+if (isSafe)
+return 0
+else
+return -1
+}
+else if (idx>=o.chunks[0].length)
+{
+if (isSafe)
+return o.chunks[0].length-1
+else
+return -1
+}
+else
+return idx
+}
+return -1
+}
+function MultiColumnList_computeTRHeight(tr)
+{
+var o=this;
+var trH=o.computeHeight(tr);
+if (trH == 0)
+trH=tr.childNodes[0].offsetHeight;
+return trH;
+}
+function MultiColumnList_computeHeight(elem)
+{
+var elemH = 0;
+var computedStyle = null;
+if (window.getComputedStyle)
+computedStyle = getComputedStyle(elem, null);
+else
+computedStyle = elem.currentStyle;
+if (computedStyle != null)
+{
+var h = computedStyle.height;
+elemH = Number(h.substring(0, h.indexOf('px')));
+}
+return elemH;
+}
+function MultiColumnList_getTR(idx)
+{
+var o=this,lyr=o.listBody.layer
+var tr=lyr?lyr.childNodes[0]:null
+while (tr)
+{
+if (tr.tagName.toLowerCase()=='tr')
+break
+if (tr.hasChildNodes())
+{
+tr=tr.childNodes[0]
+}
+else
+{
+tr=null
+break
+}
+}
+if (idx)
+return tr?tr.parentNode.childNodes[idx]:null
+else
+return tr
+}
+function MultiColumnList_internalSelect(idx,ctrl,shift)
+{
+var o=this
+ctrl=(ctrl!=null?ctrl:false)
+shift=(shift!=null?shift:false)
+if (idx==null)
+{
+if (o.multi)
+{
+o.internalUnselectAll(true)
+}
+else
+{
+o.invert(o.oldSelectIdx)
+o.oldSelectIdx=-1
+o.selectionIndex=-1
+}
+}
+else if (idx>=0)
+{
+if (o.multi)
+{
+if (ctrl)
+{
+var row=o.chunks[0][idx]
+if (row)
+o.invert(idx,!row.sel)
+o.setRowFocus(idx,true)
+}
+else if (shift)
+{
+o.internalSelectRange(o.oldSelectIdx,idx)
+o.setRowFocus(idx,true)
+}
+else
+{
+o.internalSelectRange(idx,idx)
+o.setRowFocus(idx,true)
+}
+if (!shift)
+{
+//o.invert(idx,true,true)
+o.oldSelectIdx=idx
+}
+o.selectionIndex=idx
+}
+else
+{
+o.invert(o.oldSelectIdx,false)
+o.invert(idx,true)
+o.setRowFocus(idx,true)
+o.oldSelectIdx=idx
+o.selectionIndex=idx
+}
+}
+}
+function MultiColumnList_internalUnselectAll()
+{
+var o=this,chunk=o.chunks[0],len=chunk.length
+for (var i=0;i<len;i++)
+{
+o.invert(i,false)
+}
+}
+function MultiColumnList_internalSelectRange(idx1,idx2)
+{
+var o=this,chunk=o.chunks[0],len=chunk.length,idxMin=-1,idxMax=-1
+if (idx1>idx2)
+{
+idxMin=idx2
+idxMax=idx1
+}
+else
+{
+idxMin=idx1
+idxMax=idx2
+}
+for (var i=0;i<len;i++)
+{
+var select=(i>=idxMin)&&(i<=idxMax)
+o.invert(i,select)
+}
+}
+function MultiColumnList_invert(idx,select,setFocus)
+{
+if (idx==null||idx==-1)
+return
+var o=this,chunk=o.chunks[0]
+if (chunk && idx<chunk.length)
+{
+var col=chunk[idx],lenH=o.cols.length
+if (col.sel!=select)
+{
+col.sel=select;
+var tr=o.getTR(idx)
+if (tr)
+{
+//var st=tr.style,tds=tr.childNodes,len=tds.length
+    tr.className=o.getTrClassName(idx, select);
+/*for (var i=0;i<len;i++)
+{
+tds[i].childNodes[0].className=cls
+}*/
+}
+}
+}
+}
+function MultiColumnList_setRowFocus(idx,setFocus)
+{
+if (idx==null||idx==-1)
+return
+var o=this,chunk=o.chunks[0]
+if (idx>=chunk.length)
+return
+var tr=o.getTR(idx)
+if (o.oldFocus)
+o.oldFocus.tabIndex=-1
+tr.tabIndex=0
+o.oldFocus=tr
+o.tabIndexWritten=idx
+if (_webKit)
+o.setItemVisible(idx)
+var topFS = getTopFrameset()
+var allowIE = (topFS!=null && typeof(topFS.WS) != "undefined" && typeof(topFS.WS._allowIEMultilistSetRowFocus) != "undefined")?topFS.WS._allowIEMultilistSetRowFocus:true;
+if(setFocus && allowIE)
+safeSetFocus(tr)
+}
+function MultiColumnList_setItemVisible(idx)
+{
+var o=this,tr=o.getTR()
+if (tr)
+{
+var lyr=o.listBody.layer
+if (lyr)
+{
+var h=o.computeHeight(lyr)
+var trH=o.computeTRHeight(tr)
+x1=trH*idx
+x2=x1+trH
+if (x1<lyr.scrollTop)
+lyr.scrollTop=x1
+else if (x2>(lyr.scrollTop+h))
+lyr.scrollTop=x2-h
+}
+}
+}
+function MultiColumnList_CheckScrollTitle(widx)
+{
+var o=_widgets[widx]
+if (o&&(o.cols.length>1))
+{
+var lyr=o.listBody.layer
+if (lyr)
+{
+var scrollLeft=lyr.scrollLeft
+if (o.scrollLeft!=scrollLeft)
+{
+o.scrollLeft=scrollLeft
+MultiColumnList_ScrollTitle(lyr)
+}
+}
+}
+}
+function MultiColumnList_ScrollTitle(lyr)
+{
+lyr=this
+var o=getWidget(lyr.parentNode)
+if (o.cols.length>1)
+o.header.scrollLeft=o.listBody.layer.scrollLeft
+}
+function MultiColumnList_getVisibleChunks()
+{
+var o=this
+if (o.chunks.length==0)
+return null;
+if (o.layer)
+{
+}
+else
+{
+return {start:0,end:0}
+}
+}
+function mltSrtCB(lyr,col)
+{
+var o=getWidget(lyr)
+if (o.sortCB)
+{
+o.sortCB(col)
+}
+}
+function MultiColumnList_fillBody(s)
+{
+var o=this,len=o.chunks.length
+for (var k=0; k<len;k++)
+{
+o.fillChunk(s,k)
+}
+}
+function MultiColumnList_fillChunk(s,idx)
+{
+var o=this,i=s.length,tableW=0,colsH=o.cols,lenH=colsH.length,lastH=lenH-1
+for (var j=0; j<lenH;j++)
+{
+tableW+=colsH[j].width
+}
+var chunk=o.chunks[idx]
+if (chunk)
+{
+var len=chunk.length
+if (_ie) {
+s[i++]='<div name="mlstBodyParent" style="zoom:1; '+(_ie?'':'overflow:auto;height:100%;')+'">'
+s[i++]='<div style="zoom:1;'+(_ie?'':'overflow:auto;height:100%;')+'">'
+}
+else {
+s[i++]='<div style="width:'+(lenH>1?''+tableW+'px':'100%')+'">'
+}
+s[i++]='<table class="'+(o.defaultHeight?"mlstBody":"")+'" height="'+0+'" '+ (lenH>1 ? 'width="'+tableW+'" ' : 'width="100%"') +'cellpadding="0" cellspacing="0" border="0" style="color:black"><tbody>'
+//var tabIndexNotWritten=true
+o.tabIndexWritten=null;
+for (var j=0;j<len;j++)
+{
+var row=chunk[j]
+var cls=o.getTrClassName(j, row.sel);
+if (row.sel&&o.tabIndexWritten==null)
+{
+s[i++]='<tr tabindex="0" class="'+cls+'">'
+//tabIndexNotWritten=true
+o.tabIndexWritten = j;
+}
+else
+if (o.defaultHeight)
+{
+    s[i++]='<tr>'
+}
+else
+{
+s[i++]='<tr class="'+cls+'">'
+}
+o.getRowHTML(row,s)
+i=s.length
+s[i++]='</tr>'
+}
+s[i++]='</tbody></table></div>' + (_ie ? '</div>' : '')
+}
+}
+function MultiColumnList_columnHasExtraTextStyle(row, colIndex)
+{
+    var o=this;
+    var textStyleArr=row.textStyleArr;       
+    return (textStyleArr &&
+            textStyleArr.length>colIndex && textStyleArr[colIndex] &&
+            (textStyleArr[colIndex].styleArr || textStyleArr[colIndex].clsArr || textStyleArr[colIndex].checkParams))?true:false;                                  
+}
+function MultiColumnList_getRowHTMLWithTextStyle(row, colIndex)
+{
+    var o=this;
+    var htmlArr=[];
+    var i=0;
+    if (!o.columnHasExtraTextStyle(row, colIndex)) return '';
+    var cols=row.cols;
+    //for one column
+    var styInfo=row.textStyleArr[colIndex];   
+    var arr=null;
+    if (styInfo.textArr)
+    {
+        arr=styInfo.textArr;
+    }
+    else
+    if (styInfo.separator)
+    {
+        arr=cols[colIndex].split(styInfo.separator);
+    }   
+    else
+        arr=[cols[colIndex]];
+    //for each text segment in one column, apply the style    
+    var len=arr.length;
+    if (styInfo.styleArr)
+    {
+        len=Math.max(arr.length, styInfo.styleArr.length);    
+    }       
+    else
+    if (styInfo.clsArr) 
+    {
+        len=Math.max(arr.length, styInfo.clsArr.length);  
+    }
+    for (var l=0; l<len; l++)
+    {
+        var sty="";
+        var txt="";
+        var cls="";
+        var check="";
+        if (styInfo.styleArr && styInfo.styleArr.length>l)
+        {
+            sty=styInfo.styleArr[l];
+            if (sty!="")
+            {               
+                sty=' style="'+sty+'" ';
+            }
+        }
+        if (arr.length > l)
+        {    
+            //add the space between the text segment        
+            if (l>0)
+            {
+                txt="&nbsp;";
+            }
+            txt+= convStr(arr[l], true);  
+        } 
+        if (styInfo.clsArr && styInfo.clsArr.length>l && styInfo.clsArr[l])
+        {
+            cls=' class="'+(styInfo.clsArr[l])+'"';
+        }
+        if(styInfo.checkParams)
+        {
+        var param = styInfo.checkParams[l];
+        var checkValue=param?param.checkValue:null;
+    var isChecked=param?param.isChecked:false;
+    var rowIndex = o.findByValue(row.value).index;
+    //update row info 
+    MultiColumnList_updateRowCheckInfo(row,colIndex,isChecked);
+    //todo: put the style in the class to gain performance 
+    //ADAPT01714532 : use onmousedown if _ie because of IE8 issue, onclick else
+    check='<input type=checkbox style="margin-bottom:0px;margin-top:2px;margin-right:4px" tabindex="-1" id="c'+rowIndex+colIndex+'" value="'+((checkValue!=null)?checkValue:'on')+(_ie?'" onmousedown="event.cancelBubble=true;'+_codeWinName+'.mltBMousedownCB(this,'+rowIndex+','+colIndex+')"':'" onclick="event.cancelBubble=true;'+_codeWinName+'.mltBCheckCB(this,'+rowIndex+','+colIndex+')"')+(isChecked?' checked':'')+'>'
+        }
+        if(check!="")
+        {
+        htmlArr[i++]='<table cellpadding="0" cellspacing="0" border="0"><tr><td>'+check+'</td><td><span '+(sty)+cls+' >'+txt+'</span></td></tr></table>';   
+        }
+        else
+        {
+        htmlArr[i++]='<span '+(sty)+cls+' >'+txt+'</span>';   
+        }
+    }     
+    return htmlArr.join('');
+}
+function MultiColumnList_getRowHTML(row,s)
+{
+var o=this,colsH=o.cols,lenH=colsH.length,cols=row.cols,i=s.length
+for (var k=0;k<lenH;k++)
+{
+if (lenH>1)
+{
+var w=(colsH[k].width-(_dtd4?4:0));
+if (k==0)
+w+=_multiHeaderLImgW;
+//s[i++]='<td><div class="mclM" style="width:'+w+'px;height:'+o.rowHeight+'px">';
+s[i++]='<td style="height:'+o.rowHeight+'px;"><div class="mclM" style="width:'+w+'px">';
+if (!o.columnHasExtraTextStyle(row, k))
+{  
+    s[i++]=convStr(cols[k], true);
+}
+else
+{
+    s[i++]= o.getRowHTMLWithTextStyle( row, k);       
+}
+s[i++]='</div></td>'
+}
+else
+{
+    s[i++]='<td><div class="mclC" style="height:'+o.rowHeight+'px;">';
+    if (!o.columnHasExtraTextStyle(row, k))
+    {
+    s[i++]=convStr(cols[k], true);
+            }
+            else
+            {
+                s[i++]=o.getRowHTMLWithTextStyle(row, k);
+            }
+            s[i++]='</div></td>';    
+}
+}
+}
+function MultiColumnList_generateRow(row,tr)
+{
+var o=this,colsH=o.cols,lenH=colsH.length,cols=row.cols
+    var s=[];
+for (var k=0;k<lenH;k++)
+{
+var td=tr.insertCell(-1)
+s.clear();
+if (lenH>1)
+{
+var w=(colsH[k].width-(_dtd4?4:0));
+if (k==0)
+w+=_multiHeaderLImgW;
+s.push('<div class="mclM" style="width:'+w+'px;height:'+o.rowHeight+'px;">');
+            if (!o.columnHasExtraTextStyle(row, k))
+            {
+    s.push(convStr(cols[k], true));
+            }
+            else
+            {
+                s.push(o.getRowHTMLWithTextStyle(row, k));              
+            }
+            s.push('</div>');                           
+}
+else
+{      
+    s.push('<div class="mclC" style="height:'+o.rowHeight+'px;">');
+    if (!o.columnHasExtraTextStyle(row, k))
+    {
+    s.push(convStr(cols[k], true));
+            }
+            else
+            {
+                s.push(o.getRowHTMLWithTextStyle(row, k));              
+            }
+            s.push('</div>');               
+}
+td.innerHTML=s.join('');
+}
+}
+function MultiColumnList_fillHeader(s)
+{
+var o=this,i=s.length,cols=o.cols,len=cols.length,tableW=0;
+if (len==1)
+{
+tableW="100%"
+}
+else
+{
+for (var j=0; j<len;j++)
+{
+tableW+=cols[j].width
+}
+tableW+=Math.max(_multiHeaderTrailW, o.w-len*o.minWidth);
+}
+s[i++]='<table '+(o.noHeader?'style="display:none" ':'')+'onmousedown="return '+(_webKit?"true":"false")+'" height="'+o.headH+'" width="'+tableW+'" cellpadding="0" cellspacing="0" border="0">'
+s[i++]='<tbody><tr valign="middle">'
+//header left border image
+var sty=cols[0].sortable?'':' style="cursor:default;"';
+s[i++]='<td class="'+ _multiHCSS[_rtl ? _multiHRCSS : _multiHLCSS]+'" '
+s[i++]=sty+'><div class="multiHeader"></div></td>'
+//header colonne
+for (var j=0; j<len;j++)
+{
+var c=cols[j],tW=0
+tW=c.width-(_multiHeaderSepW)
+var tip=""
+if (c.tooltip)
+tip=' title="'+convStr(c.tooltip)+'"'
+var sortIcn='';
+if (c.sortIcn>=0)
+{
+sortIcn='<td align="center" valign="bottom" class="multiSortIcon" onclick="'+_codeWinName+'.mltSrtCB(this,'+j+')">';
+// sortIcn [-1 : no icon; 0 ascending arrow; 1 : descending arrow]
+if (!_dtd4)
+{
+//non _dtd4 dont work with CSS/CSS 
+sortIcn+=imgOffset(_skin+_multiHeaderFile,_multiHeaderArrowW,_multiHeaderArrowH,0,c.sortIcn?84:87)+'</td>';
+}
+else
+sortIcn+='<div class="'+ _multiHCSS[c.sortIcn?_multiHUpCSS:_multiHDownCSS]+'"></div></td>';
+}
+else
+sortIcn='<td width="0"></td>'
+//for hover & pressed for header left & right image borders
+var colId=''
+if (j==0)
+colId=' id="'+o.header1stColId+'"'
+s[i++]='<td '+ colId+' class="'+ _multiHCSS[_multiHMCSS]+'" '+ tip + (c.sortable?' onclick="'+_codeWinName+'.mltSrtCB(this,'+j+')"':'')
+if (len>1)
+s[i++]=' style="width:'+tW+'px;"';
+s[i++]='>' 
+s[i++]='<table border="0" cellspacing="0" cellpadding="0"><tbody><tr>' 
+sty=c.sortable?'':' style="cursor:default;"';
+var name=c.name;
+if (name=="") name=" ";
+var checkInput="";
+if(c.checkable)
+{
+checkInput='<input type=checkbox style="vertical-align:middle;margin-bottom:0px;margin-left:'+(_ie?'0px':'1px')+';margin-right:4px;margin-top:1px" tabindex="-1" id="h'+j+'" onclick="event.cancelBubble=true;'+_codeWinName+'.mltHCheckCB(this,'+j+')"'+'>'
+}
+s[i++]='<td ><div class="mclH" '
+if(checkInput!="")
+{
+var sty2 =_ie?' style="padding-left:1px"':'';
+s[i++]=sty +sty2+'>'+checkInput+convStr(name, true)+'</div></td>'
+}
+else
+{
+s[i++]=sty +'>'+convStr(name, true)+'</div></td>'
+}
+s[i++]=sortIcn;
+s[i++]='</tr></tbody></table>' 
+s[i++]='</td>'
+//header separator
+if (len>1)
+{
+s[i++]='<td class="'+ _multiHCSS[_multiHSepCSS]+'" onmousedown="'+_codeWinName+'.MultiColumnList_titleMouseDown(this,event,'+j+');return '+(_webKit?"true":"false")+'" style="cursor:'+_resizeW+'">'
+s[i++]='<div id="'+this.id+'" class="multiHeader"></div></td>'
+}
+}
+if (len>1)
+s[i++]='<td class="'+ _multiHCSS[_multiHMCSS]+'" width="'+Math.max(_multiHeaderTrailW, o.w-len*o.minWidth)+'"></td>'
+//header right image border
+s[i++]='<td class="'+ _multiHCSS[_rtl ? _multiHLCSS : _multiHRCSS]+'"><div class="multiHeader"></div></td>'
+s[i++]='</tr></tbody></table>'
+}
+function MultiColumnList_ondblclick(e)
+{
+if (_ie)
+e=_curWin.event
+var o=getWidget(this.parentNode.parentNode),idx=o.getIndexFromY(o.getYPosFromEvent(e),false)
+if ((idx>=0)&&(o.dblClickCB))
+o.dblClickCB(idx)
+if (o.showTooltip && o.customTooltipWidget)
+    {
+        o.customTooltipWidget.hideCustomTooltip();
+    }
+return false
+}
+function MultiColumnList_onkeydown(e)
+{
+if (_ie)
+e=_curWin.event
+var k=eventGetKey(e),o=getWidget(this.parentNode.parentNode),i=o.selectionIndex
+switch(k)
+{
+case 40: // Arrow Up key
+i++
+break
+case 36: // home key
+i=0
+break
+case 38: // Arrow Down key
+i--
+break
+case 35: // end key
+i=o.getCount()-1
+break
+case 34: // page down
+i+=o.getVisibleItemCount()
+break;
+case 33: // page up
+i-=o.getVisibleItemCount()
+break;
+case 46: //remove
+return false
+default:
+//select item if space key and no current selection
+if(k == 32 && o.getSelection()==null) 
+{
+i=Math.max(0,i)
+i=Math.min(o.getCount()-1,i)
+o.internalSelect(i,eventIsCtrl(e),e.shiftKey)
+if (o.changeCB)
+o.changeCB()
+return false;
+}
+//key is alpha numerique, select the first occurence that starts with this character from the current position
+var c=String.fromCharCode(k)
+if (c)
+{
+o.currSearch = o.currSearch ? o.currSearch + c : c
+if (o.currSearchTimeout)
+{
+clearTimeout(o.currSearchTimeout)
+}
+o.currSearchTimeout = setTimeout(function()
+{
+o.currSearchTimeout = null
+delete o.currSearch
+}, 400)
+if ((e.altKey!=true)&&(e.ctrlKey!=true)&&(e.metaKey!=true))
+{
+var item = o.findByText(0,o.currSearch,false,false,true, o.currSearch.length==1);
+if (item!=null)
+o.select(item.index);
+}
+}
+if (o.keyDownCB)
+return o.keyDownCB(e)
+else
+return true
+}
+i=Math.max(0,i)
+i=Math.min(o.getCount()-1,i)
+o.internalSelect(i,eventIsCtrl(e),e.shiftKey)
+if (o.changeCB)
+o.changeCB()
+return false
+}
+function MultiColumnList_createCaptureLayer(idx,x,y,w,h)
+{
+var l=null
+eval ("l=_curWin._captureMouseLayer"+idx+";")
+if (l==null)
+{
+l=_curDoc.createElement("div")
+eval("_curWin._captureMouseLayer"+idx+"=l;")
+}
+var st=l.style
+st.position="absolute"
+st.top=""+y+"px"
+st.left=""+x+"px"
+st.width=""+w+"px"
+st.height=""+h+"px"
+st.zIndex=10000
+//st.backgroundColor="red" // For testing the capture layer layout
+_curDoc.body.appendChild(l)
+l.addEventListener("mousemove", MultiColumnList_mouseMove, true);
+l.addEventListener("mouseup", MultiColumnList_mouseUp, true);
+}
+function MultiColumnList_releaseCaptureLayer(idx)
+{
+var l=null
+eval ("l=_curWin._captureMouseLayer"+idx+";")
+l.removeEventListener("mousemove", MultiColumnList_mouseMove, true);
+l.removeEventListener("mouseup", MultiColumnList_mouseUp, true);
+_curDoc.body.removeChild(l)
+}
+function MultiColumnList_mouseDown(e)
+{
+if (_ie)
+e=_curWin.event
+setTimeout("_curWin.focus()",1)
+var o=getWidget(this.parentNode.parentNode)
+if (o.timer!=null)
+{
+clearInterval(o.timer)
+o.timer=null
+}
+if (e.button==_leftBtn)
+{
+var idx=o.getIndexFromY(o.getYPosFromEvent(e),false)
+if (idx>=0)
+{
+var body=_curDoc.body
+o.currentY=o.initialY=eventGetY(e)
+if (_webKit)
+{
+var pos=getPos(o.layer)
+var ww=winWidth(),wh=winHeight()
+var dx=_curDoc.body.scrollLeft,dy=_curDoc.body.scrollTop
+var x=eventGetX(e)-2+dx
+var y=eventGetY(e)-2+dy
+var w=4
+var h=4
+MultiColumnList_createCaptureLayer(0,dx,dy,Math.max(0,x-dx),wh)
+MultiColumnList_createCaptureLayer(1,dx,dy,ww,Math.max(0,y-dy))
+MultiColumnList_createCaptureLayer(2,x+w,dy,Math.max(0,ww-x-w+dx),wh)
+MultiColumnList_createCaptureLayer(3,dx,y+h,ww,Math.max(0,wh-y-h+dy))
+}
+if (body.addEventListener)
+{
+body.addEventListener("mousemove", MultiColumnList_mouseMove, true);
+body.addEventListener("mouseup", MultiColumnList_mouseUp, true);
+}
+else
+{
+o.oldMouseMove=body.onmousemove
+o.oldMouseUp=body.onmouseup
+body.onmousemove=MultiColumnList_mouseMove
+body.onmouseup=MultiColumnList_mouseUp
+if (body.setCapture)
+body.setCapture(true)
+}
+_curWin.__curDraggingMultiList=o
+o.internalSelect(idx,eventIsCtrl(e),e.shiftKey)
+}
+}
+return _webKit?true:false;
+}
+function MultiColumnList_mouseMove(e)
+{
+if (_ie)
+e=_curWin.event
+if (eventIsCtrl(e))
+return
+if (e.button==_leftBtn)
+{
+var o=_curWin.__curDraggingMultiList
+if (o)
+{
+o.currentY=eventGetY(e)
+o.clientY=eventGetY(e)
+var y=o.getYPosFromEvent(e)
+var relY=ypos(o.layer,e)-o.headH
+if ((relY>=0)&&(relY<=o.listBody.getHeight()))
+{
+o.internalSelect(o.getIndexFromY(y,true),false,true)
+if (o.timer!=null)
+{
+clearInterval(o.timer)
+o.timer=null
+}
+}
+else
+{
+if (o.timer==null)
+{
+o.timer=setInterval("MultiColumnList_mouseMoveTimer()",50)
+}
+}
+}
+}
+else
+MultiColumnList_mouseUp(e)
+return _webKit?true:false
+}
+function MultiColumnList_mouseMoveTimer()
+{
+var o=_curWin.__curDraggingMultiList
+if (o)
+{
+o.internalSelect(o.getIndexFromY(o.clientY-getPosScrolled(o.listBody.layer).y+getScrollY(),true),false,true)
+}
+}
+function MultiColumnList_mouseUp(e)
+{
+var o=_curWin.__curDraggingMultiList
+if (o)
+{
+if (_ie)
+e=_curWin.event
+setTimeout('delayedMultiColumnList_mouseUp('+o.getYPosFromEvent(e)+')',1)
+}
+}
+function delayedMultiColumnList_mouseUp(y)
+{
+var o=_curWin.__curDraggingMultiList
+if (o)
+{
+if (o.timer!=null)
+{
+clearInterval(o.timer)
+o.timer=null
+}
+var body=_curDoc.body
+if (_webKit)
+{
+for (var i=0;i<4;i++)
+MultiColumnList_releaseCaptureLayer(i)
+}
+if (body.removeEventListener)
+{
+body.removeEventListener("mousemove", MultiColumnList_mouseMove, true);
+body.removeEventListener("mouseup", MultiColumnList_mouseUp, true);
+}
+else
+{
+body.onmouseup=o.oldMouseUp
+body.onmousemove=o.oldMouseMove
+if (body.releaseCapture)
+body.releaseCapture()
+}
+_curWin.__curDraggingMultiList=null
+if (o.changeCB)
+o.changeCB()
+o.setRowFocus(o.getIndexFromY(y,true),true)
+}
+return _webKit?true:false
+}
+function MultiColumnList_titleMouseDown(lyr,e,colIdx)
+{
+if (_ie)
+e=_curWin.event
+var o=getWidget(lyr.parentNode.parentNode)
+var body=_curDoc.body
+setTimeout("_curWin.focus()",1)
+_curWin.__curDraggingMultiList=o
+_curWin.__curDraggingColIdx=colIdx
+_curWin.__curDraggingInitWidth=o.cols[colIdx].width
+if (body.addEventListener)
+{
+body.addEventListener("mousemove", MultiColumnList_titleMouseMove, true);
+body.addEventListener("mouseup", MultiColumnList_titleMouseUp, true);
+}
+else
+{
+o.oldMouseMove=body.onmousemove
+o.oldMouseUp=body.onmouseup
+body.onmousemove=MultiColumnList_titleMouseMove
+body.onmouseup=MultiColumnList_titleMouseUp
+if (body.setCapture)
+body.setCapture(true)
+}
+o.initialX=eventGetX(e)
+return _webKit?true:false
+}
+function getHeaderTrailWidth()
+{
+    var o=this;
+    var lenH=o.cols.length
+    return Math.max(_multiHeaderTrailW, o.w-lenH*o.minWidth);
+}
+function updateHeaderTableWidth()
+{
+    var o=this;
+    var tableW=0,colsH=o.cols,lenH=colsH.length
+    for (var j=0; j<lenH;j++)
+    {
+    tableW+=colsH[j].width
+    }
+    tableW+=getHeaderTrailWidth.call(o);
+    var headerTable=o.header.childNodes[0];
+    headerTable.style.width=""+tableW+"px"
+}
+function MultiColumnList_titleMouseMove(e)
+{
+if (_ie)
+e=_curWin.event
+if (e.button==_leftBtn)
+{
+var o=_curWin.__curDraggingMultiList,colIdx=_curWin.__curDraggingColIdx
+var c=o.cols[colIdx]
+var delta = _rtl ? (o.initialX-eventGetX(e)) : (eventGetX(e)-o.initialX)
+var newWidth=_curWin.__curDraggingInitWidth + delta
+c.width=Math.max(newWidth,o.minWidth)
+updateHeaderTableWidth.call(o);
+var tr=o.header.childNodes[0].childNodes[0].childNodes[0];
+//+1:left most border for header
+var td=tr.childNodes[colIdx*2+1];
+var tW=c.width-_multiHeaderSepW;
+td.style.width=""+tW+"px"
+var table_title_sorticn=td.childNodes[0];
+var tr_title_sorticn=table_title_sorticn.childNodes[0].childNodes[0];
+var td_title=tr_title_sorticn.childNodes[0];
+var td_sorticn=tr_title_sorticn.childNodes[1];
+if (c.sortIcn>=0)
+{
+td_sorticn.style.width=""+_multiHeaderSortIconW+"px"
+tW-=_multiHeaderSortIconW;
+tW-=_dtd4?4:0;
+}
+//title div
+var div_txt=td_title.childNodes[0];
+if (c.titleWidth==0 || c.titleWidth > tW)
+div_txt.style.width=""+tW+"px"
+else
+div_txt.style.width=""
+}
+else
+MultiColumnList_titleMouseUp(e)
+}
+function MultiColumnList_titleMouseUp()
+{
+setTimeout("delayedMultiColumnList_titleMouseUp()",1)
+return _webKit?true:false
+}
+function delayedMultiColumnList_titleMouseUp()
+{
+var o=_curWin.__curDraggingMultiList,colIdx=_curWin.__curDraggingColIdx,body=_curDoc.body
+// Apply new dimension to all the colum
+var table=(_ie ? o.body.childNodes[0].childNodes[0].childNodes[0] : o.body.childNodes[0].childNodes[0])
+var allTr=table.childNodes[0].childNodes,allTrLen=allTr.length
+var w=o.cols[colIdx].width
+var innerW=_dtd4?w-4:w
+//take into account the header left border
+if (colIdx==0)
+innerW+=_multiHeaderLImgW;
+var innerSty=""+innerW+"px"
+var tableW=0,colsH=o.cols,lenH=colsH.length
+for (var j=0; j<lenH;j++)
+{
+tableW+=colsH[j].width
+}
+table.parentNode.style.width=""+tableW+"px"
+table.style.width=""+tableW+"px"
+for (var i=0;i<allTrLen;i++)
+{
+var td=allTr[i].childNodes[colIdx]
+td.childNodes[0].style.width=innerSty
+}
+o.header.scrollLeft=o.listBody.layer.scrollLeft
+if (body.removeEventListener)
+{
+body.removeEventListener("mousemove", MultiColumnList_titleMouseMove, true);
+body.removeEventListener("mouseup", MultiColumnList_titleMouseUp, true);
+}
+else
+{
+body.onmouseup=o.oldMouseUp
+body.onmousemove=o.oldMouseMove
+if (body.releaseCapture)
+body.releaseCapture()
+}
+}
+function MultiColumnList_setIsEqualCB(fnCB)
+{
+    this.isEqualCB=fnCB;
+}    
+function MultiColumnList_getColumnWidth(col)
+{
+    var o=this;
+    var w=0;    
+    if (col>=0 && col < o.getColumsCount())
+        w=parseInt(o.cols[col].width);
+    return w;
+}
+function new_MultipleColumnsList(prms)
+{
+var o=new_MultiColumnList(prms);
+o.initCB=null;
+//user must implement this CB
+o.getBodyColumnHTMLCB=prms.getBodyColumnHTMLCB;
+//internal usage
+//for each row in the body, it's an object with the fields as follow
+//cols (Array): for each column
+//value
+//sel
+//html (Array):for each column
+    o.superInit=o.init;
+o.init=MultipleColumnsList_init;
+o.generateRow=MultipleColumnsList_generateRow;
+o.move=MultipleColumnsList_move;
+o.rewriteLine=MultipleColumnsList_rewriteLine;
+o.getRowHTML=MultipleColumnsList_getRowHTML;
+o.isBodyColumnHTMLFilledIn=MultipleColumnsList_isBodyColumnHTMLFilledIn;
+return o;
+}
+function MultipleColumnsList_generateRow(row,tr)
+{
+    var o=this,colsH=o.cols,lenH=colsH.length,cols=row.cols
+for (var k=0;k<lenH;k++)
+{
+    if (!o.isBodyColumnHTMLFilledIn(row,k))   
+    {
+        if (o.getBodyColumnHTMLCB)
+            row.html[k]=o.getBodyColumnHTMLCB(k, cols[k]);
+            else
+                row.html[k]='';            
+    }
+var td=tr.insertCell(-1)
+if (lenH>1)
+{
+var w=(colsH[k].width-(_dtd4?4:0));
+if (k==0)
+w+=_multiHeaderLImgW;
+td.innerHTML='<div class="mclNormal" style="width:'+w+'px;height:'+o.rowHeight+'px;">'+row.html[k]+'</div>'
+}
+else
+{    
+td.innerHTML='<div class="mclCol" style="height:'+o.rowHeight+'px">'+row.html[k]+'</div></td>'
+}
+}
+}
+function MultipleColumnsList_move(delta)
+{
+    var o=this,i=o.selectionIndex,len=o.getCount()-1,newI=i+delta
+    if ((i==-1)||(newI<0)||(newI>len))
+        return false
+var chunk=o.chunks[0],temp=chunk[i]
+o.internalSelect()
+chunk[i]=chunk[newI]
+chunk[newI]=temp
+o.rewriteLine(i, newI);
+o.internalSelect(newI)
+}
+function  MultipleColumnsList_rewriteLine(fromRowIndex, toRowIndex)
+{    
+var o=this;
+var fromRow=o.chunks[0][fromRowIndex];
+var toRow=o.chunks[0][toRowIndex];
+var fromTr=o.getRowTRFromRowIndex(fromRowIndex);
+    var toTr=o.getRowTRFromRowIndex(toRowIndex);
+swapContiguousDOMNodes(fromTr,toTr)
+}
+function MultipleColumnsList_isBodyColumnHTMLFilledIn(row,col)
+{
+    if (!row.html)
+    row.html=new Array;
+    return (!row.html.length || !row.html[col])?false:true;                
+}
+function MultipleColumnsList_getRowHTML(row,s)
+{   
+var o=this,colsH=o.cols,lenH=colsH.length,cols=row.cols,i=s.length
+for (var k=0;k<lenH;k++)
+{
+    //get col's html first if not yet done.
+    if (!o.isBodyColumnHTMLFilledIn(row,k))   
+    {
+        if (o.getBodyColumnHTMLCB)
+            row.html[k]=o.getBodyColumnHTMLCB(k, cols[k]);
+            else
+            row.html[k]='';            
+    }
+if (lenH>1)
+{
+var w=(colsH[k].width-(_dtd4?4:0));
+if (k==0)
+w+=_multiHeaderLImgW;
+s[i++]='<td><div class="mclNormal" style="width:'+w+'px;height:'+o.rowHeight+'px">'
+s[i++]=row.html[k]+'</div></td>'
+}
+else
+{
+s[i++]='<td><div class="mclCol" style="height:'+o.rowHeight+'px;">'+row.html[k]+'</div></td>'
+}
+}
+}
+function MultipleColumnsList_init()
+{
+    var o=this;
+    o.superInit();
+    if (o.initCB)
+        o.initCB();
+}
+function mltHCheckCB(lyr,col)
+{
+var isChecked=lyr?lyr.checked:false;
+var o=getWidget(lyr);
+o.setCheckAll(col,isChecked);
+if (o.checkCB)
+{
+o.checkCB(null,col,isChecked);
+}
+}
+function mltBMousedownCB(lyr,rowIndex,colIndex)
+{ 
+var isChecked=lyr?(!lyr.checked):false;
+mltBCheckCB(lyr,rowIndex,colIndex,isChecked);
+}
+function mltBCheckCB(lyr,rowIndex,colIndex,isChecked)
+{ 
+var isChecked=(isChecked==null)?(lyr?lyr.checked:false):isChecked;
+var listBody=getWidget(lyr);
+var o=listBody?listBody.par:null;
+if(o)
+{
+var row = o.getRow(rowIndex);
+MultiColumnList_updateRowCheckInfo(row,colIndex,isChecked);
+if(o.checkCB)
+o.checkCB(row,colIndex,isChecked);
+//header checkbox state
+var sels = o.getCheckSelection(colIndex);
+var listlen=o.chunks[0].length;
+var greyState = true;
+if(sels.length==0 || sels.length==listlen)
+{
+isChecked=(sels.length==listlen);
+greyState=false;
+}
+o.setHeaderCheck(greyState,colIndex,isChecked)
+}
+}
+function MultiColumnList_getCheckSelection(colIndex)
+{
+var o=this,chunk=o.chunks[0],rets=new Array,len=chunk.length
+for (var i=0;i<len;i++)
+{
+var row=chunk[i];
+if (row.checkCols!=null && row.checkCols.size()>0) //has a selection
+{
+if(colIndex==null || row.checkCols.get(colIndex))
+{
+var cols=row.cols,ret=new Object;
+ret.index=i;
+ret.value=row.value;
+ret.text=cols.length>1?cols:cols[0];
+ret.cols=cols;
+rets[rets.length]=ret
+}
+}
+}
+return rets
+}
+function MultiColumnList_setHeaderCheck(greyState,colIndex,isChecked)
+{
+var checkId = 'h'+colIndex; 
+var lyr = getLayer(checkId);
+if (lyr)
+{
+lyr.indeterminate = greyState;
+if(!greyState)
+lyr.checked=isChecked;
+}
+}
+function MultiColumnList_setCheck(rowIndex,colIndex,isChecked)
+{
+var o=this;
+var row = o.getRow(rowIndex);
+var checkId = 'c'+rowIndex+colIndex; 
+var lyr = getLayer(checkId);
+if (lyr)
+{
+lyr.checked=isChecked;
+}
+//update row info
+MultiColumnList_updateRowCheckInfo(row,colIndex,isChecked);
+}
+function MultiColumnList_setCheckAll(colIndex,isChecked)
+{
+var o=this;
+var o=this,chunk=o.chunks[0],rets=new Array,len=chunk.length
+for (var i=0;i<len;i++)
+{
+o.setCheck(i,colIndex, isChecked);
+}
+}
+function MultiColumnList_updateRowCheckInfo(row,colIndex,isChecked)
+{
+if(row)
+{
+if(row.checkCols==null)
+row.checkCols=new Hash; //row.checkCols.get(colIndex)=true;
+if(isChecked)
+row.checkCols.set(colIndex,isChecked);
+else
+row.checkCols.unset(colIndex);
+}
+}
+function MultiColumnList_resizeCol(colIdx,newWidth)
+{
+var o=this;
+var c=o.cols[colIdx];
+//set new width
+c.width=Math.max(newWidth,o.minWidth)
+updateHeaderTableWidth.call(o);
+//resize header
+var tr=o.header.childNodes[0].childNodes[0].childNodes[0];
+//+1:left most border for header
+var td=tr.childNodes[colIdx*2+1];
+var tW=c.width-_multiHeaderSepW;
+td.style.width=""+tW+"px"
+var table_title_sorticn=td.childNodes[0];
+var tr_title_sorticn=table_title_sorticn.childNodes[0].childNodes[0];
+var td_title=tr_title_sorticn.childNodes[0];
+var td_sorticn=tr_title_sorticn.childNodes[1];
+if (c.sortIcn>=0)
+{
+td_sorticn.style.width=""+_multiHeaderSortIconW+"px"
+tW-=_multiHeaderSortIconW;
+tW-=_dtd4?4:0;
+}
+//title div
+var div_txt=td_title.childNodes[0];
+if (c.titleWidth==0 || c.titleWidth > tW)
+div_txt.style.width=""+tW+"px"
+else
+div_txt.style.width=""
+//resize body
+var table=(_ie ? o.body.childNodes[0].childNodes[0].childNodes[0] : o.body.childNodes[0].childNodes[0])
+var allTr=table.childNodes[0].childNodes,allTrLen=allTr.length
+var innerW=_dtd4?tW-4:tW
+var innerSty=""+innerW+"px"
+var tableW=0,colsH=o.cols,lenH=colsH.length
+for (var j=0; j<lenH;j++)
+{
+tableW+=colsH[j].width
+}
+table.parentNode.style.width=""+tableW+"px"
+table.style.width=""+tableW+"px"
+for (var i=0;i<allTrLen;i++)
+{
+var td=allTr[i].childNodes[colIdx]
+td.childNodes[0].style.width=innerSty
+}
+}
+function MultiColumnList_findByValueAndKeys(val)
+{
+/*var o=this,chunk=o.chunks[0],len=chunk.length;
+for (var i=0;i<len;i++)
+{
+if (chunk[i].value.key)
+{
+if ((o.isEqual(val, chunk[i].value))&& (o.isEqual(val.key, chunk[i].value.key)) )
+{
+var ret=new Object;
+ret.index=i;
+ret.value=chunk[i].value;
+return ret
+}
+}
+else
+{
+if (o.isEqual(val, chunk[i].value))
+{
+var ret=new Object;
+ret.index=i;
+ret.value=chunk[i].value;
+return ret
+}
+}
+}
+return null*/
+var o=this,chunk=o.chunks[0],len=chunk.length
+for (var i=0;i<len;i++)
+{
+if (o.isEqual(val, chunk[i].value))
+{
+var ret=new Object;
+ret.index=i;
+ret.value=chunk[i].value;
+return ret
+}
+}
+return null
+}

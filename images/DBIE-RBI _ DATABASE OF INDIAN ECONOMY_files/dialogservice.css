@@ -1,0 +1,241 @@
+/*
+©2010 - 2013 SAP AG or an SAP affiliate company.  All rights reserved.
+ 
+SAP and other SAP products and services mentioned herein as well as their respective logos are trademarks or registered trademarks of SAP AG in Germany and other countries.  Please see http://www.sap.com/corporate-en/legal/copyright/index.epx#trademark for additional trademark information and notices.
+*/
+
+/* Style sheet for our dialog service
+   - Works with YUI 2.2 and YUI 2.7.
+   - For 2.7 works with or without YAHOO.widget.Button.  In both cases our own button styling is used.
+   - 2.7 rules are all prefixed with .yui-skin-sam.
+   - 2.2 rules are not.
+*/   
+
+.yui-skin-sam .dialogService .yui-panel .bd #dialogServiceIframe {
+    overflow:hidden;
+}
+
+.yui-skin-sam .dialogService .yui-panel .resizefooter {
+    overflow:hidden;
+    padding:4px;
+    background-color:#F2F2F2;
+    border-top:1px solid #404040;
+    height:8px;
+    margin:0;
+}
+
+.yui-skin-sam .dialogService .yui-panel .resizehandle {
+    background-attachment:scroll;
+    background-color:transparent;
+    background-image:url(dialog_resizer.gif);
+    background-position:right bottom;
+    background-repeat:no-repeat;
+    bottom:0;
+/* @noflip */ cursor:se-resize;
+    height:10px;
+    margin:0;
+    padding:0;
+    position:absolute;
+/* @noflip */ right:0;
+    width:10px;
+    z-index:1;
+}
+
+.yui-skin-sam.masked .mask {
+    opacity: 0.5;
+    background-color: #CCCCCC;
+}
+
+.dialogService .yui-panel,
+.yui-skin-sam .dialogService .yui-panel {
+    border: 1px solid #96A8C3;
+    padding: 0px 1px 1px 1px;
+    background-color: #FFFFFF;
+}
+
+.yui-skin-sam .dialogService.yui-panel-container.shadow .underlay,
+.dialogService.yui-panel-container.shadow .underlay {
+    visibility: inherit;
+    z-index: 0;
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    height: 100%;
+    width: 100%;
+    opacity: 0.12;
+    background-color: #000000;
+}
+
+.dialogService .hd,
+.yui-skin-sam .dialogService .yui-panel .hd {
+    margin: 0px;
+    border: 0px;
+    border-top: 1px solid #E5EAF3;
+    border-bottom: 1px solid #FFFFFF;
+    padding: 6px 10px;
+    background: transparent url(sprite.png) repeat-x 0 0px;
+    /* background-color: #B4C1D5; */
+    color: #4F5C72;
+    font: bold 11px/13px Tahoma;
+    *font-size: 93%; /* for IE */
+    *font: x-small; /* for IE in quirks mode */    
+}
+.dialogService .container-close,
+.yui-skin-sam .dialogService .container-close {
+    top: 7px;
+    right: 10px;
+    height: 12px;
+    width: 12px;
+    /* @noflip */ background: transparent url(sprite.png) no-repeat 0 -25px;
+    text-indent:-10000em;
+}
+
+.dialogService div.container-close:hover,
+.yui-skin-sam .dialogService .container-close:hover {
+    /* @noflip */ background: transparent url(sprite.png) no-repeat 0 -40px;
+}
+
+.dialogService .bd,
+.yui-skin-sam .dialogService .yui-panel .bd {
+    margin: 0px;
+    border: 0px;
+    padding: 13px 18px;
+    background-color: #E5EAF3;    
+    color: #000000;
+    font: normal 11px/1.272 Tahoma;        
+    *font-size: 100%; /* for IE7 */
+    *font: x-small; /* for IE in quirks mode */
+}
+
+.dialogService.dialogServiceIframe .bd,
+.yui-skin-sam .dialogService.dialogServiceIframe .yui-panel .bd {
+    /* Reduced padding for iframe-dialogs */
+    padding: 6px 6px;
+}
+
+.dialogService .bd input.inputTextBox,
+.yui-skin-sam .dialogService .bd input.inputTextBox {
+    border: 1px solid #96A8C3;
+    padding: 2px 2px 0px 2px;
+    height: 16px;
+    background: transparent url(background_field.gif) repeat-x;
+    font: normal 11px/1.272 Tahoma;
+}
+
+.dialogService .bd input.inputTextBox:focus,
+.yui-skin-sam .dialogService .bd input.inputTextBox:focus {
+    border-color: #7AC3E9;
+}
+.dialogService .ft,
+.yui-skin-sam .dialogService .yui-panel .ft {
+    margin: 0px;
+    border: 0px;
+    border-top: 1px solid #FFFFFF;
+    background-color: #E5EAF3;
+    padding: 0px 8px 0px 8px;
+    white-space: nowrap;
+    *overflow: visible;
+    height: auto;
+}
+
+.yui-skin-sam .dialogService .yui-button {
+    margin: 0;
+    border: 0;
+    background: transparent;    
+}
+.yui-skin-sam .dialogService .yui-button .first-child {
+    margin: 0;
+    border: 0;
+    background: transparent;    
+}
+
+.dialogService .button-group button,
+.yui-skin-sam .dialogService .yui-button button,
+.yui-skin-sam .dialogService button {
+    margin: 5px;
+    border: 2px solid;
+    border-color: #FFFFFF #797979 #797979 #FFFFFF;
+    border-radius:1px;
+    cursor:pointer;
+    padding: 2px 4px;
+    background-color: #E4E4E4;
+    color: #333333;
+    font: normal 11px/normal Tahoma;
+    *font-size: 93%; /* for IE7 */
+    *font: x-small; /* for IE in quirks mode */
+    text-decoration: none;
+    vertical-align: middle;
+    min-height: 0;
+}
+
+.yui-skin-sam .dialogService.yui-dialog .ft span.default button,
+.yui-skin-sam .dialogService.yui-dialog .ft button.default {
+    color: #333333;
+    font-weight: normal;    
+}
+
+.dialogService .button-group button:hover,
+.yui-skin-sam .dialogService .yui-button button:hover {
+    border: 2px solid;
+    border-color: #FFFFFF #797979 #797979 #FFFFFF;
+    background-color: #E4E4E4;
+}
+
+/* Larger and more visible resize handle (bottom right) */
+.yui-skin-sam .dialogService .yui-resize-handle-br,
+.dialogService .yui-resize-handle-br {
+    height: 11px;
+    width: 11px;
+    background-position: -20px -60px;
+    background-color: transparent;
+}
+
+/* Make sure that z-index for shadow is correct (this happens since YUI Dialog doesn't officially support Resize */
+.yui-skin-sam .dialogService .yui-resize,
+.dialogService .yui-resize {
+    /* Should match z-index of .yui-panel in container.css */
+    z-index: 1;    
+}
+
+.dialogService .bd .dsinfo {
+    background:         transparent url('info32.png') no-repeat 0px 0px;
+    padding:            9px 0px 9px 36px;
+}
+
+.dialogService .bd .dswarn {
+    background:         transparent url('warning32.png') no-repeat 0px 0px;
+    padding:            9px 0px 9px 36px;
+}
+
+.dialogService .bd .dserror {
+    background:         transparent url('error32.png') no-repeat 0px 0px;
+    padding:            9px 0px 9px 36px;
+}
+
+.ds-waitspinner {
+    background:         transparent url('wait01.gif') no-repeat 0px 0px;
+    border: 0 none transparent;
+}
+
+.ds-waitspinner .yui-panel {
+    background-color:transparent;
+    border: 0 none transparent;
+}
+
+.yui-skin-sam .yui-panel-container .drag {
+    background-color:transparent;
+}
+
+.yui-skin-sam .yui-panel-container .drag .bd {
+    display:none;
+    visibility:hidden;
+}
+
+.yui-skin-sam .yui-panel-container .drag .resizefooter {
+    display:none;
+    visibility:hidden;
+}
+
+.yui-skin-sam .yui-panel-container .drag .hd {
+    background:transparent;
+}

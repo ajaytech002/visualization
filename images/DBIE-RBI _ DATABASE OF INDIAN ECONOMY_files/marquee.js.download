@@ -1,0 +1,120 @@
+
+
+// **** Functional Code - NO NEED to Change
+
+
+function zxcCSBanner(zxcid,zxcvh,zxcw,zxcspd,zxcaary){
+ var zxcp=document.getElementById(zxcid);
+ var zxcary=[]
+ if (zxcaary){
+  var zxcpth=zxcaary[0];
+  for (var zxc0=1;zxc0<zxcaary.length;zxc0++){ zxcary[zxc0-1]=zxcaary[zxc0];  for (var zxc1=0;zxc1<zxcary[zxc0-1].length;zxc1++){ if (zxcary[zxc0-1][zxc1]==''){ zxcary[zxc0-1][zxc1]=null; } } }
+ }
+ else {
+  var zxceles=zxcp.childNodes;
+  for (var zxc0=0;zxc0<zxceles.length;zxc0++){ if (zxceles[zxc0].tagName=='DIV'){ zxcary.push([zxceles[zxc0],zxceles[zxc0].offsetWidth,zxceles[zxc0].offsetHeight]); } }
+  for (var zxc1=0;zxc1<zxcary.length;zxc1++){ zxcp.removeChild(zxcary[zxc1][0]); }
+ }
+ var zxcwh=(zxcvh=='H')?[zxcp.offsetHeight,zxcp.offsetWidth,'left','top','width','height']:[zxcp.offsetWidth,zxcp.offsetHeight,'top','left','height','width'];
+ zxcp.set=true;
+ var zxcd=zxcStyle('DIV',{position:'absolute',left:'0px',top:'0px',width:zxcwh[0]+'px'});
+ zxcp.appendChild(zxcd);
+ zxcp.ary=[zxcd,zxcd.cloneNode(true),zxcd.cloneNode(true),zxcd.cloneNode(true)];
+ for (var zxc2=1;zxc2<zxcp.ary.length;zxc2++){ zxcp.appendChild(zxcp.ary[zxc2]); }
+ var zxcobj;
+ for (var zxc3=0;zxc3<zxcp.ary.length;zxc3++){
+  var zxccnt=0;
+  var zxctp=0;
+  for (var zxc4=0;zxc4<Math.max(zxcary.length,Math.ceil(zxcwh[1]/zxcwh[0])+1);zxc4++){
+   if (typeof(zxcary[zxccnt][0])=='string'){
+    if (zxcary[zxccnt][0].toUpperCase().match('I')){ zxcobj=zxcStyle('IMG'); zxcobj.src=zxcpth+zxcary[zxccnt][1]; }
+    if (zxcary[zxccnt][0].toUpperCase().match('T')){ zxcobj=zxcStyle('DIV'); zxcobj.innerHTML=zxcary[zxccnt][1]; }
+    if (zxcary[zxccnt][2]){ zxcobj.url=zxcary[zxccnt][2]; zxcStyle(zxcobj,{ cursor:((document.all)?'hand':'pointer')}); zxcobj.onclick=function(){ zxcLink(this); } }
+    zxcStyle(zxcobj,{position:'absolute',backgroundColor:(zxcary[zxccnt][5]||zxcBGColor),color:(zxcary[zxccnt][6]||zxcTxtColor),textAlign:(zxcary[zxccnt][7]||zxcTxtAlign),fontSize:(zxcary[zxccnt][8]||zxcFontSize)});
+    zxcobj.style[zxcwh[4]]=((zxcary[zxccnt][(zxcvh=='H')?3:4])||zxcw)+'px';
+    zxcobj.style[zxcwh[5]]=((zxcary[zxccnt][(zxcvh=='H')?4:3])||zxcwh[0])+'px';
+   }
+   else {
+    zxcobj=zxcary[zxccnt][0].cloneNode(true);
+    zxcStyle(zxcobj,{position:'absolute',width:zxcary[zxccnt][1]+'px',height:zxcary[zxccnt][2]+'px'});
+   }
+   zxcobj.style[zxcwh[2]]=(zxctp)+'px';
+   zxcobj.style[zxcwh[3]]='0px';
+   zxcp.ary[zxc3].appendChild(zxcobj);
+   zxcp.ary[zxc3].style[zxcwh[4]]=(parseInt(zxcobj.style[zxcwh[2]])+parseInt(zxcobj.style[zxcwh[4]]))+'px';
+   zxctp+=parseInt(zxcobj.style[zxcwh[4]]);
+   zxccnt=++zxccnt%zxcary.length;
+  }
+ }
+ var zxchw=parseInt(zxcp.ary[0].style[zxcwh[4]]);
+ for (var zxc4=0;zxc4<zxcp.ary.length;zxc4++){ zxcp.ary[zxc4].style[zxcwh[2]]=(zxchw*zxc4-zxchw)+'px'; }
+ if (!zxcp.oopbr){ zxcp.oopbr=new zxcOOPBannerRotate(zxcp,zxcvh,zxcspd,zxchw); }
+}
+
+function zxcCngDirection(zxcid,zxcdir){
+ var zxcoop=document.getElementById(zxcid).oopbr;
+ if (!zxcoop){ return; }
+ clearTimeout(zxcoop.to);
+ zxcdir=zxcdir||-zxcoop.dir;
+ if (zxcdir>0){ zxcoop.dir=1; }
+ else { zxcoop.dir=-1; }
+ zxcoop.rotate();
+}
+
+function zxcBannerStop(zxcid){
+ var zxcoop=document.getElementById(zxcid).oopbr;
+ if (!zxcoop){ return; }
+ clearTimeout(zxcoop.to);
+}
+
+function zxcBannerStart(zxcid,zxcdir){
+ var zxcoop=document.getElementById(zxcid).oopbr;
+ if (!zxcoop){ return; }
+ clearTimeout(zxcoop.to);
+ zxcoop.dir=zxcdir||zxcoop.dir;
+ zxcoop.rotate();
+}
+
+function zxcLink(zxcobj){
+ if (zxcobj.url.indexOf('^|^')>-1) zxcExternal(zxcobj.url);
+ else window.top.location=zxcobj.url;
+}
+
+function zxcStyle(zxcele,zxcstyle){
+ if (typeof(zxcele)=='string'){ zxcele=document.createElement(zxcele); }
+ for (key in zxcstyle){ zxcele.style[key]=zxcstyle[key]; }
+ return zxcele;
+}
+
+
+function zxcOOPBannerRotate(zxcp,zxcvh,zxcspd,zxchw){
+ this.ref='zxcoobr'+zxcp.id;
+ this.wh=(zxcvh=='H')?'left':'top';
+ window[this.ref]=this;
+ this.ary=zxcp.ary;
+ this.spd=zxcspd||100;
+ this.to=null;
+ this.dir=1;
+ this.h=zxchw;
+}
+
+zxcOOPBannerRotate.prototype.rotate=function(){
+ this.ary[1].style[this.wh]=(parseInt(this.ary[1].style[this.wh])+this.dir)+'px';
+ this.ary[0].style[this.wh]=(parseInt(this.ary[1].style[this.wh])-this.h)+'px';
+ this.ary[2].style[this.wh]=(parseInt(this.ary[2].style[this.wh])+this.dir)+'px';
+ this.ary[3].style[this.wh]=(parseInt(this.ary[2].style[this.wh])+this.h*2)+'px';
+ if (this.dir<0&&parseInt(this.ary[1].style[this.wh])+this.h<0){
+  this.ary[1].style[this.wh]=(parseInt(this.ary[2].style[this.wh])+this.h)+'px';
+  this.ary.reverse();
+ }
+ if (this.dir>0&&parseInt(this.ary[1].style[this.wh])>this.h){
+  this.ary[1].style[this.wh]=(parseInt(this.ary[2].style[this.wh])-this.h)+'px';
+  this.ary.reverse();
+ }
+ this.setTimeOut('rotate();',this.spd);
+}
+
+zxcOOPBannerRotate.prototype.setTimeOut=function(zxcf,zxcd){
+ this.to=setTimeout('window.'+this.ref+'.'+zxcf,zxcd);
+}
+

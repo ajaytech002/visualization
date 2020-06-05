@@ -1,0 +1,603 @@
+/*
+©2010 - 2013 SAP AG or an SAP affiliate company.  All rights reserved.
+ 
+SAP and other SAP products and services mentioned herein as well as their respective logos are trademarks or registered trademarks of SAP AG in Germany and other countries.  Please see http://www.sap.com/corporate-en/legal/copyright/index.epx#trademark for additional trademark information and notices.
+*/
+
+if ('undefined' == typeof businessobjects ) { var businessobjects = {}; }
+businessobjects['webutil'] = businessobjects['webutil'] || {};
+businessobjects.webutil['dialogservice'] = businessobjects.webutil['dialogservice'] || {};
+
+businessobjects.webutil.dialogservice.DialogConstants = {
+    ID_PREFIX: 'dialogService_',
+    INPUT_SUFFIX: '_input',
+    MSG_SUFFIX: '_msg',
+    PRO_MSG_SUFFIX: '_proMsg',
+    FORM_SUFFIX: '_frm',
+    CSS_DIALOGSERVICE: 'dialogService',
+    CSS_DIALOGSERVICE_IFRAME: 'dialogServiceIframe', 
+    CLOSE: 0,
+    OK: 1,
+    CANCEL: 2,
+    CONFIRM_DIALOG: 'confirmDialog',
+    MESSAGE_DIALOG: 'messageDialog',
+    INPUT_DIALOG: 'inputDialog',
+    CUSTOM_MESSAGE_DIALOG: 'customMessageDialog',
+    NO_CLOSE_MESSAGE_DIALOG: 'noCloseMessageDialog',
+    PROGRESS_DIALOG: 'progressDialog',
+    WAIT_DIALOG: 'waitDialog',
+    IFRAME_DIALOG: 'iframeDialog',
+    IFRAME_WRAPPER_URL: '/PlatformServices/jsp/DialogService/dialogService.jsp?url=',
+    MESSAGE_TYPE_INFO: 'infoMessage',
+    MESSAGE_TYPE_WARNING: 'warnMessage',
+    MESSAGE_TYPE_ERROR: 'errorMessage'
+}; 
+
+businessobjects.webutil.dialogservice.DialogService = {
+    /**
+     * @private
+     */
+    dialogCounter: 1,
+    lastDialogId: null,
+    /**
+    * @private
+    */
+    createDialogId: function() {
+        var id = businessobjects.webutil.dialogservice.DialogConstants.ID_PREFIX + this.dialogCounter;
+        this.dialogCounter++;
+        this.lastDialogId = id;
+        return id;
+    },
+    /**
+     * @private
+     */
+    getDialogInputId: function(id) {
+        return id + businessobjects.webutil.dialogservice.DialogConstants.INPUT_SUFFIX;
+    },
+    
+    createDialog: function(config) {
+        var dialog = new businessobjects.webutil.dialogservice.Dialog();
+        dialog.initialize(config);
+        return dialog;
+    },
+    
+    showDialog: function(config) {
+    
+        // if the dialog type was not specified and there is no message, we need to abort since the default
+        // case is a simple message dialog
+        if (!config['dialogType'] && !config['message']) {
+            return null;
+        } else if (!config['dialogType']) {
+            config['dialogType'] = businessobjects.webutil.dialogservice.DialogConstants.MESSAGE_DIALOG;
+        }
+        
+        // setup default values for unspecified configuration attributes
+        if (!config['title']) {
+            // empty strings have inconsistent line-height in some browsers; use whitespace instead
+            config['title'] = "&nbsp;";
+        }
+        
+        if (!config['parentElement']) {
+            config['parentElement'] = document.body;
+        }
+        
+        if (!config['handler']) {
+            config['handler'] = function() {};
+        }
+        
+        // standardize the dialog message length before scroll bars are invoked
+        if (!config['MESSAGE_MAX_LENGTH']){
+        	config['MESSAGE_MAX_LENGTH'] = 250;
+        }
+        
+        if (config['message'] != null && (config['message'].length > config['MESSAGE_MAX_LENGTH'])) {
+        	
+            //by adding a width config attribute value, vertical scroll bars will be added to the dialog when the message info is large instead of truncating it with ellipsis (i.e. ...)
+            config['width'] = 400;
+        }
+        
+        config['id'] = this.createDialogId();
+        
+        var dialog;
+        if (config['dialogType']) {
+            switch (config['dialogType']) {
+                case businessobjects.webutil.dialogservice.DialogConstants.MESSAGE_DIALOG:
+                    config['buttons'] = [{text: L_dialogsevice_button_OK, value: businessobjects.webutil.dialogservice.DialogConstants.OK, isDefault: true}];
+
+                    // Customize bodyContent when config['messageType'] is defined as either 'infoMessage', 'warnMessage', or 'errorMessage'
+                    var icon = null;
+                    var alt = null;
+                    var cls = null;
+                    switch (config['messageType']) {
+                        case businessobjects.webutil.dialogservice.DialogConstants.MESSAGE_TYPE_INFO:
+                            icon = "info32.png";
+                            alt = L_dialogsevice_image_Info;
+                            cls = "dsinfo";
+                            break;
+                        case businessobjects.webutil.dialogservice.DialogConstants.MESSAGE_TYPE_WARNING:
+                            icon = "warning32.png";
+                            alt = L_dialogsevice_image_Warning;
+                            cls = "dswarn";
+                            break;
+                        case businessobjects.webutil.dialogservice.DialogConstants.MESSAGE_TYPE_ERROR:
+                            icon = "error32.png";
+                            alt = L_dialogsevice_image_Error;
+                            cls = "dserror";
+                            break;
+                    }
+                    
+                    if (icon) {
+                        if (alt && (!config['title'] || config['title'] == "" || config['title'] == "&nbsp;")) {
+                            config['title'] = alt;
+                        }
+                        config['bodyContent'] = '<div role="alert" class="' + cls + '" title="' + alt + '">' + config['message'] + '</div>';
+                    }
+                    break;
+                case businessobjects.webutil.dialogservice.DialogConstants.CONFIRM_DIALOG:
+                    config['buttons'] = [{text: L_dialogsevice_button_OK, value: businessobjects.webutil.dialogservice.DialogConstants.OK},
+                     {text: L_dialogsevice_button_Cancel, value: businessobjects.webutil.dialogservice.DialogConstants.CANCEL, isDefault: true}];
+                    break;
+                case businessobjects.webutil.dialogservice.DialogConstants.CUSTOM_MESSAGE_DIALOG:
+                    if (!config['buttons'] && config['showClose'] === false) {
+                        return null;
+                    }                    
+                    break;
+                case businessobjects.webutil.dialogservice.DialogConstants.NO_CLOSE_MESSAGE_DIALOG:
+                    config['buttons'] = null;
+                    config['showClose'] = false;
+                    config['stopEscape'] = true;
+                    config['handler'] = function() {};
+                    break;
+                case businessobjects.webutil.dialogservice.DialogConstants.INPUT_DIALOG:
+                    config['buttons'] = [{text: L_dialogsevice_button_OK, value: businessobjects.webutil.dialogservice.DialogConstants.OK, isDefault: true},
+                     {text: L_dialogsevice_button_Cancel, value: businessobjects.webutil.dialogservice.DialogConstants.CANCEL}];
+                    
+                    config['showClose'] = true;
+                    
+                    var defaultValue = '';
+                    if (config['defaultInput']) {
+                        defaultValue = config['defaultInput'];
+                    }
+                    var value = "";
+                    if (config['value']) {
+                        value = config['value'];
+                    }
+                    
+                    config['bodyContent'] = 
+                          '<label style=\"white-space:nowrap\" id=\"' + config['id'] + businessobjects.webutil.dialogservice.DialogConstants.MSG_SUFFIX + '\"\n' 
+                        + '  for=\"' + this.getDialogInputId(config['id'])  + '\">' + config['message'] + '</label>&nbsp;' 
+                        + '<input id="' + this.getDialogInputId(config['id']) + '" value="' + value + '" type="text" class="inputTextBox"/>\n';
+                                        
+                    dialog = this.createDialog(config);                
+                    dialog.paint();
+                    
+                    //Set tabbing in the input dialog for Accessibility
+                    var buttons = config['buttons'];
+                    if (buttons) {
+                        for (var i = 0; i < buttons.length; i++) {
+                            if (buttons[i].value === businessobjects.webutil.dialogservice.DialogConstants.CANCEL) {
+                                dialog.yuiDialog.setTabLoop (dialog.yuiDialog.close, buttons[i].htmlButton);
+                                break;
+                            }
+                        }
+                    }                 
+                    
+                    // Set focus initially to the input text field
+                    document.getElementById (this.getDialogInputId(config['id'])).focus();
+                                        
+                    // Add return key listener for default button                    
+                    if (buttons) {
+                        for (var i = 0; i < buttons.length; ++i) {
+                            if (buttons[i].isDefault) {
+                                var kl = new YAHOO.util.KeyListener (config['id'], {keys:13},
+                                    dialog.wrapHandler(config['id'], config['handler'], buttons[i].value, true));
+                                dialog.keyListeners.push (kl);
+                                kl.enable();
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Add esc key listener to cancel
+                    var kl = new YAHOO.util.KeyListener (config['id'], {keys:27},
+                            dialog.wrapHandler(config['id'], config['handler'], businessobjects.webutil.dialogservice.DialogConstants.CANCEL, true));                                        
+                    dialog.keyListeners.push (kl);
+                    kl.enable();
+                    return dialog;
+                    
+                case businessobjects.webutil.dialogservice.DialogConstants.PROGRESS_DIALOG:
+                    config['bodyContent'] = '<div id="' + config['id'] + businessobjects.webutil.dialogservice.DialogConstants.MSG_SUFFIX 
+                        + '">' + config['message'] + '</div>\n<br />\n<div id="' + config['id'] + businessobjects.webutil.dialogservice.DialogConstants.PRO_MSG_SUFFIX + '">' 
+                        + config['progressMessage'] + '</div>\n<br />';
+                    
+                    dialog = new businessobjects.webutil.dialogservice.ProgressDialog();
+                    dialog.initialize(config);
+                    
+                    initializeProgressDialog(dialog, config);
+                    dialog.paint();
+                    return dialog;
+                case businessobjects.webutil.dialogservice.DialogConstants.WAIT_DIALOG:
+                    config['constraintoviewport'] = true;
+                    config['fixedcenter'] = true;
+                    config['width'] = "200px";
+                    config['height'] = "40px";
+                    config['zIndex'] = 200;
+                    config['close'] = false;
+                    config['draggable'] = false;
+                    config['underlay'] = "none";
+                    config['modal'] = true;
+
+                    dialog = new YAHOO.widget.Panel(config['id'], config);
+                    YAHOO.util.Dom.addClass(dialog.element, "ds-waitspinner");
+                    dialog.setBody('<span class="offScreen">' + L_dialogsevice_image_WaitSpinner + '</span>');
+                    dialog.render(config['parentElement']);
+                    return dialog;
+                case businessobjects.webutil.dialogservice.DialogConstants.IFRAME_DIALOG:
+                    // Define default width/height (helpful when resize is on) 
+                    config['width'] = config['width'] || YAHOO.util.Dom.getViewportWidth() * 0.95;
+                    config['height'] = config['height'] || YAHOO.util.Dom.getViewportHeight() * 0.85;
+                    
+                    config['showClose'] = true;
+                    
+                    var url = config['contextPath'] + businessobjects.webutil.dialogservice.DialogConstants.IFRAME_WRAPPER_URL + encodeURIComponent(config['url']);
+                    config['bodyContent'] = '<iframe id="dialogServiceIframe" scroll="no" frameborder="0" width="100%" height="100%" src="' + url + '"></iframe>';
+                                        
+                    dialog = this.createDialog(config);
+                    
+                    // Make the dialog resizeable? 
+                    if (config['resize']) {
+                        var d = dialog.yuiDialog; 
+                        
+                        // create and style resize handle
+                        d.resizeHandle = document.createElement("DIV");
+                        d.resizeHandle.id = dialog.id + "_r";
+                        d.resizeHandle.className = "resizehandle";
+                        
+                        d.beforeHideEvent.subscribe(function() {
+                            /*
+                                 Set the CSS "overflow" property to "hidden" before
+                                 hiding the panel to prevent the scrollbars from 
+                                 bleeding through on Firefox for OS X.
+                            */
+                
+                            d.body.style.overflow = "hidden";
+                        }, d, true);
+                
+                
+                        d.beforeRenderEvent.subscribe(function() {
+                            /*
+                                 Set the CSS "overflow" property to "hidden" by
+                                 default to prevent the scrollbars from bleeding
+                                 through on Firefox for OS X.
+                                 
+                                 Also, add the resize footer
+                            */
+                
+                            d.body.style.overflow = "hidden";
+                            
+                            if (! d.footer) {
+                                d.setFooter("");
+                                d.footer.className = "resizefooter";
+                            }
+                        }, d, true);
+                        
+                
+                        d.renderEvent.subscribe(function() {
+                            // add resize handle
+                            d.innerElement.appendChild(d.resizeHandle);
+
+                            d.ddResize = new YAHOO.util.DragDrop(d.resizeHandle.id, d.id);
+                            d.ddResize.setHandleElId(d.resizeHandle.id);
+
+                            // === Set up drag event handlers ===
+                            // Note: adding the "drag" class while dragging makes the whole thing transparent
+                            // and empty so it's faster to resize
+                            d.ddResize.startDrag = function(x, y) {
+                                d.startWidth = d.innerElement.offsetWidth;
+                                d.startHeight = d.innerElement.offsetHeight;
+                                d.startPos = [x, y];
+                
+                                YAHOO.util.Dom.addClass(d.innerElement, "drag");
+                
+                                d.dragEvent.fire("startDrag", arguments);
+                            };
+    
+                            d.ddResize.endDrag = function() {
+                                YAHOO.util.Dom.removeClass(d.innerElement, "drag");
+                                d.cfg.setProperty('height', d.cfg.getProperty("height")); // force trigger resize event
+                                d.dragEvent.fire("endDrag", arguments);
+                            };
+    
+                            // To ensure a mouse click can restore the dialog to its solid state
+                            d.ddResize.onMouseUp = function(e) {
+                                if (YAHOO.util.Dom.hasClass(d.innerElement, "drag")) {
+                                    d.ddResize.endDrag();
+                                }
+                            }
+    
+                            d.ddResize.onDrag = function(e) {
+                                var newPos = [YAHOO.util.Event.getPageX(e),
+                                              YAHOO.util.Event.getPageY(e)];
+                                
+                                var offsetX = newPos[0] - d.startPos[0];
+                                var offsetY = newPos[1] - d.startPos[1];
+                        
+                                var newWidth = Math.max(d.startWidth + offsetX, 10);
+                                var newHeight = Math.max(d.startHeight + offsetY, 10);
+                
+                                d.cfg.setProperty("width", newWidth + "px");
+                                d.cfg.setProperty("height", newHeight + "px");
+                            }
+
+                        }, d, true);
+
+                    }
+                    
+                    initializeIframeDialog(dialog, config);
+                    dialog.paint();
+                    dialog.yuiDialog.body.submitHandler = innerFrameHandlerWrapper(dialog.yuiDialog, config['handler']);
+                    return dialog;
+            }
+        }
+        
+        // create, show and return the dialog
+        dialog = this.createDialog(config);
+    
+        dialog.paint();
+        
+        if(config['stopEscape']) {
+            var stopEscapeFn = function(type, eventArray) {
+                //the eventArray has a codepoint at index 0 and the actual event object at index 1
+                YAHOO.util.Event.stopEvent(eventArray[1]);
+            }
+            
+            // Add esc key listener.  This will prevent the default browser behaviour from happening.
+            var ekl = new YAHOO.util.KeyListener (config['id'], {keys:27}, stopEscapeFn);                                        
+            dialog.keyListeners.push (ekl);
+            ekl.enable();
+        }
+    
+        return dialog;
+    }
+};
+
+/*
+ * Wrapper of YUI SimpleDialog.
+ * @private
+ */
+businessobjects.webutil.dialogservice.Dialog = function() {
+    this.rendered = false;
+    this.yuiDialog = null;
+    this.parentElement = null;
+    this.keyListeners = [];
+};
+
+businessobjects.webutil.dialogservice.Dialog.prototype = {
+
+    initialize: function(config) {
+        this.id = config['id'];
+        this.parentElement = config['parentElement'];
+        this.resize = config['resize'];
+        
+        var buttons = config['buttons'];
+        
+        // attach handlers to buttons
+        if (buttons) {
+            var closeDialogOnButtonClick = true;
+        
+            //if leaveOpenOnButtonClick exists and it's set to true
+            if (config['leaveOpenOnButtonClick']) {
+                closeDialogOnButtonClick = false;
+            }
+        
+            for (var i = 0; i < buttons.length; ++i) {
+                if (buttons[i].value) {
+                    buttons[i].handler = this.wrapHandler(config['id'], config['handler'], buttons[i].value, closeDialogOnButtonClick);
+                }
+            }
+        }
+        
+        var width = null;
+        
+        if (config['width']) {
+            width = config['width'];
+        }
+
+        var yuiConfig = {
+                constraintoviewport: true,
+                visible: false,
+                draggable: true,    
+                modal: true,
+                iframe: true,
+                zIndex: 200,
+                width: width,
+                buttons: buttons,
+                close: config['showClose']
+                
+        };
+        
+        this.yuiDialog = new YAHOO.widget.Dialog(
+            config['id'],
+            yuiConfig
+        );
+                
+        this.yuiDialog.setHeader(config['title']);
+        if (config['bodyContent']) {
+            this.yuiDialog.setBody(config['bodyContent']);
+        } else if (config['message']) {
+            //this is used to add vertical scroll bars when the message info is large
+            var bodyStyle = '<div style="overflow-x:hidden;overflow-y:auto;max-height:180px;max-width:450px;word-wrap:break-word">'; 
+            this.yuiDialog.setBody(bodyStyle + businessobjects.webutil.encoder.Encoder.encodeHTML(config['message']) + '</div>'); 
+
+        }
+        
+        this.yuiDialog.cancelEvent.subscribe(config['handler']);
+        this.yuiDialog.hide = this.wrapDestroy();
+        
+        // we must set the element to display block so that we can adjust the size during the render phase
+        // otherwise the elements have no dimensions to use in the calculations
+        // the display is set to none in the application style sheet to fix an IE7 bug
+        this.yuiDialog.element.style.display = "block";
+        
+    },
+    
+    /**
+     * Paint and show the dialog.
+     */
+    paint: function() {
+        if (!this.rendered) {
+            var el = this.yuiDialog.element;
+            var constants = businessobjects.webutil.dialogservice.DialogConstants;
+            YAHOO.util.Dom.addClass(el, constants.CSS_DIALOGSERVICE);
+            if (this.hasIframe) {
+                YAHOO.util.Dom.addClass(el, constants.CSS_DIALOGSERVICE_IFRAME);
+            } 
+            
+            this.yuiDialog.render(this.parentElement);
+            this.rendered = true;
+        }
+        
+        this.yuiDialog.show();
+        
+        // We need to set the width for IE 7 so that the child components will fill the parent object (ADAPT01422743)
+        // Does not apply to resizable dialogs
+        if (!this.resize) {
+            YAHOO.util.Dom.setStyle(el, 'width', YAHOO.util.Dom.getRegion(el).width + 'px');            
+        } 
+
+        this.yuiDialog.center();
+    },
+    
+    wrapHandler: function (id, handler, value, closeDialogOnButtonClick) {
+        var dialog = this;
+        return function() {
+            var input = document.getElementById(businessobjects.webutil.dialogservice.DialogService.getDialogInputId(id));
+            if (!input) {
+                handler(value);
+            } else {
+                handler(value, input.value);
+            }
+            
+            if(closeDialogOnButtonClick) {
+                dialog.yuiDialog.hide();
+            }
+        };
+    },
+    
+    wrapDestroy: function() {
+        var dialog = this;        
+        return function () {
+            for (var i = 0; i < dialog.keyListeners.length; ++i) {
+                dialog.keyListeners[i].disable();
+            }
+            dialog.yuiDialog.destroy();
+        }
+    }, 
+    
+    /**
+     * Used to enable/disable a button on a dialog.  
+     * @param buttonIndex the index of the button in the dialog's button array.
+     */
+    disableButton: function(buttonIndex) {
+        var buttons = this.yuiDialog.getButtons();
+        
+        if(buttons[buttonIndex]) {
+            buttons[buttonIndex].set("disabled", true);
+        }
+    }
+};
+
+/*
+ * Progress dialog in YUI Dialog.
+ * @private
+ */
+
+businessobjects.webutil.dialogservice.ProgressDialog = function() { };
+businessobjects.webutil.dialogservice.ProgressDialog.prototype = new businessobjects.webutil.dialogservice.Dialog;
+businessobjects.webutil.dialogservice.ProgressDialog.prototype.constructor = businessobjects.webutil.dialogservice.ProgressDialog();
+
+initializeProgressDialog = function(dialog, config) {
+    var buttons = [ { text: L_dialogsevice_button_Cancel, value: businessobjects.webutil.dialogservice.DialogConstants.CANCEL, isDefault: true } ];
+    for (var i = 0; i < buttons.length; ++i) {
+        buttons[i].handler = config['handler'];
+    }
+    
+    dialog.yuiDialog.cfg.queueProperty('buttons', buttons);
+    
+    dialog.yuiDialog.cancelEvent.unsubscribeAll();
+    dialog.yuiDialog.cancelEvent.subscribe(config['handler']);
+};
+
+businessobjects.webutil.dialogservice.ProgressDialog.prototype.updateProgress = function( progressMessage ) {
+    var progressMessageDiv = document.getElementById( this.id + businessobjects.webutil.dialogservice.DialogConstants.PRO_MSG_SUFFIX );
+    progressMessageDiv.innerHTML = progressMessage;
+};
+
+businessobjects.webutil.dialogservice.ProgressDialog.prototype.done = function( finalMessage, finalProgress ) {
+    var messageDiv = document.getElementById( this.id + businessobjects.webutil.dialogservice.DialogConstants.MSG_SUFFIX );
+    messageDiv.innerHTML = finalMessage;
+    var progressMessageDiv = document.getElementById( this.id + businessobjects.webutil.dialogservice.DialogConstants.PRO_MSG_SUFFIX );
+    progressMessageDiv.innerHTML = finalProgress;
+    var dialogElement = document.getElementById( this.id );
+    var btns = dialogElement.getElementsByTagName( "button" );
+    var closeBtn = btns[0];
+    closeBtn.innerHTML = L_dialogsevice_button_Close;
+};
+
+businessobjects.webutil.dialogservice.ProgressDialog.prototype.close = function() {
+    this.yuiDialog.hide();
+};
+
+initializeIframeDialog = function(dialog, config) {
+    dialog.hasIframe = true;
+    if (config['showButtons']) {
+        var buttons = [{text: L_dialogsevice_button_OK, value: businessobjects.webutil.dialogservice.DialogConstants.OK},
+                       {text: L_dialogsevice_button_Cancel, value: businessobjects.webutil.dialogservice.DialogConstants.CANCEL, isDefault: true}];
+        
+        for (var i = 0; i < buttons.length; ++i) {
+            if (buttons[i].value) {
+                buttons[i].handler = iframeDialogHandlerWrapper(buttons[i].value, config['handler'], dialog.yuiDialog);
+            }
+        }
+        
+        dialog.yuiDialog.cfg.queueProperty('buttons', buttons);
+    }
+    
+    dialog.yuiDialog.cfg.queueProperty('height', config['height'] + "px");
+    dialog.yuiDialog.cfg.queueProperty('width', config['width'] + "px");
+    
+    dialog.yuiDialog.cancelEvent.unsubscribeAll();
+    dialog.yuiDialog.cancelEvent.subscribe(iframeDialogHandlerWrapper(businessobjects.webutil.dialogservice.DialogConstants.CLOSE, config['handler'], dialog.yuiDialog));
+};
+
+iframeDialogHandlerWrapper = function(buttonValue, handler, yuiDialog) {
+    return function(dataIn) {
+        // the context of this funtion is the dialog
+        var data;
+        if (buttonValue == businessobjects.webutil.dialogservice.DialogConstants.OK) {
+            // get the data and pass it to the handler
+            var iframe = document.getElementById("dialogServiceIframe");
+            if (iframe) {
+                var innerIframe = iframe.contentWindow.document.getElementById("dialogServiceInnerFrame");
+                if (innerIframe && innerIframe.contentWindow && innerIframe.contentWindow.getData) {
+                    data = innerIframe.contentWindow.getData();
+                }
+            }
+        }   
+        
+        handler(data);
+        yuiDialog.setBody (' ');
+        
+        if (buttonValue != businessobjects.webutil.dialogservice.DialogConstants.CLOSE) {
+            this.hide();
+        }
+    };
+};
+
+innerFrameHandlerWrapper = function(yuiDialog, handler) {
+    return function(dataIn) {
+        handler(dataIn);
+        yuiDialog.setBody (' ');
+        yuiDialog.hide();
+    };
+};

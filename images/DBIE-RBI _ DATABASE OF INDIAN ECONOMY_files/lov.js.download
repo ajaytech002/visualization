@@ -1,0 +1,1248 @@
+/*
+=============================================================
+WebIntelligence(r) Report Panel
+Copyright(c) 2001-2003 Business Objects S.A.
+All rights reserved
+Use and support of this software is governed by the terms
+and conditions of the software license agreement and support
+policy of Business Objects S.A. and/or its subsidiaries. 
+The Business Objects products and technology are protected
+by the US patent number 5,555,403 and 6,247,008
+File: lov.js
+dom.js palette.js treeview.js bolist.js menu.js calendar.js  
+must be included before
+=============================================================
+*/
+_LOV_MULTI_COLH = 140
+var LovViewMode=
+{
+    list:0,
+    tree:1,
+    msg:2
+}
+var LovDisplayOption =
+{
+    caption:0,
+    key:1,
+    caption_key:2 
+    //key_caption:3
+}
+var SelectMode =
+{
+    any_level:0,
+    only_leaf:1
+};
+function getDisplayedKeyStr(key)
+{
+    return "  ("+(key)+")";   
+}
+function getDisplayedKeyHtmlStr(key)
+{
+    return "&nbsp;&nbsp;("+convStr(key)+")";   
+}
+function newLovWidget(id,label,w,lines,showText,showRefresh,moveCB,refreshCB,searchCB,
+dblClickCB,multi,enterCB,showDate,showTextOnly, sortCB)
+{
+return new_LovWidget({
+id:id, 
+label:label, 
+w:w,
+lines:lines,
+showText:showText, 
+showRefresh:showRefresh,
+moveCB:moveCB,
+refreshCB:refreshCB,
+searchCB:searchCB,
+dblClickCB:dblClickCB,
+multi:multi,
+enterCB:enterCB,
+showDate:showDate,
+showTextOnly:showTextOnly,
+sortCB:sortCB
+})
+}
+function new_LovWidget(prms)
+{
+_arrowSize= 20
+_refreshIcnSize= 28
+_searchIcnSize= 40
+_margin= 2
+_showKeyIcnSize= 24
+// We suppose that a text field height is 20 pix
+_textFieldH= 20;
+_searchMinW = 20;
+var id = Widget_param(prms, "id",null); 
+var label = Widget_param(prms, "label", null); 
+var w = Widget_param(prms, "w", 0); 
+var lines = Widget_param(prms, "lines", null); 
+var showText = Widget_param(prms, "showText", null); 
+var showRefresh = Widget_param(prms, "showRefresh",null); 
+var moveCB = Widget_param(prms, "moveCB", null); 
+var refreshCB = Widget_param(prms, "refreshCB", null); 
+var searchCB = Widget_param(prms, "searchCB", null); 
+var dblClickCB = Widget_param(prms, "dblClickCB", null); 
+var multi = Widget_param(prms, "multi", null); 
+var enterCB = Widget_param(prms, "enterCB", null); 
+var showDate = Widget_param(prms, "showDate", null); 
+var showTextOnly = Widget_param(prms, "showTextOnly", null); 
+var sortCB = Widget_param(prms, "sortCB", null); 
+var keyUpCB = Widget_param(prms, "keyUpCB", null); 
+var changeCB = Widget_param(prms,"changeCB", null);
+// We suppose that the height of an item line in a combo is 9 pix
+// The width of the LovWidget is w
+// The height of the LovWidget is h
+// With all this data, we can calcultate the widgets width and height
+var comboW= showRefresh ? (w - (2*_arrowSize+_refreshIcnSize)) : (w - (2*_arrowSize))
+var o=newWidget(id)
+o.width=w
+o.lines=lines
+// widgets
+o.textField= newTextFieldWidget(id+"_textField",null,null,null,LovWidget_enterCB,true,_lovTextFieldLab,w);
+o.textField.par= o;
+//o.dateField= newCalendarTextFieldButton(id+"_calendarText",null,null,null,null,LovWidget_enterCB,true,_lovCalendarLab,w);
+o.dateField= new_CalendarTextFieldButton({id:id+"_calendarText",
+                                        keyUpCB:keyUpCB,
+enterCB:LovWidget_enterCB,
+changeCB:changeCB,
+noMargin:true,
+tooltip:_lovCalendarLab,
+                                        width:w});
+o.dateField.par= o;
+o.chunkLabel= newWidget(id+"_label");
+//o.noChunkLabel= newWidget(id+"_noChunkLabel");
+o.prevChunkIcn= newIconWidget(id+"_prevChunk",_skin+'../lov.gif',LovWidget_prevCB,null,_lovPrevChunkLab,7,16,2*16,0,2*16,16);
+o.prevChunkIcn.par= o;
+o.chunkCombo= newComboWidget(id+"_chunk",LovWidget_comboCB,true,comboW,_lovComboChunkLab);
+o.chunkCombo.par= o;
+o.nextChunkIcn= newIconWidget(id+"_nextChunk",_skin+'../lov.gif',LovWidget_nextCB,null,_lovNextChunkLab,7,16,2*16+1*7,0,2*16+1*7,16);
+o.nextChunkIcn.par= o;
+o.refreshIcn= newIconWidget(id+"_refresh",_skin+'../lov.gif',LovWidget_refreshCB,_lovRefreshValuesLab,_lovRefreshLab,16,16,16,0);
+o.refreshIcn.par= o;
+o.refreshIcn.txtPosition="left";
+    o.displayOption         = LovDisplayOption.caption;   
+    o.isWithKey             = false;
+    o.showKeyIcn            = new_IconCheckWidget({id:id+"_showKeyIcn", icon:toolboxImgFromLib(339,_skin), clickCB:LovWidget_clickShowKeyCB, userData:o, tooltip:""}); 
+// special property for Grouping prompts feature
+o.hideChunk_n_Refresh= false;
+var multiSelection= (multi != null) ? multi : false;
+o.lovList=new_MultiColumnList({id:id+"_lov",
+                               changeCB:null,
+                               multi:multiSelection,
+                               w:w,
+                               h:null,
+                               dblClickCB:LovWidget_dblClickCB,
+                               sortCB:sortCB,
+                               noHeader:false,
+                               keyDownCB:LovWidget_ListKeyUpCB})
+o.lovList.setLines(lines)
+o.lovList.addColumn("",_LOV_MULTI_COLH,false)
+o.lovList.par= o;
+o.lovSearch= newSearchWidget(id+"_search",null,searchCB);
+o.lovSearch.par= o;
+o.getLovSearch          = function()
+{
+    var o=this;
+    return o.lovSearch;
+}
+o.lovDate= newWidget(id+"_lovDate"); //last refresh date of LOV
+// private properties
+o.showTextField= showText;
+o.showRefreshIcn= showRefresh;
+o.showTextOnly= showTextOnly==null?false:showTextOnly;
+o.chunkText= label;
+o.showDate= showDate==null?false:showDate;
+o.lovMessage= '';
+// private methods
+o.oldInit= o.init;
+o.goToChunk= LovWidget_goToChunk;
+o.setPrevNextIconState= LovWidget_setPrevNextIconState;
+o.moveCB= moveCB;
+o.refreshCB= refreshCB;
+o.searchCB= searchCB;
+o.dblClickCB= dblClickCB;
+o.enterCB= enterCB;
+// public methods
+o.init= LovWidget_init;
+o.getHTML= LovWidget_getHTML;
+o.resize= LovWidget_resize;
+o.addChunkElem= LovWidget_addChunkElem;
+o.addLOVElem= LovWidget_addLOVElem;
+o.fillChunk= LovWidget_fillChunk;
+o.fillLOV= LovWidget_fillLOV;
+o.getSearchValue= LovWidget_getSearchValue;
+o.setSearchValue= LovWidget_setSearchValue;
+o.getTextValue= LovWidget_getTextValue;
+o.setTextValue= LovWidget_setTextValue;
+o.getDateValue= LovWidget_getDateValue;
+o.setDateValue= LovWidget_setDateValue;
+o.getChunkSelection= LovWidget_getChunkSelection;
+o.getLOVSelection= LovWidget_getLOVSelection;
+o.setTooltips= LovWidget_setTooltips;
+o.change= LovWidget_change;
+o.showTextFieldOnly= LovWidget_showTextFieldOnly;
+o.setFormatDate= LovWidget_setFormatDate;
+o.setDateTooltip        = LovWidget_setDateTooltip;
+o.isCaseSensitive= LovWidget_isCaseSensitive;
+o.setCaseSensitive= LovWidget_setCaseSensitive;
+o.updateWidget= LovWidget_updateWidget;
+o.showRefreshButton= LovWidget_showRefreshButton;
+o.setLovMessage= LovWidget_setLovMessage;
+o.showLovMessage= LovWidget_showLovMessage;
+o.resizeLovMessageZone= LovWidget_resizeLovMessageZone;
+o.setLovSearchIconDisabled=LovWidget_setLovSearchIconDisabled;
+o.showPartialResult= LovWidget_showPartialResult;
+o.showDelegateSearch= LovWidget_showDelegateSearch;
+o.setLovDate= LovWidget_setLovDate;
+o.lovTree               = null;
+    o.viewMode              = LovViewMode.list;     
+    o.lovContainerLyrArr    = new Array(3);
+    o.getFirstSortType = function()
+    {
+        var o = this;
+        if (o.viewMode==LovViewMode.list)
+        {
+            return o.lovList.getFirstSortType();
+        }
+        return null;
+    }
+    o.getColumnSortType = function(columnIndex)
+    {
+        var o = this;
+        if (o.viewMode==LovViewMode.list)
+        {
+            return o.lovList.getColumnSortType(columnIndex);
+        }
+        else 
+        {
+        if (o.viewMode==LovViewMode.tree) 
+            {
+                return o.lovTree.getColumnSortType(); 
+            }   
+        }
+        return null;
+    }
+    o.setMulti = function(multi)   
+    {
+        var o = this;
+        if (o.viewMode==LovViewMode.list)
+            o.lovList.setMulti(multi);
+        else
+        if (o.viewMode==LovViewMode.tree) 
+        {
+            o.lovTree.setMultiSelection(multi); 
+        }           
+    }
+o.getLovTreeHTML = function()
+{
+    return "";
+} 
+    o.setDisabled  = function(d)
+    {
+        var o = this;
+        o.textField.setDisabled(d);
+        o.dateField.setDisabled(d);
+        o.refreshIcn.setDisabled(d);
+        o.lovSearch.setDisabled(d);
+    } 
+    o.showLovContainer = function()
+    {}             
+    o.cleanUp = function()
+    {
+        var o=this;
+        o.chunkCombo.del();
+    o.lovList.del();
+    o.lovList.rebuildHTML();
+    o.lovDate.setHTML("");
+    o.updateWidget();
+    o.showPartialResult(false);
+    if (o.lovTree)
+    {
+        o.lovTree.deleteAll();  
+            o.lovTree.rebuildHTML();    
+            o.lovTree.setMultiSelection(true); 
+    }
+    }
+    o.setDisplayShowKeyIcn =function(isWithKey)
+    {
+        var o=this;
+        o.isWithKey=isWithKey;        
+        o.showKeyIcn.setDisplay(isWithKey);
+    }   
+    o.setDisplayTextField=function(showText)
+    {
+        var o=this;
+    if(showText!=null)
+    {
+    o.showTextField= showText;
+    var displayed=o.textField.isDisplayed();
+    if (displayed !=showText )
+    {
+        o.textField.setDisplay(o.showTextField);
+            }        
+    }
+    }
+    o.updateViewMode=function()
+    {
+        var o=this;
+        if (o.viewMode==LovViewMode.tree) 
+{
+    if (o.lovTree)
+        o.lovTree.setDisplay(true);
+    o.lovList.setDisplay(false);
+}
+else
+if (o.viewMode==LovViewMode.list) 
+{
+    o.lovList.setDisplay(true);
+    if (o.lovTree)
+        o.lovTree.setDisplay(false);
+}    
+    }
+return o;
+}
+function LovWidget_getHTML()
+{
+var o=this;
+var arHTML = [];
+var i=0
+var padding = (_ie9R?' style="padding-'+(_rtl ? 'left' : 'right')+':10px"':'');
+arHTML[i++] ='<table id="'+o.id+'"  border="0" cellspacing="0" cellpadding="0" width="100%"><tbody>'
+arHTML[i++] =   '<tr>' + 
+        '<td colspan="4">' + o.textField.getHTML() + '</td>' + 
+            '</tr>'
+arHTML[i++]=    '<tr>' + 
+        '<td colspan="4">' + o.dateField.getHTML() + '</td>' + 
+            '</tr>'
+arHTML[i++]='<tr>' +
+        '<td colspan="4"><span id="' + o.chunkLabel.id + '"></span></td>' +
+            '</tr>'
+arHTML[i++]='<tr' + (o.hideChunk_n_Refresh?' style="display:none">':'>') +
+            '<td align="center">' + o.prevChunkIcn.getHTML() + '</td>' +
+            '<td align="center">' + o.chunkCombo.getHTML() + '</td>' +
+            '<td align="center">' + o.nextChunkIcn.getHTML() + '</td>' +
+            '<td align="'+(_rtl ? 'left' : 'right')+'" '+ padding +'>' +   
+            '<table  border="0" cellspacing="0" cellpadding="0"><tbody>' +
+            '<tr style="padding-'+(_rtl ? 'right' : 'left')+':2px">' + 
+            //'<td><span id="' + o.noChunkLabel.id + '"></span></td>' +
+            '<td>' + o.refreshIcn.getHTML() + '</td>' +
+            '<td>' + o.showKeyIcn.getHTML() + '</td>' +
+            '</tr>' +
+            '</tbody></table>' +
+            '</td>' +
+            '</tr>'
+arHTML[i++]=    '<tr>' +
+        '<td colspan="4">' + 
+    '<table border="0" cellspacing="0" cellpadding="0" width="100%">' +
+'<tr>' +
+'<td id="'+o.id+'_lovListContainer">' + o.lovList.getHTML() + '</td>' +
+'<td id="'+o.id+'_lovTreeContainer">' + o.getLovTreeHTML() + '</td>' +
+'<td id="'+o.id+'_lovMessageContainer" style="display:none" valign="top">' +
+'<div id="'+o.id+'_lovMessageText" onselectstart="return false" class="lovMessage" style="overflow:auto;padding-'+(_rtl ? 'right' : 'left')+':4px">' +
+o.lovMessage +
+'<div>' +
+'</td>' +
+'</tr>' +
+    '</table>' +
+        '</td>' +
+            '</tr>'
+arHTML[i++]='<tr>' +
+        '<td colspan="4" id="'+o.id+'_lovPartialResult" style="display:none">' +
+    '<table border="0" cellspacing="0" cellpadding="0">' +
+'<tr>' +
+'<td>' +
+simpleImgOffset(_skin+'../lov.gif',16,16,53,15,o.id+"_lovPartialResulImg",null,_lovPartialResultLab) +
+'</td>' +
+'<td width="5"></td>' +
+'<td class="iconText" valign="middle">' +
+_lovPartialResultLab +
+'</td>' +
+'</tr>' +
+    '</table>' +
+        '</td>' +
+            '</tr>'
+    arHTML[i++]='<tr>' +
+        '<td id="'+o.lovDate.id+'" colspan="4">' +
+            '</td></tr>'
+arHTML[i++]='<tr>' +
+        '<td colspan="4">' +
+        o.lovSearch.getHTML()+
+            '</td></tr>' 
+arHTML[i++]=    '</tbody></table>'
+return arHTML.join('');
+}
+function LovWidget_init()
+{
+var o=this
+o.oldInit()
+o.textField.init()
+o.textField.setDisplay(o.showTextField)
+o.textField.setHelpTxt(_lovTextFieldLab);
+o.dateField.init()
+o.dateField.setDisplay(o.showDate)
+// Do not show textfield if date is visible
+if(o.showDate) 
+o.textField.setDisplay(false)
+o.chunkLabel.init()
+o.chunkLabel.setHTML(o.chunkText)
+//o.noChunkLabel.init()
+//o.noChunkLabel.setHTML(_lovRefreshValuesLab)
+//o.noChunkLabel.setDisplay(false)// Not displayed by default
+o.prevChunkIcn.init()
+o.chunkCombo.init()
+o.nextChunkIcn.init()
+o.refreshIcn.init()
+o.refreshIcn.setDisplay(o.showRefreshIcn)
+    o.showKeyIcn.init();
+    o.showKeyIcn.setDisplay(false);
+o.lovList.init()
+o.lovSearch.init()
+o.lovDate.init()     
+    o.lovContainerLyrArr[LovViewMode.list]=getLayer(o.id+"_lovListContainer");    
+    o.lovContainerLyrArr[LovViewMode.tree]=getLayer(o.id+"_lovTreeContainer");
+o.lovContainerLyrArr[LovViewMode.msg]=getLayer(o.id+"_lovMessageContainer");      
+if (o.lovTree)
+    o.lovTree.init();
+o.cleanUp();
+o.showTextFieldOnly(o.showTextOnly)
+o.resize(o.width,o.lines)
+}
+function LovWidget_resize(w,lines)
+{
+var o=this
+// The search field must be at least <_searchMinW>px long
+var tmp= w - _searchIcnSize
+var searchW= (tmp < _searchMinW)?_searchMinW:tmp
+// If not possible to have a search field of <_searchMinW>px long with the <w> specified, increase <w>
+var newWidth= (tmp < _searchMinW)?((w+_searchMinW)-_margin):(w- _margin)
+var textW= newWidth
+var comboW= o.showRefreshIcn ? (newWidth - (2*_arrowSize+_refreshIcnSize+_showKeyIcnSize)) : (newWidth - (2*_arrowSize+ _showKeyIcnSize));
+    comboW=Math.max(0, comboW);
+o.textField.resize(textW)
+o.dateField.resize(newWidth)
+o.chunkCombo.resize(comboW)
+o.lovList.resize(newWidth)
+o.lovList.setLines(lines);
+o.resizeLovMessageZone();
+//o.searchField.resize(searchW)
+//o.lovSearch.resize(_searchIcnSize+searchW);
+o.lovSearch.resize(_searchIcnSize+searchW -2); //BOEWEBI-15714, we also have some problem in other browsers when arrow icon has the focus
+if (o.lovTree)
+    o.lovTree.resize(w, (o.lovList.h));  
+}
+function LovWidget_addChunkElem(s,val,sel,id)
+{
+var o=this;
+o.chunkCombo.add(s,val,sel,id);
+}
+function LovWidget_addLOVElem(s,val,sel,id)
+{
+var o=this;
+o.lovList.add(s,val,sel,id);
+}
+function LovWidget_fillChunk(arrTxt,arrVal)
+{
+var o=this
+o.chunkCombo.del()
+//disable the buttons and the combo box when it is empty
+o.setPrevNextIconState()
+if ( arrTxt == null || arrTxt.length==0)
+{
+o.updateWidget()
+return
+}
+if ( arrVal == null )
+{
+for (var i=0;i<arrTxt.length;i++)
+o.chunkCombo.add(arrTxt[i],null,false,i)
+}
+else
+{
+for (var i=0;i<arrTxt.length;i++)
+o.chunkCombo.add(arrTxt[i],arrVal[i],false,i)
+}
+// select the 1st item
+o.chunkCombo.select(0)
+// set the previous and next icon state
+o.setPrevNextIconState()
+o.updateWidget()
+}
+function LovWidget_fillLOV(arrTxt,arrVal,arrTitle,sortType,sortColumnIndex)
+{
+var o=this;
+o.lovList.freeze()
+o.lovList.del();
+o.lovList.resetColums();
+if (arrTitle)
+{
+for (var l=0;l<arrTitle.length;l++)
+o.lovList.addColumn(arrTitle[l],_LOV_MULTI_COLH,true,(l==sortColumnIndex?sortType:-1))
+}
+else
+o.lovList.addColumn("",_LOV_MULTI_COLH,true,-1)
+if ( arrTxt == null )
+return;
+if ( arrVal == null )
+{
+for (var i=0;i<arrTxt.length;i++)
+o.lovList.add(arrTxt[i],arrTxt[i],false,i);
+}
+else
+{
+for (var i=0;i<arrTxt.length;i++)
+{
+o.lovList.add(arrTxt[i],arrVal[i],false,i);
+        }
+}
+o.lovList.rebuildHTML();
+}
+function LovWidget_getSearchValue()
+{
+var o=this;
+return o.lovSearch.getSearchValue();
+}
+function LovWidget_setSearchValue(s)
+{
+var o=this;
+o.lovSearch.setSearchValue(s);
+}
+function LovWidget_getTextValue()
+{
+var o=this;
+return o.textField.getValue();
+}
+function LovWidget_setTextValue(s)
+{
+var o=this;
+o.textField.setValue(s);
+}
+function LovWidget_getChunkSelection()
+{
+var o=this;
+if (o.chunkCombo.isDisplayed())
+{    
+    return o.chunkCombo.getSelection();
+    }
+    else
+        return null;    
+}
+function LovWidget_getLOVSelection()
+{
+var o=this;
+if (o.viewMode==LovViewMode.list)
+{   
+    return o.lovList.getMultiSelection();
+    }    
+return null;
+}
+function LovWidget_getDateValue()
+{
+var o=this;
+return o.dateField.getValue();
+}
+function LovWidget_setDateValue(s)
+{
+var o=this;
+o.dateField.setValue(s);
+}
+function LovWidget_setTooltips(text,prev,next,refresh,search,chunk,lov)
+{
+var o=this;
+if ( o.showTextField )
+o.textField.setTooltip(text);
+o.prevChunkIcn.setTooltip(prev);
+o.nextChunkIcn.setTooltip(next);
+if (o.showRefreshIcn)
+o.refreshIcn.setTooltip(refresh);
+//o.searchIcn.setTooltip(search);
+o.lovSearch.searchIcn.setTooltip(search);
+o.chunkCombo.setTooltip(chunk);
+o.lovList.setTooltip(lov);
+}
+function LovWidget_goToChunk(step)
+{
+var o=this;
+if ( o.chunkCombo.getSelection() == null )
+return;
+var curChunk = o.chunkCombo.getSelection().index;
+// If click on next or previous icon,
+// select the corresponding item in the combobox
+if (step != null)
+o.chunkCombo.select(curChunk+step);
+// set the previous and next icon state
+o.setPrevNextIconState();
+// Call the user callBack
+if (o.moveCB != null)
+o.moveCB();
+}
+function LovWidget_setPrevNextIconState()
+{
+var o=this;
+//if combo is empty the disable combo and buttons
+var chunkSel=o.chunkCombo.getSelection();
+if(!chunkSel)
+{
+o.chunkCombo.setDisabled(true, false);
+o.prevChunkIcn.setDisabled(true);
+o.nextChunkIcn.setDisabled(true);
+}
+else
+{
+o.chunkCombo.setDisabled(false);
+}
+    if ( o.chunkCombo.getCount() == 1 )
+{
+    o.prevChunkIcn.setDisabled(true);
+    o.nextChunkIcn.setDisabled(true);
+    return;
+}
+    if (chunkSel)
+    {
+    var curChunk = chunkSel.index;
+    if ( curChunk == 0 )
+    {
+    o.prevChunkIcn.setDisabled(true);
+    o.nextChunkIcn.setDisabled(false);
+    return;
+    }
+    if ( (curChunk+1) == o.chunkCombo.getCount() )
+    {
+    o.prevChunkIcn.setDisabled(false);
+    o.nextChunkIcn.setDisabled(true);
+    return;
+    }
+}
+o.prevChunkIcn.setDisabled(false);
+o.nextChunkIcn.setDisabled(false);
+}
+function LovWidget_change(label,w,lines,showText,showRefresh,moveCB,refreshCB,searchCB,
+dblClickCB,multi,enterCB,showDate,showTextOnly, viewMode, showSearch, isWithKey, lovDisplayOption)
+{
+var  o=this      
+    if (viewMode!=null)
+    {
+        o.viewMode=viewMode;
+    }
+// properties
+o.setDisplayTextField(showText);
+if(showRefresh!=null)
+{
+o.showRefreshIcn= showRefresh;
+o.refreshIcn.setDisplay(o.showRefreshIcn);
+o.updateWidget();//to initialize o.noChunkLabel
+}
+if(label!=null)
+{
+o.chunkText= label;
+o.chunkLabel.setHTML(o.chunkText);
+}
+if(showDate!=null)
+{
+o.showDate= showDate;
+o.dateField.setDisplay(o.showDate);
+if(o.showDate)
+o.textField.setDisplay(false);
+}
+// methods
+if(moveCB!=null)
+o.moveCB= moveCB;
+if(refreshCB!=null)
+o.refreshCB= refreshCB;
+if(searchCB!=null)
+o.searchCB= searchCB;
+if(dblClickCB!=null)
+o.dblClickCB= dblClickCB;
+if(enterCB!=null)
+o.enterCB= enterCB;
+//change list multi selection and lines
+if (lines)
+    o.lovList.change(multi,lines)
+o.setMulti(multi);
+o.showTextOnly= (showTextOnly==null)?false:showTextOnly;
+o.showTextFieldOnly(o.showTextOnly)
+if (o.showTextOnly) o.lovList.del() 
+    if (showTextOnly==false && typeof(showSearch)!="undefined")
+        o.lovSearch.setDisplay(showSearch);     
+    if (typeof(lovDisplayOption)!="undefined")
+    {
+        o.displayOption = lovDisplayOption;  
+        o.showKeyIcn.check((lovDisplayOption==LovDisplayOption.caption)?false:true); 
+    }
+    else
+    {
+        o.displayOption = LovDisplayOption.caption;  
+        o.showKeyIcn.check(false);     
+    }
+    o.isWithKey=(isWithKey!=null)?isWithKey:false;   
+    o.showKeyIcn.setDisplay(o.isWithKey);      
+}
+function LovWidget_isCaseSensitive()
+{
+return this.lovSearch.isCaseSensitive()
+}
+function LovWidget_setCaseSensitive(b)
+{
+var o=this
+o.lovSearch.setCaseSensitive(b);
+}
+function LovWidget_prevCB()
+{
+this.par.goToChunk(-1);
+}
+function LovWidget_nextCB()
+{
+this.par.goToChunk(+1);
+}
+function LovWidget_comboCB()
+{
+this.par.goToChunk(null);
+}
+function LovWidget_refreshCB()
+{
+var p=this.par;
+if (p.refreshCB != null) 
+p.refreshCB();
+}
+function LovWidget_searchCB()
+{
+var p=this.par;
+if (p.searchCB != null)
+p.searchCB();
+}
+function LovWidget_enterCB(e)
+{
+var p=this.par;
+if (p.enterCB != null)
+p.enterCB(e);
+}
+function LovWidget_ListKeyUpCB(e)
+{
+var p=this.par;
+var k=eventGetKey(e);
+if ((eventGetKey(e) == 32)&& (p.dblClickCB != null))
+{
+p.dblClickCB(e);
+eventCancelBubble(e);
+}
+}
+function LovWidget_dblClickCB()
+{
+var p=this.par;
+if (p.dblClickCB != null)
+p.dblClickCB();
+}
+function LovWidget_clickCB()
+{
+}
+function LovWidget_showTextFieldOnly(bVal)
+{
+var o=this;
+o.showTextOnly=bVal
+if(o.showTextOnly == true)
+{
+o.textField.setDisplay(!o.showDate);
+o.dateField.setDisplay(o.showDate);
+o.chunkLabel.setDisplay(false);
+o.prevChunkIcn.setDisplay(false);
+o.chunkCombo.setDisplay(false);
+o.nextChunkIcn.setDisplay(false);
+o.refreshIcn.setDisplay(false);
+//o.noChunkLabel.setDisplay(false);
+o.lovList.setDisplay(false);
+o.lovSearch.setDisplay(false);
+//o.searchField.setDisplay(false);
+//o.searchIcn.setDisplay(false);
+        o.showLovContainer(false);
+}
+else
+{
+o.textField.setDisplay(o.showTextField);
+o.dateField.setDisplay(o.showDate);
+if(o.showDate) o.textField.setDisplay(false);
+o.chunkLabel.setDisplay(true);
+o.prevChunkIcn.setDisplay(true);
+o.chunkCombo.setDisplay(true);
+o.nextChunkIcn.setDisplay(true);
+o.refreshIcn.setDisplay(o.showRefreshIcn);
+//be carefull o.noChunkLabel depends on the combo size ===>function updateWidget()
+o.showLovContainer(true);
+        o.updateViewMode();        
+o.lovSearch.setDisplay(true);
+// Update the widget to take the combo size into account
+o.updateWidget()
+}
+}
+function LovWidget_setFormatDate(format,arrDays,arrMonth,AM,PM)
+{
+var o=this
+//if(o.showDate && o.dateField)
+o.dateField.setFormatInfo(format,arrDays,arrMonth,AM,PM);
+}
+function LovWidget_setDateTooltip(tooltip)
+{
+var o=this
+//if(o.showDate && o.dateField)
+o.dateField.getTextField().setTooltip(tooltip);
+}
+function LovWidget_updateWidget()
+{
+var o=this
+var b=(o.chunkCombo.getCount()>1)
+o.chunkLabel.setDisplay(b)
+o.prevChunkIcn.setDisplay(b)
+o.chunkCombo.setDisplay(b)
+o.nextChunkIcn.setDisplay(b)
+//o.noChunkLabel depends on the combo size and the display of the refresh button
+//o.noChunkLabel.setDisplay(!b && o.showRefreshIcn)
+o.showRefreshButton(o.showRefreshIcn);
+if(!b && o.showRefreshIcn)
+o.refreshIcn.changeText(_lovRefreshValuesLab);
+else
+o.refreshIcn.changeText("");
+}
+function LovWidget_showRefreshButton(b)
+{
+var o=this
+o.refreshIcn.show(b);
+}
+function LovWidget_setLovMessage(m)
+{
+var o=this;
+o.lovMessage=m;
+getLayer(o.id+"_lovMessageText").innerHTML=m;
+}
+function LovWidget_showLovMessage(b)
+{
+var o=this;
+o.lovContainerLyrArr[LovViewMode.list].style.display=(b)?'none':'';
+o.lovContainerLyrArr[LovViewMode.tree].style.display=(b)?'none':'';
+    o.lovContainerLyrArr[LovViewMode.msg].style.display=(b)?'':'none';
+}
+function LovWidget_resizeLovMessageZone()
+{
+var o=this;
+var css=o.lovList.css;
+var lovMsgContainer=getLayer(o.id+"_lovMessageText");
+lovMsgContainer.style.width=''+(o.lovList.w-(_dtd4?6:0))+'px';
+lovMsgContainer.style.height=''+(o.lovList.h-(_dtd4?2:0))+'px';
+}
+function LovWidget_setLovSearchIconDisabled(b)
+{
+var o=this;
+o.lovSearch.setSearchIconDisabled(((b)?true:false));
+}
+function LovWidget_showDelegateSearch(b)
+{
+var o=this;
+o.showLovMessage(b);
+o.getLovSearch().setSearchMandatory(b);
+o.showRefreshIcn=!b;
+o.showRefreshButton(o.showRefreshIcn);
+}
+function LovWidget_showPartialResult(b)
+{
+var o=this;
+var lovPartialResult=getLayer(o.id+"_lovPartialResult");
+lovPartialResult.style.display=(b)?'':'none';
+}
+function LovWidget_setLovDate(date,label)
+{
+    var o = this;
+    o.lovDate.setHTML(convStr(date));
+    o.lovDate.setTooltip(label+convStr(date));
+}
+function LovWidget_clickShowKeyCB()
+{
+    var o = this.userData;       
+    var checked=o.showKeyIcn.isChecked();
+    o.displayOption=o.showKeyIcn.isChecked()?LovDisplayOption.caption_key:LovDisplayOption.caption;
+    if (o.viewMode==LovViewMode.list)
+    {
+        if (!o.showKeyInListCB) return;
+        o.showKeyInListCB(o.lovList, o.displayOption);
+    }
+    else
+    if (o.viewMode==LovViewMode.tree)  
+    {
+        if (!o.lovTreeCBInfo || !o.lovTreeCBInfo.showKeyCB) return;
+        o.lovTreeCBInfo.showKeyCB(o.lovTree, o.displayOption);
+    }
+}
+function new_ExtendedLovWidget(prms)
+{
+    var o=new_LovWidget( prms );
+    if (typeof(prms.viewMode)!="undefined")
+        o.viewMode=prms.viewMode;
+    o.clickTreeCB=prms.clickTreeCB;
+    o.doubleClickTreeCB=prms.doubleClickTreeCB; 
+    o.lovTreeCBInfo= prms.lovTreeCBInfo;    
+    o.selectMode=SelectMode.any_level;
+    o.showKeyInListCB=prms.showKeyInListCB;
+    o.clickLovTreeCB=function()
+    {
+        var o=this.userData;
+        if (o.clickTreeCB)
+            o.clickTreeCB();  
+    }
+    o.doubleClickLovTreeCB=function()
+    {
+        var o=this.userData;
+        if (o.doubleClickTreeCB)
+            o.doubleClickTreeCB(); 
+    }  
+    o.getLovTreeHTML=function()
+    {
+        var o=this;
+        return o.lovTree.getHTML();        
+    }
+    o.showLovContainer= function(show)
+    {
+        var o=this;
+        for (var i=0; i<3; i++)
+        {
+            o.lovContainerLyrArr[i].style.display=show?((i==o.viewMode)?'':'none'):'none';
+        }                                  
+        o.updateViewMode();
+    }    
+    o.fillLovContent=function(arr, columnArr)  
+    {
+        var o=this;                                                 
+        o.showLovContainer(true);
+        if (o.viewMode==LovViewMode.list)
+        {
+            o.fillLovListContent(arr, columnArr);  
+        }
+        else
+        if (o.viewMode==LovViewMode.tree)      
+        {
+            o.fillLovTreeContent(arr, columnArr);
+        }         
+    }
+    o.fillColumnTitle=function(columnArr)  
+    {
+        var o=this;
+        if (columnArr)
+        {
+            for (var l=0;l<columnArr.length;l++)
+            {
+                var c=columnArr[l];
+                var sortIcn=(typeof(c.sortType)!="undefined")?c.sortType:-1;
+                o.lovList.addColumn(c.title,_LOV_MULTI_COLH,true,sortIcn);
+            }        
+        }
+        else
+        {
+            var nbCol=o.lovList.getColumsCount();
+            for (var l=0;l<nbCol;l++)
+            {
+                o.lovList.addColumn("",_LOV_MULTI_COLH,true,-1)
+            }
+        }                   
+    }
+    //arr: array of object
+    //value: 
+    //row:array of col1, col2,...  
+    o.fillLovListContent=function(arr, columnArr)  
+    {               
+        var o=this;
+        //ADAPT01727239 : forwardfir from 4.0 SP10
+    o.lovList.del(); 
+    //when we search in lov, and search list is empty, then it won't display the title. So commented below line.ADAPT01720010 
+        //if (!arr.length) return;          
+        o.lovList.freeze();
+    var nbCol=o.lovList.getColumsCount();
+    if (arr.length>0 && nbCol!=arr[0].row.length)
+    {
+        nbCol=arr[0].row.length;
+        o.lovList.resetColums();
+        //function MultiColumnList_addColumn(name,width,sortable,sortIcn,tooltip)
+        // name [String] column name
+            // width [int > o.minWidth] column width in pixels
+            // sortIcn [-1 : no icon; 0 ascending arrow; 1 : descending arrow]
+            // tooltip [String - Optional] tooltip 
+            o.fillColumnTitle(columnArr);
+        }        
+        else
+        if (columnArr)
+        {
+            //add the title                                                             
+            for (var l=0;l<columnArr.length;l++)
+            {           
+                var c=columnArr[l];
+                var sortIcn=(typeof(c.sortType)!="undefined")?c.sortType:-1;                                                                              
+                o.lovList.setColumn(l, c.title,null,true,sortIcn);                
+            }        
+        }
+        //workflow_bics.wid based on OLAP SAP BW
+        //Customer object
+        //row nb:1000
+        //case 1:no style
+        //o.lovList.addRow(row.value,false,row.row);
+        //IE 7
+        //addRow time:0.031 s
+        //rebuildHTML time:0.423 s
+        //case 2:
+        //o.lovList.addRow(row.value,false,row.row, textStyleArr);
+        //<span>                                  
+        //chrome 5.0
+        //addRow time:0.002 s
+        //rebuildHTML time:0.108 s             
+        //IE 8.0
+        //addRow time:0.018 s
+        //rebuildHTML time:0.158 s
+        //firefox 3.6.8
+        //addRow time:0.015 s
+        //rebuildHTML time:0.214 s
+        //IE 7
+        //addRow time:0.028 s
+        //rebuildHTML time:0.971 s
+        //p.debuggingLogger('row nb:'+arr.length,0,0,200,300);          
+        //var startDate=new Date;            
+    for (var i=0;i<arr.length;i++)
+    {
+        //MultiColumnList_addRow(value,sel/* add col strings, var args */)
+        var row=arr[i];
+        //bics             
+        if (row.value.key)        
+        {  
+            var txtStyle;
+            var textStyleArr=[];         
+                if (o.displayOption==LovDisplayOption.caption)
+                {                                                 
+                    txtStyle= {textArr:[row.value.caption, ""], clsArr:[(row.value.overfetch?"lovKey":null), "lovKey"]};                                                   
+                }
+                else
+                if (o.displayOption==LovDisplayOption.caption_key)                
+                {      
+                    txtStyle= {textArr:[row.value.caption, getDisplayedKeyStr(row.value.key)], clsArr:[(row.value.overfetch?"lovKey":null), "lovKey"]};                                                                                                       
+                }
+                //show key in the column indicated by columnBound
+                if (columnArr)
+                {
+                for (var k=0; k<columnArr.length; k++)
+                {
+                    if (o.columnBound == k)
+                    {
+                        textStyleArr.push(txtStyle);
+                } else {                                                     
+                    textStyleArr.push(null);
+                }
+                }
+                } else {
+                    textStyleArr.push(null);
+                }    
+                o.lovList.addRow(row.value,false,row.row, textStyleArr);
+            } else {   //relational db
+        o.lovList.addRow(row.value,false,((row.row=="")?_emptyValueLab:row.row));
+    }
+        }
+    //var endDate=new Date;   
+    //p.debuggingLogger('addRow time:'+((endDate.valueOf() - startDate.valueOf())/1000),0,0,200,300);
+    //startDate=new Date; 
+    o.lovList.rebuildHTML();
+    //endDate=new Date;   
+      //p.debuggingLogger('rebuildHTML time:'+((endDate.valueOf() - startDate.valueOf())/1000),0,0,200,300);
+    }
+    o.fillLovTreeContent=function(arr, columnArr)
+    {
+        var o=this;
+        var treeitem;   
+        o.lovTree.deleteAll();   
+        if (columnArr && columnArr.length>=1 && columnArr[0].title)
+        {
+            o.lovTree.setHeaderText(columnArr[0].title);   
+            o.lovTree.setHeaderSort(columnArr[0].sortType);
+        }
+        fillTreeItems.call(o, o.lovTree, arr);                        
+        o.lovTree.rebuildHTML();  
+    }     
+    o.getViewMode=function()
+    {
+        return this.viewMode;
+    }
+    o.getLOVSelection=function(sel)
+    // return an array of structure(value, row) of the selected lov(s)
+    {
+    var o=this;
+    if (o.viewMode==LovViewMode.list)
+    {
+        var listsel=o.lovList.getMultiSelection();
+        //value: the rows value {caption, key, overfetch, hasChild, level, path}
+            //index: the selection index
+            //cols: an ARRAY of texts               
+            var item;               
+            for (var i=0; i<listsel.length; i++)
+            {               
+                item= listsel[i];
+                //overfetch ed item is not selectable
+                if (item.value.overfetch)
+                {
+                    continue;
+                }
+                sel[sel.length]={value:item.value, row:item.cols};
+            }
+        }    
+    else
+    {
+            //an array of [new_TreeItemWidget]     
+        var treesel=o.lovTree.getSelections();
+        var treeitem;                           
+        var k=0;
+            for (var i=0; i<treesel.length; i++)
+            {
+                treeitem=treesel[i];
+                if (treeitem.userData.overfetch)
+                {
+                    continue;
+                }
+                else
+                if (o.selectMode==SelectMode.only_leaf) 
+                {
+                    if (treeitem.userData.hasChild)
+                    {
+                        continue;
+                    }        
+                }
+                else
+                if (typeof(treeitem.userData.chunkIndex)!="undefined")
+                {
+                    continue;
+                }
+                if (o.lovTreeCBInfo && o.lovTreeCBInfo.getSelTreeItemCB) 
+                {
+                    sel[k++]=o.lovTreeCBInfo.getSelTreeItemCB(treeitem); 
+                }
+                else
+                {
+                    sel[k++]={value:treeitem.userData, row:[treeitem.name]}        
+                }                    
+            }
+    }   
+    }   
+    o.setSelectMode=function(selectMode)
+    {
+        var o=this;
+        o.selectMode=selectMode;
+    }
+    var icns=_skin+'../../../viewer/images/main/galleries/icon16x16gallery3b.png';
+    o.lovTree=new_TreeWidget({id:o.id+"_lovTree", 
+                            userData:o,
+                            w:o.width, 
+                            h:100,
+                            borderW:1, 
+                            icns:icns,
+                            toggleOnDblClickTxt:false,
+                            hasExtraTextStyle:true,
+                            clickCB:o.clickLovTreeCB, 
+                            doubleClickCB:o.doubleClickLovTreeCB,
+bgClass:(prms.noTreeHeader?'solidBorder':'treeBorderWithHeader'),
+                            noHeader:prms.noTreeHeader,
+                            getTooltipCB:((o.lovTreeCBInfo.showTooltip)?o.lovTreeCBInfo.getTooltipCB:null),
+                            sortCB:prms.sortLovTreeCB});
+    o.lovTree.getTextSegmentHTMLCB= o.lovTreeCBInfo.getTextSegmentHTMLCB;
+    o.lovTree.par = o;
+    if (o.lovTreeCBInfo.showTooltip)
+    {    
+        o.lovTree.setCustomTooltipWidget(new_ChildrenCustomTooltipWidget({id:o.lovTree.id+"_customTooltip",win:_curWin, tipWidth:300}));  
+    o.lovTree.setTooltipOnMouseOver(true);
+    }       
+    return o;
+}
+function buildTreeItemPath(treeitem)
+{     
+    if (typeof(treeitem.userData.key)!="undefined")
+    {     
+        if (treeitem.par)
+        {
+            var pathArr=arrayObjectClone(treeitem.par.userData.path);            
+            pathArr.push({key:treeitem.userData.key, caption:treeitem.userData.caption});
+            treeitem.userData.path=pathArr;            
+        }
+        else
+        {
+            treeitem.userData.path=[{key:treeitem.userData.key, caption:treeitem.userData.caption}];
+        }
+    }
+}
+function fillChunkInTreeView(parent, chunkArr, chunkIndexArr)
+{
+    var o=this;
+    var treeitem, item;                           
+    for (var i=0;i<chunkArr.length;i++)
+    {       
+        item= chunkArr[i];               
+        treeitem=new_TreeItemWidget({name:item, userData:{chunkIndex:chunkIndexArr[i]}})
+        parent.add(treeitem);
+        if (o.lovTreeCBInfo && o.lovTreeCBInfo.xtraNodeInfoCB) 
+        {                                   
+    o.lovTreeCBInfo.xtraNodeInfoCB(treeitem);
+    }
+        if (o.lovTreeCBInfo)
+        {
+            treeitem.setAjaxUpdater(o.lovTreeCBInfo.getMembersUrl, o.lovTreeCBInfo.ajaxParamsFn, o.lovTreeCBInfo.xtraNodeInfoCB, o.lovTreeCBInfo.postCB);
+            treeitem.setUserUpdateTreeNodeCB(o.lovTreeCBInfo.userUpdateTreeNodeCB);
+        }
+    }                  
+}      
+function fillTreeItems(parent, arr)
+{
+    var o=this;
+    var treeitem, item;   
+    for (var i=0;i<arr.length;i++)
+    {       
+        item= arr[i];               
+        //cascade lov+multiple columns        
+        var name=null;
+        var row=item.row;
+        for (var k=0; k<row.length;k++)
+        {
+            if (name)
+            {
+                name+=" | "+row[k];
+            }
+            else
+            {
+                name=row[k];
+            }   
+        }
+        //ADAPT01719121 
+        if(row.length>1)
+        item.value.fullName=name;
+        treeitem=new_TreeItemWidget({name:name, userData:item.value})
+        parent.add(treeitem);
+        if (o.lovTreeCBInfo && o.lovTreeCBInfo.xtraNodeInfoCB) 
+        {            
+    o.lovTreeCBInfo.xtraNodeInfoCB(treeitem);
+    }
+        if (item.value.hasChild && o.lovTreeCBInfo)
+        {
+            treeitem.setAjaxUpdater(o.lovTreeCBInfo.getMembersUrl, o.lovTreeCBInfo.ajaxParamsFn, o.lovTreeCBInfo.xtraNodeInfoCB, o.lovTreeCBInfo.postCB);
+            treeitem.setUserUpdateTreeNodeCB(o.lovTreeCBInfo.userUpdateTreeNodeCB);
+        }
+    }                  
+}     
+function buildListOfMembersCB(par, membersObj)
+{
+    if (par && (typeof(par.userData.caption)!="undefined"))
+    {                      
+        arrayAdd(membersObj,'membersArr',par.userData,0);                             
+    }            
+}
+function getMembersArr(treeitem)
+{
+    //list of members   
+    var chunkIndex=0;
+    var membersObj;     
+    if (typeof(treeitem.userData.chunkIndex)!="undefined")
+    {
+        //chunk node
+        chunkIndex=treeitem.userData.chunkIndex;                                           
+    }       
+    //a member
+    membersObj={membersArr:[treeitem.userData]};     
+    treeitem.updateAncestors(buildListOfMembersCB, membersObj);     
+    var jsArr=membersObj.membersArr.toJSON();
+    //alert(jsArr);
+    membersObj.membersArr=jsArr;                         
+    membersObj.chunkIndex=chunkIndex;
+    return membersObj;
+}

@@ -1,0 +1,7 @@
+var L_dialogsevice_button_OK = 'OK';
+var L_dialogsevice_button_Cancel = 'Cancel';
+var L_dialogsevice_button_Close = 'Close';
+var L_dialogsevice_image_Info = 'Information';
+var L_dialogsevice_image_Warning = 'Warning';
+var L_dialogsevice_image_Error = 'Error';
+var L_dialogsevice_image_WaitSpinner = 'Loading...';

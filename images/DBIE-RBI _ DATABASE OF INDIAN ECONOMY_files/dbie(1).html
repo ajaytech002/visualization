@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<!-- saved from url=(0122)https://dbie.rbi.org.in/BOE/OpenDocument/1608101727/OpenDocument/opendoc/openDocument.faces?logonSuccessful=true&shareId=0 -->
+<html style="height: 100%" class="secure"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><script type="text/javascript">
+        // Ensure the current window has a name so that we can target it (i.e. document.forms[0].target = win.name).
+        // If the document being viewed invokes another OpenDocument url, possibly within an iframe, then OpenDocument
+        // can find the topmost OpenDocument frame and target it through it's name.
+        // Do not overwrite the name if it already exists.
+        if (!window.name) {
+            window.name="openDocFrame";
+        }
+    </script>
+
+
+
+    
+        
+        <script language="javascript">
+            var isDebugModeOn = false;
+        </script>
+
+        <script type="text/javascript" src="./yahoo-min.js.download"></script>
+<script type="text/javascript" src="./stylesheet-min.js.download"></script>
+<script type="text/javascript" src="./langDirection.js.download"></script>
+<script type="text/javascript" src="./bobj-min.js.download"></script>
+<script type="text/javascript" src="./GarbageBin.js.download"></script>
+<script type="text/javascript" src="./yahoo-dom-event.js.download"></script>
+<script type="text/javascript" src="./logger-min.js.download"></script>
+
+
+        <script type="text/javascript" src="./callback.js.download"></script>
+
+
+        <script type="text/javascript" src="./portal_utils.js.download"></script>
+
+
+        <script type="text/javascript" src="./element-min.js.download"></script>
+<script type="text/javascript" src="./layout-min.js.download"></script>
+<script type="text/javascript" src="./layout.js.download"></script>
+<script type="text/javascript" src="./layout-utils.js.download"></script>
+<link rel="stylesheet" type="text/css" href="./layout.css">
+
+
+        <script type="text/javascript">
+            // Define variables used by the callbacks.
+            // This will be used when one action (eg view) invokes another (eg. modify)
+            // in that case, lang will not be passed in because we will use the regular invoke action callback,
+            // and so we must have the locale present
+            var loc = "en";
+            var pvl = "en_US";
+            var service = "%2FOpenDocument%2FappService.do";
+            var appKind = "OpenDocument";
+            var BILaunchPadKind = "InfoView";
+            var appCUID = "AZXgyG8_ue9OtYITUhGG.wg";
+            var relativeContext = "../..";
+            var urlParams = "sRefresh=Yes&rbiApp=true&shareId=0&bttoken=MDAwRFdkSVhAU1NKRkZeZWUxTUIxQVBlTlhJXEpZNjAEQ&isApplication=true&logonSuccessful=true&pref=maxOpageUt%3D200%3BmaxOpageC%3D10%3Btz%3DGMT%2B05%3A30%3BmUnit%3Dinch%3BshowFilters%3Dtrue%3BsmtpFrom%3Dtrue%3BpromptForUnsavedData%3Dtrue%3B";
+            var appCache = {"actionSetNavigationActions":[4954,4952,4953,4804,4805,4806,4807,4388,4936,4873,4872,4782,4842,4780,4645,4644,4781,4841,4642,4986,4926,4927,4990,4961,4722,4490,4723,4963,4720,4962,4721,4726,4899,4492,4973]};
+			var backurl = "";
+
+            var openDocWorkspace = {
+                    iDocId : "4195" + "-" + "7225" + "-" + (new Date()).valueOf(),
+                    actionParameters : {id : "7225", actionId : "4195"},
+                    setTitle : function(title) {
+                        document.title = title;
+                    },
+                    layout : "toBeDefined"
+            };
+
+            var noDetailsPanel = false;
+            
+            function sendXmlHttpGet(Url, asyncFlag)
+			 {
+			    var xmlHttp;
+			    try
+			    {
+				    // Firefox, Opera 8.0+, Safari
+				    xmlHttp=new XMLHttpRequest();
+			    }
+			    catch (e)
+			    {
+			    // Internet Explorer
+				    try
+				      {
+				      	xmlHttp=new ActiveXObject("Msxml2.XMLHTTP");
+				      }
+				    catch (e)
+				      {
+					      try
+					        {
+					        	xmlHttp=new ActiveXObject("Microsoft.XMLHTTP");
+					        }
+					      catch (e)
+					        {
+						        //alert("Your browser does not support AJAX!");
+						        return false;
+					        }
+				      }
+			    }
+			    var async = true;
+			    if (asyncFlag != "undefined" && asyncFlag != null)
+			    {
+			       async = asyncFlag;
+			    } 
+			    
+			    xmlHttp.open("GET", Url, async);
+			    xmlHttp.send();
+			}
+			    
+            function resetSession()
+            {
+            	/* this method will reset session timeout to initial time.
+            		this method is called in browser refresh. 
+            		whenever a refresh happens closeSession() sets the time out to 30 secs and this method resets back to old time
+            	*/
+            	var randomNum = Math.round(Math.random() * 10000);
+            	sendXmlHttpGet('../../BIPCoreWeb/ResetSessionTime'+ '?rand=' + randomNum,true);
+            	
+            }
+            function closeSession()
+            {
+            	/* this method will set session timeout to 30 secs;
+            		this method is called in browser refresh and browser close. 
+            		whenever a refresh happens this method sets the time out to 30 secs 
+            		and resetSession method resets back to old time (20 mins)
+            	*/
+            	var randomNum = Math.round(Math.random() * 10000);
+            	sendXmlHttpGet('../../BIPCoreWeb/TimeoutSession' + '?rand=' + randomNum,false);
+            	
+            }
+            
+            function openDocOnLoad() {
+            
+            	resetSession();
+                // Communicate to parent frames to faciltate session management
+                var parentMethod = '';
+                var commonDomain = '';
+
+                if (parentMethod != '') {
+                    var embeddedLogoffUrlPath = '/OpenDocument/LogoffServlet?sapEPEmbedded=true&appKind=' + appKind;
+                    var webAppName = '/OpenDocument';
+                    var rootOpenDocPathIndex = location.href.indexOf(webAppName);
+                    // Look for second instance of application name in the current URL
+                    var embeddedLogoffUrl = location.href.substr(0, location.href.indexOf(webAppName, rootOpenDocPathIndex + 1)) + embeddedLogoffUrlPath;
+
+                    var strictDomain = 'null' === 'true';
+
+                    var parameters = {
+                            strictDomain : strictDomain,
+                            parentMethod: parentMethod,
+                            serializedSession: '3&ua=AWmaEx4Z.NVPpAEthuTGAjc,8P&ub=ByXNHTURk3awfv3Ds8jQpgw,8P&S5,88&5U=38869881JjZ4H9HxO11PUtMCeuCPD0m38869880Jx3UVTModY23aPZUU08goE6,8P&63=token,8P&PP=1024,83&2r=DWPRODAPP1:6400,8P&3k=@DWPROD,8P&1,8P&4E=38869880Jx3UVTModY23aPZUU08goE6,8P&Tn={3&.1={3&2=22072,83&O=FavoritesFolder,8P},?z&.2={3&2=22073,83&O=PersonalCategory,8P},?z&U=3,83&.3={3&2=22074,83&O=Inbox,8P},?z},?z&4F=16408,8P&Tm=36500,83&lu=1033,83&35=guesti,8P&uy=-27,8L&7r,83&ux=M16_kd4AAjwsAKYApAAAR19zAqwYEx8AAAA,8P&pa,8P&zA,83',
+                            cmsName: 'DWPRODAPP1:6400',
+                            logoffUrl: embeddedLogoffUrl,
+                            refresh: false,
+                            setParentDomain: false,
+                            commonDomain: commonDomain,
+                            iViewAutoLogOff: 'true' === 'true'
+                    }
+
+                    businessobjects.portal.communicateSessionInfoToAncestorFrame(parameters);
+                }
+
+                if (!noDetailsPanel) {
+                    var detailsPanelUrl;
+                    
+                    var detailsPanelContext = modifyRelativeUrl("../../PlatformServices", relativeContext);
+                    detailsPanelUrl = caf_appendQueryString(
+                            detailsPanelContext + "/jsp/Shared_DetailsPanel/detailsPanel.faces?cafWebSesInit=true&bttoken=MDAwRFdkSVhAU1NKRkZeZWUxTUIxQVBlTlhJXEpZNjAEQ",
+                            4518,
+                            "7225",
+                            "7161",
+                            "DetailsPanel",
+                            null,
+                            "sRefresh=Yes&rbiApp=true&shareId=0&bttoken=MDAwRFdkSVhAU1NKRkZeZWUxTUIxQVBlTlhJXEpZNjAEQ&isApplication=true&logonSuccessful=true&pref=maxOpageUt%3D200%3BmaxOpageC%3D10%3Btz%3DGMT%2B05%3A30%3BmUnit%3Dinch%3BshowFilters%3Dtrue%3BsmtpFrom%3Dtrue%3BpromptForUnsavedData%3Dtrue%3B",
+                            "en");
+                    
+    
+                    
+                    
+                    
+                    
+    
+                    // openDocWorkspace is passed as parameter to createLayout because the layout property should be assigned a value before
+                    // any onResize event is fired; otherwise, null pointer exception will happen
+                    openDocWorkspace.layout = createLayout(document.body, {
+                            top : 0,
+                            docId : openDocWorkspace.iDocId,
+                            customCenterIframeId : "openDocChildFrame",
+                            allowRightPanel : 7225 > 0,
+                            ttOpenRightPanel : "Open the Details panel",
+                            ttCloseRightPanel : "Close the Details panel",
+                            rightUnitHeaderCssClass: "detailsPanelHeader",
+                            rightUnitCloseButtonAlt: "Close",
+                            rightUnitAlertText: "The Details panel is open",
+                            rightPanelURL: detailsPanelUrl}, undefined, undefined, openDocWorkspace);
+                }else{
+					openDocWorkspace.layout = createLayout(document.body, {
+                            top : 0,
+                            docId : openDocWorkspace.iDocId,
+                            customCenterIframeId : "openDocChildFrame",
+                            allowRightPanel : false,
+                           }, undefined, undefined, openDocWorkspace);
+                }
+
+                invokeActionWithLang( modifyRelativeUrl("../../AnalyticalReporting/WebiView.do?bypassLatestInstance=true&cafWebSesInit=true&bttoken=MDAwRFdkSVhAU1NKRkZeZWUxTUIxQVBlTlhJXEpZNjAEQ","../.."), 4195, "7225", "7161", "View", "null", "sRefresh=Yes&rbiApp=true&shareId=0&bttoken=MDAwRFdkSVhAU1NKRkZeZWUxTUIxQVBlTlhJXEpZNjAEQ&isApplication=true&logonSuccessful=true&pref=maxOpageUt%3D200%3BmaxOpageC%3D10%3Btz%3DGMT%2B05%3A30%3BmUnit%3Dinch%3BshowFilters%3Dtrue%3BsmtpFrom%3Dtrue%3BpromptForUnsavedData%3Dtrue%3B", "true", "en" );
+            }
+
+            function onResizeOpenDoc() {
+                    resizeLayoutToViewport(openDocWorkspace.layout);
+                
+            }
+        </script>
+        <script type="text/javascript" src="./openDocumentUtils.js.download"></script>
+        <script type="text/javascript" src="./shared_caf_utils.js.download"></script>
+        <script type="text/javascript" src="./openDocCallbackAsApplication.js.download"></script>
+        <script type="text/javascript" src="./container-min.js.download"></script>
+<script type="text/javascript" src="./containerariaplugin-min.js.download"></script>
+<script type="text/javascript" src="./dragdrop-min.js.download"></script>
+<script type="text/javascript" src="./resize-min.js.download"></script>
+<link rel="stylesheet" type="text/css" href="./resize.css">
+<script type="text/javascript" src="./encoder.js.download"></script>
+<link rel="stylesheet" type="text/css" href="./dialogservice.css">
+<script type="text/javascript" src="./dialogservice_strings_en.js.download"></script>
+<script type="text/javascript" src="./dialogservice.js.download"></script>
+
+
+        <style type="text/css">
+            /* Need to override dialog service style for headers in IE */
+            .dialogService .hd, .yui-skin-sam .dialogService .yui-panel .hd {
+                font: bold 11px/13px Tahoma;
+            }
+        </style>
+
+        <link rel="stylesheet" type="text/css" href="./container.css">
+
+
+        
+        <link rel="stylesheet" type="text/css" href="./layout(1).css">
+
+
+        <link rel="stylesheet" type="text/css" href="./menu(1).css">
+
+
+        <link rel="stylesheet" type="text/css" href="./button.css">
+
+
+
+
+        <link rel="stylesheet" type="text/css" name="stylelink" href="./appService.do">
+    </head>
+    <body onload="javascript:openDocOnLoad()" onunload="javascript:closeSession()" onresize="javascript:onResizeOpenDoc();" class="yui-skin-sam">
+    
+
+<div id="div4195-7225-1589547487274" class="yui-layout" style="position: absolute; visibility: visible; left: 0px; width: 1200px; height: 545px; top: 0px;"><div class="yui-layout-doc" style="height: 545px; width: 1200px;"><div id="yui-gen0" class="yui-layout-unit yui-layout-unit-center yui-layout-noscroll" style="position: absolute; height: 545px; width: 1200px; top: 0px; left: 0px;"><div class="yui-layout-wrap" id="yui-gen1" style="height: 545px; width: 1200px; top: 0px; left: 0px;"><div class="yui-layout-bd yui-layout-bd-nohd yui-layout-bd-noft" style="height: 543px; width: 1198px; top: 0px;"><div id="innerDiv4195-7225-1589547487274" style="height: 545px; width: 1200px;"><iframe frameborder="0" id="openDocChildFrame" name="openDocChildFrame" tabindex="-1" style="width: 1200px; height: 545px;" src="./saved_resource(1).html"></iframe></div></div></div><div title="Open the Details panel" class="openRightPanel" tabindex="0"></div></div></div></div></body></html>

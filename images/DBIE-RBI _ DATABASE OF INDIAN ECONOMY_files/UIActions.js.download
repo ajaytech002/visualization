@@ -1,0 +1,4900 @@
+/*
+=============================================================
+WebIntelligence(r) Report Panel
+Copyright(c) 2001-2005 Business Objects S.A.
+All rights reserved
+
+Use and support of this software is governed by the terms
+and conditions of the software license agreement and support
+policy of Business Objects S.A. and/or its subsidiaries. 
+The Business Objects products and technology are protected
+by the US patent number 5,555,403 and 6,247,008
+
+=============================================================
+*/xxtoday = {
+id:"interactionMenu"
+,defaultType:"iconMenu"
+,text:"Insert Action"
+,customTooltip:{title:"Insert an Action", text:"Click on the Arrow to Insert an Action"}
+,children:[
+ {actionId:"addInteractivity", text:'Set as an Interactive Input'}
+,{actionId:"editInteractivity", text:'Edit Interactive Link'}
+,{actionId:"removeInteractivity", text:'Remove Interactive Link'}
+]
+}
+SampleOfStructureJCCWouldLikeToDefineAMenu = {
+id:"interactionMenu"
+,defaultType:"menu"
+,actionId:"addInteractivity"
+,text:"Insert Action"
+,title:"Insert an Action"
+,detail:"Click on the Arrow to ..."
+,children:[
+ {actionId:"addInteractivity", text:'Set as an Interactive Input'}
+,{actionId:"editInteractivity", text:'Edit Interactive Link'}
+,{actionId:"removeInteractivity", text:'Remove Interactive Link'}
+]
+}
+webi.interactive.commentOnCalculations = "Les boutons se transforment en iconMenu des lors qu'il faut choisir entre vertical et horizontal pour appliquer le calcul.";
+function xImg(offset)
+{
+return {src:'images/main/unknown.png'};
+}
+function temporaryImg(zyx)
+{
+var src= 'images/main/galleries/icon16x16gallery' + Math.floor(zyx / 100) + 'b.png';
+var yx = zyx % 100;
+dy =(2+yx*20); 
+return {src:src, dx:2, dy:dy}
+}
+function standardImg(offset)
+{
+return {src:'images/main/standard.gif', dx:16*offset, disDy:16}
+}
+function copyCutImg(offset)
+{
+return {src:'images/main/copycut.gif', dx:16*offset, disDy:16}
+}
+function formatImg(offset)
+{
+return {src:'images/main/format.gif', dx:16*offset, disDy:16}
+}
+function layeringImg(offset)
+{
+return {src:'images/main/layering.gif', dx:16*offset, disDy:16}
+}
+function alignImg(offset)
+{
+return {src:'images/main/alignment.gif', dx:16*offset, disDy:16}
+}
+function reportImg(offset)
+{
+return {src:'images/main/report.gif', dx:16*offset, disDy:16}
+}
+function menuImg(offset)
+{
+return {src:'images/main/menu.gif', dx:16*offset, disDy:16}
+}
+function formulaImg(offset)
+{
+return {src:'images/main/formula.gif', dx:16*offset, disDy:16}
+}
+function typeImg(offset)
+{
+return {src:'images/main/typeIcons.gif', dy:16*offset}
+}
+function qualificationImg(offset)
+{
+return {src:'images/main/qualificationIcons.gif', dy:16*offset}
+}
+function tdcImg(offset)
+{
+return {src:'images/main/tdcIcons.gif', dx:16*offset, disDy:16}
+}
+function leftPaneImg(offset)
+{
+return {src:'images/main/vertbar_icons.png', dx:1, dy:offset*31+3, disDx:17, disDy:offset*31+3, w:31, h:31}
+}
+var urlChartImg = "getChartSample" + _appExt
+var template = "flashy"
+function chartImg(chartType)
+{
+var url = "?template=" + template + "&chartType=" + convURL(chartType) + "&width=" + 16 + "&height=" + 16
+return {src:''+(urlChartImg + url)}
+}
+webi.actions = [
+{ defaultType:"tabbedGroup", id:"groups.reportAndCo"}
+,{ defaultType:"tabbedGroup", id:"groups.pageAndCo"}
+,{ defaultType:"tabbedGroup", id:"groups.ScaleToPage"}
+,{ defaultType:"tabbedGroup", id:"groups.insertTableCellsSection"}
+,{ defaultType:"tabbedGroup", id:"groups.chartsControlsGraphics"}
+,{ defaultType:"tabbedGroup", id:"groups.positionTools"}
+,{ defaultType:"tabbedGroup", id:"groups.ReportElementOnSection"}
+,{ defaultType:"tabbedGroup", id:"groups.ReportElementOnChart"}
+,{ defaultType:"tabbedGroup", id:"groups.formatChartStyle"}
+,{ defaultType:"tabbedGroup", id:"groups.ReportElementOnTable"}
+,{ defaultType:"tabbedGroup", id:"groups.PageSetupOnReportElementSelected"}
+,{ defaultType:"tabbedGroup", id:"groups.onFreeCell"}
+,{ defaultType:"tabbedGroup", id:"groups.fontAndCo"}
+,{ defaultType:"tabbedGroup", id:"groups.styleAndCo"}
+,{ defaultType:"tabbedGroup", id:"groups.alignementAndCo"}
+,{ defaultType:"tabbedGroup", id:"groups.filterAndCo"}
+,{ defaultType:"tabbedGroup", id:"groups.analyseAndCo"}
+,{ defaultType:"tabbedGroup", id:"groups.interactAndCo"}
+,{ defaultType:"tabbedGroup", id:"groups.formulaAndCo"}
+,{ defaultType:"tabbedGroup", id:"groups.insertData"}
+,{ defaultType:"tabbedGroup", id:"groups.dataProviders"}
+,{ defaultType:"tabbedGroup", id:"groups.dataObjects"}
+,{ defaultType:"tabbedGroup", id:"groups.chartContextual"}
+,{ defaultType:"tabbedGroup", id:"groups.CM1"}
+,{ defaultType:"tabbedGroup", id:"groups.CM2"}
+    ,{ defaultType:"tabbedGroup", id:"group.formatTools"}
+    ,{ defaultType:"noTabGroup", id:"group.formulaBar"}
+,{id:"gotoReport",        accelerator:{key:"p", modifier:[_alt,_ctrl], macModifier:[_alt,_meta]} }
+,{id:"gotoCommonToolbox", accelerator:{key:"h", modifier:[_alt,_ctrl], macModifier:[_alt,_meta]} }
+,{id:"gotoToolbox",       accelerator:{key:"t", modifier:[_alt,_ctrl], macModifier:[_alt,_meta]} }
+,{id:"gotoLeftPane",      accelerator:{key:"l", modifier:[_alt,_ctrl], macModifier:[_alt,_meta]} }
+,{id:"gotoFormulaBar",    accelerator:{key:"f", modifier:[_alt,_ctrl], macModifier:[_alt,_meta]} }
+,{id:"gotoStatusOrTabs",  accelerator:{key:"b", modifier:[_alt,_ctrl], macModifier:[_alt,_meta]} }
+,{id:"gotoNextGroup",  accelerator:{key:keys.F6} }
+,{id:"gotoPrevGroup",  accelerator:{key:keys.F6, modifier:_shift} }
+,{
+id:"nullAction"
+,defaultType:"check" 
+,text:"(null)"
+}
+,{
+id:"notFoundAction"
+,defaultType:"check" 
+,text:"(notFoundAction)"
+}
+,{  id:"firstIcn"
+    ,customTooltip:{title:"Go to First Page",text:"Display the Report First Page"}
+,defaultType:"icon"
+,icon:toolboxImg(131)
+}
+,{  id:"previousIcn"
+    , customTooltip:{title:"Go to Previous Page",text:"Display the Previous Page"}
+, defaultType:"icon"
+, icon:toolboxImg(132)
+}
+,{  id:"pageNumberStatus"
+    , defaultType:"icon", text:" "
+, customTooltip:{title:"Go to Page",text:"Enter the page number to display"}
+}
+,{  id:"nextIcn"
+    , customTooltip:{title:"Go to Next Page",text:"Display the Next Page"}
+, defaultType:"icon"
+, icon:toolboxImg(133)
+}
+,{  id:"lastIcn"
+    , customTooltip:{title:"Go to Last Page",text:"Display the Report Last Page"}
+, defaultType:"icon"
+, icon:toolboxImg(134)
+}
+,{  id:"smartLeft"
+    ,  defaultType:"icon"
+    , icon:toolboxImg(137)
+, customTooltip:{title:"Go Left",text:"Scroll the page left in the window or jump to the left page"}
+}
+,{  id:"smartRight"
+    , defaultType:"icon"
+    , icon:toolboxImg(138)
+, customTooltip:{title:"Go Right",text:"Scroll the page right in the window or jump to the right page"}
+}
+,{  id:"smartTop"
+    ,defaultType:"icon"
+    , icon:toolboxImg(135)
+, customTooltip:{title:"Go Top",text:"Scroll the page up in the window or display the bottom of the previous page"}
+}
+,{  id:"smartBottom"
+    ,defaultType:"icon"
+    ,icon:toolboxImg(136)
+, customTooltip:{title:"Go Bottom",text:"Scroll the page down in the window or jump to the top of the next page"}
+}
+ ,{
+     id:"docProps", 
+     defaultType:"icon", 
+     text:"Document",
+     customTooltip:{title:"Document",text:"Edit document properties"}
+    }             
+ ,{
+     id:"preferences", 
+     defaultType:"icon", 
+     text:"Application",
+     customTooltip:{title:"Application",text:"Application option dialog box"}
+    }
+,{
+id:"helpContents"
+,defaultType:"icon" 
+,text:"Help Contents"
+,icon:toolboxImg(130)
+,customTooltip:{title:"Help Contents",text:"Help Contents"}
+,accelerator:{key:keys.F1}
+}
+,{
+id:"tutorials"
+,defaultType:"icon" 
+,text:"Tutorials"
+}
+,{
+id:"onlineHelp"
+,text:"Online"
+}
+,{
+id:"contactUs"
+,text:"Contact Us"
+}
+,{
+id:"about"
+,text:"About ..."
+}
+,{
+id:"helpMenu"
+,defaultType:"iconMenu" 
+,text:"Help"
+,triggerAction:false
+,customTooltip:{title:"Help",text:"Online Help"}
+,icon:toolboxImg(130)
+,children: [
+{actionId:"helpContents"}
+,{actionId:"tutorials"}
+,{actionId:"about"}
+]
+}
+,{
+id:"showToolbar", devStatus:'ok'
+,defaultType:"check" 
+,text:"Toolbar"
+,customTooltip:{title:"Show Toolbar",text:"Show/Hide the Toolabr"}
+}
+ ,{
+id:"undo"
+,defaultType:"icon" 
+,text:"Undo" 
+,accelerator:{key:"z", modifier:_ctrl, macModifier:_meta}
+,customTooltip:{title:"Undo",text:"Undo previous actions"}
+,icon:toolboxImg(107)
+, devStatus:'ok'
+ }
+,{
+id:"redo"
+,defaultType:"icon" 
+,text:"Redo" 
+,accelerator:{key:"y", modifier:_ctrl, macModifier:_meta}
+,customTooltip:{title:"Redo",text:"Redo previous actions"}
+,icon:toolboxImg(108)
+,devStatus:'ok'
+}
+,{
+id:"cut"
+,defaultType:"icon" 
+,text:"Cut"
+,accelerator:{key:"x", modifier:_ctrl, macModifier:_meta}
+,customTooltip:{title:"Cut",text:"Cut the selection from the document and put in on the Clipboard",text2:"Cut to the clipboard"}
+,icon:toolboxImg(109)
+,devStatus:'ok'
+}
+,{
+id:"copy"
+,defaultType:"icon" 
+,text:"Copy"
+,accelerator:{key:"c", modifier:_ctrl, macModifier:_meta}
+,customTooltip:{title:"Copy", text:"Copy the selection and put in on the Clipboard", text2:"Copy to the clipboard"}
+,icon:toolboxImg(110)
+,devStatus:'ok'
+}
+,{
+id:"paste"
+,defaultType:"icon" 
+,text:"Paste"
+,accelerator:{key:"v", modifier:_ctrl, macModifier:_meta}
+,customTooltip:{title:"Paste",text:"Paste the contents of the Clipboard",text2:"Paste from the clipboard"}
+,icon:toolboxImg(111)
+,devStatus:'ok'
+}
+,{
+id:"selectAll"
+,defaultType:"icon" 
+,text:"Select All" 
+,accelerator:{key:"a", modifier:_ctrl, macModifier:_meta}
+,customTooltip:{title:"Select All" ,text:"Select All Elements"}
+,icon:temporaryImg(631)
+,devStatus:'newItem'
+}
+,{
+id:"newDocument"
+,defaultType:"icon" 
+,text:"New"
+,accelerator:{key:"n", modifier:_ctrl, macModifier:_meta}
+,customTooltip:{title:"New",text:"New"}
+,icon:toolboxImg(100)
+}
+,{
+id:"openDocument"
+,defaultType:"icon" 
+,text:"Open"
+,accelerator:{key:"o", modifier:_ctrl, macModifier:_meta}
+,customTooltip:{title:"Open",text:"Open a document",text2:"Open"}
+,icon:toolboxImg(101)
+}
+,{
+id:"printOptions"
+,text:"Print..."
+}
+,{
+id:"print"
+,defaultType:"iconMenu"
+,text:"Print"
+,accelerator:{key:"p", modifier:[_ctrl], macModifier:_meta}
+,customTooltip:{title:"Print",text:"Export to PDF for printing"}
+,icon:toolboxImg(103)
+,children:
+[
+{actionId:"printOptions"}
+]
+}
+,{
+id:"printShortcut"
+,accelerator:{key:"p", modifier:[_ctrl,_shift], macModifier:_meta}
+}
+,{
+id:"fakePrint"
+,defaultType:"icon"
+,text:"Print"
+,accelerator:{key:"p", modifier:_ctrl, macModifier:_meta}
+,customTooltip:{title:"Print",text:"Export to PDF for printing"}
+,icon:toolboxImg(103)
+}
+,{
+id:"findText"
+,defaultType:"check"
+,text:"Find"
+,accelerator:{key:"f", modifier:_ctrl, macModifier:_meta}
+,customTooltip:{title:"Find",text:"Find text in tables and cells on this page"}
+,icon:toolboxImg(104)
+}
+,{
+id:"historyBtn"
+,defaultType:"icon"
+,text:"History"
+,customTooltip:{title:"History",text:"List of dates corresponding to the instances of the scheduled document."}
+,icon:toolboxImg(105)
+}
+,{
+id:"sendto"
+,defaultType:"iconMenu"
+,text:"Send to"
+,customTooltip:{title:"Send to", text:"Send to Mail, Inbox..."}
+,children:
+[
+ {actionId:"sendToMail" }
+ ,{actionId:"sendToUser"}
+ ,{actionId:"sendToFtp"}
+ ]
+,icon:toolboxImg(106)
+}
+,{
+id:"sendToMail"
+,text:"Send to Mail"
+,icon:standardImg(23)
+}
+,{
+id:"sendToUser"
+,text:"Send to User..."
+}
+,{
+id:"sendToFtp"
+,text:"Send to Ftp..."
+}
+,{
+id:"sendToInbox"
+,text:"Send to Inbox"
+}
+,{
+id:"sendDocumentLink"
+,text:"Send document link"
+}
+,{
+id:"save"
+,text:"Save"
+,accelerator:{key:"s", modifier:_ctrl, macModifier:_meta}
+,icon:toolboxImg(102)
+,customTooltip:{title:"Save", text:"Save the current Document"}
+,devStatus:'ok'
+}
+,{
+id:"saveAs"
+,text:"Save As"
+}
+,{
+id:"refreshSaveClose"
+,text:"Refresh, Save and Close"
+}
+,{
+id:"saveBtn"
+,defaultType:"iconMenu"
+,text:"Save"
+,accelerator:{key:"s", modifier:_ctrl, macModifier:_meta}
+,icon:standardImg(1)
+,customTooltip:{title:"Save Menu", text:"Click the button to save the document, or the arrow for more save options."}
+,children:
+[
+{actionId:"save"}
+,{actionId:"saveAs"}
+]
+}
+,{
+id:"exportMenu"
+,defaultType:"iconMenu"
+,triggerAction:false
+,icon:toolboxImg(142)
+,customTooltip:{title:"Export", text:"Export to my computer in PDF, Excel or CSV format"}
+,children:
+[
+{actionId:"export", text:"Export Document As", children:
+[
+{actionId:"savePDF", text:"PDF"}
+,{actionId:"saveXLSX", text:"Excel (.xlsx)"}
+,{actionId:"saveXLS", text:"Excel (.xls)"}
+,{actionId:"saveCSVReports", text:"CSV Archive"}
+,{actionId:"saveTXT", text:"Text"}
+]
+}
+,{actionId:"export", text:"Export Current Report As", children:
+[
+{actionId:"saveReportPDF", text:"PDF"}
+,{actionId:"saveReportXLSX", text:"Excel (.xlsx)"}
+,{actionId:"saveReportXLS", text:"Excel (.xls)"}
+,{actionId:"saveCSVReport", text:"CSV Archive"}
+,{actionId:"saveReportTXT", text:"Text"}
+]
+}
+,{actionId:"saveCSVOp", text:"Export Data to CSV ..."}
+]
+}
+,{
+id:"drillLite"
+,text:"Filter Bar"
+,defaultType:"check"
+,icon:toolboxImg(114)
+,customTooltip:{title:"Filter Bar",text:"Click here to show or hide Report Filter toolbar"}
+}
+    ,{
+        id:"showStatusBar", 
+        text:"Status Bar", 
+        type:"check"
+    }
+,{
+    id:"showReportTabs", 
+    text:"Report Tabs", 
+    type:"check"   
+}
+,{
+id:"viewBtn"
+,defaultType:"iconMenu"
+,triggerAction:false
+,text:"View"
+,children:
+ [    
+    {actionId:"drillLite"},
+    {actionId: "foldUnfold"},
+{actionId:"showFormulaBar", type:"check"},
+    {type:"separator"},
+    {actionId:"leftPaneSubMenu"}, 
+    {actionId:"showReportTabs"},
+    {actionId:"showStatusBar"}
+]
+,customTooltip:{title:"View",text:"Change the view mode or modify the current view"}
+,devStatus:'ok'
+}
+,{
+id:"pdfBtn"
+,defaultType:"iconMenu"
+,text:"View"
+,children:
+ [    
+    {actionId:"leftPaneSubMenu"}, 
+    {actionId:"showReportTabs"},
+    {actionId:"showStatusBar"}
+]
+,customTooltip:{title:"View",text:"Change the view mode or modify the current view"}
+,devStatus:'ok'
+}
+ ,{
+id:"switchToView"
+,defaultType:"check"
+,text:"HTML"
+,customTooltip:{title:"Reading",text:"Display the report in read-only mode"}
+,accelerator:{key:"1", modifier:_ctrl, macModifier:_meta}
+}
+,{
+id:"switchToInteractive"
+,defaultType:"check"
+,text:"Editing"
+,accelerator:{key:"2", modifier:_ctrl, macModifier:_meta}
+}
+,{
+id:"structureView"
+,defaultType:"check"
+,text:"Show Structure"
+,accelerator:{key:"3", modifier:_ctrl, macModifier:_meta}
+,customTooltip:{title:"Structure",text:"Display the Report in Structure View: no data"}
+}
+,{
+id:"pdfView"
+,defaultType:"check"
+,text:"PDF"
+,customTooltip:{title:"PDF mode",text:"Display the Report as a PDF Document"}
+,devStatus:'ok'
+}
+,{
+id:"quickMode"
+,defaultType:"check"
+,text:"Quick Display mode"
+,customTooltip:{title:"Quick Display mode",text:"Display in Quick Display mode."}
+,icon:toolboxImg(122)
+}
+,{
+id:"pageMode"
+,defaultType:"check"
+,text:"Page mode"
+,customTooltip:{title:"Page mode",text:"Display in Page mode."}
+,icon:toolboxImg(121)
+}
+,{
+id:"draftMode"
+,defaultType:"check"
+,text:"Draft mode"
+,customTooltip:{title:"Draft mode",text:"Display in Draft mode."}
+,icon:menuImg(3)
+}
+    ,{
+id:"pageDisplayMax"
+,defaultType:"label"
+        ,text:"Max:"
+}
+    ,{
+id:"pageRowsLabel"
+,defaultType:"label"
+        ,text:"Rows"
+}
+    ,{
+id:"pageColumnLabel"
+,defaultType:"label"
+        ,text:"Columns"
+}
+    ,{
+id:"pageRows"
+,defaultType:"spinner"
+,width:30
+,changeOnlyOnMouseUp:true
+,noMargin:true
+,precision:0
+,interval:1
+        ,customTooltip:{title:"Rows", text:"Number of records per page in row"}
+,min:100
+}
+    ,{
+id:"pageColumn"
+,defaultType:"spinner"
+,width:30
+,changeOnlyOnMouseUp:true
+,noMargin:true
+,precision:0
+,interval:1
+        ,customTooltip:{title:"Columns", text:"Number of records per page in columns"}
+      ,min:20
+}
+,{
+id:"viewModeMenu"
+,defaultType:"iconMenu"
+,text:"View Mode"
+,customTooltip:{title:"View Mode", text:"Choose the display mode"}
+,children:[
+ {actionId:"pageMode"}
+ ,{actionId:"draftMode"}
+ ,{actionId:"quickMode"}
+ ]
+,devStatus:'ok'
+}
+,{
+id:"webiBtn"
+,clickCB:null
+,triggerAction:false
+,defaultType:"iconMenu"
+,text:"Interactive Analysis"
+,children:
+[
+{actionId:"quickMode"}
+,{actionId:"pageMode"}
+,{actionId:"draftMode"}
+,{type:"separator"}
+,{actionId:"switchToView"}
+,{actionId:"switchToInteractive"}
+,{actionId:"structureView"}
+,{actionId:"pdfView"}
+,{type:"separator"}
+,{actionId:"drillLite"}
+,{actionId:"showReportTabs"}
+,{actionId:"showStatusBar"}
+,{actionId:"leftPaneSubMenu"}
+,{type:"separator"}
+,{actionId:"fullScreen", text:"Full Screen"}
+,{actionId:"zoom", text:"Zoom"}
+,{actionId:"close", text:"Close"}
+,{type:"separator"}
+]
+}
+    ,{  id:"insertIntoTable" 
+        ,text:"Insert"       
+    }   
+,{
+id:"insertBlankReport"
+,defaultType:"icon"
+,text:"Add Report"
+,icon:typeImg(1)
+}
+,{
+id:"addReport"
+,defaultType:"icon"
+,text:"Add Report"
+,accelerator:{key:"r", modifier:[_ctrl,_shift], macModifier:[_meta,_shift]}
+,icon:toolboxImg(444)
+}
+,{
+id:"duplicateReport"
+,defaultType:"icon"
+,text:"Duplicate Report"
+,icon:toolboxImg(445)
+}
+,{ id:"deleteReport" ,defaultType:"icon" ,text:"Delete Report" ,icon:toolboxImg(446)}
+,{ id:"renameReport" ,defaultType:"icon" ,text:"Rename Report"}
+,{
+id:"insertReportMore"
+,defaultType:"icon"
+,text:"More..."
+}
+,{
+id:"moveReportLeft"
+,defaultType:"icon"
+,text:"Move Left"
+,customTooltip:{title:"Move the report to the left", text:"Move the report to the previous position in the list of reports."}
+}
+,{
+id:"moveReportRight"
+,defaultType:"icon"
+,text:"Move Right"
+,customTooltip:{title:"Move the report to the right", text:"Move the report to the next position in the list of reports."}
+}
+,{
+id:"moveReportFirst"
+,defaultType:"icon"
+,text:"First"
+}
+,{
+id:"moveReportLast"
+,defaultType:"icon"
+,text:"Last"
+}
+,{
+id:"reportName"
+,value:"reportName"
+,defaultType:"textField"
+,width:140
+,customTooltip:{title:"Report Name", text:"Rename the report", comment:'Le champ devrait contenir le nom du report courant.'}
+}
+,{
+id:"pageHeader"
+,defaultType:"check"
+,text:"Page Header"
+,customTooltip:{title:"Page Header",text:"Show the Page Header"}
+,icon:typeImg(4)
+}
+,{
+id:"pageFooter"
+,defaultType:"check"
+,text:"Page Footer"
+,customTooltip:{title:"Page Footer",text:"Show the Page Footer"}
+,icon:typeImg(6)
+}
+,{
+id:"insertReportMenu"
+,defaultType:"iconMenu"
+,text:"Insert Report"
+,customTooltip:{title:"Insert Report", text:"Insert a new report into the document"}
+,children:[
+ {actionId:"insertBlankReport", icon:null}
+ ,{actionId:"duplicateReport"}
+ ,{type:"separator"}
+ ,{actionId:"insertReportMore"}
+ ]
+,icon:typeImg(1)
+}
+ ,{id:"pageOrientationLandscape", defaultType:"check", text:"Landscape", icon:toolboxImg(448)}
+ ,{id:"pageOrientationPortrait", defaultType:"check", text:"Portrait", icon:toolboxImg(447)}
+,{
+id:"pageOrientationMenu"
+,defaultType:"radioMenu"
+,triggerAction:false
+,text:"Portrait"
+,customTooltip:{title:"Page orientation", text:"Switch the pages between portrait and lanscape layout", 
+                        comment:"Est-ce pour tout le rapport et/ou pour la page courante?"}
+,children:[
+ {actionId:"pageOrientationLandscape"}
+ ,{actionId:"pageOrientationPortrait"}
+ ]
+, icon:toolboxImg(447)
+}
+,{
+id:"pageFormat"
+,defaultType:"customCombo"
+,width:100
+,customTooltip:{title:"Page Format", text:"Page Format tooltip"}
+}
+    ,{
+id:"fitToWidthLabel"
+,defaultType:"label"
+        ,text:"Width:"
+}
+,{
+id:"fitToWidth"
+,defaultType:"textCombo"
+        ,customTooltip:{title:"Fit to Width", text:"Stretch or shrink width of this report for printing"}      
+}
+    ,{
+id:"fitToHeightLabel"
+,defaultType:"label"
+        ,text:"Height:"
+}
+    ,{
+id:"fitToHeight"
+,defaultType:"textCombo"
+        ,customTooltip:{title:"Fit to Height", text:"Stretch or shrink height of this report for printing"}       
+}
+    ,{
+id:"toScalingLabel"
+,defaultType:"label"
+        ,text:"Scale:"
+}
+    ,{
+id:"toScaling"
+,defaultType:"textCombo"
+        ,customTooltip:{title:"Fit to Scaling", text:"Stretch or shrink the report to a percentage of its current size for printing."}      
+}
+,{
+id:"topMargin"
+,triggerAction:false
+,defaultType:"icon"
+        ,icon:toolboxImg(451)
+}
+,{
+id:"bottomMargin"
+,triggerAction:false
+,defaultType:"icon"
+,icon:toolboxImg(452)
+}
+,{
+id:"leftMargin"
+,triggerAction:false
+,defaultType:"icon"
+,icon:toolboxImg(453)
+}
+,{
+id:"rightMargin"
+,triggerAction:false
+,defaultType:"icon"
+,icon:toolboxImg(454)
+}
+    ,{
+id:"topMarginField"
+,defaultType:"spinner"
+,width:30
+,changeOnlyOnMouseUp:true
+,noMargin:true
+,precision:2
+,interval:0.1
+        ,customTooltip:{title:"Top margin", text:"Top margin"}
+}
+    ,{
+id:"leftMarginField"
+,defaultType:"spinner"
+,width:30
+,changeOnlyOnMouseUp:true
+,noMargin:true
+,precision:2
+,interval:0.1
+        ,customTooltip:{title:"Left margin", text:"Left margin"}
+}
+    ,{
+id:"rightMarginField"
+,defaultType:"spinner"
+,width:30
+,changeOnlyOnMouseUp:true
+,noMargin:true
+,precision:2
+,interval:0.1
+       ,customTooltip:{title:"Right margin", text:"Right margin"}
+}
+    ,{
+id:"bottomMarginField"
+,defaultType:"spinner"
+,width:30
+,changeOnlyOnMouseUp:true
+,noMargin:true
+,precision:2
+,interval:0.1
+        ,customTooltip:{title:"Bottom margin", text:"Bottom margin"}
+}
+,{
+id:"displayPageHeader"
+,defaultType:"check"
+,text:"Show"
+,icon:toolboxImg(449)
+}
+    ,{
+id:"pageHFHeightLabel"
+,defaultType:"label"
+        ,text:"Height:"
+}
+    ,{
+id:"pageHFHeightUnit"
+,defaultType:"label"
+        ,text:"in."
+}
+,{
+id:"pageHeaderHeight"
+,defaultType:"spinner"
+,width:30
+,changeOnlyOnMouseUp:true
+,noMargin:true
+,precision:2
+,interval:0.1
+,customTooltip:{title:"Page Header Height", text:"Set the height of the page header"}
+}
+,{
+id:"displayPageFooter"
+,defaultType:"check"
+,text:"Show"
+,icon:toolboxImg(450)
+}
+,{
+id:"pageFooterHeight"
+,defaultType:"spinner"
+,width:30
+,changeOnlyOnMouseUp:true
+,noMargin:true
+,precision:2
+,interval:0.1
+,customTooltip:{title:"Page Footer Height", text:"Set the height of the page footer"}
+}
+    ,{
+id:"gridMenu"
+,defaultType:"iconMenu"
+,text:"Grid"
+,customTooltip:{title:"Grid", text:"Grid tooltip"}
+,children:
+[
+ {actionId:"gridDisplay"}
+ ,{actionId:"snapToGrid"} 
+ ,{type:"separator"}
+ ,{actionId:"gridSettings"} 
+ ]
+,icon:alignImg(1)
+}
+,{
+id:"gridDisplay"
+,defaultType:"check"
+,icon:temporaryImg(620)
+,text:"Show grid"
+}
+,{
+id:"snapToGrid"
+,defaultType:"check"
+,icon:temporaryImg(648)
+,text:"Snap to grid"
+}
+,{
+id:"gridSpacing"
+,defaultType:"check"
+,text:"Grid Spacing xxx cm"
+}
+,{
+id:"gridSettings"
+,defaultType:"check"
+,text:"Grid Settings..."
+}
+,{
+id:"insertSection"
+,defaultType:"icon"
+,text:"Insert Section"
+    ,customTooltip:{title:"Insert Section", text:"Click the arrow to insert other container elements"}
+,accelerator:{key:"i", modifier:[_ctrl,_shift], macModifier:[_meta,_shift]}
+,icon:toolboxImg(205)
+}
+,{
+id:"insertBag"
+,text:"Insert Container"
+,devStatus:'v2'
+}
+,{
+id:"insertWob"
+,text:"Insert Layout Table"
+,devStatus:'v2'
+}
+,{
+id:"moveAsSection"
+,defaultType:"icon"
+,text:"Move as Section"
+,customTooltip:{ title:"Move the selected object as Section ",text:"Create a section embedding the current element"
+,comment:'Disponible en fonction de la selection ( a determiner)'}
+,icon:temporaryImg(290)
+}
+    ,{
+id:"setAsSection"
+,defaultType:"icon"
+,text:"Set as section"      
+,customTooltip:{ title:"Set the selected object as section ",text:"Create a section embedding the current element"      
+            ,comment:'Disponible en fonction de la selection ( a determiner)'}
+,icon:toolboxImg(234)
+}
+,{
+id:"insertSectionMenu"
+,defaultType:"iconMenu"
+,text:"Insert Section"
+,customTooltip:{title:"Insert Section", text:"Insert a Section. Click on the Arrow to Insert Other Container Elements"}
+,children:
+[
+ {actionId:"insertSection"}
+ ,{type:"separator"}
+ ,{actionId:"insertBag"}
+ ,{actionId:"insertWob"}
+ ]
+,icon:typeImg(2)
+,devStatus:'v2'
+}
+,{
+id:"insertTable"
+,defaultType:"icon"
+,text:"Insert a Table"
+,customTooltip:{title:"Insert a Table",text:"Display a dialog box to choose and define the table."}
+,devStatus:'ok'
+}
+,{
+id:"insertVertTable"
+,defaultType:"icon"
+,text:"Vertical Table"
+,customTooltip:{title:"",text:""}
+,icon:toolboxImg(200)
+,userData:"vTable"
+}
+,{
+id:"insertHoriTable"
+,defaultType:"icon"
+,text:"Horizontal Table"
+,customTooltip:{title:"Insert Horizontal Table",text:"Insert an Horizontal Table. The Data is Displayed in Rows"}
+,icon:toolboxImg(201)
+,userData:"hTable"
+}
+,{
+id:"insertCrossTable"
+,defaultType:"icon"
+,text:"Cross Table"
+,customTooltip:{title:"Insert Cross Table",text:"Insert an Cross Table. The Data is Displayed in Rows and in Columns"}
+,icon:toolboxImg(202)
+,userData:"xTable"
+}
+,{
+id:"insertForm"
+,defaultType:"icon"
+,text:"Form"
+,customTooltip:{title:"Insert Form",text:"Insert Form. The Data is Displayed in Groups"}
+,icon:toolboxImg(203)
+,userData:"form"
+}
+    ,{
+id:"defineVertTable"
+,defaultType:"icon"
+,text:"Define Vertical Table"
+,userData:"vTable"
+,customTooltip:{title:"Define Vertical Table",text:"Define a vertical table to display data in columns."}
+,icon:toolboxImg(200)
+,accelerator:{key:"v", modifier:[_ctrl,_shift], macModifier:[_meta,_shift]}
+}
+,{
+id:"insertVertTableMenu"
+,defaultType:"iconMenu"
+,text:"Define Vertical Table"
+,userData:"vTable"
+,customTooltip:{title:"Define Vertical Table",text:"Define a vertical table to display data in columns."}
+,icon:toolboxImg(200)
+,children:[
+  { actionId:"defineVertTable"} 
+      ]
+}
+,{
+id:"defineHoriTable"
+,defaultType:"icon"
+,text:"Define Horizontal Table"
+,userData:"hTable"
+,customTooltip:{title:"Define Horizontal Table",text:"Define a horizontal table to display data in rows."}
+,accelerator:{key:"h", modifier:[_ctrl,_shift], macModifier:[_meta,_shift]}
+,icon:toolboxImg(201)
+}
+,{
+id:"insertHoriTableMenu"
+,defaultType:"iconMenu"
+,text:"Define Horizontal Table"
+,userData:"hTable"
+,customTooltip:{title:"Define Horizontal Table",text:"Define a horizontal table to display data in rows."}
+,icon:toolboxImg(201)
+,children:[
+  { actionId:"defineHoriTable"} 
+ ]
+}
+,{
+id:"insertChart"
+,customTooltip:{title:"Insert a Chart",text:"Display the dialog box to choose and define the chart."}
+}
+,{
+id:"insertOtherChart"
+,defaultType:"icon"
+,text:"More"
+}
+,{
+id:"defineCrossTable"
+,defaultType:"icon"
+,text:"Define Cross Table"
+,userData:"xTable"
+,customTooltip:{title:"Define Cross Table",text:"Define a cross table to display data in rows and columns."}
+,accelerator:{key:"x", modifier:[_ctrl,_shift], macModifier:[_meta,_shift]}
+,icon:toolboxImg(202)
+}
+,{
+id:"insertCrossTableMenu"
+,defaultType:"iconMenu"
+,text:"Define Cross Table"
+,userData:"xTable"
+,customTooltip:{title:"Define Cross Table",text:"Define a cross table to display data in rows and columns."}
+,icon:toolboxImg(202)
+,children:[
+     { actionId:"defineCrossTable"} 
+      ]
+}
+    ,{
+id:"defineForm"
+,defaultType:"icon"
+,text:"Define Form"
+,userData:"form"
+,customTooltip:{title:"Define Form",text:"Define a form to display data in groups"}
+,accelerator:{key:"f", modifier:[_ctrl,_shift], macModifier:[_meta,_shift]}
+,icon:toolboxImg(203)
+}
+,{
+id:"insertFormMenu"
+,defaultType:"iconMenu"
+,text:"Define Form"
+,userData:"form"
+,customTooltip:{title:"Define Form",text:"Define a form to display data in groups"}
+,icon:toolboxImg(203)
+,children:[
+     { actionId:"defineForm"} 
+      ]
+}
+,{
+id:"insertBarChartSubMenu"
+,text:"Column Chart"
+,userData:"businessgraphics/vertical_bar"
+,icon:toolboxImg(206)
+,accelerator:{key:"g", modifier:[_ctrl,_shift], macModifier:[_meta,_shift]}
+}
+,{
+id:"stackMenu"
+,text:"Stacking"
+,defaultType:"iconMenu"
+,children: [
+ {actionId:"stackingFor" ,text:"Stack For",children:[
+]}
+ ,{actionId:"stacking100For" ,text:"100% Stack For",children:[
+]}
+ ,{actionId:"unstack" ,text:"Unstack"}
+]
+}
+    ,{
+id:"insertChartColumn"
+,text:"Column"
+,userData:"businessgraphics/vertical_bar"
+,icon:toolboxImg(206)
+}
+,{
+id:"insertChartStackedColumn"
+,text:"Stacked Column"
+,userData:"businessgraphics/vertical_stacked_bar"
+,icon:toolboxImg(207)
+}
+,{
+id:"insertChart100StackedColumn"  
+    ,text:"100% Stacked Column"
+    ,userData:"businessgraphics/vertical_stacked_100_bar"
+,icon:toolboxImg(208)
+}
+,{
+    id:"insertChartDualAxisCol"      
+,text:"Dual Axis Column"
+,userData:"businessgraphics/dual_bar"
+    ,icon:toolboxImg(209)
+}
+,{
+    id:"insertChartDualAxisColLine"        
+    ,text:"Dual Axis Column and Line"
+    ,userData:"businessgraphics/dual_combined_bar_line"
+,icon:toolboxImg(210)
+}
+,{
+    id:"insertChart3DCol"           
+ ,text:"3D Column"
+ ,userData:"businessgraphics/3dbar"
+ ,icon:toolboxImg(211)
+}
+,{
+id:"insertColumnChartMenu"
+,userData:"businessgraphics/vertical_bar"
+,defaultType:"iconMenu"
+,text:"Insert Column Chart"
+,customTooltip:{title:"Insert a Column Chart", text:"Click on the arrow to insert other column charts"}
+,icon:toolboxImg(206)
+,children:
+[ 
+ {
+ actionId:"insertChartColumn"     
+}
+ ,{
+ actionId:"insertChartStackedColumn"    
+ }
+ ,{
+ actionId:"insertChart100StackedColumn" 
+ }
+ ,{type:"separator"}
+ ,{
+ actionId:"insertChartDualAxisCol" 
+ }
+ ,{
+ actionId:"insertChartDualAxisColLine" 
+ }
+ ,{type:"separator"}
+ ,{
+ actionId:"insertChart3DCol" 
+ } 
+ ,{type:"separator"}
+,{actionId:"insertChart", text:'More Column Charts...',userData:"businessgraphics/vertical_bar"}
+ ]
+}
+,{
+id:"insertLineChartSubMenu"
+,text:"Line Chart"
+,userData:"businessgraphics/line"
+,icon:toolboxImg(212)
+}
+,{
+id:"insertLineChart"  
+    ,text:"Line"
+    ,userData:"businessgraphics/line"
+,icon:toolboxImg(212)
+}
+,{
+id:"insertDualAxisLineChart"  
+    ,text:"Dual Axis Line"
+    ,userData:"businessgraphics/dual_line"
+,icon:toolboxImg(213)
+}
+,{
+id:"insertSurfaceLineChart"  
+    ,text:"Area"
+    ,userData:"businessgraphics/surface"
+,icon:toolboxImg(214)
+}
+,{
+id:"insertLineChartMenu"
+,userData:"businessgraphics/line"
+,defaultType:"iconMenu"
+,text:""
+,customTooltip:{title:"Insert a Line Chart", text:"Click on the arrow to insert other line charts"}
+,icon:toolboxImg(212)
+,children:
+[
+ {
+ actionId:"insertLineChart"
+ }
+ ,{
+ actionId:"insertDualAxisLineChart" 
+ }
+ ,{type:"separator"}
+ ,{
+ actionId:"insertSurfaceLineChart" 
+ }
+ ,{type:"separator"}
+,{actionId:"insertChart", text:'More Line Charts...',userData:"businessgraphics/line"}
+ ]
+,devStatus:'ok'
+}
+,{
+id:"insertPieChartSubMenu"
+,text:"Pie Chart"
+,userData:"businessgraphics/pie"
+,icon:toolboxImg(215)
+}
+,{
+id:"insertPieChart"
+,text:"Pie"
+,userData:"businessgraphics/pie"
+,icon:toolboxImg(215)
+}
+,{
+id:"insertPieChartWithDepth"
+,text:"Pie with Variable Slice Depth"
+,userData:"businessgraphics/pie_with_depth" 
+,icon:toolboxImg(216)
+}
+,{
+id:"insertDoughnutChart"
+,text:"Donut"
+,userData:"businessgraphics/donut"
+,icon:toolboxImg(217)
+}
+,{
+id:"insertPieChartMenu"
+,userData:"businessgraphics/pie"
+,defaultType:"iconMenu"
+,text:"Insert a Pie Chart"
+,customTooltip:{title:"Insert a Pie Chart", text:"Click on the arrow to insert other pie charts", comment:'UNlike Word/Home/FontSize'}
+,icon:toolboxImg(215)
+,children:
+[
+ {
+ actionId:"insertPieChart" 
+ } 
+ ,{
+ actionId:"insertPieChartWithDepth" 
+ } 
+ ,{type:"separator"}
+ ,{
+ actionId:"insertDoughnutChart" 
+ } 
+ ,{type:"separator"}
+,{actionId:"insertChart", text:'More Pie Charts...',userData:"businessgraphics/pie"}
+ ]
+,devStatus:'ok'
+}
+    ,{
+id:"insertBarChart"
+,text:"Bar"
+,userData:"businessgraphics/horizontal_bar"
+,icon:toolboxImg(218)
+}
+,{
+id:"insertHorizStackedBarChart"
+,text:"Stacked Bar"
+,userData:"businessgraphics/horizontal_stacked_bar"
+,icon:toolboxImg(219)
+}
+,{
+id:"insert100StackedBarChart"
+,text:"100% Stacked Bar"
+,userData:"businessgraphics/horizontal_stacked_100_bar"
+,icon:toolboxImg(220)
+}
+,{
+id:"insertBarChartMenu"
+,userData:"businessgraphics/horizontal_bar"
+,defaultType:"iconMenu"
+,text:"Insert a Bar Chart"
+,customTooltip:{title:"Insert a Bar Chart", text:"Click on the arrow to insert other bar charts"}
+,icon:toolboxImg(218)
+,children:
+[
+ {
+ actionId:"insertBarChart" 
+ }
+ ,{
+ actionId:"insertHorizStackedBarChart" 
+ }
+ ,{
+ actionId:"insert100StackedBarChart" 
+ } 
+ ,{type:"separator"}
+,{actionId:"insertChart", text:'More Bar Charts...',userData:"businessgraphics/horizontal_bar"
+}
+ ]
+}
+,{
+id:"insertPointSubMenu"
+,text:"Point Chart"
+,userData:"businessgraphics/scatter"
+,icon:toolboxImg(221)
+}
+,{
+id:"insertScatter"
+,text:"Scatter Plot"
+,userData:"businessgraphics/scatter"
+,icon:toolboxImg(221)
+}
+,{
+id:"insertBubble"
+,text:"Bubble Chart"
+,userData:"businessgraphics/bubble"
+,icon:toolboxImg(222)
+}
+,{
+id:"insertPointChartMenu"
+,userData:"businessgraphics/scatter"
+,defaultType:"iconMenu"
+,text:"Insert a Point Chart"
+,customTooltip:{title:"Insert a Point Chart", text:"Click on the arrow to insert other point charts"}
+,icon:toolboxImg(221)
+,children:
+[
+ {
+ actionId:"insertScatter" 
+ }
+ ,{
+ actionId:"insertBubble" 
+ }
+ ,{type:"separator"}
+,{actionId:"insertChart", text:'More Point Charts...',userData:"businessgraphics/scatter"}
+ ]
+}
+,{
+id:'insertControlDB'
+,text:"Insert a Control"
+,customTooltip:{title:"Insert a Control", text:"Call the Dialog Box to choose and insert a control."}
+}
+,{
+id:"insertBoxPlot"
+,text:"Box Plot"
+,userData:"businessgraphics/boxplot"
+,icon:toolboxImg(223)
+}
+,{
+id:"insertRadarChart"
+,text:"Radar Chart"
+,userData:"businessgraphics/radar"
+,icon:toolboxImg(224)
+}
+,{
+id:"insertTreeMapChart"
+,text:"Tree Map"
+,userData:"businessgraphics/treemap"
+,icon:toolboxImg(225)
+}
+,{
+id:"insertHeatMapChart"
+,text:"Heat Map"
+,userData:"businessgraphics/heatmap"
+,icon:toolboxImg(226)
+}
+,{
+id:"insertTagCloudChart"
+,text:"Tag Cloud"
+,userData:"businessgraphics/tagcloud"
+,icon:toolboxImg(227)
+}
+,{
+id:"insertOtherChartMenu"
+,userData:"businessgraphics/radar"
+,defaultType:"iconMenu"
+,triggerAction: false
+,text:"Insert other chart"
+,customTooltip:{title:"Insert other chart", text:"Click on the arrow to insert other charts"}
+,children:
+[
+ {
+ actionId:"insertBoxPlot" 
+ }
+ ,{type:"separator"}
+ ,{
+ actionId:"insertRadarChart" 
+ }
+ ,{type:"separator"}
+ ,{
+ actionId:"insertTreeMapChart" 
+ }
+ ,{
+ actionId:"insertHeatMapChart" 
+ }
+ ,{type:"separator"}
+ ,{
+ actionId:"insertTagCloudChart" 
+ }
+ ,{type:"separator"}
+,{actionId:"insertChart", text:'All Charts...',userData:"businessgraphics/vertical_bar"}
+ ]
+}
+,{id:"insertEntryFieldControl", text:'Entry Field', icon:toolboxImg(315)}
+    ,{id:"insertComboBoxControl", text:'Combo Box', icon:toolboxImg(316)}
+    ,{id:"insertListBoxControl", text:'List Box', icon:toolboxImg(317)}
+    ,{id:"insertRadioButtonControl", text:'Radio Buttons', icon:toolboxImg(318)}
+    ,{id:"insertSingleListBoxControl", text:'Single List Box', icon:toolboxImg(317)}
+,{id:"insertListCheckBoxControl", text:'List Check Box', icon:toolboxImg(320)}
+,{id:"insertCalendarControl", text:'Calendar', icon:toolboxImg(321)}
+,{id:"insertSpinnerControl", text:'Spinner', icon:toolboxImg(322)}
+,{id:"insertSingleSliderControl", text:'Single Slider', icon:toolboxImg(323)}
+,{id:"insertDoubleSliderControl", text:'Double Slider', icon:toolboxImg(324)}
+,{id:"insertTreeviewControl", text:'Single tree list', icon:toolboxImg(333)}
+,{id:"insertTreeview_multControl", text:'Tree list', icon:toolboxImg(333)} 
+    ,{id:"defineControl", text:'Define Control...' ,icon:toolboxImg(314)}
+,{
+id:"insertControlMenu"
+,defaultType:"iconMenu"
+,text:"Input Controls"
+,customTooltip:{title:"Input Controls", text:"Click the arrow to insert other controls"}
+,children:[
+ {actionId:"insertEntryFieldControl"}
+        ,{type:"separator"}
+            ,{actionId:"insertComboBoxControl"}
+        ,{actionId:"insertSingleListBoxControl"}
+        ,{actionId:"insertListBoxControl"}
+        ,{actionId:"insertRadioButtonControl"}
+        ,{type:"separator"}
+            ,{actionId:"insertListCheckBoxControl"}
+            ,{type:"separator"}
+        ,{actionId:"insertCalendarControl"}
+,{actionId:"insertTreeviewControl"}
+,{actionId:"insertTreeview_multControl"}
+,{actionId:"insertSpinnerControl"}
+,{actionId:"insertSingleSliderControl"}
+,{actionId:"insertDoubleSliderControl"}
+ ,{type:"separator"}
+,{actionId:"defineControl"}
+]
+        ,icon:toolboxImg(314)
+}
+,{  id:"navigationBlock"
+        ,text:"Linking" 
+        ,children:[
+{actionId:"addElementlink"}
+,{actionId:"editElementlink"}
+,{actionId:"removeElementlink"} 
+]      
+    }
+,{  id:"navigation"
+        ,text:"Linking"
+        ,children:[
+            {actionId:"addHyperlink"}
+,{actionId:"addDoclink"}
+            ,{actionId:"setContentAsHyperlink"}
+            ,{actionId:"editLink"}
+            ,{actionId:"removeHyperlink"}         
+,{type:"separator"}
+            ,{actionId:"addElementlink"}
+    ,{actionId:"editElementlink"}
+    ,{actionId:"removeElementlink"}
+        ]
+    }
+,{
+id:"addHyperlink"
+,defaultType:"check"
+,icon:temporaryImg(548)
+,text:'Add Hyperlink...'
+,customTooltip:{title:"Insert an Hyperlink", text:"Create a link to a Web page or another location in this document"}
+,accelerator:{key:"k", modifier:_ctrl, macModifier:_meta, comment:'like Word/Insert/Hyperlink'}
+}
+,{
+id:"editHyperlink"
+,defaultType:"check"
+,text:'Edit Hyperlink...'
+}
+,{
+id:"editLink"
+,defaultType:"check"
+,text:'Edit Link...'
+}
+,{
+id:"removeHyperlink"
+,defaultType:"check"
+,text:'Remove'
+}
+,{
+id:"setContentAsHyperlink"
+,defaultType:"check"
+,text:'Read Content as Hyperlink'
+}
+,{
+id:"insertLinkMenu"
+,defaultType:"iconMenu"      
+,customTooltip:{title:"Linking", text:"Click the button to bring the selected element to the front."}
+,children:[
+{actionId:"addHyperlink"}
+            ,{actionId:"setContentAsHyperlink"}
+,{actionId:"editHyperlink"}
+,{actionId:"removeHyperlink"} 
+]      
+    ,icon:toolboxImg(249)
+}
+    ,{
+id:"addDoclink"
+,defaultType:"check"
+,text:'Add Document Link...'
+        ,icon:toolboxImg(250)
+}
+    ,{
+id:"editDoclink"
+,defaultType:"check"
+}
+    ,{
+id:"removeDoclink"
+,defaultType:"check"
+}
+    ,{
+id:"docLinkMenu"
+,defaultType:"iconMenu"      
+,text:"Document"
+,customTooltip:{title:"Document", text:"Add Document Link"}
+,children:[
+{actionId:"addDoclink", text:'Add Document Link...'}
+,{actionId:"editDoclink", text:'Edit Document Link...'}
+,{actionId:"removeDoclink", text:'Remove Link'} 
+]      
+    ,icon:toolboxImg(250)
+}
+    ,{
+id:"addElementlink"
+,defaultType:"check"
+        ,icon:toolboxImg(251)
+        ,text:'Add Element Link...'
+}
+    ,{
+id:"editElementlink"
+,defaultType:"check"
+,text:'Edit Element Link...'
+}
+    ,{
+id:"removeElementlink"
+,defaultType:"check"
+,text:'Remove'
+}
+    ,{
+id:"elementLinkMenu"
+,triggerAction:false
+,defaultType:"iconMenu"      
+,text:"Element"
+,customTooltip:{title:"Element", text:"Element tooltip"}
+,children:[
+{actionId:"addElementlink"}
+,{actionId:"editElementlink"}
+,{actionId:"removeElementlink"} 
+]      
+    ,icon:toolboxImg(251)
+}
+,{
+id:"elementLinkSubMenu"  
+,text:"Element"
+,customTooltip:{title:"Element", text:"Element tooltip"}
+,children:[
+{actionId:"addElementlink"}
+,{actionId:"editElementlink"}
+,{actionId:"removeElementlink"} 
+]        
+}
+,{
+id:"addInteractivity"
+,text:'Set as an Interactive Input'
+,defaultType:"check"
+,icon:toolboxImg(250)
+}
+,{
+id:"editInteractivity", text:'Edit Interactive Link'
+,defaultType:"check"
+}
+,{
+id:"removeInteractivity", text:'Remove Interactive Link'
+,defaultType:"check"
+}
+,{
+id:"interactionMenu"
+,defaultType:"iconMenu"
+,text:"Insert Action"
+,customTooltip:{title:"Insert an Action", text:"Click on the Arrow to Insert an Action"}
+,children:[
+ {actionId:"addInteractivity"}
+,{actionId:"editInteractivity"}
+,{actionId:"removeInteractivity"}
+]
+}
+,{
+id:"insertShapeMenu"
+,defaultType:"iconMenu"
+,text:"Insert Shape"
+,customTooltip:{title:"Insert a Shape", text:"Click on the Arrow to Insert an Action"}
+,children:[
+ {type:"separator"}
+]
+}
+,{
+id:"insertPicture"
+,defaultType:"icon"
+,text:"Insert Picture"
+,customTooltip:{title:"Insert a Picture", text:"Insert a Cell that displays a Picture"}
+,icon:formatImg(16)
+}
+,{
+id:"insertBlankCell"
+,defaultType:"icon"
+        ,text: 'Blank' 
+        ,customTooltip:{title:"Blank", text:"Insert a blank cell"}
+,accelerator:{key:"e", modifier:[_ctrl,_shift], macModifier:[_meta,_shift]}
+,icon:toolboxImg(204)
+}
+,{
+id:"insertCellDocName"
+,defaultType:"icon"
+,text:'Document Name'
+,icon:toolboxImg(204)
+}
+,{
+id:"insertCellRefreshDate"
+,defaultType:"icon"
+, text:'Last Refresh Date'
+,icon:toolboxImg(204)
+}
+,{
+id:"insertCellDrillFilters"
+,defaultType:"icon"
+, text:'Drill Filter'
+,icon:toolboxImg(204)
+}
+,{
+id:"insertCellQuerySummary"
+,defaultType:"icon"
+, text:'Query Summary'
+,icon:toolboxImg(204)
+}
+,{
+id:"insertCellPrompt"
+,defaultType:"icon"
+, text:'Prompt'
+,icon:toolboxImg(204)
+}
+,{
+id:"insertCellPromptSummary"
+,defaultType:"icon"
+, text:'Summary'
+,icon:toolboxImg(204)
+}
+,{
+id:"insertCellRFilterSummary"
+,defaultType:"icon"
+, text:'Report Filter Summary'
+,icon:toolboxImg(204)
+}
+,{
+id:"insertCellPage"
+,defaultType:"icon"
+, text:'Page number'
+,icon:toolboxImg(204)
+}
+,{
+id:"insertCellPageTotalPage"
+,defaultType:"icon"
+, text:'Page Number/Total Pages'
+,icon:toolboxImg(204)
+}
+,{
+id:"insertCellTotalPage"
+,defaultType:"icon"
+, text:'Total Number of Pages'
+,icon:toolboxImg(204)
+}
+,{
+id:"insertCellMenu"
+,defaultType:"iconMenu"
+,triggerAction:false
+,text:"Insert Cell"
+,customTooltip:{title:"Insert Cell", text:"Insert a pre-defined cell"}
+,children:
+[
+ {actionId:'insertCellDocName'}
+,{actionId:'insertCellRefreshDate'}
+,{actionId:'insertCellDrillFilters'}
+ ,{type:"separator"}
+,{actionId:'insertCellQuerySummary'}
+,{actionId:'insertCellPrompt'}
+,{actionId:'insertCellRFilterSummary'}
+ ,{type:"separator"}
+,{actionId:'insertCellPage'}
+,{actionId:'insertCellPageTotalPage'}
+,{actionId:'insertCellTotalPage'}
+ ]
+}
+    ,{
+id:"turntoMenu"
+,defaultType:"iconMenu"
+,text:"Turn Into"
+,customTooltip:{title:"Turn Into",text:"Transform a report element into another report element"}
+,icon:toolboxImg(233)
+,children:[
+ {actionId:"turntoVTable"}   
+                ,{actionId:"turntoHTable"}           
+                ,{actionId:"turntoXTable"}
+        ,{type:"separator"}
+         ,{actionId:"turnToColumn"}
+         ,{actionId:"turnToLine"}
+         ,{actionId:"turnToPie"}
+        ,{type:"separator"}
+         ,{actionId:"turnto", text:"More Transformations..."} 
+      ]
+}
+,{
+id:"turnInto", text:"Turn Into"
+, children:[
+        {actionId:"turntoVTable"}   
+        ,{actionId:"turntoHTable"}           
+        ,{actionId:"turntoXTable"}
+    ,{type:"separator"}
+     ,{actionId:"turnToColumn"}
+     ,{actionId:"turnToLine"}
+     ,{actionId:"turnToPie"}
+    ,{type:"separator"}
+     ,{actionId:"turnto", text:"More Transformations..."}
+        ]
+    }      
+,{
+id:"turnto"
+,defaultType:"icon"
+,text:"Turn Into"
+,customTooltip:{title:"Turn Into", text:"Transform a report element into another report element"}
+,accelerator:{key:"t", modifier:[_ctrl,_shift], macModifier:[_meta,_shift]}
+,icon:toolboxImg(233)
+}
+,{
+ id:"turntoHTable"
+ ,userData:"hTable"
+ ,text:"Horizontal Table"
+,icon:toolboxImg(201)
+}
+,{
+ id:"turntoVTable"
+ ,userData:"vTable"
+ ,text:"Vertical Table"
+,icon:toolboxImg(200)
+}
+,{
+ id:"turntoXTable"
+ ,userData:"xTable"
+ ,text:"Cross Table"
+,icon:toolboxImg(202)
+}
+,{
+ id:"turnToStackedColumn"
+ ,userData:"businessgraphics/vertical_stacked_bar"  
+ ,text:"Stacked Column"
+ ,icon:toolboxImg(207)
+}
+ ,{
+ id:"turnToColumn"  
+ ,userData:"businessgraphics/vertical_bar"
+ ,text:"Column Chart"
+ ,icon:toolboxImg(206)
+}
+,{
+ id:"turnToLine"
+ ,userData:"businessgraphics/line"  
+ ,text:"Line Chart"
+ ,icon:toolboxImg(212)
+}
+    ,{
+ id:"swapAxis"   
+ ,text:"Swap axis" 
+}
+,{
+ id:"turnToPie"
+ ,userData:"businessgraphics/pie"  
+ ,text:"Pie Chart"
+,icon:toolboxImg(215)
+}
+,{
+id:"copyHyperlink"
+,text:"Copy Hyperlink"
+}
+ ,{
+id:"showElement"
+,text:"Show"
+,icon:toolboxImg(260)
+}
+,{
+id:"hideElement"
+,text:"Hide"
+,icon:toolboxImg(260)
+}
+   ,{
+id:"hideElementWhenEmpty"
+,defaultType:"check"
+,text:"Hide when Empty"
+,icon:toolboxImg(261)
+}
+,{
+id:"hideElementWhen"
+,text:"Hide When..."
+,icon:toolboxImg(262)
+}
+    ,{
+id:"hideColumn"
+,text:"Hide Dimension"
+,icon:toolboxImg(240)
+}
+    ,{
+id:"hideTable"
+,text:""
+,icon:temporaryImg(668)
+}
+    ,{
+id:"showHiddenColumns"
+,text:"Show Hidden Dimensions"
+}
+,{
+id:"hideTableWhenEmpty"
+,text:""
+,icon:temporaryImg(669)
+}
+    ,{
+id:"hideTableWhen"
+,text:""
+,icon:temporaryImg(697)
+}
+,{
+id:"noHideElement"
+,text:"Element always Visible"
+}
+,{id:"hideMenu"
+    ,text:"Hide"
+,defaultType:"iconMenu"
+        ,triggerAction:false
+        ,customTooltip:{title:"Hide", text:"Hide tooltip"}
+,icon:toolboxImg(259)
+, children:[
+  {actionId:"hideColumn"}
+ ,{actionId:"showHiddenColumns"} 
+,{type:"separator"}
+,{actionId:"showElement"}
+            ,{actionId:"hideElement"}
+ ,{actionId:"hideElementWhenEmpty"}
+            ,{actionId:"hideElementWhen"}
+]
+}
+,{id:"hideSubMenu"
+    ,text:"Hide"
+,icon:toolboxImg(259)
+, children:[   
+ {actionId:"showHiddenColumns"} 
+,{type:"separator"}
+,{actionId:"hideColumn"}
+,{actionId:"showElement"}
+            ,{actionId:"hideElement"}
+ ,{actionId:"hideElementWhenEmpty"}
+            ,{actionId:"hideElementWhen"}
+]
+}
+    ,{
+id:"showAllHiddenContent", text:'Show All Hidden Content'
+}
+,{id:"sectionHideMenu", text:"Hide"
+,defaultType:"iconMenu"
+        ,triggerAction:false
+        ,customTooltip:{title:"Hide", text:"Hide tooltip"}
+,icon:toolboxImg(259)
+, children:[
+  {actionId:"showAllHiddenContent", text:"Show All Hidden Content"}  
+,{type:"separator"}
+,{actionId:"showElement"}
+            ,{actionId:"hideElement", text:"Hide"}
+ ,{actionId:"hideElementWhenEmpty", text:"Hide when Empty"}
+            ,{actionId:"hideElementWhen", text:"Hide When..."}
+]
+}
+    ,{id:"sectionHideSubMenu"
+        ,text:"Hide"      
+        ,customTooltip:{title:"Hide", text:"Hide tooltip"}
+,icon:toolboxImg(259)
+, children:[
+  {actionId:"showAllHiddenContent", text:"Show All Hidden Content"}  
+,{type:"separator"}
+,{actionId:"showElement"}
+            ,{actionId:"hideElement", text:"Hide"}
+ ,{actionId:"hideElementWhenEmpty", text:"Hide when Empty"}
+            ,{actionId:"hideElementWhen", text:"Hide When..."}
+]
+}
+    ,{id:"simpleHideMenu", text:"Hide"
+,defaultType:"iconMenu"
+        ,triggerAction:false
+        ,customTooltip:{title:"Hide", text:"Hide tooltip"}
+,icon:toolboxImg(259)
+, children:[            
+            {actionId:"showElement"}
+            ,{actionId:"hideElement", text:"Hide"}
+ ,{actionId:"hideElementWhenEmpty", text:"Hide when Empty"}
+            ,{actionId:"hideElementWhen", text:"Hide When..."}
+]
+}
+,{id:"simpleHideSubMenu"
+    ,text:"Hide"
+        ,customTooltip:{title:"Hide", text:"Hide tooltip"}
+,icon:toolboxImg(259)
+, children:[ 
+            {actionId:"hideElement"}
+            ,{actionId:"showElement"}
+ ,{actionId:"hideElementWhenEmpty"}
+            ,{actionId:"hideElementWhen"}
+]
+}
+,{
+id:"removeReportElement"
+,defaultType:"icon"
+,text:"Delete"
+,customTooltip:{title:"Remove", text:"Delete the Selected Report Elements"}
+,icon:toolboxImg(112)
+}
+,{
+id: "deleteShortcut",
+accelerator:{key:keys.del} 
+}
+,{
+id:"scaleWidth"
+,defaultType:"label"
+,text:"Width"
+}
+,{
+id:"scaleHeight"
+,defaultType:"label"
+,text:"Height"
+}
+,{
+id:"scaleWidthCombo"
+,defaultType:"textCombo"
+,customTooltip:{title:"Width", text:"Change the page number to fit width"}
+,width:50
+}
+,{
+id:"scaleHeightCombo"
+,defaultType:"textCombo"
+,customTooltip:{title:"height", text:"Change the page number to fit height"}
+,width:50
+}
+,{
+id:"fontName"
+,defaultType:"customCombo"
+,text:"Font Name"
+,customTooltip:{title:"Font Name", text:"Font name"}
+,devStatus:'ok'
+}
+,{
+id:"fontSize"
+,defaultType:"intCombo"
+,text:"Font Size"
+,customTooltip:{title:"Font Size", text:"Font size"}
+,devStatus:'ok'
+}
+,{
+id:"bold"
+,defaultType:"check"
+,text:"Bold"
+,accelerator:{key:"b", modifier:_ctrl, macModifier:_meta}
+,customTooltip:{title:"Bold", text:"Bold"}
+,icon:toolboxImg(272)
+}
+,{
+id:"italic"
+,defaultType:"check"
+,text:"Italic"
+,accelerator:{key:"i", modifier:_ctrl, macModifier:_meta}
+,customTooltip:{title:"Italic", text:"Italic"}
+,icon:toolboxImg(273)
+}
+,{
+id:"increaseFontSize"
+,defaultType:"icon"
+,text:"Grow Font"
+,customTooltip:{title:"Grow Font", text:"Increase the Font Size."}
+,icon:toolboxImg(267)
+}
+,{
+id:"decreaseFontSize"
+,defaultType:"icon"
+,text:"Shrink Font"
+,accelerator:{key:">", modifier:_ctrl, macModifier:_meta, comment:"like Word/Home/ShrinkFont"}
+,customTooltip:{title:"Shrink Font", text:"Decrease Font Size."}
+,icon:toolboxImg(268)
+}
+,{
+id:"under"
+,defaultType:"check"
+,text:"Underlined"
+,accelerator:{key:"u", modifier:_ctrl, macModifier:_meta}
+,customTooltip:{title:"Underlined", text:"Underlined"}
+,icon:toolboxImg(274)
+}
+,{
+id:"strikethrough"
+,defaultType:"check"
+,customTooltip:{title:"Strikethrough", text:"Draw a line through the middle of the selected text."}
+,text:"Strikethrough"
+,icon:toolboxImg(275)
+}
+,{
+id:"fontColor"
+,defaultType:"colorMenu"
+,text:"Text Color"
+,customTooltip:{title:"Text Color", text:"Change the Text Color on the Selected Element."}
+,icon:toolboxImg(276)
+}
+,{
+id:"formatPainter"
+,defaultType:"check"
+,text:"Format Painter"
+,customTooltip:{title:"Format Painter", text:"Double-click this button to apply the same formatting to multiple places in the document."}
+,accelerator:{key:"c", modifier:[_ctrl,_shift], macModifier:[_meta,_shift]}
+,icon:toolboxImg(286)
+}
+    ,{
+id:"widthField"
+,defaultType:"spinner"
+,width:30
+,changeOnlyOnMouseUp:true
+,noMargin:true
+,precision:2
+,interval:0.1
+,min:0.1
+,customTooltip:{title:"Specify a minimum width for the selected cells", text:"Specify a minimum width for the selected cells"}
+}
+    ,{
+id:"heightField"
+,defaultType:"spinner"
+,width:30
+,changeOnlyOnMouseUp:true
+,noMargin:true
+,precision:2
+,interval:0.1
+,min:0.1
+,customTooltip:{title:"Specify a minimum height for the selected cells", text:"Specify a minimum height for the selected cells"}
+}
+,{
+id:"leftAlign"
+,defaultType:"check"
+,text:"Align Left"
+,customTooltip:{title:"Align Left", text:"Align left"}
+,icon:toolboxImg(279)
+}
+,{
+id:"centerAlign"
+,defaultType:"check"
+,text:"Align Center"
+,customTooltip:{title:"Align Center", text:"Align center"}
+,icon:toolboxImg(280)
+}
+,{
+id:"rightAlign"
+,defaultType:"check"
+,text:"Align Right"
+,customTooltip:{title:"Align Right", text:"Align right"}
+,icon:toolboxImg(281)
+}
+,{
+id:"wrapText"
+,defaultType:"check"
+,text:"Wrap text"
+,customTooltip:{title:"Wrap text",text:"Wrap text"}
+,icon:toolboxImg(285)
+}
+,{
+id:"topAlign"
+,defaultType:"check"
+,text:"Align Top"
+,customTooltip:{title:"Align Top", text:"Align top"}
+,icon:toolboxImg(282)
+}
+,{
+id:"middleAlign"
+,defaultType:"check"
+,text:"Align Middle"
+,customTooltip:{title:"Align Center", text:"Align center"}
+,icon:toolboxImg(283)
+}
+,{
+id:"bottomAlign"
+,defaultType:"check"
+,text:"Align Bottom"
+,customTooltip:{title:"Align Bottom", text:"Align bottom"}
+,icon:toolboxImg(284)
+}
+,{
+id:"mergeOrSplit"
+,defaultType:"check"
+,text:"Merge"
+,customTooltip:{title:"Merge cells",text:"Merge or unmerge selected cells"}
+,icon:toolboxImg(271)
+}
+,{
+id:"othersValuesVisible"
+,defaultType:"check"
+,text:"Visible"
+}
+,{
+id:"othersValuesGroup"
+,defaultType:"check"
+,text:"Automatically grouped"
+}
+,{
+id:"otherValuesHidden"
+,defaultType:"check"
+,text:"Hidden"
+}
+,{
+id:"ungroupValues"
+,text:"Ungrouped Values"
+,children:[
+     {actionId:"othersValuesVisible"}
+    ,{actionId:"othersValuesGroup"}
+    ]
+}
+,{  id:"customGroup"
+    ,text:"Group"
+    ,children:[
+     {actionId:"groupValues",text:"Group"}
+    ,{actionId:"moveToGroup",text:"Move to Group"}
+    ,{actionId:"ungroup",text:"Ungroup"}
+    ,{actionId:"renameGroup",text:"Rename the selected group"}    
+    ,{type:"separator"}
+    ,{actionId:"ungroupValues"}
+    ,{type:"separator"}
+    ,{actionId:"manageGroup", text:"Manage Groups..."}
+    ]
+    }
+,{
+id:"groupingBtn"
+,defaultType:"iconMenu"
+,text:"Group"
+,customTooltip:{title:"Group", text:"Add grouping set for the selected values"}
+,children:[
+  {actionId:"groupValues",text:"Group"}
+    ,{actionId:"moveToGroup",text:"Move to Group"}
+    ,{actionId:"ungroup",text:"Ungroup"}
+    ,{actionId:"renameGroup",text:"Rename the selected group"}    
+    ,{type:"separator"}
+    ,{actionId:"ungroupValues"}
+    ,{type:"separator"}
+    ,{actionId:"manageGroup", text:"Manage Groups..."}
+ ]
+}
+,{
+id:"autoSize"
+,defaultType:"check"
+,text:"Auto Size"
+,customTooltip:{title:"Auto Size",text:"Auto Fit width of cells. Set Wrap text On at the same time. If the Auto size is set off the wrap text will remains."}
+}
+,{  id:"formatFont"
+    ,text:"Font..."
+    ,icon:temporaryImg(537)
+    }
+,{  id:"formatFontSubMenu"
+    ,text:"Text"
+    ,children:[
+     {actionId:"leftAlign"}
+    ,{actionId:"centerAlign"}
+    ,{actionId:"rightAlign"}
+    ,{type:"separator"}
+    ,{actionId:"wrapText"}
+    ,{type:"separator"}
+    ,{actionId:"topAlign"}
+    ,{actionId:"middleAlign"}
+    ,{actionId:"bottomAlign"}
+    ,{type:"separator"}
+    ,{actionId:"formatFont", text:"Font..."}
+    ]
+    }
+,{
+id:"cellSizeMenu"
+,defaultType:"iconMenu"
+,text:"Size"
+,children:[
+ {actionId:"autoSize"}
+,{actionId:"resizeWidth"}
+,{actionId:"resizeHeight"}
+]
+,customTooltip:{title:"Manage the cell size", text:"Set an automatic cell width or change the cell size manually."
+,comment:{from:"jcros", text:"Probleme pour changer la width dans un menu.<br> Pourquoi ces meme items ne controlent pas aussi la dimension des tables, section, etc..."}}
+}
+    ,{
+id:"horizLabel"
+,defaultType:"label"
+,text:"Horizontal:"
+}
+,{
+id:"vertLabel"
+,defaultType:"label"
+,text:"Vertical:"
+}
+    ,{
+id:"horizontalPadding"
+,defaultType:"spinner"
+,width:30
+,changeOnlyOnMouseUp:true
+,noMargin:true
+,precision:2
+,interval:0.1
+,customTooltip:{title:"Padding horizontal field", text:"Padding horizontal field"}
+}
+    ,{
+id:"verticalPadding"
+,defaultType:"spinner"
+,width:30
+,changeOnlyOnMouseUp:true
+,noMargin:true
+,precision:2
+,interval:0.1
+,customTooltip:{title:"Padding vertical field", text:"Padding vertical field"}
+}
+,{
+id:"paddingMenu"
+,defaultType:"iconMenu"
+,text:"Padding"
+,children:[
+{actionId:"horizontalPadding"}
+,{actionId:"verticalPadding"}
+]
+,customTooltip:{title:"Manage the padding", text:"Change the padding horizontally and vertically"
+,comment:{from:"jcros", text:"Probleme pour changer la width dans un menu."}
+}
+,icon:temporaryImg(448)
+}
+,{
+id:"clearContents"
+,defaultType:"icon"
+,text:"Clear Contents"
+}
+    ,{
+id:"clearAll"
+,defaultType:"icon"
+,text:"Clear All"
+,customTooltip:{title:"",text:"Clear all tooltip."}
+,icon:toolboxImg(289)
+}
+,{
+id:"clearFormat"
+,defaultType:"icon"
+,text:"Clear Format"
+,customTooltip:{title:"Clear Format",text:"Reset the format of this cell to defaults."}
+,icon:toolboxImg(290)
+}
+,{
+id:"clearConditionalFormatting"
+,defaultType:"icon"
+,text:"Clear Conditional Formatting"
+}
+,{
+id:"clearCellMenu"
+,defaultType:"iconMenu"
+,text:"Clear"
+        ,triggerAction:false
+,children:[            
+                 {actionId:"clearAll"}
+                ,{type:"separator"}
+,{actionId:"clearFormat"}
+,{actionId:"clearConditionalFormatting"}
+,{actionId:"clearContents"}
+    ]
+,customTooltip:{title:"Clear",text:"Clear the content and conditional formatting from cells."}
+,icon:toolboxImg(289)
+}
+,{
+id:"formatNumberCurrencyMenu"
+,defaultType:"iconMenu"
+        ,triggerAction:false
+,children:[            
+                {actionId:"currencyDollar"}
+,{actionId:"currencyEuro"}
+,{actionId:"currencyYen"}
+    ]
+,customTooltip:{title:"Currency",text:"Apply a currency format"}
+,icon:toolboxImg(232)
+}
+,{
+id:"currencyDollar"
+,defaultType:"icon"
+,text:"\u0024 Dollar"
+}
+,{
+id:"currencyEuro"
+,defaultType:"icon"
+,text:"\u20AC Euro"
+}
+,{
+id:"currencyYen"
+,defaultType:"icon"
+,text:"\u00A5 Yen"
+}
+,{
+id:"formatPercent"
+,defaultType:"icon"
+,customTooltip:{title:"Percentage",text:"Apply a percentage format"}
+,icon:toolboxImg(235)
+}
+,{
+id:"changeNumberFormat"
+,defaultType:"textCombo"
+,width:100
+,text:"Number Format"
+,customTooltip:{title:"Number Format", text:"Choose from a set of predefined formats or use the dialog box to choose"}
+    }
+,{
+id:"formatNumber"
+,text:"Format Number..."
+,customTooltip:{title:"Set the Format Number ", text:"Call the Dialog Box to choose or edit a new format."
+}
+,icon:temporaryImg(685)
+}
+,{
+id:"setCurrency"
+,text:"Set Currency"
+}
+,{id:"setNoCurrency", text:'Set No Currency'}
+,{id:"setDollarCurrency", text:'Set Dollar Currency',icon:temporaryImg(375)}
+,{id:"setEuroCurrency", text:'Set Euro Currency',icon:temporaryImg(385)}
+,{id:"setYenCurrency", text:'Set Yen Currency',icon:temporaryImg(306)}
+,{id:"setPoundCurrency", text:'Set Pound Currency',icon:temporaryImg(395)}
+,{
+id:"currencyMenu"
+,defaultType:"iconMenu"
+,text:"Choose Currency"
+,children:[
+ {actionId:"setNoCurrency", text:'No currency'}
+,{type:"separator"}
+,{actionId:"setDollarCurrency", text:'Dollar'}
+,{actionId:"setEuroCurrency", text:'Euro'}
+,{actionId:"setYenCurrency", text:'Yen'}
+,{actionId:"setPoundCurrency", text:'Pound'}
+]
+,customTooltip:{title:"Set the currency",text:"Set the currency of the number if exists."
+}
+,icon:temporaryImg(375)
+}
+,{
+id:"increaseDecimal"
+,defaultType:"icon"
+,text:"Increase Decimal"
+,customTooltip:{title:"Increase Decimal",text:"Show more precise values by showing more decimal places."
+}
+,icon:temporaryImg(685)
+}
+,{
+id:"decreaseDecimal"
+,defaultType:"icon"
+,text:"Decrease Decimal"
+,customTooltip:{title:"Decrease Decimal",text:"Show less precise values by showing fewer decimal places."
+}
+,icon:temporaryImg(684)
+}
+,{
+id:"bgColor"
+,defaultType:"colorMenu"
+,text:"Background Color"
+,customTooltip:{title:"Background Color",text:"Change the Background Color on the Selected Element."}
+,icon:toolboxImg(277)
+}
+,{
+id:"borderColor"
+,defaultType:"colorMenu"
+,text:"Borders Color"
+,customTooltip:{title:"Borders Color", text:"Change the Borders Color on the Selected Element."}
+,icon:toolboxImg(270)
+}
+,{
+id:"bgimgBtn"
+,defaultType:"icon"
+,text:"Image"
+,customTooltip:{title:"Background image", text:"Set a background image"}
+,icon:toolboxImg(278)
+}
+,{
+id:"bordersBtn"
+,defaultType:"bordersMenu"
+,text:"Borders"
+,customTooltip:{title:"Borders", text:"Change the Borders Color on the Selected Element."}
+}
+,{
+id:"thickness"
+,defaultType:"textCombo"
+,width:100
+,text:"Border Thickness"
+,customTooltip:{title:"Border Thickness", text:"Thickness that will be applied when the next border will be set."}
+}
+,{
+id:"changeFormattingRulesOrder"
+,text:"Change Rule Order..."
+}
+,{
+id:"newFormattingRule"
+,text:"New Rule..."
+,defaultType:"check"
+        ,customTooltip:{title:"todo", text:"todo"}
+}
+,{
+id:"manageFormattingRules"
+,text:"Manage Rules..."
+}
+    ,{
+id:"appliedRulesList"
+,text:"(Here List of Applied Rules if exist)"
+}
+    ,{
+id:"applicableRulesList"
+,text:"(Here List of Applicable Rules)"
+}
+,{
+id:"appliedFormattingRulesMenu"
+,defaultType:"iconMenu"
+,text:"Formatting Rules"
+        ,customTooltip:{title:"Formatting Rules", text:"Apply conditional formatting."}
+,children:[
+ {type:"separator"}
+,{actionId:"changeFormattingRulesOrder"}
+]
+}
+,{
+id:"appliedFormattingRulesSubMenu"
+,text:"Formatting Rules"
+        ,customTooltip:{title:"Formatting Rules", text:"Apply conditional formatting."}
+,children:[
+ {type:"separator"}
+,{actionId:"changeFormattingRulesOrder"}
+]
+}
+,{
+id:"frontMenuItem"
+,text:"Bring to Front"
+,icon:toolboxImg(236)
+}
+,{
+id:"backMenuItem"
+,text:"Send to Back"
+,icon:toolboxImg(237)
+}
+,{
+id:"forwardMenuItem"
+,text:"Bring Forward"
+,icon:toolboxImg(238)
+}
+,{
+id:"backwardsMenuItem"
+,text:"Send Backward"
+,icon:toolboxImg(239)
+}
+,{
+id:"layeringBtn"
+,defaultType:"iconMenu"
+,text:"Order"
+,customTooltip:{title:"Order", text:"Bring the selected element to the front."}
+,children:
+[
+ {actionId:"frontMenuItem"}
+ ,{actionId:"backMenuItem"}
+ ,{actionId:"forwardMenuItem"}
+ ,{actionId:"backwardsMenuItem"}
+]
+,icon:toolboxImg(239)
+}
+,{
+id:"orderSubMenu"
+,text:"Order"
+,children:
+[
+ {actionId:"frontMenuItem"}
+ ,{actionId:"backMenuItem"}
+ ,{actionId:"forwardMenuItem"}
+ ,{actionId:"backwardsMenuItem"}
+]
+,icon:toolboxImg(239)
+}
+,{
+id:"alignLeftItem"
+,text:"Align Left"
+,icon:toolboxImg(242)
+}
+,{
+id:"alignCenter"
+,text:"Align Center"
+,icon:toolboxImg(243)
+}
+,{
+id:"alignRight"
+,text:"Align Right"
+,icon:toolboxImg(244)
+}
+,{
+id:"alignTop"
+,text:"Align Top"
+,icon:toolboxImg(245)
+}
+,{
+id:"alignMiddle"
+,text:"Align Middle"
+,icon:toolboxImg(246)
+}
+,{
+id:"alignBottom"
+,text:"Align Bottom"
+,icon:toolboxImg(247)
+}
+,{
+id:"relativePos"
+,text:"Relative Position..."
+,icon:toolboxImg(248)
+}
+ ,{id:"distributeHorizontally", text:"Distribute Horizontally", icon:temporaryImg(533)}
+ ,{id:"distributeVertically", text:"Distribute Vertically", icon:temporaryImg(535)}
+,{
+id:"customPosition"
+,defaultType:"check"
+,text:"Set Custom Position"
+}
+,{
+id:"alignBtn"
+,defaultType:"iconMenu"
+,text:"Align"
+,customTooltip:{title:"Align", text:"Align elements in the report"}
+,children:
+[
+ {actionId:"alignLeftItem"}
+ ,{actionId:"alignCenter"}
+ ,{actionId:"alignRight"}
+ ,{type:"separator"}
+ ,{actionId:"alignTop"}
+ ,{actionId:"alignMiddle"}
+ ,{actionId:"alignBottom"}
+ ,{type:"separator"} 
+ ,{actionId:"relativePos"} 
+ ]
+,icon:toolboxImg(242)
+}
+,{
+id:"align1ElementSubMenu" 
+,text:'Align'
+, children:[
+  {actionId:"alignLeftItem"}
+ ,{actionId:"alignCenter"}
+ ,{actionId:"alignRight"}
+    ,{type:"separator"}
+ ,{actionId:"alignTop"}
+ ,{actionId:"alignMiddle"}
+ ,{actionId:"alignBottom"}
+    ,{type:"separator"}
+ ,{actionId:"relativePos"}
+]
+,icon:toolboxImg(242)
+}
+,{id:"startOnNewPage",text:"Start on New Page",defaultType:"check"
+    ,icon:toolboxImg(263)
+,customTooltip:{title:"Start on New Page", text:"Insert a Page Break before the selected element"}
+    }
+,{id:"repeatOnEveryPage",text:"Repeat on Every Page",defaultType:"check"
+    ,icon:toolboxImg(265)
+,customTooltip:{title:"Repeat on Every Page", text:"Repeat on Every Page"}
+}
+,{id:"avoidPageBreaks",text:"Avoid Page Breaks",defaultType:"check"
+    ,icon:toolboxImg(264)
+,customTooltip:{title:"Avoid Page Breaks", text:"Avoid Page Breaks"}
+}
+,{id:"repeatVHeaderOnPages",text:"Header on every page",defaultType:"check", icon:toolboxImg(403)
+,customTooltip:{title:"Header on every page", text:"Repeat Table Headers on every Page"}
+}
+,{id:"repeatVFooterOnPages",text:"Footer on every page",defaultType:"check", icon:toolboxImg(404)
+,customTooltip:{title:"Footer on every page", text:"Repeat Table Footers on every Page"}
+}
+,{id:"repeatHHeaderOnPages",text:"Header on every page",defaultType:"check", icon:toolboxImg(405)
+,customTooltip:{title:"Header on every page", text:"Repeat Table Headers on every Page"}
+}
+,{id:"repeatHFooterOnPages",text:"Footer on every page",defaultType:"check", icon:toolboxImg(406)
+,customTooltip:{title:"Footer on every page", text:"Repeat Table Footers on every Page"}
+}
+    ,{id:"repeatBreakHeaderOnPages",text:"Break headers on every page",defaultType:"check", icon:toolboxImg(403)
+,customTooltip:{title:"Break headers on every page", text:"Repeat Break Headers on every Page"}
+}
+    ,{id:"repeatBreakFooterOnPages",text:"Break footers on every page",defaultType:"check", icon:toolboxImg(404)
+,customTooltip:{title:"Break footers on every page", text:"Repeat Break Footers on every Page"}
+}
+,{
+id:"pageBreakMenu"
+,defaultType:"iconMenu"
+,triggerAction:false
+,text:"Page Break"
+,customTooltip:{title:"Page Break", text:"Page Break tooltip"}
+,children:
+[
+ {actionId:"startOnNewPage"}
+                ,{actionId:"avoidPageBreaks"}
+ ]
+        ,icon:toolboxImg(263)
+}
+    ,{
+id:"topHeaderOnNewPage"
+,defaultType:"check"
+,text:"Top Header on New Page"
+,icon:toolboxImg(403)
+}
+,{
+id:"bottomFooterOnNewPage"
+,defaultType:"check"
+,text:"Bottom Footer on New Page"
+,icon:toolboxImg(404)
+}
+    ,{
+id:"leftHeaderOnNewPage"
+,defaultType:"check"
+,text:"Left Header on New Page"
+,icon:toolboxImg(405)
+}
+,{
+id:"rightFooterOnNewPage"
+,defaultType:"check"
+,text:"Right Footer on New Page"
+,icon:toolboxImg(406)
+}
+    ,{
+id:"breakTopHeaderOnNewPage"
+,defaultType:"check"
+,text:"Break Top Header on New Page"
+,icon:toolboxImg(403)
+}
+,{
+id:"breakBottomFooterOnNewPage"
+,defaultType:"check"
+,text:"Break Bottom Footer on New Page"
+,icon:toolboxImg(404)
+}
+    ,{
+id:"breakLeftHeaderOnNewPage"
+,defaultType:"check"
+,text:"Break Left Header on New Page"
+,icon:toolboxImg(405)
+}
+,{
+id:"breakRightFooterOnNewPage"
+,defaultType:"check"
+,text:"Break Right Footer on New Page"
+,icon:toolboxImg(406)
+}
+    ,{
+id:"repeatFreeCellBtn"
+,defaultType:"check"
+,icon:toolboxImg(265)
+        ,text:"Repeat"
+        ,customTooltip:{title:"Repeat Free Cell", text:"Repeat cell on every page"}
+}
+    ,{
+id:"repeatChartBtn"
+,defaultType:"check"
+,icon:toolboxImg(265)
+        ,text:"Repeat"
+        ,customTooltip:{title:"Repeat Chart", text:"Repeat chart on every page"}
+}
+    ,{
+id:"repeatMenu"
+,defaultType:"iconMenu"
+,triggerAction:false
+,text:"Repeat"
+,customTooltip:{title:"Repeat", text:"Repeat tooltip"}
+,children:
+[
+ {actionId:"repeatOnEveryPage", text:"Table on Every Page"}
+                ,{type:"separator"}
+                ,{actionId:"repeatVHeaderOnPages"}
+                ,{actionId:"repeatVFooterOnPages"}
+,{actionId:"repeatHHeaderOnPages"}
+                ,{actionId:"repeatHFooterOnPages"}
+ ]
+}
+    ,{
+id:"formatHeader"
+,text:"Format Header..."
+,customTooltip:{title:"Format Report",text:"Set the report format."}
+,icon:temporaryImg(940)
+}
+    ,{
+id:"formatFooter"
+,text:"Format Footer..."
+,customTooltip:{title:"Format Report",text:"Set the report format."}
+,icon:temporaryImg(940)
+}
+,{
+id:"formatReport"
+,text:"Format Report..."
+,customTooltip:{title:"Format Report",text:"Set the report format."}
+,icon:temporaryImg(940)
+}
+,{
+id:"formatCell"
+,text:"Format Cell..."
+,customTooltip:{title:"Format Cell",text:"Set the cell format."}
+,icon:temporaryImg(940)
+}
+,{
+id:"formatTable"
+,text:"Format Table..."
+,customTooltip:{title:"Format Table",text:"Set the table format."}
+,icon:temporaryImg(940)
+}
+,{
+id:"formatChart"
+,text:"Format Chart..."
+,customTooltip:{title:"Format Chart",text:"Set the chart format."}
+,icon:toolboxImg(414)
+}
+,{
+id:"formatChartTitle"
+,text:"Format Chart Title..."
+,customTooltip:{title:"Format Chart Title",text:"Set the chart title format."}
+,icon:toolboxImg(414)
+}
+,{
+id:"formatChartLegend"
+,text:"Format Chart Legend..."
+,customTooltip:{title:"Format Chart Legend",text:"Set the chart legend format."}
+,icon:toolboxImg(414)
+}
+,{
+id:"formatChartLegendTitle"
+,text:"Format Chart Legend Title..."
+,customTooltip:{title:"Format Chart Legend Title",text:"Set the chart legend title format."}
+,icon:toolboxImg(414)
+}
+,{
+id:"formatChartCategoryAxis"
+,text:"Format Chart Category Axis..."
+,customTooltip:{title:"Format Chart Category Axis",text:"Set the chart category axis format."}
+,icon:toolboxImg(414)
+}
+,{
+id:"formatChartCategoryAxisTitle"
+,text:"Format Chart Category Axis Title..."
+,customTooltip:{title:"Format Chart Category Axis Title",text:"Set the chart category axis title format."}
+,icon:toolboxImg(414)
+}
+,{
+id:"formatChartValue"
+,text:"Format Chart Value..."
+,customTooltip:{title:"Format Chart Value",text:"Set the chart value format."}
+,icon:toolboxImg(414)
+}
+,{
+id:"formatChartValueTitle"
+,text:"Format Chart Value Title..."
+,customTooltip:{title:"Format Chart Value Title",text:"Set the chart value title format."}
+,icon:toolboxImg(414)
+}
+,{
+id:"formatChartPlotArea"
+,text:"Format Chart Plot Area..."
+,customTooltip:{title:"Format Chart Plot Area",text:"Set the chart plot area format."}
+,icon:toolboxImg(414)
+}
+,{
+id:"seriesColors"
+,text:"Series Colors"
+,children:[
+                {actionId:"keepCurrentColors", text:"Set as Default Colors"}
+,{actionId:"clearSeriesColors", text:"Clear Color Assignment"}
+]
+}
+,{
+id:"formatDataSeries"
+,text:"Format Data Series..."
+}
+,{
+id:"formatSection"
+,text:"Format Section..."
+,customTooltip:{title:"Format Section",text:"Set the section format."}
+,icon:temporaryImg(940)
+}
+,{
+id:"formatSeveralElements"
+,text:"Format..."
+,customTooltip:{title:"Format Elements",text:"Set the table format."}
+,icon:temporaryImg(940)
+}
+,{
+id:"formatSeveralCells"
+,text:"Format Cells..."
+,customTooltip:{title:"Format Elements",text:"Set the selected cells format."}
+,icon:temporaryImg(940)
+}
+    ,{
+id:"formatBtn"
+        ,defaultType:"icon"
+,text:"Formatting"
+,customTooltip:{title:"Formatting",text:"Display formatting options for the selected report element"}
+,accelerator:{key:"d", modifier:_ctrl, macModifier:_meta}
+,icon:toolboxImg(288)
+}
+    ,{
+id:"resetToDefaultFmtBtn"
+        ,defaultType:"icon"
+,text:"Clear Format"
+,customTooltip:{title:"Clear Format",text:"Reset to default format, including all child items."}
+,icon:toolboxImg(290)
+}
+,{
+id:"quickFilter"
+,text:"Add Filter"
+,defaultType:"check"
+,icon:xImg(110)
+,customTooltip:{title:"Filter", text:"Add/Remove or Modify a Filter on the Selected Element"
+, comment:"Non utilise : Quelle est la difference avec l action 'filterBtn' ?"
+}
+}
+,{
+id:"selectDimForCurrentAction"
+,text:"Select Measure for Current Action"
+}
+,{
+id:"moreTopBottom"
+,text:"Other Rankings"
+}
+,{
+id:"topDownValue"
+,text:"Other Ranking"
+}
+,{
+id:"topBottomMeasuresMenuOLd"
+,defaultType:"iconMenu"
+,text:"Select Measure for Current Action"
+,children:
+[
+  {actionId:"selectDimForCurrentAction", text:"Based on measure 'Revenue'"}
+ ,{actionId:"selectDimForCurrentAction", text:"Based on measure 'Cost'"}
+ ,{actionId:"selectDimForCurrentAction", text:"Based on measure 'Cost'"}
+ ]
+,icon:reportImg(8)
+}
+,{
+id:"topBottomMeasuresMenu"
+,defaultType:"check"
+}
+,{
+id:"rankingBtn"
+,defaultType:"radioMenu"
+,text:"Ranking"
+,customTooltip:{title:"Ranking", text:"Rank the current element relatively to a measure."}
+,children:
+[ 
+                {actionId:"addRanking"}
+                ,{type:"separator"}
+,{actionId:"editRanking" }
+,{actionId:"removeRanking" }
+ ]
+,icon:toolboxImg(313)
+}
+,{
+id:"rankingSubMenu"
+,text:"Ranking"
+,customTooltip:{title:"Ranking", text:"Rank the current element relatively to a measure."}
+,children:
+[ 
+                {actionId:"addRanking"}
+                ,{type:"separator"}
+,{actionId:"editRanking" }
+,{actionId:"removeRanking" }
+ ]
+,icon:toolboxImg(313)
+}
+    ,{
+id:"noRanking"
+,text:"No Ranking"
+}
+,{
+id:"addRanking"
+,text:"Add Ranking..."
+,icon:toolboxImg(313)
+}
+,{
+id:"editRanking"
+,text:"Edit Ranking"
+}
+,{
+id:"removeRanking"
+,text:"Remove Ranking"
+}
+,{
+id:"parettoMenu"
+,defaultType:"iconMenu"
+,text:"Paretto"
+,children:
+[
+  {actionId:"2080", text:"20/80  >"}
+  ,{actionId:"8020", text:"20/80   >"}
+ ]
+}
+,{
+id:"ChoiceMenu"
+,defaultType:"iconMenu"
+,text:"Top"
+,children:[
+  {actionId:"unknown", text:"Top"}
+  ,{actionId:"unknown", text:"Bottom"}
+ ]
+}
+,{
+id:"changeRankValue"
+,defaultType:"textCombo"
+,text:"Change Rank Value"
+,customTooltip:{title:"Filter", text:"Add/Remove or Modify a Filter on the Selected Element"
+, comment:{from:'jcros', text:"Cette combo devrait contenir les choix 5% 10% 20% 3 5 10 20 100..."}
+}
+}
+,{
+id:"parettoSlider"
+,defaultType:"textCombo"
+,text:"Paretto: (Here a slider)"
+,customTooltip:{title:"Paretto balance", text:"Change the paretto balance (80/20) to other proportions"
+, comment:{from:'jcros', text:"Est-ce que ce slider ne serait pas plutot un input control ?"}
+}
+}
+,{
+id:"chooseRankReference"
+,defaultType:"iconMenu"
+,text:"by None"
+,customTooltip:{title:"Choose Ranking Reference", text:""}
+,children:[
+ {actionId:"unknown", text:"None"}
+ ,{type:"separator"}
+ ,{actionId:"unknown", text:'(Here list of references...)'}
+ ]
+}
+,{
+id:"addFilter"
+,text:"Add Filter"
+,icon:toolboxImg(162)
+}
+    ,{
+id:"editFilter"
+,text:"Edit Filter"
+,icon:toolboxImg(163)
+}
+,{
+id:"removeFilter"
+,text:"Remove Filter"
+,icon:toolboxImg(312)
+}
+,{
+id:"filterByInputControl"
+,text:"Filter by a New Input Control"
+}
+,{
+id:"filterBtn"
+,defaultType:"radioMenu"
+,text:"Filter"
+,customTooltip:{title:"Filter", text:"Add, remove or modify a filter on the selected element."}
+,children:
+[
+  {actionId:"addFilter"}
+                ,{actionId:"editFilter"}
+ ,{actionId:"removeFilter"}
+ ,{type:"separator"}
+ ,{actionId:"filterByInputControl"}
+ ]
+,icon:toolboxImg(310)
+}
+,{
+id:"filterSubMenu"
+,text:"Filter"
+,children:
+[
+ {actionId:"addFilter"}
+                ,{actionId:"editFilter"}
+ ,{actionId:"removeFilter"}
+ ,{type:"separator"}
+ ,{actionId:"filterByInputControl"}
+ ]
+,icon:toolboxImg(310)
+}
+,{
+id:"sortBut"
+,defaultType:"radioMenu"
+,text:"Sort"
+,customTooltip:{title:"Filter", text:"Apply Sorts. For more options click the arrow"}
+,icon:reportImg(1)
+,children:
+[
+ {type:"separator"}
+,{actionId:"removeAllSorts"}
+ ,{actionId:"manageSorts"}
+ ]
+}
+,{
+id:"noSortBis"
+,defaultType:"check"
+,text:"None"
+,customTooltip:{title:"None", text:""}
+}
+,{
+id:"ascendingSortBis"
+,defaultType:"check"
+,text:"Ascending"
+,customTooltip:{title:"Ascending Sort", text:""}
+,icon:toolboxImg(325)
+}
+,{
+id:"descendingSortBis"
+,defaultType:"check"
+,text:"Descending"
+,customTooltip:{title:"Ascending Sort", text:""}
+,icon:toolboxImg(326)
+}
+,{
+id:"noSort"
+,defaultType:"check"
+,text:"None"
+,customTooltip:{title:"None", text:""}
+}
+,{
+id:"ascendingSort"
+,defaultType:"check"
+,text:"Ascending"
+,customTooltip:{title:"Ascending Sort", text:""}
+,icon:toolboxImg(325)
+}
+,{
+id:"descendingSort"
+,defaultType:"check"
+,text:"Descending"
+,customTooltip:{title:"Ascending Sort", text:""}
+,icon:toolboxImg(326)
+}
+,{
+id:"removeAllSorts"
+,defaultType:"icon"
+,text:"Remove all Sorts"
+,customTooltip:{title:"Remove all Sorts", text:"Remove all Sorts defined on the report element"}
+}
+    ,{
+id:"manageSorts"
+,defaultType:"icon"
+,text:"Advanced..."
+}
+,{
+id:"sortMenu"
+,defaultType:"radioMenu"
+,text:"Sort"
+,customTooltip:{title:"Sort", text:"Apply Sorts. Click the arrow to see more options."}
+,children:
+[
+ {actionId:"noSort"}
+ ,{actionId:"ascendingSort"}
+ ,{actionId:"descendingSort"}
+ ,{actionId:"removeAllSorts"}
+,{type:"separator"}
+ ,{actionId:"manageSorts"}
+ ]
+,icon:toolboxImg(325)
+}
+,{
+id:"sortSubMenu" 
+,text:"Sort"
+,children:
+[
+ {actionId:"noSort"}
+ ,{actionId:"ascendingSort"}
+ ,{actionId:"descendingSort"}
+ ,{actionId:"removeAllSorts"}
+,{type:"separator"}
+ ,{actionId:"manageSorts"}
+ ]
+, icon:toolboxImg(325)
+}
+,{
+id:"sortTableCellMenu" 
+,text:"Sort"
+,children:
+[
+ {actionId:"noSort"}
+ ,{actionId:"ascendingSort"}
+ ,{actionId:"descendingSort"}
+ ,{actionId:"removeAllSorts"}
+,{type:"separator"}
+ ,{actionId:"manageSorts"}
+ ]
+, icon:toolboxImg(325)
+}
+,{
+id:"sortChartSubMenu" 
+,text:"Sort"
+,children:
+[
+ {type:"separator"}
+,{actionId:"removeAllSorts"}
+ ,{actionId:"manageSorts"}
+ ]
+, icon:toolboxImg(325)
+}
+    ,{
+id:"expandLevelNone"
+,defaultType:"check"
+,text:"None"
+,customTooltip:{title:"None", text:""}
+}
+,{
+id:"expandLevel1"
+,defaultType:"check"
+,text:"1"
+,customTooltip:{title:"1", text:""}
+}
+,{
+id:"expandLevel2"
+,defaultType:"check"
+,text:"2"
+,customTooltip:{title:"2", text:""}
+}
+,{
+id:"expandLevel3"
+,defaultType:"check"
+,text:"3"
+,customTooltip:{title:"3", text:""}
+}
+,{
+id:"expandLevel4"
+,defaultType:"check"
+,text:"4"
+,customTooltip:{title:"4", text:""}
+}
+    ,{
+id:"expandLevelMore"
+,defaultType:"check"
+,text:"More..."
+}
+    ,{
+id:"chart_expandLevelNone"
+,defaultType:"check"
+,text:"None"
+,customTooltip:{title:"None", text:""}
+}
+,{
+id:"chart_expandLevel1"
+,defaultType:"check"
+,text:"1"
+,customTooltip:{title:"1", text:""}
+}
+,{
+id:"chart_expandLevel2"
+,defaultType:"check"
+,text:"2"
+,customTooltip:{title:"2", text:""}
+}
+,{
+id:"chart_expandLevel3"
+,defaultType:"check"
+,text:"3"
+,customTooltip:{title:"3", text:""}
+}
+,{
+id:"chart_expandLevel4"
+,defaultType:"check"
+,text:"4"
+,customTooltip:{title:"4", text:""}
+}
+    ,{
+id:"chart_expandLevelMore"
+,defaultType:"check"
+,text:"More..."
+}
+,{
+id:"chartHierarchicalNavig"
+,text:"Hierarchical Navigation"
+,children:
+[ 
+ {id:"chart_expandChildren", actionId:"chart_expandChildren", text:"Expand Children"},
+{id:"chart_expandDescendent", actionId:"chart_expandDescendent", text:"Expand Descendant"},
+{id:"chart_collapseChildren", actionId:"chart_collapseChildren", text:"Collapse Children"},
+{id:"chart_symetric", actionId:"chart_symetric", text:"Symmetric",
+children:[
+{id:"chart_symetricExpandChildren", actionId:"chart_symetricExpandChildren", text:"Expand Children" }
+,{id:"chart_symetricExpandDescendent",actionId:"chart_symetricExpandDescendent", text:"Expand Descendant"}
+,{id:"chart_symetricCollapseChildren",actionId:"chart_symetricCollapseChildren", text:"Collapse Children"}
+ ]}, 
+ {id:"chart_expandCollapseAll", actionId:"chart_expandCollapseAll", text:"All",
+ children:[
+{id:"chart_expandAllHierarchies",actionId:"chart_expandAllHierarchies", text:"Expand All Hierarchies" }
+,{id:"chart_collapseAllHierarchies",actionId:"chart_collapseAllHierarchies", text:"Collapse All Hierarchies"}
+]},
+ {id:"chart_drillFocus", actionId:"chart_drillFocus", text:"Drill Focus",
+ children:[
+{id:"chart_ecDrillDown",actionId:"chart_ecDrillDown", text:"Drill Down"}
+,{id:"chart_ecDrillUp", actionId:"chart_ecDrillUp", text:"Drill Up" }
+ ]},
+{id:"chart_expandLevel", actionId:"chart_expandLevel", text:"Default level expansion",
+children:[
+          {actionId:"chart_expandLevelNone"}
+          ,{actionId:"chart_expandLevel1"}
+          ,{actionId:"chart_expandLevel2"}
+          ,{actionId:"chart_expandLevel3"}
+          ,{actionId:"chart_expandLevel4"}
+          ,{type:"separator"}
+          ,{actionId:"chart_expandLevelMore"}
+          ]}
+ ]
+}
+,{
+id:"tableHierarchicalNavig"
+,text:"Hierarchical Navigation"
+,children:
+[ 
+ {id:"expandChildren", actionId:"expandChildren", text:"Expand Children"},
+{id:"expandDescendent", actionId:"expandDescendent", text:"Expand Descendant"},
+{id:"collapseChildren", actionId:"collapseChildren", text:"Collapse Children"},
+{id:"symetric", actionId:"symetric", text:"Symmetric",
+children:[
+{id:"symetricExpandChildren", actionId:"symetricExpandChildren", text:"Expand Children" }
+,{id:"symetricExpandDescendent",actionId:"symetricExpandDescendent", text:"Expand Descendant"}
+,{id:"symetricCollapseChildren",actionId:"symetricCollapseChildren", text:"Collapse Children"}
+ ]}, 
+ {id:"expandCollapseAll", actionId:"expandCollapseAll", text:"All",
+ children:[
+{id:"expandAllHierarchies",actionId:"expandAllHierarchies", text:"Expand All Hierarchies" }
+,{id:"collapseAllHierarchies",actionId:"collapseAllHierarchies", text:"Collapse All Hierarchies"}
+]},
+ {id:"drillFocus", actionId:"drillFocus", text:"Drill Focus",
+ children:[
+{id:"ecDrillDown",actionId:"ecDrillDown", text:"Drill Down"}
+,{id:"ecDrillUp", actionId:"ecDrillUp", text:"Drill Up" }
+ ]},
+ {id:"expandLevel", actionId:"expandLevel", text:"Default level expansion",
+ children:[
+           {actionId:"expandLevelNone"}
+,{actionId:"expandLevel1"}
+,{actionId:"expandLevel2"}
+,{actionId:"expandLevel3"}
+,{actionId:"expandLevel4"}
+,{type:"separator"}
+ ,{actionId:"expandLevelMore"}
+ ]}
+ ]
+}
+,{
+id:"vcalcLabel"
+,defaultType:"label"
+,text:"Vertical"
+}
+,{
+id:"hcalcLabel"
+,defaultType:"label"
+,text:"Horizontal"
+}
+    ,{
+ id:"calcSum"
+ ,defaultType:"check"
+        ,text:"Sum"
+ ,icon:toolboxImg(327)
+,customTooltip:{title:"Sum", text:"Insert/remove a Sum calculation"}                     
+ }
+ ,{
+ id:"vcalcSum"
+ ,defaultType:"check"
+        ,text:"Sum"
+ ,icon:menuImg(5)
+,accelerator:{key:"*", modifier:_ctrl, macModifier:_ctrl, comment:'like Excel/Formulas/Insert Sum'}
+ ,customTooltip:{title:"Sum", text:"Create/Remove a Sum in the bottom block footers", comment:webi.interactive.commentOnCalculations}
+ }
+    ,{
+ id:"calcCount"
+ ,defaultType:"check"
+        ,text:"Count"
+ ,icon:toolboxImg(328)
+ ,customTooltip:{title:"Count", text:"Insert/remove a Count calculation"}
+ }
+ ,{
+ id:"vcalcCount"
+ ,defaultType:"check"
+ ,icon:menuImg(6)
+ ,customTooltip:{title:"", text:"Create/Remove a Count in the bottom block footers", comment:webi.interactive.commentOnCalculations}
+ }
+ ,{
+ id:"vcalcAvg"
+ ,defaultType:"check"
+ ,icon:menuImg(7)
+ ,customTooltip:{title:"Average", text:"Create/Remove an Average in the bottom block footers", comment:webi.interactive.commentOnCalculations}
+ }
+    ,{
+ id:"calcAvg"
+        ,text:"Average"
+ ,defaultType:"check"
+ ,customTooltip:{title:"Average", text:"Create/Remove an Average in the bottom block footers", comment:webi.interactive.commentOnCalculations}
+ }
+    ,{
+ id:"calcMin"
+        ,text:"Min"
+ ,defaultType:"check"
+ ,customTooltip:{title:"Min", text:"Create/Remove a Min in the bottom block footers", comment:webi.interactive.commentOnCalculations}
+ }
+ ,{
+ id:"vcalcMin"
+ ,defaultType:"check"
+ ,icon:menuImg(8)
+ ,customTooltip:{title:"Min", text:"Create/Remove a Min in the bottom block footers", comment:webi.interactive.commentOnCalculations}
+ }
+    ,{
+ id:"calcMax"
+        ,text:"Max"
+ ,defaultType:"check"
+ ,customTooltip:{title:"Max",text:"Create/Remove a Max in the bottom block footers", comment:webi.interactive.commentOnCalculations}
+ }
+ ,{
+ id:"vcalcMax"
+ ,defaultType:"check"
+ ,icon:menuImg(9)
+ ,customTooltip:{title:"Max",text:"Create/Remove a Max in the bottom block footers", comment:webi.interactive.commentOnCalculations}
+ }
+ ,{
+ id:"vcalcPercent"
+ ,defaultType:"check"
+ ,icon:menuImg(10)
+ ,customTooltip:{title:"Percentage", text:"Create/Remove a Percentage in the bottom block footers,plus a percentage column at the right"}
+ }
+,{
+ id:"calcPercent"
+        ,text:"Percentage"
+ ,defaultType:"check"
+ ,customTooltip:{title:"Percentage", text:"Create/Remove a Percentage in the bottom block footers,plus a percentage column at the right"}
+ }
+ ,{
+ id:"vcalcTotal"
+ ,defaultType:"check"
+ ,text:"Default"
+ ,customTooltip:{title:"Total", text:"Create/Remove a Total in the bottom block footers", comment:webi.interactive.commentOnCalculations}
+ }
+    ,{
+ id:"calcTotal"
+ ,defaultType:"check"
+ ,text:"Default"
+ ,customTooltip:{title:"Total", text:"Create/Remove a Total in the bottom block footers", comment:webi.interactive.commentOnCalculations}
+ }
+,{
+id:"addCalculation"
+,defaultType:"iconMenu"
+ ,customTooltip:{title:"Insert a Calculation", text:"Insert a new row at the end of the table or column on the right with a calculation based on selected value"}
+,text:"Sum"
+,children:[
+  {actionId:"vcalcSum", text:"Insert Sum"}
+ ,{actionId:"vcalcCount", text:"Insert Count"}
+ ,{actionId:"vcalcAvg", text:"Insert Average"}
+ ,{actionId:"vcalcMin", text:"Insert Minimum"}
+ ,{actionId:"vcalcMax", text:"Insert Maximum"}
+ ,{actionId:"vcalcPercent", text:"Insert Percentage"}
+,{type:"separator"}
+ ,{actionId:"vcalcTotal", text:"Default Aggregation"}
+ ]
+ ,icon:menuImg(5)
+}
+,{
+id:"addSumMenu"
+,defaultType:"radioMenu"
+        ,text:"Sum"
+ ,customTooltip:{title:"Sum", text:"Insert/remove a Sum calculation"}
+,children:[
+  {actionId:"calcSum", text:"Sum", userData:"noIcon"}
+,{actionId:"calcTotal", text:"Default Aggregation"}
+ ]
+ ,icon:toolboxImg(327)
+}
+,{
+id:"addCalculationMenu"
+,defaultType:"iconMenu"
+        ,text:"More"
+ ,customTooltip:{title:"Insert Calculation", text:"Insert a new row at the end of the table or column with a calculation based on the selected value"}
+,triggerAction:false
+,children:[
+  {actionId:"calcAvg"}
+ ,{actionId:"calcMin"}
+ ,{actionId:"calcMax"}
+ ,{actionId:"calcPercent"}
+ ]
+}
+ ,{
+ id:"hcalcSum"
+ ,defaultType:"check"
+ ,icon:menuImg(5)
+ ,customTooltip:{title:"Sum", text:"Create/Remove a Sum in the right block footers", comment:webi.interactive.commentOnCalculations}
+ }
+ ,{
+ id:"hcalcCount"
+ ,defaultType:"check"
+ ,icon:menuImg(6)
+ ,customTooltip:{title:"Count", text:"Create/Remove a Count in the right block footers", comment:webi.interactive.commentOnCalculations}
+ }
+ ,{
+ id:"hcalcAvg"
+ ,defaultType:"check"
+ ,icon:toolboxImg(329)
+ ,customTooltip:{title:"Average",text:"Create/Remove an Average in the right block footers", comment:webi.interactive.commentOnCalculations}
+ }
+ ,{
+ id:"hcalcMin"
+ ,defaultType:"check"
+ ,icon:menuImg(8)
+ ,customTooltip:{title:"Min", text:"Create/Remove a Min in the right block footers", comment:webi.interactive.commentOnCalculations}
+ }
+ ,{
+ id:"hcalcMax"
+ ,defaultType:"check"
+ ,icon:menuImg(9)
+ ,customTooltip:{title:"Max", text:"Create/Remove a Max in the right block footers", comment:webi.interactive.commentOnCalculations}
+ }
+ ,{
+ id:"hcalcPercent"
+ ,defaultType:"check"
+ ,icon:menuImg(10)
+ ,customTooltip:{title:"Percentage", text:"Create/Remove a Percentage in the right block footers,plus a percentage row at the bottom", comment:webi.interactive.commentOnCalculations}
+ }
+ ,{
+ id:"hcalcTotal"
+ ,defaultType:"check"
+ ,text:"Default"
+ ,customTooltip:{title:"Total", text:"Create/Remove a Total in the right block footers", comment:webi.interactive.commentOnCalculations}
+ }
+,{
+id:"variableCreation"
+,defaultType:"icon"
+,customTooltip:{title:"Create Variable", text:"Create a new variable using this formula."}
+ ,icon:formulaImg(5)
+}
+,{ id:"showToolboxes" ,defaultType:"check" ,text:"Toolboxes"}
+,{
+id:"showFormulaBar"
+,defaultType:"check"
+,text:"Formula Bar"
+        ,icon:toolboxImg(443)
+,customTooltip:{title:"Formula Bar", text:"Display or hide the formula bar under the toolboxes."}
+}
+,{
+id:"formulaEditor"
+,defaultType:"icon"
+,customTooltip:{title:"Edit the Formula", text:"Display the Formula Editor."}
+,accelerator:{key:keys.enter, modifier:_ctrl, macModifier:_meta, comment:''}
+ ,icon:toolboxImg(335)
+}
+,{
+id:"formulaText"
+,value:"formulaText"
+,defaultType:"textArea"
+,customTooltip:{title:"Formula", text:"Change the cell formula.\nClick Enter to validate"}
+}
+,{
+id:"formulaOK"
+,defaultType:"icon"
+,customTooltip:{title:"OK (Enter)", text:"Validate the formula."}
+,icon:toolboxImg(336)
+}
+,{
+id:"formulaCancel"
+,defaultType:"icon"
+,customTooltip:{title:"Cancel (Esc)", text:"Restore the Initial Formula"}
+,icon:toolboxImg(337)
+}
+,{
+id:"formulaExpandCollapse"
+,defaultType:"icon"
+,customTooltip:{title:"Expand", text:"Expand or collapse the formula bar."}
+,icon:formulaImg(8)
+}
+    ,{
+id:"drillMenu"
+        ,defaultType:"radioMenu"
+,text:"Drill"
+        ,customTooltip:{title:"Drill",text:"Navigate the report by hierarchy"}
+,children:[
+{actionId:"drill"}
+ ,{actionId:"snapshot"}
+ ]
+,icon:toolboxImg(118)
+}
+,{
+id:"drill"
+,defaultType:"check"
+,text:"Drill"
+,customTooltip:{title:"Start Drill",text:""}
+,icon:toolboxImg(118)
+}
+,{
+id:"snapshot"
+,defaultType:"check"
+,text:"Snapshot"
+,customTooltip:{title:"Snapshot",text:""}
+,icon:toolboxImg(120)
+}
+,{
+id:"drillDown"
+,defaultType:"icon"
+,text:"Drill Down to"
+,customTooltip:{title:"Drill Down to",text:""}
+}
+,{
+id:"drillSubMenu"
+,text:"Drill"
+,children:[
+ {id:"drillDown", actionId:"drillDown", text:""}
+,{id:"drillUp", actionId:"drillUp", text:""}
+,{type:"separator"}
+ ,{id:"drillBy", actionId:"drillBy", text:"Drill By...", children:[]}
+,{type:"separator"}
+ ,{id:"drill", actionId:"drill", text:"", icon:null}
+ ]
+,icon:toolboxImg(118)
+}
+,{
+id:"expandChildren"
+}
+,{
+id:"expandDescendent"
+, text:"Expand Descendant"
+}
+,{
+id:"collapseChildren"
+, text:"Collapse Children"
+}
+,{
+id:"symetric"
+, text:""
+,children:[
+{actionId:"symetricExpandChildren", text:"Expand Children" }
+,{actionId:"symetricExpandDescendent", text:"Expand Descendant"}
+,{actionId:"symetricCollapseChildren", text:"Collapse Children"}
+]}
+,{
+id:"expandCollapseAll"
+, text:"All"
+,children:[
+{actionId:"expandAllHierarchies", text:"Expand All Hierarchies" }
+,{actionId:"collapseAllHierarchies", text:"Collapse All Hierarchies"}
+]}
+,{
+id:"drillFocus"
+, text:""
+,children:[
+{actionId:"ecDrillUp", text:"Drill Up" }
+,{actionId:"ecDrillDown", text:"Drill Down"}
+]}
+ ,{
+id:"expandCollapseSubMenu"
+,children:[
+{id:"expandChildren"}
+ ,{id:"expandDescendent"}
+,{id:"collapseChildren"}
+,{id:"symetric"}
+,{id:"expandCollapseAll"}
+,{id:"drillFocus"}
+ ]
+}
+,{
+id:"foldUnfold"
+,defaultType:"check"
+,text:"Outline"
+,customTooltip:{title:"Show Outline",text:"This option shows or hides the outline. It will provide the possibility to fold or unfold report elements."}
+,icon:toolboxImg(117)
+}
+,{ id:"foldUnfoldDimension", userData:"Dim1", text:"(Dimension of the section)", devStatus:'v2'}
+,{ id:"foldOthers",defaultType:"check",text:"Fold Others", devStatus:'v2'}
+,{ id:"foldAll",defaultType:"check", text:"Fold All", devStatus:'v2'}
+,{ id:"unfoldAll",defaultType:"check", text:"Unfold All", devStatus:'v2'}
+,{
+id:"foldMenu", devStatus:'v2'
+,defaultType:"iconMenu"
+,text:"Fold"
+,children:[
+  {actionId:"foldUnfoldDimension", userData:"Dim1", text:"(Dimension of the section)"}
+,{type:"separator"}
+ ,{actionId:"foldOthers"}
+ ,{actionId:"foldAll"}
+ ,{actionId:"unfoldAll", text:"Unfold All"}
+,{type:"separator"}
+ ,{actionId:"foldUnfold", text:"Outline"}
+ ]
+,icon:reportImg(18)
+}
+,{
+id:"freeze0"
+,defaultType:"check"
+,text:"0"
+}
+,{
+id:"freeze1"
+,defaultType:"check"
+,text:"1"
+}
+,{
+id:"freeze2"
+,defaultType:"check"
+,text:"2"
+}
+,{
+id:"freeze3"
+,defaultType:"check"
+,text:"3"
+}
+,{
+id:"freeze4"
+,defaultType:"check"
+,text:"4"
+}
+,{
+id:"freeze5"
+,defaultType:"check"
+,text:"5"
+}
+,{
+id:"freezeHeaders"
+,defaultType:"radioMenu"
+,text:"Freeze"
+,customTooltip:{title:"Freeze Headers",text:"Keep the header or a portion of the table visible while the rest of the table scrolls."}
+,children:[
+{actionId:"freezeHHeader"}
+,{actionId:"freezeVHeader"}
+,{actionId:"freeze0"}
+,{actionId:"freeze1"}
+,{actionId:"freeze2"}
+,{actionId:"freeze3"}
+,{actionId:"freeze4"}
+,{actionId:"freeze5"}
+ ]
+,icon:toolboxImg(147)
+}
+,{
+id:"freezeHHeader"
+,defaultType:"check"
+,text:"Freeze Header Rows"
+}
+,{
+id:"freezeVHeader"
+,defaultType:"check"
+,text:"Freeze Header Columns"
+}
+,{  id:"trackStatus"
+    ,defaultType:"icon"
+    ,icon:toolboxImg(115)
+    ,text:"Track"
+    ,customTooltip:{title:"Track data changes",text:"Click to activate data tracking"} 
+    }
+    ,{
+id:"tdcOnOff"
+,defaultType:"check"
+,text:"Track"
+,customTooltip:{title:"Track",text:"Activate or deactivate data tracking mode"}
+,icon:toolboxImg(115)
+}
+,{ 
+id:"tdcActivate"
+,defaultType:"icon"
+,text:"Data Tracking"
+,customTooltip:{title:"Data Tracking",text:"Activate Data Tracking Mode"}
+,icon:toolboxImg(115)
+}
+,{
+id:"tdcOptions"
+,defaultType:"icon"
+, text:"Display Options..."
+}
+,{ 
+id:"tdcShowChanges"
+,defaultType:"check"
+,text:"Show Changes"
+,icon:toolboxImg(116)
+}
+,{
+id:"tdcShowChanges2"
+,text:"Show Data Changes"
+,icon:tdcImg(0)
+}
+,{ id:"tdcShowJoiners" ,defaultType:"check" ,text:"Show Joiners", devStatus:'v2'}
+,{ id:"tdcShowLeavers" ,defaultType:"check" ,text:"Show Leavers", devStatus:'v2'}
+,{ id:"tdcShowUnchanged" ,defaultType:"check" ,text:"Show Unchanged", devStatus:'v2'}
+,{
+id:"tdcDialogBox"
+,defaultType:"check"
+,text:"Manage Track Data Changes"
+}
+,{
+id:"tdcMenu"
+,defaultType:"radioMenu"
+,text:"Show Changes"
+,customTooltip:{title:"Show Changes",text:"Show changes since the data was refreshed on "}
+,children:[ 
+ {actionId:"tdcShowChanges"}
+                ,{type:"separator"}
+ ,{actionId:"tdcOptions"} 
+ ]
+,icon:toolboxImg(116)
+}
+,{  
+id:"tdcReadingMenu"
+,defaultType:"radioMenu"
+,text:"Track"
+,customTooltip:{title:"Track",text:"Activate or deactivate data tracking mode"}
+,children:[
+        {actionId:"tdcOnOff"}  
+ ,{actionId:"tdcShowChanges"}
+                ,{type:"separator"}
+ ,{actionId:"tdcOptions"} 
+ ]
+,icon:toolboxImg(115)
+}
+,{
+id:"tdcSinceMenu"
+,defaultType:"iconMenu"
+,text:"Since"
+,children:[
+  {actionId:"tdcActivate", text:"On"} 
+,{type:"separator", isSpace:true}
+ ,{actionId:"Yesterday"}
+ ,{actionId:"Last Week"}
+ ,{actionId:"Last Month"}
+,{type:"separator"}
+ ,{actionId:"tdcDateChooser", text:"(Date of instance3)"}
+ ,{actionId:"tdcDateChooser", text:"(Date of instance2)"}
+ ,{actionId:"tdcDateChooser", text:"(Date of instance1)"}
+ ,{actionId:"tdcDateChooser", text:"chooseInstance"}
+ ]
+}
+,{
+id:"manageBreaks"
+,defaultType:"label"
+,text:"Manage Breaks..."
+,customTooltip:{title:"Manage Breaks", text:"Pop a the Dialog Box add, remove, change the break order"}
+,devStatus:'ok'
+}
+,{
+id:"manageBreaks2"
+,defaultType:"icon"
+,text:"Manage Breaks..."
+,customTooltip:{title:"Manage Breaks", text:"Pop a the Dialog Box add, remove, change the break order"}
+,devStatus:'ok'
+ ,icon:toolboxImg(252)
+}
+,{
+ id:"removeBreak"
+,text:"Remove Break"
+,icon:toolboxImg(253)
+,customTooltip:{title:"Remove Break", text:"Remove the selected Break or the selected column having a break", comment:"Exactly SAME AS BreakBtn (duplication due to implementation issue)"}
+}
+,{
+ id:"removeAllBreaks"
+,text:"Remove All Breaks"
+,customTooltip:{title:"Remove All Breaks", text:"Remove all Breaks defined on the report element"}
+}
+,{
+id:"addBreak"
+,text:"Add Break"
+,customTooltip:{title:"Break", text:"Insert a Break to group results on a table", comment:"Exactly SAME AS BreakBtn (duplication due to implementation issue)"}
+,icon:toolboxImg(252)
+}
+,{
+id:"breakBtn"
+,defaultType:"radioMenu"
+,text:"Break"
+,customTooltip:{title:"Break", text:"Insert break to group results on a table"}
+,children:[
+ {actionId:"addBreak"} 
+ ,{actionId:"removeBreak"}
+ ,{actionId:"removeAllBreaks"}
+,{type:"separator"}
+ ,{actionId:"manageBreaks"}
+ ]
+,icon:toolboxImg(252)
+}
+,{
+id:"breakSubMenu"
+,text:"Break"
+,children:[
+ {actionId:"addBreak"} 
+ ,{actionId:"removeBreak"}
+ ,{actionId:"removeAllBreaks"}
+,{type:"separator"}
+ ,{actionId:"manageBreaks"}
+ ]
+,icon:toolboxImg(252)
+}
+,{
+id:"advancedAnalysisMenu"
+,defaultType:"iconMenu"
+,text:"Analyse"
+,customTooltip:{title:"Analyse", text:"", comment:"V2"}
+,children:[
+ {actionId:"compare"}
+ ,{actionId:"trend"}
+ ,{actionId:"outlier"}
+,{type:"whatif"}
+ ,{actionId:"group"}
+ ,{actionId:"correlation"}
+ ,{actionId:"rootCause"}
+ ,{actionId:"impact"}
+ ]
+}
+,{
+id:"clusteringDB"
+,defaultType:"icon"
+,text:"Manage Clustering"
+,customTooltip:{title:"Clustering",text:"Call the clustering Dialog Box", comment:"V2"}
+}
+,{
+id:"predictiveMenu"
+,defaultType:"iconMenu"
+,text:"Predictive"
+,customTooltip:{title:"Predictive", text:"", comment:"V2"}
+,children:
+[
+ {actionId:"clusteringDB", text:'Clustering'}
+ ]
+}
+,{
+id:"alertingServicesDB"
+,defaultType:"icon"
+,text:"Alerting..."
+,customTooltip:{title:"Define Alerting",text:"Call the Alerting Services Dialog Box", comment:"V2"}
+}
+,{
+id:"newQueryFromUniverse"
+,defaultType:"icon"
+,icon:temporaryImg(915)
+}
+,{
+id:"newQueryFromExcel"
+,defaultType:"icon"
+,icon:temporaryImg(913)
+}
+,{
+id:"newQueryFromWS"
+,defaultType:"icon"
+,icon:temporaryImg(912)
+}
+,{
+id:"PQuery"
+,defaultType:"icon"
+,icon:temporaryImg(918)
+}
+,{
+id:"refreshAll"
+,defaultType:"icon"
+,text:"Refresh All"
+,accelerator:{key:"r", modifier:_ctrl, macModifier:_meta}
+,icon:toolboxImg(113)
+,customTooltip:{title:"Refresh All",text:"Refresh all the Queries and Document"}
+}
+,{
+id:"refreshAll2"
+,defaultType:"icon"
+,text:"Refresh All"
+,accelerator:{key:keys.F9, comment:"like Excel/Formulas/Calculate Now"}
+,icon:standardImg(7)
+,customTooltip:{title:"Refresh All",text:"Refresh all the Queries and Document"}
+}
+,{
+id:"refreshDPMenu"
+,defaultType:"iconMenu"
+,text:"Refresh"
+,customTooltip:{title:"Refresh", text:"Refresh one or all data providers"}
+,children:
+[
+{type:"separator"}
+ ,{actionId:"refreshAll"}
+ ]
+,icon:toolboxImg(113)
+}
+,{
+id:"viewDPMenu"
+,defaultType:"iconMenu"
+,text:"View"
+,customTooltip:{title:"View Data Providers", text:"View the list of Data Providers."}
+,icon:toolboxImg(440)
+}
+,{
+id:"editDP"
+,defaultType:"icon"
+,text:"Edit"
+,customTooltip:{title:"Edit Data Provider", text:"Edit the data provider"}
+,accelerator:{key:"q", modifier:_ctrl, macModifier:_meta}
+,icon:toolboxImg(441)
+}
+,{
+id:"editDPMenu"
+,defaultType:"icon"
+,text:"Edit"
+,customTooltip:{title:"Edit Data Provider", text:"Edit the data provider"}
+,icon:toolboxImg(441)
+}
+,{
+id:"editDPSubMenu"
+,defaultType:"iconMenu"
+,text:"Edit"
+,customTooltip:{title:"Break", text:"Insert Break to group results on a table"}
+,children:
+[
+ {actionId:"editDP", text:'Edit DP 1'}
+ ,{actionId:"editDP", text:'Edit DP 2'}
+ ]
+,icon:standardImg(8)
+}
+,{
+id:"editDPUnique"
+,text:"Edit Data Provider"
+,icon:standardImg(8)
+}
+   ,{
+id:"purgeDP1"
+,text:"Purge DP1"
+,icon:toolboxImg(303)
+}
+    ,{
+id:"purgeDP2"
+,text:"Purge DP2"
+,icon:toolboxImg(303)
+}
+    ,{
+id:"purgeAll"
+,text:"Purge All"
+}
+,{
+id:"purgeDPMenu"
+,defaultType:"iconMenu"
+,text:"Purge"
+,customTooltip:{title:"Purge", text:"Purge data"}
+,icon:toolboxImg(303)
+}
+,{
+id:"newDimension"
+,defaultType:"icon"
+,text:"New Dimension"
+,icon:toolboxImg(305)
+}
+,{
+id:"newDetail"
+,defaultType:"icon"
+,text:"New Detail"
+,icon:toolboxImg(307)
+}
+,{
+id:"newMeasure"
+,defaultType:"icon"
+,text:""
+,icon:toolboxImg(308)
+}
+,{
+id:"newVariable"
+,defaultType:"iconMenu"
+,text:"New Variable"
+,customTooltip:{title:"New Variable", text:"Create a new variable based on available objects"}
+,children:
+[
+  {actionId:"newDimension", text:'New Dimension'}
+ ,{actionId:"newDetail", text:'New Detail'}
+ ,{actionId:"newMeasure", text:'New Measure'}
+ ]
+,icon:toolboxImg(442)
+}
+,{
+id:"mergeDimensions"
+,defaultType:"icon"
+,text:"Merge"
+,icon:toolboxImg(309)
+        ,customTooltip:{title:"Merge", text:"Merge dimensions based on available objects"}
+}
+,{
+id:"hideObject"
+,defaultType:"icon"
+,text:"Hide"
+,icon:temporaryImg(925)
+}
+    ,{
+id:"sectionMinHeightLabel"
+,defaultType:"label"
+        ,text:"Minimum Height:"
+}
+,{
+id:"sectionMinimumHeight"
+,defaultType:"spinner"
+,width:36
+,changeOnlyOnMouseUp:true
+,noMargin:true
+,precision:2
+,interval:0.1
+,customTooltip:{title:"Section Minimum Height", text:"Change the minimum height of a section"}
+}
+,{
+id:"setBookmark"
+,defaultType:"check"
+}
+,{
+id:"switchChartOrientation"
+,defaultType:"check"
+,customTooltip:{title:"Switch Orientation", text:"Switch vertical and horizontal axis."
+,comment:'push-button, pas toggle. Valide sur quels charts ?'}
+,icon:temporaryImg(830)
+}
+,{
+id:"switchTableOrientation"
+,defaultType:"icon"
+        ,text:"Swap axis"
+,customTooltip:{title:"Swap axis", text:"Switch vertical and horizontal axis"
+,comment:'push-button, pas toggle.'}
+,icon:temporaryImg(826)
+}
+    ,{
+id:"paletteMenu"
+,text:"Palette Style"
+,defaultType:"iconMenu"
+,triggerAction:false
+,elastic:true                                          
+        ,menuType:_menuType_custom_showIcon28x16 
+        ,menuItemIconType:_menuItemIconType._28x16
+,customTooltip:{title:"Palette and style", text:"Set palette style"}
+,children:[] 
+}
+    ,{
+id:"dualPaletteMenu"
+,text:"Palette Style 2"
+,defaultType:"iconMenu"
+,elastic:true                                          
+        ,menuType:_menuType_custom_showIcon28x16 
+        ,menuItemIconType:_menuItemIconType._28x16
+,triggerAction:false
+,customTooltip:{title:"Palette and style", text:"Set palette style"}
+,children:[]
+}   
+,{
+id:"setChartStyle"
+,defaultType:"check"
+,icon:reportImg(18)
+}
+,{
+id:"setTitleLocation"
+,defaultType:"check"
+}
+,{
+id:"chooseTitleLocation"
+,defaultType:"iconMenu"
+,text:"Title"
+,children:[
+  {actionId:"setTitleLocation", userData:"Top", text:"Top"}
+ ,{actionId:"setTitleLocation", userData:"Bottom", text:"Bottom"}
+ ,{actionId:"setTitleLocation", userData:"Left", text:"Left"}
+ ,{actionId:"setTitleLocation", userData:"Right", text:"Right"}
+,{type:"separator"}
+ ,{actionId:"setTitleLocation", userData:"NoTitle", text:"No Title"}
+ ]
+}
+,{
+id:"setChartLegend"
+,defaultType:"check"
+}
+,{
+id:"chartLegendMenu"
+,defaultType:"iconMenu"
+,text:"Legend"
+,customTooltip:{title:"Manage Legend", text:"Show, hide or customize legend."
+,comment:'Verifier que les items sont en V1'}
+,children:[
+  {actionId:"setChartLegend", userData:"no", text:"Visible"}
+ ,{actionId:"setChartLegend", userData:"full", text:"Grouped Display"}
+ ,{actionId:"setChartLegend", userData:"horizontal", text:"Show Extra Info"}
+ ]
+}
+,{
+id:"setChartAxis"
+,defaultType:"check"
+}
+,{
+id:"chartAxisMenu"
+,defaultType:"iconMenu"
+,text:"Axis"
+,customTooltip:{title:"???", text:"..."
+,comment:'Spec a preciser'}
+,children:[
+  {actionId:"setChartAxis", userData:"no", text:"Label"}
+ ,{actionId:"setChartAxis", userData:"full", text:"Values"}
+ ]
+}
+,{
+id:"setChartDataValuesDisplay"
+,defaultType:"check"
+}
+,{
+id:"barGapDecrease"
+,defaultType:"check"
+,customTooltip:{title:"Decrease Bar Gap",text:"Decrease the gap between the bars"}
+,icon:temporaryImg(868)
+}
+,{
+id:"barGapIncrease"
+,defaultType:"check"
+,customTooltip:{title:"Increase Bar Gap",text:"Increase the gap between the bars"}
+,icon:temporaryImg(861)
+}
+,{
+id:"seriesGapDecrease"
+,defaultType:"check"
+,customTooltip:{title:"Decrease Series Gap",text:"Increase the gap between the bars"}
+,icon:temporaryImg(850)
+}
+,{
+id:"seriesGapIncrease"
+,defaultType:"check"
+,customTooltip:{title:"Increase Series Gap",text:"Increase the gap between the bars"}
+,icon:temporaryImg(867)
+}
+,{
+id:"chartDataValuesMenu"
+,defaultType:"iconMenu"
+,text:"Data Values"
+,customTooltip:{title:"Data Values Display", text:"Magange the display of the Chart Data Values."
+}
+,children:[
+  {actionId:"setChartDataValuesDisplay", userData:"no", text:"Visible"}
+ ,{actionId:"setChartDataValuesDisplay", userData:"full", text:"Position"}
+,{type:"separator"}
+ ,{actionId:"setChartDataValuesDisplay", userData:"full", text:"Show Value"}
+ ,{actionId:"setChartDataValuesDisplay", userData:"full", text:"Show Label"}
+ ,{actionId:"setChartDataValuesDisplay", userData:"full", text:"Show %"}
+,{type:"separator"}
+ ,{actionId:"setChartDataValuesDisplay", userData:"full", text:"Tooltip"}
+ ]
+}
+    ,{
+id:"flashy"
+,defaultType:"icon"
+,text:"Flashy Style"
+,icon:toolboxImg(412)
+}
+    ,{
+id:"standard"
+,defaultType:"icon"
+,text:"Normal Style"
+,icon:toolboxImg(411)
+}
+    ,{
+id:"highcontrast"
+,defaultType:"icon"
+,text:"High Contrast"
+,icon:toolboxImg(413)
+}
+,{
+id:"formatChartBtn"
+,defaultType:"icon"
+,customTooltip:{title:"Format Chart",text:"Set the chart format"}
+,icon:toolboxImg(414)
+}
+,{
+id:"chartStyleMenu"
+,defaultType:"iconMenu"
+,customTooltip:{title:"Format Chart Style",text:"Set a chart style"}
+        ,triggerAction:false
+,children:[
+                {actionId:"flashy"}
+ ,{actionId:"standard"} 
+ ,{actionId:"highcontrast"}
+    ]
+        ,icon:toolboxImg(411)
+}
+,{
+id:"chartGridMenu"
+,defaultType:"iconMenu"
+,text:"Vertical Grid"
+,children:[
+  {actionId:"setChartStyle", userData:"no", text:"no Grid"}
+ ,{actionId:"setChartStyle", userData:"full", text:"Full Grid"}
+ ,{actionId:"setChartStyle", userData:"horizontal", text:"Horizontal Grid"}
+ ,{actionId:"setChartStyle", userData:"vertical", text:"Vertical Grid"}
+ ]
+,icon:reportImg(8)
+}
+,{
+id:"showHideTableHeader"
+,defaultType:"check"
+,icon:toolboxImg(403)
+,text:"Show header"  
+}
+,{
+id:"showHideTableFooter"
+,defaultType:"check"
+,icon:toolboxImg(404) 
+,text:"Show footer"
+}
+    ,{
+id:"showHideTableVHeader"
+,defaultType:"check"
+,icon:toolboxImg(403)
+}
+,{
+id:"showHideTableVFooter"
+,defaultType:"check"
+,icon:toolboxImg(404)
+}
+    ,{
+id:"showHideBreakHeader"
+,defaultType:"check"
+}
+    ,{
+id:"showHideBreakFooter"
+,defaultType:"check"
+}
+    ,{
+id:"showHideTableHHeader"
+,defaultType:"check"
+,icon:toolboxImg(405)
+}
+,{
+id:"showHideTableHFooter"
+,defaultType:"check"
+,icon:toolboxImg(406)
+}
+,{
+id:"vTableHeaderMenu"
+,defaultType:"iconMenu"
+,text:"Header"
+,triggerAction:false
+,customTooltip:{title:"Header", text:"Display or hide header."}
+,children:[
+  {actionId:"showHideTableVHeader", text:"Show Table Header"}
+            ,{type:"separator"}
+                ,{actionId:"showHideBreakHeader", userData:"vertical", text:"Show Break Header"}
+                ] 
+        ,icon:toolboxImg(403)  
+}
+    ,{
+id:"vTableFooterMenu"
+,defaultType:"iconMenu"
+,text:"Footer"
+,triggerAction:false
+,customTooltip:{title:"Footer", text:"Display or hide footer."}
+,children:[
+     {actionId:"showHideTableVFooter", text:"Show Table Footer"}
+            ,{type:"separator"}
+                ,{actionId:"showHideBreakFooter", userData:"vertical", text:"Show Break Footer"}
+           ]
+        ,icon:toolboxImg(404)
+}
+    ,{
+id:"hTableHeaderMenu"
+,defaultType:"iconMenu"
+,text:"Header"
+,triggerAction:false
+,customTooltip:{title:"Header", text:"Display or hide header."}
+,children:[
+  {actionId:"showHideTableHHeader", text:"Show Table Header"}
+                ,{type:"separator"}
+                ,{actionId:"showHideBreakHeader", userData:"horizontal", text:"Show Break Header"}         
+ ]
+        ,icon:toolboxImg(405) 
+}
+    ,{
+id:"hTableFooterMenu"
+,defaultType:"iconMenu"
+,text:"Footer"
+,triggerAction:false
+,customTooltip:{title:"Footer", text:"Display or hide footer."}
+,children:[
+     {actionId:"showHideTableHFooter",  text:"Show Table Footer"}
+            ,{type:"separator"}
+                ,{actionId:"showHideBreakFooter", userData:"horizontal", text:"Show Break Footer"}
+           ]
+        ,icon:toolboxImg(406)
+}
+    ,{
+id:"showHideXTableVHeader"
+,defaultType:"check"
+,icon:toolboxImg(405)
+}
+    ,{
+id:"showHideBreakVHeader"
+,defaultType:"check"
+}
+    ,{
+id:"showHideXTableHHeader"
+,defaultType:"check"
+,icon:toolboxImg(403)
+}
+    ,{
+id:"showHideBreakHHeader"
+,defaultType:"check"
+}
+    ,{
+id:"showHideXTableVFooter"
+,defaultType:"check"
+,icon:toolboxImg(406)
+}
+    ,{
+id:"showHideBreakVFooter"
+,defaultType:"check"
+}
+    ,{
+id:"showHideXTableHFooter"
+,defaultType:"check"
+,icon:toolboxImg(404)
+}
+    ,{
+id:"showHideBreakHFooter"
+,defaultType:"check"
+}
+    ,{
+id:"xTableHHeaderMenu"
+,defaultType:"iconMenu"
+,triggerAction:false
+,customTooltip:{title:"Header", text:"Display or hide header."}
+,children:[
+  {actionId:"showHideXTableHHeader", text:"Show Table Header"}
+             ,{type:"separator"}
+ ,{actionId:"showHideBreakHHeader", userData:"horizontal", text:"Show Break Header"}            
+ ]
+        ,icon:toolboxImg(403)
+}
+    ,{
+id:"xTableHFooterMenu"
+,defaultType:"iconMenu"
+,triggerAction:false
+,customTooltip:{title:"Footer", text:"Display or hide footer."}
+,children:[
+     {actionId:"showHideXTableHFooter", text:"Show Table Footer"}
+            ,{type:"separator"}
+                ,{actionId:"showHideBreakHFooter", userData:"horizontal", text:"Show Break Footer"}
+           ]
+        ,icon:toolboxImg(404)
+}
+    ,{
+id:"xTableVHeaderMenu"
+,defaultType:"iconMenu"
+,triggerAction:false
+,customTooltip:{title:"Header", text:"Display or hide header."}
+,children:[
+  {actionId:"showHideXTableVHeader",  text:"Show Table Header"}
+             ,{type:"separator"}
+ ,{actionId:"showHideBreakVHeader", userData:"vertical", text:"Show Break Header"}      
+ ]
+        ,icon:toolboxImg(405)
+}
+    ,{
+id:"xTableVFooterMenu"
+,defaultType:"iconMenu"
+,triggerAction:false
+,customTooltip:{title:"Footer", text:"Display or hide footer."}
+,children:[
+     {actionId:"showHideXTableVFooter", text:"Show Table Footer"}
+            ,{type:"separator"}
+                ,{actionId:"showHideBreakVFooter", userData:"vertical", text:"Show Break Footer"}
+           ]
+        ,icon:toolboxImg(406)
+}
+,{
+id:"insertRowOrColumn"
+,defaultType:"check"
+}
+ ,{id:"insertRowAbove", text:"Insert Rows Above", icon:toolboxImg(255)}
+ ,{id:"insertRowBelow", text:"Insert Rows Below", icon:toolboxImg(256)}
+ ,{id:"insertColumnOnLeft", text:"Insert Columns on Left", icon:toolboxImg(257)}
+ ,{id:"insertColumnOnRight", text:"Insert Columns on Right", icon:toolboxImg(258)}
+,{
+id:"insertRowOrColumnMenu"
+,defaultType:"iconMenu"
+,triggerAction:false
+,text:"Insert"
+,customTooltip:{title:"Insert", text:"Insert Row or Columns" }
+,children:[
+ {actionId:"insertRowAbove"}
+ ,{actionId:"insertRowBelow"}
+ ,{actionId:"insertColumnOnLeft"}
+ ,{actionId:"insertColumnOnRight"}
+    ]
+}
+,{
+id:"saveAll"
+,text:"Save All"
+,customTooltip:{title:"Save All", text:"Save all Documents", comment:'Rich Client Only'}
+,accelerator:{key:"s", modifier:[_ctrl,_shift], macModifier:[_meta,_shift]}
+}
+,{
+ id:"editReportElement"
+ ,text:"Assign Data..." 
+}
+,{
+ id:"editSection"
+ ,text:"Edit Section..."
+}
+    ,{  id:"insertReportElement"
+        ,text:"Insert a Report Element..."
+    }
+    ,{
+id:"insertSectionCM"
+,text:"Section"
+,icon:toolboxImg(205)
+}
+,{  id:"insertAReportElementSubMenu"
+    ,text:"Insert"
+    ,children:[
+  {actionId:"insertSectionCM"}
+,{type:"separator"}
+ ,{actionId:"insertVertTable"}
+ ,{actionId:"insertHoriTable"}
+ ,{actionId:"insertCrossTable"}
+ ,{actionId:"insertForm"}
+,{type:"separator"}
+ ,{actionId:"insertChartColumn"}
+ ,{actionId:"insertLineChart"}
+ ,{actionId:"insertPieChart"}
+ ,{actionId:"insertScatter"}
+,{type:"separator"}
+,{actionId:"insertReportElement"}
+]
+}
+    ,{  id:"insertAReportEltInPageHFSubMenu"
+    ,text:"Insert"
+    ,children:[ 
+ {actionId:"insertVertTable"}
+ ,{actionId:"insertHoriTable"}
+ ,{actionId:"insertCrossTable"}
+ ,{actionId:"insertForm"}
+,{type:"separator"}
+ ,{actionId:"insertChartColumn"}
+ ,{actionId:"insertLineChart"}
+ ,{actionId:"insertPieChart"}
+ ,{actionId:"insertScatter"}
+,{type:"separator"}
+,{actionId:"insertReportElement"}
+]
+}
+,{   
+id:"contextMenu.body"
+,defaultType:"iconMenu" ,triggerAction: false, text:"Body"
+,icon:temporaryImg(204)
+,children: [
+ {actionId:"cut"},{actionId:"copy"},{actionId:"paste"}
+,{type:"separator"}
+,{actionId:"insertAReportElementSubMenu"}
+,{type:"separator"}
+,{actionId:"refreshAll", text:'Refresh'}
+,{actionId:"editDPUnique"}
+,{actionId:"structureView", text:'Show Structure'}
+,{type:"separator"}
+,{actionId:"drill", text:"Drill..."}
+,{actionId:"tdcShowChanges"}
+,{actionId:"filterSubMenu"} 
+,{type:"separator"}
+,{actionId:"formatReport"}
+]
+}
+,{id:"reportMenuWhenSectionSelected", text:"Report", children:[
+ {actionId:"structureView", text:'Show Structure'}
+,{actionId:"switchToInteractive", text:'Show Results'}
+,{type:"separator"}
+,{actionId:"drill"}
+,{actionId:"tdcShowChanges"}
+ ,{actionId:"showAllHiddenContent", text:'Show All Hidden Content'}
+,{type:"separator"}
+,{actionId:"formatReport"}
+]
+}
+,{   
+id:"contextMenu.section"
+,defaultType:"iconMenu" ,triggerAction: false, text:"Section"
+,icon:typeImg(2)
+,children: [
+ {actionId:"cut"},{actionId:"copy"},{actionId:"paste"}
+,{type:"separator"}
+,{actionId:"insertAReportElementSubMenu"}
+ ,{actionId:"removeReportElement"}
+ ,{actionId:"clearContents"}
+,{type:"separator"}
+,{actionId:"editSection"}
+,{type:"separator"}
+,{actionId:"refreshAll", text:'Show Refreshed Results'}
+,{actionId:"editDPUnique"}
+,{actionId:"switchToInteractive", text:'Show Results'}
+,{actionId:"reportMenuWhenSectionSelected"}
+,{type:"separator"}
+,{actionId:"filterSubMenu"} 
+,{actionId:"sortSubMenu"}
+,{actionId:"hideSubMenu", text:"Hide"} 
+,{type:"separator"}
+,{actionId:"formatSection"}
+]
+}
+,{
+id:"contextMenu.sectionCell"
+,defaultType:"iconMenu" ,triggerAction: false, text:"Section Cell"
+,icon:typeImg(53)
+,children: [
+{id:"expandChildren", actionId:"expandChildren", text:"Expand Children"},
+{id:"expandDescendent", actionId:"expandDescendent", text:"Expand Descendant"},
+{id:"collapseChildren", actionId:"collapseChildren", text:"Collapse Children"},
+{id:"symetric", actionId:"symetric", text:"Symmetric",children:[
+{id:"symetricExpandChildren", actionId:"symetricExpandChildren", text:"Expand Children" }
+,{id:"symetricExpandDescendent",actionId:"symetricExpandDescendent", text:"Expand Descendant"}
+,{id:"symetricCollapseChildren",actionId:"symetricCollapseChildren", text:"Collapse Children"}
+]}, 
+{id:"expandCollapseAll", actionId:"expandCollapseAll", text:"All",children:[
+{id:"expandAllHierarchies",actionId:"expandAllHierarchies", text:"Expand All Hierarchies" }
+,{id:"collapseAllHierarchies",actionId:"collapseAllHierarchies", text:"Collapse All Hierarchies"}
+]},
+{id:"drillFocus", actionId:"drillFocus", text:"Drill Focus",children:[
+{id:"ecDrillUp", actionId:"ecDrillUp", text:"Drill Up" }
+,{id:"ecDrillDown",actionId:"ecDrillDown", text:"Drill Down"}
+]}
+,{type:"separator"}
+    ,{actionId:"cut"},{actionId:"copy"},{actionId:"paste"}
+,{type:"separator"}
+,{actionId:"deleteSectionCell"}
+ ,{actionId:"clearContents"}
+,{type:"separator"}
+ ,{actionId:"editFormula"}
+,{actionId:"navigation", text:"Navigation", children:[
+{actionId:"addHyperlink", text:'Add Hyperlink...'}
+,{actionId:"editHyperlink", text:'Edit Hyperlink...'}
+,{actionId:"removeHyperlink", text:'Remove'}
+,{actionId:"setContentAsHyperlink", text:'Read Content as Hyperlink'}
+,{type:"separator"}
+,{actionId:"addInteractivity"}
+,{actionId:"editInteractivity"}
+,{actionId:"removeInteractivity"}
+]
+}
+,{type:"separator"}
+,{actionId:"filterSubMenu"} 
+,{actionId:"rankingSubMenu", text:"Ranking"}
+,{actionId:"sortSubMenu"}
+,{type:"separator"}
+ ,{actionId:"orderSubMenu"}
+ ,{actionId:"align1ElementSubMenu"}
+,{actionId:"appliedFormattingRulesSubMenu"}
+,{actionId:"formatFontSubMenu"}
+,{actionId:"formatCell"}
+]
+}
+,{   
+id:"contextMenu.vTable"
+,defaultType:"iconMenu" ,triggerAction: false, text:"VTable"
+,icon:typeImg(8)
+,children: [
+ {actionId:"cut"},{actionId:"copy"},{actionId:"paste"}
+,{type:"separator"}
+ ,{actionId:"removeReportElement"}
+ ,{actionId:"clearContents"}
+,{type:"separator"}
+,{actionId:"turntoTable", text:"Turn Into", children:[
+ {actionId:"switchTableOrientation", text:"Switch Orientation"}
+,{type:"separator"}
+ ,{actionId:"turnToColumn"}
+ ,{actionId:"turnToStackedColumn"}
+ ,{actionId:"turnToPie"}
+,{type:"separator"}
+ ,{actionId:"turnto", text:"More Transformations..."}
+]
+}
+ ,{actionId:"editReportElement"}
+,{actionId:"navigation", text:"Navigation", children:[
+ {actionId:"addInteractivity"}
+,{actionId:"editInteractivity"}
+,{actionId:"removeInteractivity"}
+]
+}
+,{type:"separator"}
+,{actionId:"filterSubMenu"} 
+ ,{actionId:"manageBreaks2", text:"Break..."}
+,{actionId:"hideSubMenu", text:"Hide"} 
+,{type:"separator"}
+ ,{actionId:"orderSubMenu"}
+ ,{actionId:"align1ElementSubMenu"}
+,{actionId:"formatTable"}
+]
+}
+,{  id:"deleteCell"
+    ,text:"Delete" 
+    ,icon:toolboxImg(112)
+}
+,{id:"deleteTableCell", text:"Delete", icon:reportImg(12)
+}
+,{id:"deleteCell.OnCrossTabCell", text:"Delete", icon:reportImg(12), children:[
+  {actionId:"deleteRow", text:'Row'}
+ ,{actionId:"deleteColumn", text:'Column'}
+]}
+,{id:"editFormula", text:"Edit Formula..."}
+,{  id:"insertIntoTable.OverMeasureCell"
+,text:"Insert"
+,children:[
+ {actionId:"insertRowAbove", text:"Rows Above"}
+ ,{actionId:"insertRowBelow", text:"Rows Below"}
+ ,{actionId:"insertColumnOnLeft", text:"Columns on Left"}
+ ,{actionId:"insertColumnOnRight", text:"Columns on Right"}
+,{type:"separator"}
+ ,{actionId:"addSumMenu", text:"Sum", userData:"noChildren"}
+ ,{actionId:"calcCount", text:"Count"}
+ ,{actionId:"calcAvg", text:"Average"}
+ ,{actionId:"calcMin", text:"Min"}
+ ,{actionId:"calcMax", text:"Max"}
+ ,{actionId:"calcPercent", text:"Percentage"}
+]
+}
+,{  id:"insertIntoTable.OverTextDimCell"
+    ,text:"Insert"
+    ,children:[
+ {actionId:"insertRowAbove", text:"Rows Above"}
+ ,{actionId:"insertRowBelow", text:"Rows Below"}
+ ,{actionId:"insertColumnOnLeft", text:"Columns on Left"}
+ ,{actionId:"insertColumnOnRight", text:"Columns on Right"}
+,{type:"separator"}
+ ,{actionId:"calcCount", text:"Count"}
+ ,{actionId:"calcMin", text:"Min"}
+ ,{actionId:"calcMax", text:"Max"}
+]
+    }
+,{  id:"insertIntoTable.OverNumberDimCell"
+    ,text:"Insert"
+    ,children:[
+ {actionId:"insertRowAbove", text:"Rows Above"}
+ ,{actionId:"insertRowBelow", text:"Rows Below"}
+ ,{actionId:"insertColumnOnLeft", text:"Columns on Left"}
+ ,{actionId:"insertColumnOnRight", text:"Columns on Right"}
+,{type:"separator"}
+ ,{actionId:"addSumMenu", text:"Sum", userData:"noChildren"}
+ ,{actionId:"calcCount", text:"Count"}
+ ,{actionId:"calcAvg", text:"Average"}
+ ,{actionId:"calcMin", text:"Min"}
+ ,{actionId:"calcMax", text:"Max"}
+ ,{actionId:"calcPercent", text:"Percentage"}
+]
+}
+,{
+id:"contextMenu.tableCell"
+,defaultType:"iconMenu" ,triggerAction: false, text:"Table Cell"
+,icon:typeImg(53)
+,children: [
+{actionId:"tableHierarchicalNavig"}
+,{type:"separator"}
+    ,{actionId:"cut"},{actionId:"copy"},{actionId:"paste"}
+,{type:"separator"}
+,{actionId:"insertIntoTable.OverTextDimCell"}
+ ,{actionId:"deleteTableCell"}
+ ,{actionId:"clearContents"}
+,{type:"separator"}
+,{actionId:"turnCellTableInto", text:"Turn Table Into", children:[
+  {actionId:"moveAsSection", text:"Move Cell as Section"}
+ ,{actionId:"switchTableOrientation", text:"Switch Orientation"}
+,{type:"separator"}
+ ,{actionId:"turnToColumn"}
+ ,{actionId:"turnToStackedColumn"}
+ ,{actionId:"turnToPie"}
+,{type:"separator"}
+ ,{actionId:"turnto", text:"More Transformations..."}
+]
+}
+ ,{actionId:"editFormula"}
+,{actionId:"navigation", text:"Navigation", children:[
+{actionId:"addHyperlink", text:'Add Hyperlink...'}
+,{actionId:"editHyperlink", text:'Edit Hyperlink...'}
+,{actionId:"removeHyperlink", text:'Remove'}
+,{actionId:"setContentAsHyperlink", text:'Read Content as Hyperlink'}
+,{type:"separator"}
+,{actionId:"addInteractivity"}
+,{actionId:"editInteractivity"}
+,{actionId:"removeInteractivity"}
+]
+}
+,{type:"separator"}
+,{actionId:"drillSubMenu"} 
+,{actionId:"filterSubMenu"} 
+,{actionId:"rankingSubMenu", text:"Ranking"}
+,{actionId:"sortMenu"}
+,{actionId:"breakSubMenu"}
+,{type:"separator"}
+,{actionId:"appliedFormattingRulesSubMenu"}
+,{actionId:"formatFontSubMenu"}
+,{actionId:"formatNumber"}
+,{actionId:"formatCell"} 
+]
+}
+,{  id:"deleteSectionCell"
+    ,text:"Delete"
+    ,icon:toolboxImg(112)
+    ,children:[
+  {actionId:"deleteCell", text:'Cell Only'}
+ ,{actionId:"deleteCellAndSection", text:'Cell and Section'}
+]
+}
+,{
+id:"contextMenu.freeCell"
+,defaultType:"iconMenu" ,triggerAction: false, text:"Free Cell"
+,icon:typeImg(53)
+,children: [
+ {actionId:"cut"},{actionId:"copy"},{actionId:"paste"}
+,{type:"separator"}
+ ,{actionId:"deleteCell"}
+ ,{actionId:"clearContents"}
+,{type:"separator"}
+ ,{actionId:"editFormula"}
+,{actionId:"navigation", text:"Navigation", children:[
+{actionId:"addHyperlink", text:'Add Hyperlink...'}
+,{actionId:"editHyperlink", text:'Edit Hyperlink...'}
+,{actionId:"removeHyperlink", text:'Remove'}
+,{actionId:"setContentAsHyperlink", text:'Read Content as Hyperlink'}
+,{type:"separator"}
+,{actionId:"addInteractivity"}
+,{actionId:"editInteractivity"}
+,{actionId:"removeInteractivity"}
+]
+}
+,{type:"separator"}
+ ,{actionId:"orderSubMenu"}
+ ,{actionId:"align1ElementSubMenu"}
+,{actionId:"formatFontSubMenu"}
+,{actionId:"formatCell"}
+]
+}
+,{
+id:"contextMenu.NContainers"
+,defaultType:"iconMenu" ,triggerAction: false, text:"N Containers"
+,icon:typeImg(53)
+,children: [
+ {actionId:"cut"},{actionId:"copy"},{actionId:"paste"}
+,{type:"separator"}
+ ,{actionId:"removeReportElement"}
+ ,{actionId:"clearContents"}
+,{type:"separator"}
+ ,{actionId:"orderSubMenu"}
+ ,{actionId:"align1ElementSubMenu"}
+,{actionId:"formatSeveralElements"}
+]
+}
+,{
+id:"contextMenu.NNonContainers"
+,defaultType:"iconMenu" ,triggerAction: false, text:"N Non Containers"
+,icon:typeImg(53)
+,children: [
+ {actionId:"cut"},{actionId:"copy"},{actionId:"paste"}
+,{type:"separator"}
+ ,{actionId:"removeReportElement"}
+ ,{actionId:"clearContents"}
+,{type:"separator"}
+ ,{actionId:"orderSubMenu"}
+ ,{actionId:"align1ElementSubMenu"}
+,{actionId:"formatSeveralElements"}
+]
+}
+,{
+id:"contextMenu.NCells"
+,defaultType:"iconMenu" ,triggerAction: false, text:"N Cells"
+,icon:typeImg(53)
+,children: [
+ {actionId:"cut"},{actionId:"copy"},{actionId:"paste"}
+,{type:"separator"} 
+,{id:"insertIntoTable", text:"Insert", children:[
+ {actionId:"insertRowAbove", text:"Insert Rows Above"}
+ ,{actionId:"insertRowBelow", text:"Insert Rows Below"}
+ ,{actionId:"insertColumnOnLeft", text:"Insert Columns on Left"}
+ ,{actionId:"insertColumnOnRight", text:"Insert Columns on Right"}
+]}
+ ,{actionId:"deleteCell"}
+ ,{actionId:"mergeOrSplit"} 
+ ,{actionId:"clearContents"}
+,{type:"separator"}
+,{actionId:"turnCellTableInto", text:"Turn Table Into", children:[]}
+,{type:"separator"} 
+,{actionId:"formatFontSubMenu"}
+,{actionId:"formatSeveralCells"}
+]
+}
+,{
+id:"showLeftPane_Normal"
+,defaultType:"check" 
+,text:"Normal"
+,accelerator:{key:keys.F1, modifier:_alt, macModifier:_alt}
+}
+,{
+id:"showLeftPane_Mini"
+,defaultType:"check" 
+,text:"Minimized"
+}
+,{
+id:"showLeftPane_Off"
+,defaultType:"check" 
+,text:"Off"
+}
+,{
+id:"leftPaneSubMenu"
+        ,text:"Side Panel"
+        ,children: [
+ {actionId:"showLeftPane_Normal"}
+,{actionId:"showLeftPane_Mini"}
+,{actionId:"showLeftPane_Off"}
+]
+}
+,{
+id:"contextMenu.ApplicationFrame"
+,defaultType:"iconMenu"
+,triggerAction: false, text:"On Frame"
+,children: [
+{actionId:"switchAppliMode2", text:"Application mode", children:[
+{actionId:"switchToView"}
+,{actionId:"switchToInteractive"}
+,{actionId:"structureView"}
+,{actionId:"pdfView"}
+]}
+,{type:"separator"}
+,{actionId:"showToolboxes"}
+,{actionId:"showFormulaBar", type:"check"}
+,{actionId:"drillLite"}
+,{actionId:"foldUnfold", text:"Outline", type:"check", icon:null}
+,{actionId:"findText", text:"Find Bar"}
+,{type:"separator"}
+,{actionId:"leftPaneSubMenu"}
+,{actionId:"showReportTabs"}
+,{actionId:"showStatusBar"}
+]}
+,{
+id:"contextMenu.TabStrip"
+,defaultType:"iconMenu" ,triggerAction: false, text:"On Tab Strip"
+,children: [
+ {actionId:"insertBlankReport"}
+,{actionId:"goToReport", text:"Go to Report", devStatus:"v2", children:[
+{actionId:"listOfReports", text:"(Here list of reports)" }
+]}
+,{type:"separator"}
+,{actionId:"switchAppliMode2", text:"Application mode", children:[
+{actionId:"switchToView"}
+,{actionId:"switchToInteractive"}
+,{actionId:"structureView"}
+,{actionId:"pdfView"}
+]}
+,{type:"separator"}
+,{actionId:"showToolboxes"}
+,{actionId:"showFormulaBar", type:"check"}
+,{actionId:"foldUnfold", text:"Outline", type:"check", icon:null}
+,{actionId:"findText", text:"Find Bar"}
+,{type:"separator"}
+,{actionId:"leftPaneSubMenu"}
+,{actionId:"showReportTabs"}
+,{actionId:"showStatusBar"}
+]}
+,{
+id:"selectReportPart",
+text:"Select this report part"
+}
+,{
+id:"unSelectReportPart",
+text:"Unselect this report part"
+}
+    ,{
+id:"designModeMenu"
+,defaultType:"radioMenu"
+,text:"Design"
+,customTooltip:{title:"Design", text:"Display the report in Design mode"}
+    ,children:  [
+            {actionId:"switchToInteractive", text:"With Data"}
+                        ,{actionId:"structureView", text:"Structure only"}
+                ]       
+}
+,{
+id:"readingModeMenu"
+,defaultType:"radioMenu"
+,text:"Reading"
+,customTooltip:{title:"Reading", text:"Display the report in read-only mode"}
+    ,children:  [
+            {actionId:"switchToView"}
+                        ,{actionId:"pdfView"}
+                ]       
+}
+]
+function fillAllActions(workbench)
+{
+apply_actions_customization();
+workbench.fillActions(webi.actions);
+delete webi.actions;
+}
+function apply_actions_customization()
+{
+if (typeof(apply_customization_shortcut) != "undefined")
+{
+apply_customization_shortcut(webi.actions);
+}
+if (typeof(apply_customization_feature) != "undefined")
+{
+apply_customization_feature(webi.actions);
+}
+}

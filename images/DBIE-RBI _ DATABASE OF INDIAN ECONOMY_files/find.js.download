@@ -1,0 +1,731 @@
+hlgtSTag="hlgtS" //highlight single
+hlgtATag="hlgtA" //highlight all
+function new_FindBarWidget(prms)
+{
+var o = new_Widget(prms);
+// Parameters parsing
+//o.clickCB = Widget_param(prms, "clickCB", null);
+o.width = Widget_param(prms, "width", 500);
+o.frame = Widget_param(prms, "frame", null); //frame where the find is performed
+o.showHideCB = Widget_param(prms, "showHideCB", null); //callback when show/hide the find bar
+o.getFrameCB = Widget_param(prms, "getFrameCB", null) //  callback parameters : getReportFrame function from viewer
+o.src=_skin+"../findBar.gif"//use components creation
+// Public Methods
+o.getHTML = FBW_getHTML;
+o.widgetInit = o.init;
+o.init = FBW_init;
+o.widgetResize = o.resize;
+o.resize = FBW_resizeCB;
+o.clean = FBW_clean;
+// components creation
+o.matchCase = new_IconMenuWidget (
+{
+id:o.id + "_matchCase"
+,icon:toolboxImgFromLib(104)   
+,tooltip:_findIconLab
+, clickCB:FBW_findCB
+});
+o.matchCase.par = o;
+o.textField = new_TextFieldWidget(
+{
+id:o.id+"_text"
+,width:100
+,noMargin:"true"
+,keyUpCB: FBW_changeCB 
+,enterCB: FBW_findCB
+,tooltip:_findTextFieldLab
+});
+o.textField.par = o;
+o.previous = new_IconWidget(
+{
+id:o.id + "_prev"
+,icon:toolboxImgFromLib(125)   
+,text:_findPrevLab
+,allowDblClick:true
+,clickCB:FBW_findPreviousCB
+,tooltip:_findPrevTooltip
+});
+o.previous.par = o
+o.next = new_IconWidget(
+{
+id:o.id + "_next"
+,icon:toolboxImgFromLib(124)
+,text:_findNextLab
+,allowDblClick:true
+,clickCB:FBW_findNextCB
+,tooltip:_findNextTooltip
+});
+o.next.par = o
+/*o.highlight = new_IconCheckWidget(
+{
+id:o.id + "_highlight"
+,src:o.src
+,dx:9*16
+,disDx:8*16,disDy:1*16
+,clickCB:FBW_highlightCB
+,tooltip:_findHighlightLab
+});
+o.highlight.par = o
+*/
+o.close = new_IconWidget(
+{
+id:o.id + "_close"
+,src:o.src
+,dx:6*16
+,clickCB:FBW_closeCB
+,tooltip:_findCloseLab
+});
+o.close.par = o
+    o.noMatchInfoIcon=toolboxImgFromLib(126);
+    o.foundInfoIcon=toolboxImgFromLib(127)
+// Private fields
+o.bMatchCase=false;
+o.infoLyr = null;
+o.initRange = false;
+//o.timerWait=null;
+o.prevSearch="";
+// Private Methods
+o.updateUI=FBW_updateUI; 
+o.findInPage=FBW_findInPage;
+//o.highlightWhenFound=FBW_highlightWhenFound;
+//o.highlightAll=FBW_highlightAll;
+//o.unhighlight=FBW_unhighlight;
+//o.getNbOccurence=FBW_getNbOccurence;
+// Additional code
+return o;
+}
+function FBW_init()
+{
+var o = this;
+// Super Class Init
+o.widgetInit();
+o.matchCase.init();
+//add entries for case menu
+o.matchCase.menu.addCheck("findIgnoreCase",_findNormalLab,FBW_checkCaseCB)
+o.matchCase.menu.addCheck("findMatchCase",_findMatchLab,FBW_checkCaseCB)
+o.matchCase.menu.getItem(0).check(true);//ignore case
+o.textField.init();
+o.previous.init();
+o.next.init();
+//o.highlight.init();
+o.close.init(); 
+o.infoLyr = getLayer(o.id+"_info");
+//update UI
+o.updateUI("");
+o.textField.setRoleAndLabelledBy("search", null, o.getAriaLabelledByID())
+//resize
+//o.resize(o.width,null);
+}
+function FBW_getHTML()
+{
+var o = this;
+var s = new Array(), i=0 ;
+s[i]='<div id="'+o.id+'" style="height:25px;overflow:hidden">'
+s[i]+='<table width="100%"class="dialogzone" cellspacing="0" cellpadding="0" border="0" ><tbody>'
+s[i]+='<tr>'
+s[i]+='<td align="left">'
+s[i]+='<table class="dialogzone" border="0" cellspacing="0" cellpadding="0"><tbody>' 
+s[i]+='<tr>' 
+s[i]+='<td id="'+o.getAriaLabelledByID()+'"style="padding-left:4px">'+_findLab+'</td>'
+s[i]+='<td>'+o.textField.getHTML()+'</td>'
+s[i]+='<td>'+ o.matchCase.getHTML()+'</td>'
+s[i]+='<td><div class="toolbarSep"></div></td>'
+s[i]+='<td>'+ o.next.getHTML()+'</td>'
+s[i]+='<td>'+ o.previous.getHTML()+'</td>'
+//s[i]+='<td>'+ o.highlight.getHTML()+'</td>'
+s[i]+='<td id="'+o.id+'_info" style="padding-left:10px"></td>'
+s[i]+='</tr>' 
+s[i]+='</tbody></table>' 
+s[i]+='</td>' 
+s[i]+='<td valign="top" align="right">'
+s[i]+='<table class="dialogzone" border="0" cellspacing="0" cellpadding="0"><tbody>' 
+s[i]+='<tr>' 
+s[i]+='<td>'+o.close.getHTML()+'</td>'
+s[i]+='</tr>' 
+s[i]+='</tbody></table>' 
+s[i]+='</td>' 
+s[i]+='</tr>'
+s[i]+='</tbody></table></div>'
+return s.join('');
+}
+function FBW_changeCB()
+{
+var o = this.par
+if(o.prevSearch != o.textField.getValue())
+{
+o.updateUI("");
+}
+//not exploitable for the moment
+/*
+if(o.timerWait!=null) 
+clearTimeout(o.timerWait)
+o.timerWait=setTimeout(function (){FBW_startFind(o)},300);
+*/
+}
+function FBW_startFind(o)
+{
+o.timerWait=null
+o.findInPage(o.textField.getValue());
+}
+function FBW_findCB()
+{
+var o = this.par
+o.findInPage(o.textField.getValue()) 
+}
+function FBW_closeCB()
+{
+var o = this.par, show=false
+if(o.showHideCB) //workbench
+o.showHideCB(show);
+else
+o.setDisplay(show);
+}
+function FBW_findNextCB()
+{
+var o = this.par
+o.findInPage(o.textField.getValue(),true)//next
+}
+function FBW_findPreviousCB()
+{
+var o = this.par
+o.findInPage(o.textField.getValue(),false)//previous
+}
+function FBW_resizeCB(w,h) //h not applicable
+{
+var o=this
+o.width=w;
+//TODO: improve rezise code
+o.widgetResize(w,null);
+}
+function FBW_checkCaseCB()
+{
+ var id = this.id
+ var o=this.par.parIcon.par
+ var menu = o.matchCase.menu;
+ var ignoreCaseItem = menu.getItem(0)
+ var matchCaseItem = menu.getItem(1)
+ if(id == "findIgnoreCase")
+ o.bMatchCase = !ignoreCaseItem.isChecked();
+ else
+ o.bMatchCase = matchCaseItem.isChecked();
+ if(o.bMatchCase)
+ { 
+ o.matchCase.icon.changeImg(0,23*16);
+ ignoreCaseItem.check(false);
+ matchCaseItem.check(true);
+ }
+ else
+ {
+ o.matchCase.icon.changeImg(0,4*16);
+ matchCaseItem.check(false);
+ ignoreCaseItem.check(true);
+ }
+}
+ function FBW_highlightCB()
+ {
+ //not exploitable
+ /*
+ var o= this.par
+ if(this.isChecked())
+ { 
+ o.highlightAll(o.textField.getValue(),o.bMatchCase); 
+ }
+ else
+ {
+ o.unhighlight(true) ; //unhighlight all
+ }
+  */
+ }
+function FBW_clean()
+{
+var o=this
+o.textField.setValue("");
+o.updateUI("");
+}
+function FBW_updateUI(text,bFind)
+{
+    var o=this
+    if(text=="" || bFind == false) //grisage icons
+    {
+    o.previous.setDisabled(true);
+    o.next.setDisabled(true);
+   // o.highlight.setDisabled(true);
+    if(o.infoLyr)
+    {
+    o.infoLyr.innerHTML=((text=="")?"":('<table class="dialogzone"  cellspacing="0" cellpadding="0"><tbody><tr><td>'+imgOffset(o.noMatchInfoIcon.src,16,16,o.noMatchInfoIcon.dx,o.noMatchInfoIcon.dy)+'</td><td><nobr> '+_findNoLab+'</nobr></td></tr></tbody></table>'));
+    }    
+    o.textField.layer.style.color = (text =="")?"":"red"; //in red when not found
+    }
+    if(bFind == true )
+    {
+    o.next.setDisabled(false);
+    o.previous.setDisabled(false);
+    //o.highlight.setDisabled(false);
+    if(o.infoLyr)
+    o.infoLyr.innerHTML=('<table class="dialogzone" cellspacing="0" cellpadding="0"><tbody><tr><td>'+imgOffset(o.foundInfoIcon.src,16,16,o.foundInfoIcon.dx,o.foundInfoIcon.dy)+'</td><td><nobr> '+_findYesLab+'</nobr></td></tr></tbody></table>');//icone
+    o.textField.layer.style.color = ""; //black when found
+    }   
+}
+ function FBW_findInPage(str,next)
+{
+var o=this
+var srcFrame = o.frame
+var caseSensitive = o.bMatchCase;
+var fromStart = (next == null);
+//var fromStart = (next == null || (o.prevText!=str));
+var found = false;
+o.prevSearch = str; 
+next = (next == null)?true:next;
+if (str == "")
+{
+/*
+//unhighlight if necessary
+if(o.highlight.isChecked())
+o.unhighlight(true);
+//reset prevText
+o.prevText =""; 
+*/
+//update UI
+o.updateUI ("");
+return false
+}
+if(o.getFrameCB)
+srcFrame = o.getFrameCB();
+if (_ie) 
+{
+if(!o.initRange || fromStart)
+{
+o.initRange = true;
+o.bodyRange = srcFrame.document.body.createTextRange()
+o.curRange = o.bodyRange.duplicate()
+o.upRange = o.bodyRange.duplicate()
+o.downRange = o.bodyRange.duplicate()
+}
+// Find options ( match and direction )
+var matchOptions = 0
+//if ( matchWord.isChecked() )
+//matchOptions += 2
+if ( caseSensitive )
+matchOptions += 4
+var searchScope=0;
+if ( next )
+{
+searchScope = +1
+o.curRange = o.downRange.duplicate();
+}
+else
+{
+searchScope = -1
+o.curRange = o.upRange.duplicate()
+}
+//iE9, we can find the text from a script node, but we cannot select it, we need to continue the search
+var tryAgain = false;
+do
+{
+found = o.curRange.findText(str, searchScope, matchOptions);
+tryAgain = found; //if not found do not retry
+if (found) 
+{
+try
+{
+// Select the word found
+o.curRange.select()
+tryAgain = false;
+}
+catch(e)
+{
+//continue the search
+if ( next )
+o.curRange.collapse (false);
+else
+o.curRange.collapse (true);
+}
+}
+} while(tryAgain)
+if(found)
+{
+// Set up new upRange and DownRange
+o.upRange.setEndPoint("EndToStart", o.curRange)
+o.downRange.setEndPoint("StartToEnd", o.curRange)
+}
+// If not found and did not searched through the whole document
+// Run the search on the whole document
+// do the loop in the whole document
+if ( (!found) && (!o.curRange.isEqual(o.bodyRange)) )
+{
+o.curRange = o.bodyRange.duplicate()
+o.upRange = o.bodyRange.duplicate()
+o.downRange = o.bodyRange.duplicate()
+o.findInPage(str,next)
+return; //do not call updateUI with found =  false when we have found occurences in the document
+}
+}
+else //others browsers
+{
+// Find options ( case sentive and direction )
+srcFrame.focus()
+found = srcFrame.find( str, caseSensitive, !next, true, false, true, false ) ; 
+}
+//update message and text color
+o.updateUI (str,found);
+}
+ /*
+ function FBW_findInPagePoc(str,next)
+ {
+ var o=this
+ var srcFrame = o.frame
+ var caseSensitive = o.bMatchCase; 
+ var fromStart = (next == null || (o.prevText!=str));
+ var found = false;
+ if (str == "")
+ {
+ //unhighlight if necessary
+ if(o.highlight.isChecked())
+ o.unhighlight(true);
+ //reset prevText
+ o.prevText =""; 
+ //update UI
+ o.updateUI ("");
+ return false
+ }
+ //TODO: to optimize
+ found = o.highlightWhenFound(str,caseSensitive,next,fromStart);
+ //update hightlight if necessary
+ if(o.prevText!=str && o.highlight.isChecked())
+ {
+ o.unhighlight(true) ;
+ if(found)
+  o.highlightAll(str,caseSensitive);
+ }
+ //get nb occurences found for the message
+ var nbOccurences = o.getNbOccurence(str,caseSensitive);
+ //update message and text color
+ o.updateUI (str,found,nbOccurences,null,null);
+ //update text
+ o.prevText = str;
+ //o.unhighlight(false);
+ //found = findSingleInDom(o, o.frame.document.body,str);
+ //findInDom(o.frame.document.body,str);  
+ }
+ function doHighlight(bodyText, text, matchCase, att) 
+ {
+   var  highlightStartTag = "<font "+att+"=1 style='color:blue; background-color:yellow;'>";
+   var  highlightEndTag = "</font>";
+   // find all occurences of the search term in the given text,
+   // and add some "highlight" tags to them (we're not using a
+   // regular expression search, because we want to filter out
+   // matches that occur within HTML tags and script blocks, so
+   // we have to do a little extra validation)
+   var newText = "";
+   var i = -1;
+   var lcSearchTerm = (matchCase?text:text.toLowerCase());
+   var lcBodyText =(matchCase? bodyText:bodyText.toLowerCase());
+   while (bodyText.length > 0) {
+     i = lcBodyText.indexOf(lcSearchTerm, i+1);
+     if (i < 0) {
+       newText += bodyText;
+       bodyText = "";
+     } else {
+       // skip anything inside an HTML tag
+       if (bodyText.lastIndexOf(">", i) >= bodyText.lastIndexOf("<", i)) {
+         // skip anything inside a <script> block
+         if (lcBodyText.lastIndexOf("/script>", i) >= lcBodyText.lastIndexOf("<script", i)) {
+           newText += bodyText.substring(0, i) + highlightStartTag + bodyText.substr(i, text.length) + highlightEndTag;
+           bodyText = bodyText.substr(i + text.length);
+           lcBodyText = (matchCase? bodyText:bodyText.toLowerCase());
+           i = -1;
+         }
+       }
+     }
+   }
+   return newText;
+ }
+function FBW_highlightAll(text,matchCase)
+{    
+    var src = this.frame;
+    if (text=="" || !src.document.body || typeof(src.document.body.innerHTML) == "undefined") 
+    {
+        return false;
+    }
+    var  highlightStartTag = "<font "+hlgtATag+"=1 style='color:blue; background-color:yellow;'>";
+    var  highlightEndTag = "</font>";
+    // find all occurences of the search term in the given text,
+    // and add some "highlight" tags to them (we're not using a
+    // regular expression search, because we want to filter out
+    // matches that occur within HTML tags and script blocks, so
+    // we have to do a little extra validation)
+    var newText = "";
+    var i = -1;
+    var bodyText = src.document.body.innerHTML;
+    var lcSearchTerm = (matchCase?text:text.toLowerCase());
+    var lcBodyText =(matchCase? bodyText:bodyText.toLowerCase());
+    while (bodyText.length > 0) 
+    {
+        i = lcBodyText.indexOf(lcSearchTerm, i+1);
+        if (i < 0) 
+        {
+            newText += bodyText;
+            bodyText = "";
+        } 
+        else 
+        {
+        // skip anything inside an HTML tag
+            if (bodyText.lastIndexOf(">", i) >= bodyText.lastIndexOf("<", i)) 
+            {
+                // skip anything inside a <script> block
+                if (lcBodyText.lastIndexOf("/script>", i) >= lcBodyText.lastIndexOf("<script", i)) 
+                {
+                    newText += bodyText.substring(0, i) + highlightStartTag + bodyText.substr(i, text.length) + highlightEndTag;
+                    bodyText = bodyText.substr(i + text.length);
+                    lcBodyText = (matchCase? bodyText:bodyText.toLowerCase());
+                    i = -1;
+                }
+            }
+        }
+    }
+    src.document.body.innerHTML = newText;
+    return true;
+}
+function FBW_highlightWhenFound(text,matchCase,next,fromStart)
+{    
+    var o=this, src = o.frame, doc = src.document, body=doc.body ;
+    if (text=="" || !body || typeof(body.innerHTML) == "undefined") 
+    {
+        return false;
+    }
+    //safe test
+    next=(next==null)?true:next;
+    //highlight with green
+    var  highlightStartTag = "<font "+hlgtSTag+"=1 style='color:white; background-color:#37D773;'>";
+    var  highlightEndTag = "</font>";
+    var bodyText = body.innerHTML; 
+    var newText = "";    
+    var found = false;
+    //var idx = getHlgtSTagIndex(body);
+    var startIndex = bodyText.indexOf(hlgtSTag, 0); //TODO: improve !!!      
+    if (startIndex>=0)
+    {
+    startIndex= startIndex - highlightStartTag.length+7; //TODO //"hlgtS=1" = 7 caracteres
+        bodyText = o.unhighlight(false);
+        if(!fromStart)
+        {
+        //TODO: how to find the start index.
+            if(next)
+            {
+                newText += bodyText.substring(0, startIndex+text.length);
+                bodyText = bodyText.substr(startIndex + text.length);                   
+            }
+            else
+            {
+            newText += bodyText.substr(startIndex);
+                bodyText = bodyText.substring(0, startIndex);                               
+            }
+        }
+    }
+    var i = next?-1:bodyText.length;   
+    var lcSearchTerm = (matchCase?text:text.toLowerCase());
+    var lcBodyText =(matchCase? bodyText:bodyText.toLowerCase());
+    while (bodyText.length > 0)
+    {
+        i = next?lcBodyText.indexOf(lcSearchTerm, i+1 ):lcBodyText.lastIndexOf(lcSearchTerm, i);
+        if (i < 0)
+        {
+        if(next)
+        newText += bodyText;
+        else
+        newText = bodyText+newText;
+            bodyText="";
+        }
+        else
+        {
+            // skip anything inside an HTML tag
+            if (bodyText.lastIndexOf(">", i) >= bodyText.lastIndexOf("<", i)) 
+            {
+                // skip anything inside a <script> block
+                if (lcBodyText.lastIndexOf("/script>", i) >= lcBodyText.lastIndexOf("<script", i)) 
+                {
+                    if(next)
+                    {
+                        newText += bodyText.substring(0, i) + highlightStartTag + bodyText.substr(i, text.length) + highlightEndTag + bodyText.substr(i + text.length);                       
+                    }
+                    else
+                    {
+                        newText = bodyText.substring(0, i) + highlightStartTag + bodyText.substr(i, text.length) + highlightEndTag + bodyText.substr(i + text.length) + newText;                                      
+                    }                        
+                    bodyText="";
+                    found=true;                   
+                }
+            }
+        }
+    }
+    body.innerHTML = newText;
+    return found;
+}
+ function FBW_unhighlight(all) 
+ {
+ var att = all?hlgtATag:hlgtSTag;
+ var src = this.frame, doc = src.document, body = doc.body;
+ var arr = body.getElementsByTagName( 'font' ), i = arr.length, ftag, child
+ while( i-- ) 
+ {
+ ftag = arr[i]
+ child = arr[i].firstChild;
+ if( child && child.nodeType==3 && ftag.getAttribute(att)== 1) 
+ {
+ ftag.parentNode.replaceChild( doc.createTextNode( child.nodeValue ), ftag );
+ }
+ } 
+ return body.innerHTML;
+}
+ function FBW_getNbOccurence(text, matchCase)
+ {
+ var src = this.frame
+ if ( text=="" || !src.document.body || typeof(src.document.body.innerHTML) == "undefined") 
+ {
+         return false;
+ }
+ var bodyText = src.document.body.innerHTML;  
+     var i = -1, cpt=0;
+     var lcSearchTerm = (matchCase?text:text.toLowerCase());
+     var lcBodyText =(matchCase? bodyText:bodyText.toLowerCase());
+     while (bodyText.length > 0) 
+     {
+   i = lcBodyText.indexOf(lcSearchTerm, i+1);
+   if (i < 0) 
+   {   
+   bodyText = "";
+   } 
+   else 
+   {
+   // skip anything inside an HTML tag
+   if (bodyText.lastIndexOf(">", i) >= bodyText.lastIndexOf("<", i)) 
+   {
+   // skip anything inside a <script> block
+   if (lcBodyText.lastIndexOf("/script>", i) >= lcBodyText.lastIndexOf("<script", i)) 
+   {
+   bodyText = bodyText.substr(i + text.length);
+   lcBodyText = (matchCase? bodyText:bodyText.toLowerCase());
+   i = -1;
+   cpt++
+   }
+   }
+   }
+   }
+   return cpt;
+ }
+ var start = true;
+ function findSingleInDom(o,l,text)
+ {
+var  highlightStartTag = "<font "+hlgtSTag+"=1 style='color:white; background-color:#37D773;'>";
+var  highlightEndTag = "</font>";
+var matchCase = false;
+var found = false;
+//safe test
+if(l==null) return;
+ // Stop on text elements
+ if (l.nodeType==3)
+ { 
+ if(o.findL!=null & o.findL!=l)
+ start = false;
+ if(o.findL!=null & o.findL==l)
+ start = true;
+ if(start)
+ {
+ var bodyText= l.parentNode.innerHTML, k=-1, newText=[], found=false, j=0
+ var lcSearch = (matchCase?text:text.toLowerCase());
+     var lcBodyText =(matchCase? bodyText:bodyText.toLowerCase());
+ while (bodyText.length > 0)
+     {
+         k = lcBodyText.indexOf(lcSearch,k+1);
+         if (k < 0)
+         {         
+         newText[j++] = bodyText;         
+             bodyText="";
+         }
+         else
+         {
+          // skip anything inside an HTML tag
+    if (bodyText.lastIndexOf(">", k) >= bodyText.lastIndexOf("<", k)) 
+    {
+    // skip anything inside a <script> block
+    if (lcBodyText.lastIndexOf("/script>", k) >= lcBodyText.lastIndexOf("<script", k)) 
+    {
+         newText[j++]= bodyText.substring(0, k) + highlightStartTag + bodyText.substr(k, lcSearch.length) + highlightEndTag +bodyText.substr(k + lcSearch.length) ;
+         //bodyText = bodyText.substr(k + lcSearch.length);
+         //lcBodyText = (matchCase? bodyText:bodyText.toLowerCase());
+         bodyText="";
+         k=-1;  
+         found=true
+         o.findL = l;
+    }
+    }
+         }
+     }
+ if(found) //l.nodeValue = newText.join("");
+ {
+ l.parentNode.innerHTML = newText.join("");
+ return found;
+ }
+ }
+ }
+ var n=l.childNodes
+if (n!=null)
+ {
+ var count=n.length
+ for (var i=0;i<count;i++)
+ {
+ found = findSingleInDom(o,n[i],text)
+ if(found) break;
+ }
+ }
+ return found;
+ }
+ function findInDom(l,text)
+ {
+var  highlightStartTag = "<font "+hlgtSTag+"=1 style='color:blue; background-color:yellow;'>";
+var  highlightEndTag = "</font>";
+var matchCase = false;
+//safe test
+if(l==null) return;
+ // Stop on text elements
+ if (l.nodeType==3)
+ {
+ var bodyText= l.parentNode.innerHTML, k=-1, newText=[], found=false, j=0
+ var lcSearch = (matchCase?text:text.toLowerCase());
+     var lcBodyText =(matchCase? bodyText:bodyText.toLowerCase());
+ while (bodyText.length > 0)
+     {
+         k = lcBodyText.indexOf(lcSearch,k+1);
+         if (k < 0)
+         {         
+         newText[j++] = bodyText;         
+             bodyText="";
+         }
+         else
+         {
+          // skip anything inside an HTML tag
+    if (bodyText.lastIndexOf(">", k) >= bodyText.lastIndexOf("<", k)) 
+    {
+    // skip anything inside a <script> block
+    if (lcBodyText.lastIndexOf("/script>", k) >= lcBodyText.lastIndexOf("<script", k)) 
+    {
+         newText[j++]= bodyText.substring(0, k) + highlightStartTag + bodyText.substr(k, lcSearch.length) + highlightEndTag ;
+         bodyText = bodyText.substr(k + lcSearch.length);
+         lcBodyText = (matchCase? bodyText:bodyText.toLowerCase());
+         k=-1;  
+         found=true
+    }
+    }
+         }
+     }
+ if(found) //l.nodeValue = newText.join("");
+ l.parentNode.innerHTML = newText.join("");
+ }
+ var n=l.childNodes
+if (n!=null)
+ {
+ var count=n.length
+ for (var i=0;i<count;i++) findInDom(n[i],text)
+ }
+ } 
+*/

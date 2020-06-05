@@ -1,0 +1,1128 @@
+/*
+=============================================================
+WebIntelligence(r) Report Panel
+Copyright(c) 2001-2005 Business Objects S.A.
+All rights reserved
+
+Use and support of this software is governed by the terms
+and conditions of the software license agreement and support
+policy of Business Objects S.A. and/or its subsidiaries. 
+The Business Objects products and technology are protected
+by the US patent number 5,555,403 and 6,247,008
+
+=============================================================
+*/SelectedElementsProperties=function()
+{
+this.min =  null;
+this.max = null;
+this.isContinuousSelection = true;
+};
+MinMaxSelectedElement=function()
+{
+this.min =  null;
+this.max = null;
+};
+ActiveZone=function()
+{
+this.toBeSelected =  new Array();
+this.toBeDeselected =  new Array();
+};
+KeyboardMode=function()
+{
+this.key1 = null; 
+this.key2 = null; 
+this.key3 = null; 
+this.ctrlShift = false;
+};
+KeyboardMode.prototype = {
+    set: function(e)
+    {
+    var o = this;
+    o.key1 = e.ctrlKey;
+    o.key2 = e.shiftKey;
+    if (o.key1 && o.key2 ){
+    o.ctrlShift = true;
+    }else{
+    o.ctrlShift =  false;
+    }
+    if (o.key3==null || e.ctrlKey){
+    o.key3 = e.ctrlKey;
+    }
+    if (!e.ctrlKey && !e.shiftKey){
+    o.key3 = null;
+    }
+    },
+    isCtrlShift: function()
+    {
+    var o = this;
+    return o.ctrlShift;
+    },
+    isCtrlActive: function()
+    {
+    var o = this;
+    return o.key3;
+    },
+    isCtrl: function()
+    {
+    var o = this;
+    return o.key1;
+    },
+    isShift: function()
+    {
+    var o = this;
+    return o.key2;
+    }
+};
+SelectionManagement=function(prms)
+{
+this.prms = prms;
+this.activeObject = null;
+};
+SelectionManagement.prototype = {
+    init: function()
+    {
+    this.activeObject = new TableSelectionManagement(this.prms);
+    this.activeObject.init();
+    },
+    getActiveZone:function()
+    {
+    var o = this;
+    var activeZone = o.activeObject.getActiveZone();
+    if (!o.canUnselect())
+    {
+    activeZone.toBeDeselected = new Array();
+    }
+    return activeZone;
+    },
+    canUnselect:function()
+    {
+    var o = this;
+    var ret = false;
+    if ((typeof(o.prms.selectedCellIds) !="undefined" && o.prms.selectedCellIds && o.prms.selectedCellIds.length > 0 ))
+    {
+    var currentBID = o.prms.element.bid;
+    var noMoreCellBelongToBID = true;
+    for (var i = 0; i < o.prms.selectedCellIds.length; i++)
+    {
+    if((typeof(o.prms.selectedCellIds[i].bid) !="undefined"  && o.prms.selectedCellIds[i].bid == currentBID))
+    {
+    noMoreCellBelongToBID = false;
+    break;
+    }
+    }
+    ret =  noMoreCellBelongToBID;
+    }
+    if ((typeof(o.prms.selectedCellIds) !="undefined" && o.prms.selectedCellIds && o.prms.selectedCellIds.length < 1 )) ret = true;
+    if (o.prms.keyboardMode.isCtrlShift() || (o.prms.keyboardMode.isCtrlActive() && o.prms.keyboardMode.isShift())) ret = false;
+    return ret;
+    }
+};
+TableSelectionManagement = function (prms)
+{
+this.prms = prms;
+this.element = prms.element;
+this.tableSelection = null;
+this.blockType = null;
+};
+TableSelectionManagement.prototype = {
+init: function()
+{
+var o = this;
+var pp= o.element && o.element.parent && o.element.parent.parent ? o.element.parent.parent:null;
+if (pp!=null)
+{
+o.blockType = pp.blockType;
+}
+switch (o.blockType)
+{
+case _womBlockType.hTable:
+o.tableSelection = new HTableSelectionManagement(o.prms);
+break;
+case _womBlockType.vTable:
+o.tableSelection = new VTableSelectionManagement(o.prms);
+break;
+case _womBlockType.xTable:
+o.tableSelection = new XTableSelectionManagement(o.prms);
+break;
+}
+o.tableSelection.init();
+},
+getActiveZone:function()
+{
+var o = this;
+return o.tableSelection.getActiveZone();
+}
+};
+HTableSelectionManagement = function (prms)
+{
+this.selectedElements = prms.selectedElements;
+this.element = prms.element;
+this.lastSelectedElements = prms.lastSelectedElements;
+this.orderedSelectedElts = new Array();
+this.e = prms.e;
+};
+HTableSelectionManagement.prototype = {
+init: function()
+{
+this.getOrderedSelectedElts();
+},
+getPreviousSelectedElt:function ()
+{
+var o = this;
+var retElt = o.element;
+if (o.lastSelectedElements != null && o.lastSelectedElements.length>1&& o.orderedSelectedElts!=null && o.orderedSelectedElts.length>0)
+{
+var bid = null;
+if (o.element.bid == o.lastSelectedElements[o.lastSelectedElements.length - 1])
+{
+bid =  o.lastSelectedElements[o.lastSelectedElements.length - 2];
+}else
+{
+bid = o.lastSelectedElements[o.lastSelectedElements.length - 1];
+}
+if (bid)
+{
+for (var i=0; i< o.orderedSelectedElts.length;i++)
+{
+if (bid == o.orderedSelectedElts[i].bid)
+{
+return o.orderedSelectedElts[i];
+}
+}
+}
+}
+return retElt;
+},
+getOrderedSelectedElts:function()
+{
+var o = this;
+if (o.element.parent && o.element.parent.children && o.element.parent.children.length > 0 && o.selectedElements!=null && o.selectedElements.length>0)
+{
+for (var k = 0; k < o.element.parent.children.length ;k++)
+{
+var elt = o.element.parent.children[k];
+for (var i=0; i< o.selectedElements.length;i++)
+{
+if (elt.bid == o.selectedElements[i].bid)
+{
+o.orderedSelectedElts[o.orderedSelectedElts.length] = elt;
+}
+}
+} 
+}
+},
+getSelectedEltsProp:function()
+{
+var o = this;
+var retElt = new SelectedElementsProperties();
+if (o.orderedSelectedElts!=null && o.orderedSelectedElts.length>0)
+{
+retElt.min = o.orderedSelectedElts[0];
+retElt.max = o.orderedSelectedElts[o.orderedSelectedElts.length-1];
+for (var i = 0; i < o.orderedSelectedElts.length; i++) 
+         {
+             if (i > 0 && o.orderedSelectedElts[i].row != o.orderedSelectedElts[i - 1].row + 1) 
+             {
+                 retElt.isContinuousSelection = false;
+             }
+         }
+}
+return retElt;
+},
+getSelectionMinMax:function(previousSelectedElt, lastSelectedElt, orderedSelectedElts)
+{
+var o = this;
+var retElt = new MinMaxSelectedElement();
+if (orderedSelectedElts!=null && orderedSelectedElts.length>0)
+{
+var selectedEltsProp = o.getSelectedEltsProp(orderedSelectedElts,_womBlockType.hTable);
+if (selectedEltsProp.max == null || selectedEltsProp.min == null) return retElt;
+var case1 = selectedEltsProp.max.row <= lastSelectedElt.row && previousSelectedElt.row == selectedEltsProp.max.row;
+var case2 = selectedEltsProp.max.row <= lastSelectedElt.row && previousSelectedElt.row == selectedEltsProp.min.row;
+var case3 = selectedEltsProp.min.row <= lastSelectedElt.row && lastSelectedElt.row <= selectedEltsProp.max.row && previousSelectedElt.row == selectedEltsProp.max.row;
+var case4 = selectedEltsProp.min.row <= lastSelectedElt.row && lastSelectedElt.row <= selectedEltsProp.max.row && previousSelectedElt.row == selectedEltsProp.min.row;
+var case5 = lastSelectedElt.row <= selectedEltsProp.min.row && previousSelectedElt.row == selectedEltsProp.max.row ;
+var case6 = lastSelectedElt.row <= selectedEltsProp.min.row && previousSelectedElt.row == selectedEltsProp.min.row ;
+if (selectedEltsProp.isContinuousSelection)
+{
+if (case1)
+{
+retElt.min = selectedEltsProp.min;
+retElt.max = lastSelectedElt;
+}else if (case2)
+{
+retElt.min = selectedEltsProp.max;
+retElt.max = lastSelectedElt;
+}else if (case3)
+{
+retElt.min = selectedEltsProp.min;
+retElt.max = lastSelectedElt;
+}else if (case4)
+{
+retElt.min = lastSelectedElt;
+retElt.max = selectedEltsProp.max;
+}else if (case5)
+{
+retElt.min = lastSelectedElt;
+retElt.max = selectedEltsProp.min;
+}else if (case6)
+{
+retElt.min = lastSelectedElt;
+retElt.max = selectedEltsProp.max;
+} 
+}else{
+retElt.min = previousSelectedElt.row <= lastSelectedElt.row ? previousSelectedElt : lastSelectedElt;
+retElt.max = previousSelectedElt.row >= lastSelectedElt.row ? previousSelectedElt : lastSelectedElt;
+}
+}
+return retElt;
+},
+setActiveZone_Ctrl:function(activeZone)
+{
+var o = this;
+if (o.e.ctrlKey)
+{
+var mustBeDeselected = false;
+for (var i = 0; i<o.selectedElements.length;i++)
+{
+if (o.element.bid == o.selectedElements[i].bid)
+{
+mustBeDeselected = true;
+break;
+}
+}
+if (mustBeDeselected)
+{
+activeZone.toBeDeselected[activeZone.toBeDeselected.length]=o.element.bid;
+}
+}
+},
+getActiveZone:function()
+{
+var o = this;
+var ret=new ActiveZone();
+if (o.element == null) return ret;
+if (typeof(o.element.parent) == "undefined") return ret;
+if (o.e.ctrlKey && !o.e.shiftKey)
+{
+o.setActiveZone_Ctrl(ret);
+return ret;
+}
+var previousSelectedElt = o.getPreviousSelectedElt(o.element,o.orderedSelectedElts);
+if (previousSelectedElt == null) return ret;
+if (!previousSelectedElt.isRow) return ret;
+if (!o.element.isRow) return ret;
+var eltParent = o.element.parent;
+if (eltParent.children && eltParent.children.length > 0)
+{
+var minMax = o.getSelectionMinMax(previousSelectedElt, o.element, o.orderedSelectedElts);
+if (minMax.min == null || minMax.max == null)
+{
+for (var i = 0; i < eltParent.children.length ;i++)
+{
+var elt = eltParent.children[i];
+if(o.element.row>=elt.row)
+{
+ret.toBeSelected[ret.toBeSelected.length] = elt.bid;
+}
+}
+}else
+{
+var min =  minMax.min.row;
+var max =  minMax.max.row;
+for (var i = 0; i < eltParent.children.length ;i++)
+{
+var elt = eltParent.children[i];
+if ( elt.row >= min && elt.row <= max)
+{
+ret.toBeSelected[ret.toBeSelected.length] = elt.bid;
+}
+if ( elt.row < min || elt.row > max)
+{
+var mustBeDeselected = false;
+for (var j = 0; j<o.selectedElements.length;j++)
+{
+if (elt.bid == o.selectedElements[j].bid)
+{
+mustBeDeselected = true;
+break;
+}
+}
+if (mustBeDeselected) ret.toBeDeselected[ret.toBeDeselected.length] = elt.bid;
+}
+} 
+}
+}
+return ret;
+}
+};
+VTableSelectionManagement = function (prms)
+{
+this.selectedElements = prms.selectedElements;
+this.element = prms.element;
+this.lastSelectedElements = prms.lastSelectedElements;
+this.orderedSelectedElts = new Array();
+this.e = prms.e;
+};
+VTableSelectionManagement.prototype = {
+init: function()
+{
+this.getOrderedSelectedElts();
+},
+getPreviousSelectedElt:function ()
+{
+var o = this;
+var retElt = o.element;
+if (o.lastSelectedElements != null && o.lastSelectedElements.length>1&& o.orderedSelectedElts!=null && o.orderedSelectedElts.length>0)
+{
+var bid = null;
+if (o.element.bid == o.lastSelectedElements[o.lastSelectedElements.length - 1])
+{
+bid =  o.lastSelectedElements[o.lastSelectedElements.length - 2];
+}else
+{
+bid = o.lastSelectedElements[o.lastSelectedElements.length - 1];
+}
+if (bid)
+{
+for (var i=0; i< o.orderedSelectedElts.length;i++)
+{
+if (bid == o.orderedSelectedElts[i].bid)
+{
+return o.orderedSelectedElts[i];
+}
+}
+}
+}
+return retElt;
+},
+getOrderedSelectedElts:function()
+{
+var o = this;
+if (o.element.parent && o.element.parent.children && o.element.parent.children.length > 0 && o.selectedElements!=null && o.selectedElements.length>0)
+{
+for (var k = 0; k < o.element.parent.children.length ;k++)
+{
+var elt = o.element.parent.children[k];
+for (var i=0; i< o.selectedElements.length;i++)
+{
+if (elt.bid == o.selectedElements[i].bid)
+{
+o.orderedSelectedElts[o.orderedSelectedElts.length] = elt;
+}
+}
+} 
+}
+},
+getSelectedEltsProp:function()
+{
+var o = this;
+var retElt = new SelectedElementsProperties();
+if (o.orderedSelectedElts!=null && o.orderedSelectedElts.length>0)
+{
+retElt.min = o.orderedSelectedElts[0];
+retElt.max = o.orderedSelectedElts[o.orderedSelectedElts.length-1];
+for (var i = 0; i < o.orderedSelectedElts.length; i++) 
+         {
+if (i > 0 && o.orderedSelectedElts[i].col != o.orderedSelectedElts[i - 1].col + 1) 
+            {
+                 retElt.isContinuousSelection = false;
+            }
+         }
+}
+return retElt;
+},
+getSelectionMinMax:function(previousSelectedElt, lastSelectedElt, orderedSelectedElts)
+{
+var o = this;
+var retElt = new MinMaxSelectedElement();
+if (orderedSelectedElts!=null && orderedSelectedElts.length>0)
+{
+var selectedEltsProp = o.getSelectedEltsProp(orderedSelectedElts,_womBlockType.vTable);
+if (selectedEltsProp.max == null || selectedEltsProp.min == null) return retElt;
+var case1 = selectedEltsProp.max.col <= lastSelectedElt.col && previousSelectedElt.col == selectedEltsProp.max.col;
+var case2 = selectedEltsProp.max.col <= lastSelectedElt.col && previousSelectedElt.col == selectedEltsProp.min.col;
+var case3 = selectedEltsProp.min.col <= lastSelectedElt.col && lastSelectedElt.col <= selectedEltsProp.max.col && previousSelectedElt.col == selectedEltsProp.max.col;
+var case4 = selectedEltsProp.min.col <= lastSelectedElt.col && lastSelectedElt.col <= selectedEltsProp.max.col && previousSelectedElt.col == selectedEltsProp.min.col;
+var case5 = lastSelectedElt.col <= selectedEltsProp.min.col && previousSelectedElt.col == selectedEltsProp.max.col ;
+var case6 = lastSelectedElt.col <= selectedEltsProp.min.col && previousSelectedElt.col == selectedEltsProp.min.col ;
+if (selectedEltsProp.isContinuousSelection)
+{
+if (case1)
+{
+retElt.min = selectedEltsProp.min;
+retElt.max = lastSelectedElt;
+}else if (case2)
+{
+retElt.min = selectedEltsProp.max;
+retElt.max = lastSelectedElt;
+}else if (case3)
+{
+retElt.min = selectedEltsProp.min;
+retElt.max = lastSelectedElt;
+}else if (case4)
+{
+retElt.min = lastSelectedElt;
+retElt.max = selectedEltsProp.max;
+}else if (case5)
+{
+retElt.min = lastSelectedElt;
+retElt.max = selectedEltsProp.min;
+}else if (case6)
+{
+retElt.min = lastSelectedElt;
+retElt.max = selectedEltsProp.max;
+} 
+}else{
+retElt.min = previousSelectedElt.col <= lastSelectedElt.col ? previousSelectedElt : lastSelectedElt;
+retElt.max = previousSelectedElt.col >= lastSelectedElt.col ? previousSelectedElt : lastSelectedElt;
+}
+}
+return retElt;
+},
+setActiveZone_Ctrl:function(activeZone)
+{
+var o = this;
+if (o.e.ctrlKey)
+{
+var mustBeDeselected = false;
+for (var i = 0; i<o.selectedElements.length;i++)
+{
+if (o.element.bid == o.selectedElements[i].bid)
+{
+mustBeDeselected = true;
+break;
+}
+}
+if (mustBeDeselected)
+{
+activeZone.toBeDeselected[activeZone.toBeDeselected.length]=o.element.bid;
+}
+}
+},
+getActiveZone:function()
+{
+var o = this;
+var ret=new ActiveZone();
+if (o.element == null) return ret;
+if (typeof(o.element.parent) == "undefined") return ret;
+if (o.e.ctrlKey && !o.e.shiftKey)
+{
+o.setActiveZone_Ctrl(ret);
+return ret;
+}
+var previousSelectedElt = o.getPreviousSelectedElt(o.element,o.orderedSelectedElts);
+if (previousSelectedElt == null) return ret;
+if (!previousSelectedElt.isCol) return ret;
+if (!o.element.isCol) return ret;
+var eltParent = o.element.parent;
+if (eltParent.children && eltParent.children.length > 0)
+{
+var minMax = o.getSelectionMinMax(previousSelectedElt, o.element, o.orderedSelectedElts);
+if (minMax.min == null || minMax.max == null)
+{
+for (var i = 0; i < eltParent.children.length ;i++)
+{
+var elt = eltParent.children[i];
+if(o.element.col>=elt.col)
+{
+ret.toBeSelected[ret.toBeSelected.length] = elt.bid;
+}
+}
+}else
+{
+var min =  minMax.min.col;
+var max =  minMax.max.col;
+for (var i = 0; i < eltParent.children.length ;i++)
+{
+var elt = eltParent.children[i];
+if ( elt.col >= min && elt.col <= max)
+{
+ret.toBeSelected[ret.toBeSelected.length] = elt.bid;
+}
+if ( elt.col < min || elt.col > max)
+{
+var mustBeDeselected = false;
+for (var j = 0; j<o.selectedElements.length;j++)
+{
+if (elt.bid == o.selectedElements[j].bid)
+{
+mustBeDeselected = true;
+break;
+}
+}
+if (mustBeDeselected) ret.toBeDeselected[ret.toBeDeselected.length] = elt.bid;
+}
+} 
+}
+}
+return ret;
+}
+};
+XTableSelectionManagement = function (prms)
+{
+this.selectedElements = prms.selectedElements;
+this.element = prms.element;
+this.lastSelectedElements = prms.lastSelectedElements;
+this.orderedSelectedElts = new Array();
+this.e = prms.e;
+};
+XTableSelectionManagement.prototype = {
+init: function()
+{
+this.getOrderedSelectedElts();
+},
+getPreviousSelectedElt:function ()
+{
+var o = this;
+var retElt = o.element;
+if (o.lastSelectedElements != null && o.lastSelectedElements.length>1&& o.orderedSelectedElts!=null && o.orderedSelectedElts.length>0)
+{
+var bid = null;
+if (o.element.bid == o.lastSelectedElements[o.lastSelectedElements.length - 1])
+{
+bid =  o.lastSelectedElements[o.lastSelectedElements.length - 2];
+}else
+{
+bid = o.lastSelectedElements[o.lastSelectedElements.length - 1];
+}
+if (bid)
+{
+for (var i=0; i< o.orderedSelectedElts.length;i++)
+{
+if (bid == o.orderedSelectedElts[i].bid)
+{
+return o.orderedSelectedElts[i];
+}
+}
+}
+}
+return retElt;
+},
+getOrderedSelectedElts:function()
+{
+var o = this;
+if (o.selectedElements!=null && o.selectedElements.length>0)
+{
+var parentOfHeader = null;
+var selectedIsBody = null;
+for (var i=0; i< o.selectedElements.length;i++)
+{
+if (o.selectedElements[i].parent && o.selectedElements[i].parent.zone && (o.selectedElements[i].parent.zone == _womZoneDesc.VHeader || o.selectedElements[i].parent.zone == _womZoneDesc.HHeader))
+{
+parentOfHeader  = o.selectedElements[i].parent;
+}
+if (o.selectedElements[i].parent && o.selectedElements[i].parent.zone && o.selectedElements[i].parent.zone == _womZoneDesc.Body)
+{
+selectedIsBody  = o.selectedElements[i];
+}
+}
+if (parentOfHeader != null)
+{
+for (var k = 0; k < parentOfHeader.children.length ;k++)
+{
+var elt = parentOfHeader.children[k];
+for (var i=0; i< o.selectedElements.length;i++)
+{
+if (elt.bid == o.selectedElements[i].bid)
+{
+o.orderedSelectedElts[o.orderedSelectedElts.length] = elt;
+}
+}
+} 
+}
+if (selectedIsBody != null)
+{
+o.orderedSelectedElts[o.orderedSelectedElts.length] = selectedIsBody;
+}
+}
+},
+getSelectedEltsProp:function(orderedSelectedElts)
+{
+var o = this;
+var retElt = new SelectedElementsProperties();
+if (o.orderedSelectedElts!=null && o.orderedSelectedElts.length>0)
+{
+retElt.min = o.orderedSelectedElts[0];
+retElt.max = o.orderedSelectedElts[o.orderedSelectedElts.length-1];
+var hasBodySelected = o.orderedSelectedElts[o.orderedSelectedElts.length-1].parent.zone == _womZoneDesc.Body;
+var isLikeVTable = o.orderedSelectedElts[0].parent.zone == _womZoneDesc.HHeader;
+if (hasBodySelected)
+{
+for (var i = 0; i < o.orderedSelectedElts.length-1; i++) 
+         {
+             if (isLikeVTable) 
+             {
+                if (i > 0 && o.orderedSelectedElts[i].col != o.orderedSelectedElts[i - 1].col + 1) 
+                 {
+                     retElt.isContinuousSelection = false;
+                 }
+             }else
+             {
+                 if (i > 0 && o.orderedSelectedElts[i].row != o.orderedSelectedElts[i - 1].row + 1) 
+                 {
+                     retElt.isContinuousSelection = false;
+                 }
+             }
+         }
+if (retElt.isContinuousSelection && o.orderedSelectedElts.length>1)
+{
+ if (isLikeVTable) 
+             {
+                if (o.orderedSelectedElts[o.orderedSelectedElts.length-2].parent.children.length != o.orderedSelectedElts[o.orderedSelectedElts.length-2].col+1) 
+                 {
+                     retElt.isContinuousSelection = false;
+                 }
+             }else
+             {
+             if (o.orderedSelectedElts[o.orderedSelectedElts.length-2].parent.children.length != o.orderedSelectedElts[o.orderedSelectedElts.length-2].row+1)
+                 {
+                     retElt.isContinuousSelection = false;
+                 }
+             }
+}
+}else
+{
+for (var i = 0; i < o.orderedSelectedElts.length; i++) 
+         {
+             if (isLikeVTable) 
+             {
+                if (i > 0 && o.orderedSelectedElts[i].col != o.orderedSelectedElts[i - 1].col + 1) 
+                 {
+                     retElt.isContinuousSelection = false;
+                 }
+             }else
+             {
+                 if (i > 0 && o.orderedSelectedElts[i].row != o.orderedSelectedElts[i - 1].row + 1) 
+                 {
+                     retElt.isContinuousSelection = false;
+                 }
+             }
+         }
+}
+}
+return retElt;
+},
+getSelectionMinMaxXTableRow:function(previousSelectedElt, lastSelectedElt, orderedSelectedElts)
+{
+var o = this;
+var retElt = new MinMaxSelectedElement();
+if (orderedSelectedElts!=null && orderedSelectedElts.length>0)
+{
+var hasBodySelected = orderedSelectedElts[orderedSelectedElts.length-1].parent.zone == _womZoneDesc.Body;
+var selectedEltsProp = o.getSelectedEltsProp(orderedSelectedElts);
+if (selectedEltsProp.max == null || selectedEltsProp.min == null) return retElt;
+var case1 = false;
+var case2 = false;
+var case3 = false;
+var case4 = false;
+var case5 = false;
+var case6 = false;
+if (hasBodySelected)
+{
+case1 = orderedSelectedElts.length == 1
+case2 = selectedEltsProp.min.row <= lastSelectedElt.row && selectedEltsProp.max.bid != lastSelectedElt.bid && previousSelectedElt.bid == selectedEltsProp.max.bid;
+case3 = selectedEltsProp.min.row <= lastSelectedElt.row && selectedEltsProp.max.bid != lastSelectedElt.bid && previousSelectedElt.bid != selectedEltsProp.max.bid;
+case4 = lastSelectedElt.row <=  selectedEltsProp.min.row && previousSelectedElt.bid == selectedEltsProp.max.bid;
+case5 = lastSelectedElt.row <=  selectedEltsProp.min.row && previousSelectedElt.bid != selectedEltsProp.max.bid;
+if (selectedEltsProp.isContinuousSelection)
+{
+if(case1)
+{
+retElt.min = lastSelectedElt;
+retElt.max = selectedEltsProp.max;
+}
+else if (case2)
+{
+retElt.min = selectedEltsProp.min;
+retElt.max = lastSelectedElt;
+}else if (case3)
+{
+retElt.min = lastSelectedElt;
+retElt.max = selectedEltsProp.max;
+}else if (case4)
+{
+retElt.min = lastSelectedElt;
+retElt.max = selectedEltsProp.min;
+}else if (case5)
+{
+retElt.min = lastSelectedElt;
+retElt.max = selectedEltsProp.max;
+} 
+}else{
+if (previousSelectedElt.bid!=selectedEltsProp.max.bid)
+{
+retElt.min = previousSelectedElt.row <= lastSelectedElt.row ? previousSelectedElt : lastSelectedElt;
+retElt.max = previousSelectedElt.row >= lastSelectedElt.row ? previousSelectedElt : lastSelectedElt;
+}else
+{
+retElt.min = lastSelectedElt;
+retElt.max = previousSelectedElt;
+}
+}
+}else
+{
+if (lastSelectedElt.parent.zone == _womZoneDesc.Body)
+{
+case1 = previousSelectedElt.row == selectedEltsProp.max.row;
+case2 = previousSelectedElt.row == selectedEltsProp.min.row;
+if (selectedEltsProp.isContinuousSelection)
+{
+if (case1)
+{
+retElt.min = selectedEltsProp.min;
+retElt.max = lastSelectedElt;
+}else if (case2)
+{
+retElt.min = selectedEltsProp.max;
+retElt.max = lastSelectedElt;
+}
+}else
+{
+retElt.min = previousSelectedElt;
+retElt.max = lastSelectedElt;
+}
+}else
+{
+case1 = selectedEltsProp.max.row <= lastSelectedElt.row && previousSelectedElt.row == selectedEltsProp.max.row;
+case2 = selectedEltsProp.max.row <= lastSelectedElt.row && previousSelectedElt.row == selectedEltsProp.min.row;
+case3 = selectedEltsProp.min.row <= lastSelectedElt.row && lastSelectedElt.row <= selectedEltsProp.max.row && previousSelectedElt.row == selectedEltsProp.max.row;
+case4 = selectedEltsProp.min.row <= lastSelectedElt.row && lastSelectedElt.row <= selectedEltsProp.max.row && previousSelectedElt.row == selectedEltsProp.min.row;
+case5 = lastSelectedElt.row <= selectedEltsProp.min.row && previousSelectedElt.row == selectedEltsProp.max.row ;
+case6 = lastSelectedElt.row <= selectedEltsProp.min.row && previousSelectedElt.row == selectedEltsProp.min.row ;
+if (selectedEltsProp.isContinuousSelection)
+{
+if (case1)
+{
+retElt.min = selectedEltsProp.min;
+retElt.max = lastSelectedElt;
+}else if (case2)
+{
+retElt.min = selectedEltsProp.max;
+retElt.max = lastSelectedElt;
+}else if (case3)
+{
+retElt.min = selectedEltsProp.min;
+retElt.max = lastSelectedElt;
+}else if (case4)
+{
+retElt.min = lastSelectedElt;
+retElt.max = selectedEltsProp.max;
+}else if (case5)
+{
+retElt.min = lastSelectedElt;
+retElt.max = selectedEltsProp.min;
+}else if (case6)
+{
+retElt.min = lastSelectedElt;
+retElt.max = selectedEltsProp.max;
+} 
+}else{
+retElt.min = previousSelectedElt.row <= lastSelectedElt.row ? previousSelectedElt : lastSelectedElt;
+retElt.max = previousSelectedElt.row >= lastSelectedElt.row ? previousSelectedElt : lastSelectedElt;
+}
+}
+}
+}
+return retElt;
+},
+getSelectionMinMaxXTableCol:function(previousSelectedElt, lastSelectedElt, orderedSelectedElts)
+{
+var o = this;
+var retElt = new MinMaxSelectedElement();
+if (orderedSelectedElts!=null && orderedSelectedElts.length>0)
+{
+var hasBodySelected = orderedSelectedElts[orderedSelectedElts.length-1].parent.zone == _womZoneDesc.Body;
+var selectedEltsProp = o.getSelectedEltsProp(orderedSelectedElts);
+if (selectedEltsProp.max == null || selectedEltsProp.min == null) return retElt;
+var case1 = false;
+var case2 = false;
+var case3 = false;
+var case4 = false;
+var case5 = false;
+var case6 = false;
+if (hasBodySelected)
+{
+case1 = orderedSelectedElts.length == 1
+case2 = selectedEltsProp.min.col <= lastSelectedElt.col && selectedEltsProp.max.bid != lastSelectedElt.bid && previousSelectedElt.bid == selectedEltsProp.max.bid;
+case3 = selectedEltsProp.min.col <= lastSelectedElt.col && selectedEltsProp.max.bid != lastSelectedElt.bid && previousSelectedElt.bid != selectedEltsProp.max.bid;
+case4 = lastSelectedElt.col <=  selectedEltsProp.min.col && previousSelectedElt.bid == selectedEltsProp.max.bid;
+case5 = lastSelectedElt.col <=  selectedEltsProp.min.col && previousSelectedElt.bid != selectedEltsProp.max.bid;
+if (selectedEltsProp.isContinuousSelection)
+{
+if(case1)
+{
+retElt.min = lastSelectedElt;
+retElt.max = selectedEltsProp.max;
+}
+else if (case2)
+{
+retElt.min = selectedEltsProp.min;
+retElt.max = lastSelectedElt;
+}else if (case3)
+{
+retElt.min = lastSelectedElt;
+retElt.max = selectedEltsProp.max;
+}else if (case4)
+{
+retElt.min = lastSelectedElt;
+retElt.max = selectedEltsProp.min;
+}else if (case5)
+{
+retElt.min = lastSelectedElt;
+retElt.max = selectedEltsProp.max;
+} 
+}else{
+if (previousSelectedElt.bid!=selectedEltsProp.max.bid)
+{
+retElt.min = previousSelectedElt.col <= lastSelectedElt.col ? previousSelectedElt : lastSelectedElt;
+retElt.max = previousSelectedElt.col >= lastSelectedElt.col ? previousSelectedElt : lastSelectedElt;
+}else
+{
+retElt.min = lastSelectedElt;
+retElt.max = previousSelectedElt;
+}
+}
+}else
+{
+if (lastSelectedElt.parent.zone == _womZoneDesc.Body)
+{
+case1 = previousSelectedElt.col == selectedEltsProp.max.col;
+case2 = previousSelectedElt.col == selectedEltsProp.min.col;
+if (selectedEltsProp.isContinuousSelection)
+{
+if (case1)
+{
+retElt.min = selectedEltsProp.min;
+retElt.max = lastSelectedElt;
+}else if (case2)
+{
+retElt.min = selectedEltsProp.max;
+retElt.max = lastSelectedElt;
+}
+}else
+{
+retElt.min = previousSelectedElt;
+retElt.max = lastSelectedElt;
+}
+}else
+{
+case1 = selectedEltsProp.max.col <= lastSelectedElt.col && previousSelectedElt.col == selectedEltsProp.max.col;
+case2 = selectedEltsProp.max.col <= lastSelectedElt.col && previousSelectedElt.col == selectedEltsProp.min.col;
+case3 = selectedEltsProp.min.col <= lastSelectedElt.col && lastSelectedElt.col <= selectedEltsProp.max.col && previousSelectedElt.col == selectedEltsProp.max.col;
+case4 = selectedEltsProp.min.col <= lastSelectedElt.col && lastSelectedElt.col <= selectedEltsProp.max.col && previousSelectedElt.col == selectedEltsProp.min.col;
+case5 = lastSelectedElt.col <= selectedEltsProp.min.col && previousSelectedElt.col == selectedEltsProp.max.col ;
+case6 = lastSelectedElt.col <= selectedEltsProp.min.col && previousSelectedElt.col == selectedEltsProp.min.col ;
+if (selectedEltsProp.isContinuousSelection)
+{
+if (case1)
+{
+retElt.min = selectedEltsProp.min;
+retElt.max = lastSelectedElt;
+}else if (case2)
+{
+retElt.min = selectedEltsProp.max;
+retElt.max = lastSelectedElt;
+}else if (case3)
+{
+retElt.min = selectedEltsProp.min;
+retElt.max = lastSelectedElt;
+}else if (case4)
+{
+retElt.min = lastSelectedElt;
+retElt.max = selectedEltsProp.max;
+}else if (case5)
+{
+retElt.min = lastSelectedElt;
+retElt.max = selectedEltsProp.min;
+}else if (case6)
+{
+retElt.min = lastSelectedElt;
+retElt.max = selectedEltsProp.max;
+} 
+}else{
+retElt.min = previousSelectedElt.col <= lastSelectedElt.col ? previousSelectedElt : lastSelectedElt;
+retElt.max = previousSelectedElt.col >= lastSelectedElt.col ? previousSelectedElt : lastSelectedElt;
+}
+}
+}
+}
+return retElt;
+},
+setActiveZone_Ctrl:function(activeZone)
+{
+var o = this;
+if (o.e.ctrlKey)
+{
+var mustBeDeselected = false;
+for (var i = 0; i<o.selectedElements.length;i++)
+{
+if (o.element.bid == o.selectedElements[i].bid)
+{
+mustBeDeselected = true;
+break;
+}
+}
+if (mustBeDeselected)
+{
+activeZone.toBeDeselected[activeZone.toBeDeselected.length]=o.element.bid;
+}
+}
+},
+getActiveZone:function()
+{
+var o = this;
+var ret=new ActiveZone();
+var previousSelectedElt = o.getPreviousSelectedElt();
+if (previousSelectedElt == null) return ret;
+if (typeof(o.element.parent) == "undefined") return ret;
+if (o.e.ctrlKey && !o.e.shiftKey)
+{
+o.setActiveZone_Ctrl(ret);
+return ret;
+}
+var minMax = null;
+if (typeof(o.orderedSelectedElts[0].parent) == "undefined") return ret;
+var eltParent = o.orderedSelectedElts[0].parent && o.orderedSelectedElts[0].parent.zone != _womZoneDesc.Body ? o.orderedSelectedElts[0].parent : o.element.parent;
+var isLikeVTable = eltParent.zone == _womZoneDesc.HHeader;
+var case0 = typeof(o.orderedSelectedElts[0].parent)!="undefined" && o.orderedSelectedElts[0].parent.zone != _womZoneDesc.Body && o.element.parent.zone != _womZoneDesc.Body && o.orderedSelectedElts[0].parent.zone != o.element.parent.zone;
+if(case0)
+{
+for (var i=0; i<o.orderedSelectedElts.length;i++)
+{
+ret.toBeDeselected[ret.toBeDeselected.length] = o.orderedSelectedElts[i].bid;
+}
+return ret;
+}
+if (eltParent.children && eltParent.children.length > 0)
+{
+if (isLikeVTable)
+{
+minMax = o.getSelectionMinMaxXTableCol(previousSelectedElt, o.element, o.orderedSelectedElts);
+}else
+{
+minMax = o.getSelectionMinMaxXTableRow(previousSelectedElt, o.element, o.orderedSelectedElts);
+}
+var hasBody  = minMax.max.parent.zone == _womZoneDesc.Body;
+var isLastMaxSelectedBody = o.orderedSelectedElts[o.orderedSelectedElts.length-1].parent.zone == _womZoneDesc.Body;
+if (isLikeVTable)
+{
+var min =  minMax.min.col;
+var max =  minMax.max.col;
+if (hasBody)
+{
+if (minMax.min.bid==minMax.max.bid)
+{
+min = eltParent.children.length;
+max = eltParent.children.length;
+}
+for (var i = 0; i < eltParent.children.length ;i++)
+{
+var elt = eltParent.children[i];
+if ( elt.col >= min)
+{
+ret.toBeSelected[ret.toBeSelected.length] = elt.bid;
+}
+if ( elt.col < min)
+{
+var mustBeDeselected = false;
+for (var j = 0; j<o.selectedElements.length;j++)
+{
+if (elt.bid == o.selectedElements[j].bid)
+{
+mustBeDeselected = true;
+break;
+}
+}
+if (mustBeDeselected) ret.toBeDeselected[ret.toBeDeselected.length] = elt.bid;
+}
+} 
+}else
+{
+for (var i = 0; i < eltParent.children.length ;i++)
+{
+var elt = eltParent.children[i];
+if ( elt.col >= min && elt.col <= max)
+{
+ret.toBeSelected[ret.toBeSelected.length] = elt.bid;
+}
+if ( elt.col < min || elt.col > max)
+{
+var mustBeDeselected = false;
+for (var j = 0; j<o.selectedElements.length;j++)
+{
+if (elt.bid == o.selectedElements[j].bid)
+{
+mustBeDeselected = true;
+break;
+}
+}
+if (mustBeDeselected) ret.toBeDeselected[ret.toBeDeselected.length] = elt.bid;
+}
+}
+}
+}else
+{
+var min =  minMax.min.row;
+var max =  minMax.max.row;
+if (hasBody)
+{
+if (minMax.min.bid==minMax.max.bid)
+{
+min = eltParent.children.length;
+max = eltParent.children.length;
+}
+for (var i = 0; i < eltParent.children.length ;i++)
+{
+var elt = eltParent.children[i];
+if ( elt.row >= min)
+{
+ret.toBeSelected[ret.toBeSelected.length] = elt.bid;
+}
+if ( elt.row < min)
+{
+var mustBeDeselected = false;
+for (var j = 0; j<o.selectedElements.length;j++)
+{
+if (elt.bid == o.selectedElements[j].bid)
+{
+mustBeDeselected = true;
+break;
+}
+}
+if (mustBeDeselected) ret.toBeDeselected[ret.toBeDeselected.length] = elt.bid;
+}
+} 
+}else
+{
+for (var i = 0; i < eltParent.children.length ;i++)
+{
+var elt = eltParent.children[i];
+if ( elt.row >= min && elt.row <= max)
+{
+ret.toBeSelected[ret.toBeSelected.length] = elt.bid;
+}
+if ( elt.row < min || elt.row > max)
+{
+var mustBeDeselected = false;
+for (var j = 0; j<o.selectedElements.length;j++)
+{
+if (elt.bid == o.selectedElements[j].bid)
+{
+mustBeDeselected = true;
+break;
+}
+}
+if (mustBeDeselected) ret.toBeDeselected[ret.toBeDeselected.length] = elt.bid;
+}
+}
+}
+}
+if(isLastMaxSelectedBody && !hasBody)
+{
+ret.toBeDeselected[ret.toBeDeselected.length] =  o.orderedSelectedElts[o.orderedSelectedElts.length-1].bid;
+}
+}
+return ret;
+}
+};

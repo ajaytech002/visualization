@@ -1,0 +1,6356 @@
+if (window._DHTML_LIB_DOM_JS_LOADED == null) {
+_DHTML_LIB_DOM_JS_LOADED = true
+_appVer = navigator.appVersion.toLowerCase();
+_ie = ((document.all != null) || (_appVer.indexOf('trident') >= 0)) ? true : false // Browser is Internet Explorer //add test for IE 11 where document.all are removed
+_dtd4 = !_ie || (document.compatMode != 'BackCompat') // Browser is compatible HTML 4.0 Strict
+_dom = (document.getElementById != null) ? true : false // has DOM functions
+_moz = _dom && !_ie // Is mozilla or Firefox or Safari or opera
+_show = 'visible'
+_hide = 'hidden'
+//_hand = _ie ? "hand" : "pointer"
+_mac = (_appVer.indexOf('macintosh') >= 0) || (_appVer.indexOf('macos') >= 0);
+_userAgent = navigator.userAgent ? navigator.userAgent.toLowerCase() : null
+_webKit = (_userAgent.indexOf("safari") >= 0) || (_userAgent.indexOf("applewebkit") >= 0)
+_saf = _moz && _mac && _webKit // Browser is Safari on mac
+_saf2 = _saf && (_userAgent.indexOf("version") < 0) // Browser is Safari 2 or OLDER on mac
+_winSaf = _moz && _webKit // Browser is Safari on windows
+_opera = (_userAgent.indexOf('opera') != -1); // Browser is opera
+_ff = _moz && !_webKit && !_opera // browser is firefox
+_ff2 = false // // browser is firefox 2 and lower
+_ffDD = false // // browser is firefox 3.5 and upper (for drag and drop )
+if (_ff) {
+var idx = _userAgent.indexOf('firefox/');
+_ff2 = (idx >= 0) && (parseInt(_userAgent.slice(idx + 8)) < 3)
+_ffDD = (idx >= 0) &&
+((parseInt(_userAgent.slice(idx + 8)) > 3) ||
+((parseInt(_userAgent.slice(idx + 8)) == 3) && ((parseInt(_userAgent.slice(idx + 10)) >= 5))))
+}
+if (_opera) {
+_moz = true
+_dtd4 = true
+}
+_google = (_userAgent.indexOf('chrome') != -1); // Browser is google chrome
+_ctrl = 0
+_shift = 1
+_alt = 2
+_meta = 3
+// At least ie6
+_ie6 = _ie && (_appVer.indexOf("msie 5") < 0)
+// At least ie7
+_ie7 = _ie6 && (_appVer.indexOf("msie 6") < 0)
+// IE8
+_ie8 = _ie && (_appVer.indexOf("msie 8") >= 0)
+// IE8 Compatibility View
+_ie8CompView = (_appVer.indexOf("trident/4.0") >= 0) && (_appVer.indexOf("msie 7") >= 0)
+// i9 or recent (ie10, ...)
+//support compatibility mode so test the functionnality
+_ie9R = (_ie && window.innerHeight != null);
+//ie10
+_ie10= _ie && (_userAgent.indexOf("trident/6") >0)
+//support IE11
+_ie10R = false;
+_ie11R = false;
+//we need to look at the trident version instead of msie
+//trident 5 for IE9 and trident 6 for IE10 and trident 7 for IE11
+var tridentPos= _userAgent.indexOf("trident/");
+if(tridentPos>0)
+{
+var tridentVersion = _userAgent.slice(tridentPos+8,tridentPos+9);
+_ie10R =  (parseInt(tridentVersion)>5); 
+_ie11R =  (parseInt(tridentVersion)>6); 
+}
+//IE9 only
+_ie9Strict = _ie9R && !_ie10R;
+_hand = (_ie && !_ie9R) ? "hand" : "pointer"
+_curDoc = document
+_curWin = self
+_tooltipWin = self
+_tooltipDx = 0
+_tooltipDy = 0
+_codeWinName = "_CW"
+_leftBtn = ((_ie && !_ie11R) || _saf2) && !_google ? 1 : 0 
+//The CMC uses IE8 Emulation 
+if (_ie11R && _userAgent.indexOf("compatible; msie 8")>=0)
+_leftBtn = 1;
+_preloadArr = new Array
+_widgets = new Array
+_resizeW = _ie6 ? "col-resize" : (_webKit ? "col-resize" : "EW-resize")
+_resizeH = _ie6 ? "row-resize" : (_webKit ? "row-resize" : "NS-resize")
+_ddData = new Array
+_dontNeedEncoding = null;
+_thex = null;
+_IME = false;
+_RadioWidget_groups=[]
+_small = false; // Deprecated, use isSmallScreen() instead
+//buttons.png
+//5x315 (5 states x 3 x 21px)
+_buttonImgWidth = 5;
+_buttonImgHeight = 21;
+_buttonLeft = 0;
+_buttonMid = 1;
+_buttonRight = 2;
+//5 button states
+_buttonNormal = 0;
+_buttonFocus = 1;
+_buttonPressed = 2;
+_buttonDisabled = 3;
+_buttonHover = 4;
+_buttonCSS = [['btnLNormal', 'btnMNormal', 'btnRNormal'], ['btnLFocus', 'btnMFocus', 'btnRFocus'], ['btnLPressed', 'btnMPressed', 'btnRPressed'], ['btnLDisabled', 'btnMDisabled', 'btnRDisabled'], ['btnLHover', 'btnMHover', 'btnRHover']]
+//used in menu.js & psheet.js for the file menu.png   
+_mitemH = 23
+_defaultButtonWidth = 60;
+_noNaviFrame = 0; //dlg with user's layout without a frame
+_noNaviTab = 1; //frame without the navigation panel/bar
+_VertTab = 2; //vertical navigation panel without icon
+_VertTabWithIcon = 3; //vertical navigation panel with icon
+_HorizTabTop = 4; //horizontal navigation bar on top 
+_HorizTabBottom = 5; //horizontal navigation bar at bottom
+_HorizTabTopWithClose = 6; //horizontal navigation bar on top with close icon on right-top corner
+_menuBarTab = 7; //menu bar 
+_vertNaviPanelToFrame = 6 //space between vertical navigation panel and its right frame
+_toolbarHeight = 31;
+_tooltipShowDelay = 900;
+//screen size 
+_availHeight = (screen.availHeight?screen.availHeight:screen.height)
+_availWidth  = (screen.availWidth?screen.availWidth:screen.width)
+_urlMaxLength = 2048; //IE and Chrome url max limit
+var i=0
+keys = 
+{
+del:      i++,
+back:     i++,
+tab:      i++,
+enter:    i++,
+esc:      i++,
+left:     i++,
+up:       i++,
+right:    i++,
+down:     i++,
+home:     i++,
+end:      i++,
+pageUp:   i++,
+pageDown: i++,
+F1:       i++,
+F2:       i++,
+F3:       i++,
+F4:       i++,
+F5:       i++,
+F6:       i++,
+F7:       i++,
+F8:       i++,
+F9:       i++,
+F10:      i++,
+F11:      i++,
+F12:      i++
+}
+_rtl = null;
+}
+function getKeystroke(key)
+{
+if (typeof(key) == "number") {
+switch (key) {
+case keys.del:
+return Event.KEY_DELETE
+case keys.back:
+return Event.KEY_BACKSPACE
+case keys.tab:
+return Event.KEY_TAB
+case keys.enter:
+return Event.KEY_RETURN
+case keys.esc:
+return Event.KEY_ESC
+case keys.left:
+return Event.KEY_LEFT
+case keys.up:
+return Event.KEY_UP
+case keys.right:
+return Event.KEY_RIGHT
+case keys.down:
+return Event.KEY_DOWN
+case keys.home:
+return Event.KEY_HOME
+case keys.end:
+return Event.KEY_END
+case keys.pageUp:
+return Event.KEY_PAGEUP
+case keys.pageDown:
+return Event.KEY_PAGEDOWN
+case keys.F1:
+return 112
+case keys.F2:
+return 113
+case keys.F3:
+return 114
+case keys.F4:
+return 115
+case keys.F5:
+return 116
+case keys.F6:
+return 117
+case keys.F7:
+return 118
+case keys.F8:
+return 119
+case keys.F9:
+return 120
+case keys.F10:
+return 121
+case keys.F11:
+return 122
+case keys.F12:
+return 123
+}
+}
+return key
+}
+function debuggingLogger(s,x,y,w,h)
+{
+var cons=_curDoc.getElementById("debuggingConsoleLyr")
+if (cons==null)
+{
+x = (x==null?0:x)
+y = (y==null?0:y)
+w = (w==null?300:w)
+h = (h==null?100:h)
+append(_curDoc.body,'<textarea id="debuggingConsoleLyr" style="font-family:arial;font-size:10px;z-index:5000;position:absolute;top:'+y+'px;left:'+x+'px;width:'+w+'px;height:'+h+'px;overflow:auto;border:solid 1px black"></textarea>')
+cons=_curDoc.getElementById("debuggingConsoleLyr")
+}
+if (s)
+{
+cons.value=cons.value+"" + s + "\n"
+cons.scrollTop = Math.max(0, cons.scrollHeight - cons.offsetHeight);
+}
+}
+_paddingLeft = "padding-left"
+_paddingRight = "padding-right"
+_marginLeft = "margin-left"
+_margingRight = "margin-right"
+_tableAlignRight = "right"
+_tableAlignLeft = "left"
+function setRTL(rtl)
+{
+// Must be called BEFORE initDOM
+_rtl = rtl
+/*_paddingLeft = rtl ? "padding-right" : "padding-left"
+_paddingRight = rtl ? "padding-left" : "padding-right"
+_tableAlignRight = rtl ? "left" : "right"
+_tableAlignLeft = rtl ? "right" : "left"
+_marginLeft = rtl ? "margin-right" : "margin-left"
+_margingRight = rtl ?"margin-left" :  "margin-right"
+*/
+}
+function initDomWithLangPath(skinPath,lang,langPath,curWin,codeUniqueName)
+{
+if (window._InitDomCalled==null)
+{
+_InitDomCalled=true
+_skin=skinPath;
+_lang=lang;
+if (curWin)
+{
+_curWin=curWin
+_curDoc=curWin.document
+}
+_tooltipWin=_curWin
+if (codeUniqueName)
+{
+_codeWinName="_CW"+codeUniqueName
+_codeWinNameInstance = _curWin[_codeWinName+'__count']
+if (_codeWinNameInstance != null)
+{
+_codeWinNameInstance = ++_curWin[_codeWinName+'__count']
+}
+else
+{
+_codeWinNameInstance = _curWin[_codeWinName+'__count'] = 0
+}
+}
+else
+_codeWinNameInstance = 0
+_curWin[_codeWinName]=self
+_dtd4=!_ie||(_curDoc.compatMode!='BackCompat') // Browser is compatible HTML 4.0 Strict
+includeScript(langPath + "labels.js")
+includeScript(_skin + "../../prototype.js")
+if (_rtl == null)
+{
+var topFS = getTopFrameset()
+if (topFS && (topFS._rtl != null))
+setRTL(topFS._rtl)
+else
+setRTL(false)
+}
+//includeScript(_skin + "../../scriptaculous.js?load=effects,controls")
+}
+}
+function initDom(skinPath,lang,curWin,codeUniqueName)
+{
+if (lang.length > 2)
+{
+var langShort = lang.indexOf("zh")
+if (langShort == 0)
+{
+if (lang == "zh_SG")
+lang = "zh_CN";
+else if (lang == "zh_HK")
+lang = "zh_TW";
+else if (lang == "zh_MO")
+lang = "zh_TW";
+}
+else
+lang = lang.slice(0,2)
+}
+var langPath = skinPath + "../../language/" + lang + "/"
+initDomWithLangPath(skinPath,lang,langPath,curWin,codeUniqueName)
+}
+function styleSheetName()
+{
+if (_rtl) {
+return 'style_RTL'
+}
+else {
+switch(_lang){
+case 'ja':
+case 'ko':
+case 'zh':
+return 'style_fe'
+default:
+return 'style'
+break;
+}
+}
+}
+function isFarEast() {
+return styleSheetName() == 'style_fe';
+}
+function styleSheet()
+{
+if (_curWin.location.href!=window.location.href)
+dynStyleSheet(_curWin)
+else
+includeCSS(styleSheetName())
+}
+function includeCSS(css,noskin)
+{
+var url=""
+if( noskin )
+url=_skin+'../'+css
+else
+url=_skin+css
+url+='.css'
+_curDoc.write('<li'+'nk id="dhtmlLibCurrCss" rel="stylesheet" type="text/css" href="'+url+'">')
+}
+function dynStyleSheet(win)
+{
+if (win)
+{
+var doc  = win.document
+var link = doc.getElementById("dhtmlLibCurrCss")
+var href = _skin+styleSheetName()+".css"
+if (link)
+{
+if (link.href!=href)
+link.href=href
+}
+else
+{
+var arrHead = doc.getElementsByTagName("HEAD")
+if (arrHead.length > 0)
+{
+var head = arrHead[0]
+link = doc.createElement('link')
+head.appendChild(link)
+link.href=href
+link.id="dhtmlLibCurrCss"
+link.rel="stylesheet"
+link.type="text/css"
+}
+}
+}
+}
+function isInteger(value){
+  if(!isNaN(value) && (parseFloat(value) == parseInt(value))){
+      return true;
+  } else {
+      return false;
+  }
+}
+function isSmallScreen()
+{
+var isSmall = false;
+try
+{
+isSmall = screen.height<=768
+}
+catch(exp)
+{
+}
+return isSmall;
+}
+function isLayerDisplayed(lyr)
+{
+var css=lyr?lyr.style:null
+if(css)
+{
+if(css.display == "none" || css.visibility=="hidden")
+return false
+else
+{
+var par=lyr.parentNode
+if(par!=null)
+return isLayerDisplayed(par)
+else
+return true
+}
+}
+else
+return true;
+}
+function safeSetFocus(lyr)
+{
+//if (lyr && lyr.focus && isLayerDisplayed(lyr))
+if (lyr && lyr.focus)
+{
+try
+{
+lyr.focus()
+return true // success
+}
+catch (exc)
+{
+// Can happen if some of its parent are disabled
+// keep on
+}
+}
+return false // impossible to set the focus
+}
+function new_IconDesc(prms)
+{
+if (prms == null)
+{
+return null
+}
+else
+{
+return new IconDesc(prms)
+}
+}
+function IconDesc(prms)
+{
+var o=this
+o.src = Widget_param(prms, "src", null);
+o.w =  Widget_param(prms, "w", 16);
+o.h =  Widget_param(prms, "h", 16);
+o.dx = Widget_param(prms, "dx", 0);
+o.dy = Widget_param(prms, "dy", 0);
+o.disDx = Widget_param(prms, "disDx", o.dx);
+o.disDy = Widget_param(prms, "disDy", o.dy);
+}
+IconDesc.prototype = {
+getHTML : function (prms)
+{
+var o=this
+var disabled = Widget_param(prms, "disabled", false)
+var id = Widget_param(prms, "id", null)
+var att = Widget_param(prms, "att", null)
+var tooltip = Widget_param(prms, "tooltip", null)
+var st = Widget_param(prms, "st", null)
+var align = Widget_param(prms, "align", null)
+return simpleImgOffset(o.src,o.w,o.h, disabled ? o.disDx : o.dx, disabled ? o.disDy : o.dy, id, att, tooltip, st, align)
+}
+}
+function Widget_iconParam(paramsObj, paramName)
+{
+return paramsObj ? new_IconDesc(paramsObj[paramName]) : null
+}
+function getCustomTooltipHTML(tooltip)
+{
+    if (!tooltip) return '';
+    var topZone  = tooltip.title ? ('<div class="tooltipTitle">' + convStr(tooltip.title, false, false) + (tooltip.accel ? ('&nbsp;&nbsp;(' + tooltip.accel + ')') : '') + '</div>') : '';
+    var sepZone  = '';
+    if (tooltip.title && tooltip.text)
+    {
+        sepZone='<div class="tooltipSep"></div>'
+    }     
+    var textZone = tooltip.text ? '<div class="dragTxt">'+(tooltip.isHTML ? tooltip.text : convStr(tooltip.text,false,true))+'</div>' : ''
+   var textPath = tooltip.path ? '<div class="dragTxt">'+(tooltip.isHTML ? tooltip.path : convStr(tooltip.path,false,true))+'</div>' : ''
+   var s='<div style="margin-top:4px;margin-bottom:4px;">' + topZone + sepZone + textZone + textPath+'</div>';
+   var tooltipString = tooltip.isHTML?s.replace(/\n/g, '<br />'):s;
+    return tooltipString;
+}
+function JITCreate_class_Widget()
+{
+// CONSTRUCTOR - Widget class - Base class for widgets
+// prms: object. the following fields are valid and optional
+// id [String]: the widget base tag id
+if (window.class_Widget == null) window.class_Widget = Class.create(
+{
+initialize : function (prms)
+{
+var o = this;
+o.id = Widget_param(prms, "id", generateDefaultLayerId());
+o.value = Widget_param(prms, "value", "");
+o.__hidden = Widget_param(prms, "hidden", false);
+o.htmlTooltip = Widget_param(prms, "htmlTooltip", null);
+o.customTooltip = Widget_param(prms, "customTooltip", null);
+o.userData = Widget_param(prms, "userData", {});
+    o.afterInitCB = Widget_param(prms, "afterInitCB", null);
+o.refreshLyrTitle = Widget_param(prms, "refreshLyrTitle", false);
+o.hasPopup = false
+o.layer=null
+o.css=null
+o.widx=_widgets.length
+o.tooltip=null
+o.htmlTooltipRegistered=false
+o.isWidget=true
+if (o.customTooltip)
+o.setCustomTooltip(o.customTooltip)
+_widgets[o.widx]=o
+}
+,init : function(layer)
+{
+// Init the widget layer pointers
+var o=this
+o.layer=layer?layer:getLayer(o.id)
+o.css=o.layer.style
+o.layer._widget=o.widx
+if (o.__hidden)
+o.css.display="none"
+if (o.initialHTML) {
+o.setHTML(o.initialHTML)
+}
+if (o.hasPopup) {
+o.layer.setAttribute("aria-haspopup", true)
+}
+o.initHTMLTooltip();
+if (o.afterInitCB)
+o.afterInitCB()
+o.setRoleAndLabelledBy(o.role, o.ariaLabelledBy)
+}
+// Parameter parsing
+,param : Widget_param
+,canHaveFocus : function()
+{
+// Virtual can have the focus
+return true
+}
+,getHTML : function()
+{
+// VIRTUAL Get the widget HTML - return [String]
+if (this.initialHTML != null) {
+return this.initialHTML; 
+} else {
+return '';
+}
+}
+,beginHTML : function()
+{
+// if composite widget
+return ''
+}
+,endHTML : function()
+{
+// if composite widget
+return ''
+}
+,write : function (i)
+{
+// write the widget
+_curDoc.write(this.getHTML(i))
+}
+,begin : function()
+{
+// Write the HTML begin part
+_curDoc.write(this.beginHTML())
+}
+,end : function()
+{
+// Write the HTML end part
+_curDoc.write(this.endHTML())
+}
+,move : function (x,y)
+{
+// moves a widget absolute positioned
+// x & y are optional
+    var c=this.css;
+if(c)
+{
+    if (x!=null) c.left=""+x+"px"
+    if (y!=null) c.top=""+y+"px"
+    }    
+}
+,resize : function(w,h)
+{
+// Resize a widget. w & h are optional
+    var c=this.css;
+if (c)
+{
+if (w!=null && !isNaN(w)) c.width=''+(Math.max(0,w))+'px'
+if (h!=null && !isNaN(h)) c.height=''+(Math.max(0,h))+'px'
+}
+}
+,setBgColor : function(col)
+{
+// Set the widget background color. c [String] HTML color code
+    var c=this.css;
+if (c)
+c.backgroundColor=col
+}
+,show : function(show)
+{
+// Show/hide a widget (the widget layout always exists)
+this.css.visibility=show?_show:_hide
+}
+    ,isShowed : function()
+{
+return (this.css.visibility==_show)?true:false
+}
+,getWidth : function()
+{
+// return [int] the widget width in pixels
+return this.layer.offsetWidth
+}
+,getHeight : function()
+{
+// return [int] the widget height in pixels
+return this.layer?this.layer.offsetHeight:0;
+}
+,setHTML : function(s)
+{
+// Change  the widget HTML
+var o=this
+if (o.layer) {
+o.layer.innerHTML=s
+o.initialHTML=null
+} else {
+o.initialHTML=s
+}
+}
+,setDisabled : function(d)
+{
+// Disable a widget
+if (this.layer)
+{
+this.layer.disabled=d
+}
+}
+,isDisabled : function(d)
+{
+if (this.layer)
+{
+return this.layer.disabled ? true : false
+}
+}
+,focus : function()
+{
+// Set the focus on the current widget
+safeSetFocus(this.layer)
+}
+,setDisplay : function (d)
+{
+// Show/hide a widget (if hidden, no space is taken anymore
+this.__hidden = !d
+if (this.css)
+this.css.display=d?"":"none"
+}
+,isDisplayed : function ()
+{
+// Test if the widget is displayed
+if(this.css.display == "none")
+return false
+else
+return true
+}
+,appendHTML : function()
+{
+// Write the widget dynamically into the body
+append(_curDoc.body,this.getHTML())
+}
+,setTooltip : function(tooltip)
+{
+// Set the widget tooltip (uses title - no formatting allowed)
+var o=this;
+if (o.layer) {
+o.layer.title=tooltip?tooltip:''
+}
+}
+,setHtmlTooltip : function (tooltip)
+{
+// This tooltip can use HTML tags
+var o=this;
+o.htmlTooltip = tooltip;
+o.htmlTooltipRegistered = true;
+o.initHTMLTooltip();
+}
+,setCustomTooltip : function (tooltip)
+{
+// Set the widget tooltip
+// tooltip [Object]
+//   title: tooltip title
+//   text: tooltip text
+//   isHTML: if true, the text will be taken as is
+var o=this;
+o.customTooltip=tooltip
+        if (o.accel)
+        {
+            tooltip.accel=o.accel;
+        }
+if(o.refreshLyrTitle)
+o.refreshLayerTitle(tooltip.text)
+        var s=getCustomTooltipHTML(tooltip);        
+o.setHtmlTooltip(s); 
+}
+,refreshLayerTitle : function(text)
+{
+this.layer.title=HTMLtoText(text)
+} 
+,setAccelerator : function (keystroke, modifier, macModifier)
+{
+// This function stores the accelerator. works only if a workbench widget is used
+// keystroke char corresponding to a keyboard key
+// Can be a key.<constant> key with <constant> like key.del, 
+// modifier int _ctrl=0,_shift=1,_alt=2,_meta=3 (apple for macs)
+// OR a table of int for modifier combinations exemple [_ctrl, _alt]
+setAccelerator(this, keystroke, modifier, macModifier)
+}
+,observe : function(layer, eventName, classMethod)
+{
+// Used to add a callback to a tag related to the widget
+// IMPORTANT: the "this" object of the calllback will be
+// the widget
+// The callback MUST be a class method
+// several observers can be used for one event type
+// use the returned object to call stopObserving()
+    var o=this;
+var data={layer:layer, eventName:eventName, func:classMethod.bindAsEventListener(this)}
+addEvent(layer, eventName, data.func)
+return data
+}
+,stopObserving : function(observeData)
+{
+// Stop a callback on a tag
+    var o=this;
+    if (!observeData)
+        observeData=o.observeData;
+    if (observeData)    
+removeEvent(observeData.layer, observeData.eventName, observeData.func)
+o.observeData=null;
+}
+,setTimeout : function(methodName, delay)
+{
+setTimeout('_widgets['+this.widx+'].'+methodName+'()',delay)
+}
+,getUserData : function()
+{
+// User data: for storing data from your client code
+return this.userData
+}
+,setUserData : function(userData)
+{
+// User data: for storing data from your client code
+this.userData = userData
+}
+,initHTMLTooltip : function()
+{
+// PRIVATE - HTML tooltip management
+var o=this, l=o.layer, data=o.htmlTooltipData
+if (l)
+{
+if (o.htmlTooltip)
+{
+if (data==null)
+{
+o.htmlTooltipData = {
+over:o.observe(l, "mouseover", o.internOverCB),
+out:o.observe(l, "mouseout", o.internOutCB),
+down:o.observe(l, "mousedown", o.internClickCB)
+}
+}
+}
+else
+{
+if (data)
+{
+Event.stopObserving(data.over)
+Event.stopObserving(data.out)
+Event.stopObserving(data.down)
+o.htmlTooltipData=null;
+}
+}
+}
+}
+,internOverCB : function(e)
+{
+// PRIVATE - tooltip callback
+var o=this, tooltip=new_TooltipWidget({})
+o.oldTitleAttr = o.layer.title
+o.layer.title = ''
+o.showTooltip=true
+tooltip.callerWidgetIdx=o.widx
+if (tooltip.isShown)
+o.delayedOverCB()
+else
+o.setTimeout("delayedOverCB", _tooltipShowDelay)
+}
+,delayedOverCB : function()
+{
+// PRIVATE - tooltip callback
+var o=this
+var tooltip=new_TooltipWidget({})
+var pos=getPos(o.layer)
+if ((o.showTooltip==true)&&(tooltip.callerWidgetIdx==o.widx))
+tooltip.show(true,o.htmlTooltip,null,null,null,null,null,true,null,pos.x, pos.y+o.getHeight()+4, 150, pos.y-4);
+}
+,prepareHideTooltip : function()
+{
+// PRIVATE - tooltip callback
+var tooltip=new_TooltipWidget({})
+this.showTooltip=false
+tooltip.callerWidgetIdx=this.widx;
+}
+,internOutCB : function(e)
+{
+// PRIVATE - tooltip callback
+var o=this
+o.layer.title = o.oldTitleAttr
+o.oldTitleAttr = null
+o.prepareHideTooltip()
+o.setTimeout("delayedOutCB",50)
+}
+,internClickCB : function(e)
+{
+// PRIVATE - tooltip callback
+this.prepareHideTooltip()
+this.delayedOutCB()
+}
+,delayedOutCB : function()
+{
+// PRIVATE - tooltip callback
+var tooltip=new_TooltipWidget({})
+if ((this.showTooltip==false)&&(tooltip.callerWidgetIdx==this.widx))
+tooltip.show(false);
+}
+// =====================
+// get the widget index
+// =====================
+,getWidgetIdx : function()
+{
+return this.widx
+}
+// ===================================
+// Check if the widget is initialized
+// ===================================
+,initialized : function()
+{
+return this.layer!=null
+}
+,setRoleAndLabelledBy : function(role, label, id)
+{
+// An HTML DIV tag with ID : 'ariaLabelledBy_'+o.id must exist:
+// <div style="display:none" id="ariaLabelledBy_'+o.id+'"></div>
+// Id is optional; if ommitted, it uses 'ariaLabelledBy_'+this.id 
+// label is optional in case it already exists
+var o=this
+id = id ? id : o.getAriaLabelledByID()
+if (role  != null) o.role = role
+if (label != null) o.ariaLabelledBy = label
+if (o.layer) {
+if (role!=null)
+o.layer.setAttribute("role", role)
+o.layer.setAttribute("aria-labelledby", id)
+if (label!=null) {
+if (o.ariaLabelledByLyr == null) o.ariaLabelledByLyr = getLayer(id)
+if (o.ariaLabelledByLyr) o.ariaLabelledByLyr.innerHTML=convStr(label)
+}
+}
+}
+,getAriaLabelledByID : function()
+{
+return 'ariaLabelledBy_'+this.id
+}
+,getLabelForAriaHTMLTag : function()
+{
+return '<div style="display:none" id="'+this.getAriaLabelledByID()+'"></div>'
+}
+})
+}
+function new_Widget(prms)
+{
+JITCreate_class_Widget()
+    return new class_Widget(prms)
+}
+function newWidget(id)
+{
+return new_Widget({id: id})
+}
+function createWidget(prms)
+{
+var item = null;
+if (window.Workbench_prepareBeforeCreateWidget)
+Workbench_prepareBeforeCreateWidget(prms)
+// Register the action and the object
+switch (prms.type)
+{
+case "tabbedGroup":
+item = new_TabbedGroup(prms)
+break;
+        case "noTabGroup":
+item = new_noTabGroup(prms)
+break;
+case "group":
+item = new_PaletteGroupWidget(prms)
+break;
+case "lines":
+item = new_LinesWidget(prms)
+break;
+case "icon":
+item = new_IconWidget(prms)
+break;
+        case "iconradio":
+item = new_IconRadioWidget(prms)
+break;
+case "check":
+item = new_IconCheckWidget(prms)
+break;
+        case "radio":
+item = new_RadioWidget(prms)
+break;
+        case "toggle":
+item = new_IconToggleWidget(prms)
+break;
+case "separator":
+item = new_PaletteVerticalSepWidget(prms)
+break;
+case "textField":
+item = new_TextFieldWidget(prms)
+break;
+case "intField":
+item = new_IntFieldWidget(prms)
+break;
+case "textArea":
+item = new_TextAreaWidget(prms)
+break;
+case "customCombo":
+item = new_CustomCombo(prms);
+break;
+case "radioMenu":
+item = new_RadioIconMenuWidget(prms);
+break;
+case "colorMenu":
+item = new_IconColorMenuWidget(prms);
+if (prms.defaultActionOnIcon!=null)
+item.setDefaultActionOnIcon(prms.defaultActionOnIcon)
+break;
+case "bordersMenu":
+item = new_IconBordersMenuWidget(prms);
+break;
+case "iconMenu":
+item = new_IconMenuWidget(prms);
+break;
+case "intCombo":
+item = new_IntComboWidget(prms)
+break;
+case "label":
+item = new_LabelWidget(prms)
+break;
+case "textCombo":
+item = new_TextComboWidget(prms)
+break;
+case "br": // Line Break in LinesWidget
+case "rightZone": // Right zones in palette
+item = {type:prms.type}  // Not a real widget, just a control object for containers
+break;
+case "placeHolder":
+item = new_PlaceHolderWidget(prms)
+break
+        case "spinner":
+            item=new_SpinnerWidget(prms);
+            break;
+}
+if (window.Workbench_fillCommon)
+Workbench_fillCommon(item, prms);
+return item
+}
+function setAccelerator (o, keystroke, modifier, macModifier)
+{
+// Transform modifiers into arrays (if needed)
+if (typeof(modifier) == "number") modifier = [modifier]
+if (modifier==null) modifier = []
+if (typeof(macModifier) == "number") macModifier = [macModifier]
+if (macModifier==null) macModifier = []
+if (_mac&&(macModifier!=null))
+modifier = macModifier
+// Store the accelerator in the widget
+o.accelerator={key:keystroke, modifier:modifier, macModifier:macModifier}
+// Calculate the string that display the accelerator (on menus and tooltips)
+// it's stored into the accel field
+// Keystroke is displayed
+keystrokeLabel = null
+if (typeof(keystroke) == 'number')
+{
+keystrokeLabel = _keyLabels[keystroke]
+}
+else
+{
+keystrokeLabel = keystroke.toUpperCase()
+}
+var accell=""
+for (var i=0; i<4; i++)
+{
+var empty = (accell=="")
+if (modifier.indexOf(i) >= 0)
+accell += _modifiers[i] // + (empty ? "" : "+")
+}
+o.accel= accell + keystrokeLabel
+if (o.customTooltip)
+o.setCustomTooltip(o.customTooltip);
+}
+function generateDefaultLayerId()
+{
+if (_curWin.dhtmlLibIdCounter == null)
+_curWin.dhtmlLibIdCounter = 1
+return "_dhtmlLib_" + (_curWin.dhtmlLibIdCounter ++)
+}
+function Widget_param(paramsObj, paramName, paramDefaultValue)
+{
+var val = paramsObj ? paramsObj[paramName] : null;
+return val == null ? paramDefaultValue : val;
+}
+function JITCreate_class_PlaceHolderWidget()
+{
+JITCreate_class_Widget()
+if (window.class_PlaceHolder == null) window.class_PlaceHolder = Class.create(class_Widget,
+{
+initialize : function ($super,prms)
+{
+$super(prms)
+var o = this
+o.width = Widget_param(prms, "width", 10)
+o.height = Widget_param(prms, "height", 10)
+}
+,getHTML : function ()
+{
+var o=this
+return '<div id="' + o.id + '" style="overflow:hidden;width:' + o.width + 'px;height:' + o.height + 'px"></div>'
+}
+})
+}
+function new_PlaceHolderWidget(prms)
+{
+JITCreate_class_PlaceHolderWidget()
+return new class_PlaceHolder(prms)
+}
+function JITCreate_class_GrabberWidget()
+{
+JITCreate_class_Widget()
+if (window.class_GrabberWidget == null) window.class_GrabberWidget = Class.create(class_Widget,
+{
+initialize : function ($super, prms)
+{
+$super(prms)
+var o = this
+// Parameters parsing
+o.resizeCB = Widget_param(prms, "resizeCB", null);
+o.x = Widget_param(prms, "x", 0);
+o.y = Widget_param(prms, "y", 0);
+o.w = Widget_param(prms, "w", 100);
+o.h = Widget_param(prms, "h", 100);
+o.isHori = Widget_param(prms, "isHori", true);
+o.min=Widget_param(prms, "min", null);
+o.max=Widget_param(prms, "max", null);
+o.buttonCB = Widget_param(prms, "buttonCB", null);
+o.tooltipButton = Widget_param(prms, "buttonTooltip", null);
+// Private fields
+o.dx=0
+o.dy=0
+o.preloaded=new Image
+o.preloaded.src=_skin+"../resizepattern.gif"
+o.allowGrab=true
+o.collapsed=false
+o.isFromButton=false
+o.buttonLyr=null
+}
+,init: function($super, layer)
+{
+var o=this
+$super(layer)
+o.observe(o.layer, "mousedown", o.mouseDownCB)
+if (o.buttonCB)
+{
+o.buttonLyr=getLayer("grabImg_"+o.id)
+o.observe(o.buttonLyr, "mouseover", o.buttonMouseOverCB)
+o.observe(o.buttonLyr, "mouseout", o.buttonMouseOutCB)
+o.observe(o.buttonLyr, "mousedown", o.buttonMouseDownCB)
+o.observe(o.buttonLyr, "mouseup", o.buttonMouseUpCB)
+}
+}
+,getHTML : function ()
+{
+var o=this,ho=o.isHori
+var cr=o.allowGrab?(ho?_resizeW:_resizeH):"default"
+var moveableCb='onselectstart="return false" ondragstart="return false"'
+var imgG=(_ie) ? 
+('<img onselectstart="return false" ondragstart="return false" onmousedown="'+_codeWinName+'.eventCancelBubble(event)" border="0" hspace="0" vspace="0" src="'+_skin+'../transp.gif" id="modal_'+o.id+'" style="z-index:10000;display:none;position:absolute;top:0px;left:0px;width:1px;height:1px;cursor:'+cr+'">') :
+('<div onselectstart="return false" ondragstart="return false" onmousedown="'+_codeWinName+'.eventCancelBubble(event)" id="modal_'+o.id+'" style="z-index:10000;display:none;position:absolute;top:0px;left:0px;width:1px;height:1px;cursor:'+cr+'"></div>')
+var button=o.buttonCB?(_skin+(ho?"h":"v")+"grab.gif"):""
+if (button)
+{
+button=simpleImgOffset(button,ho?6:50,ho?50:6,o.dx,o.dy,"grabImg_"+o.id,null,o.tooltipButton,'cursor:'+_hand+';')
+}
+return getBGIframe('grabIframe_'+o.id)+imgG+'<table cellpadding="0" cellspacing="0" border="0" '+moveableCb+' id="'+o.id+'" style="overflow:hidden;position:absolute;left:'+o.x+'px;top:'+o.y+'px;width:'+o.w+'px;height:'+o.h+'px;cursor:'+cr+'"><tr><td align="center" valign="middle">'+button+'</td></table>'
+}
+,mouseDownCB : function(e)
+{
+// PRIVATE
+var o=this, lyr=o.layer
+if (o.mod==null)
+{
+o.mod=getLayer('modal_'+o.id)
+o.iframe=newWidget('grabIframe_'+o.id)
+o.iframe.init()
+}
+this.observe(o.mod, "mousemove", o.mouseMoveCB)
+this.observe(o.mod, "mouseup", o.mouseUpCB)
+o.grabStartPosx=parseInt(lyr.style.left)
+o.grabStartPosy=parseInt(lyr.style.top)
+o.grabStartx=eventGetX(e)
+o.grabStarty=eventGetY(e)
+var mod=o.mod,ifr=o.iframe,stl=o.layer.style,st=mod.style
+stl.backgroundImage='url(\''+_skin+'../resizepattern.gif\')'
+o.prevZ=stl.zIndex
+stl.zIndex=9999
+ifr.css.zIndex=9998
+st.width = "" + winWidth() + "px"
+st.height = "" + winHeight() + "px"
+st.display="block"
+var p=getPos(o.layer)
+ifr.move(p.x,p.y)
+ifr.resize(o.getWidth(),o.getHeight())
+if (!o.isFromButton)
+o.showGrab()
+return false
+}
+,mouseMoveCB : function(e)
+{
+// PRIVATE
+var o=this, lyr=o.layer, mod=o.mod
+if (o.isFromButton)
+{
+if (o.isHori)
+{
+var x = eventGetX(e), ox=o.grabStartx
+if ((x < ox - 3) || (x > ox + 3))
+o.isFromButton = false
+}
+else
+{
+var y = eventGetY(e), oy=o.grabStarty
+if ((y < oy - 3) || (y > oy + 3))
+o.isFromButton = false
+}
+if (!o.isFromButton)
+o.showGrab()
+}
+if (!o.isFromButton)
+{
+if (o.allowGrab)
+{
+var x=o.isHori?Math.max(0,o.grabStartPosx-o.grabStartx+eventGetX(e)):null
+var y=o.isHori?null:Math.max(0,o.grabStartPosy-o.grabStarty+eventGetY(e))
+if (o.isHori)
+{
+if (o.min!=null) x=Math.max(x,o.min)
+if (o.max!=null) x=Math.min(x,o.max)
+}
+else
+{
+if (o.min!=null) y=Math.max(y,o.min)
+if (o.max!=null) y=Math.min(y,o.max)
+}
+eventCancelBubble(e)
+o.move(x,y)
+getPos(o.layer)
+if (o.buttonCB)
+{
+var bCss=o.getButtonLyr().style
+if (bCss.display!="none")
+bCss.display="none"
+}
+o.iframe.move(x,y)
+}
+}
+}
+,mouseUpCB : function (e)
+{
+var o=this,lyr=o.layer,mod=o.mod,stl=lyr.style
+stl.backgroundImage=''
+stl.zIndex=o.prevZ
+var ifr=o.iframe
+ifr.move(-100,-100)
+ifr.resize(1,1)
+ifr.setDisplay(false)
+eventCancelBubble(e)
+var st=mod.style
+st.display="none"
+st.width='0px'
+st.height='0px'
+if (o.buttonCB)
+o.getButtonLyr().style.display=""
+if (o&&(o.isFromButton))
+{
+if (o.buttonCB)
+o.buttonCB()
+o.isFromButton=false
+}
+if (o.allowGrab&&(!o.isFromButton))
+{
+if (o.resizeCB)
+o.resizeCB(parseInt(lyr.style.left),parseInt(lyr.style.top))
+}
+}
+,showGrab : function()
+{
+this.iframe.setDisplay(true)
+}
+,setCollapsed : function (collapsed,tooltip)
+{
+this.collapsed=collapsed
+this.setButtonImage(false,tooltip)
+}
+,enableGrab : function(bEnable)
+{
+var o=this
+o.allowGrab=bEnable
+if (o.css)
+o.css.cursor=o.allowGrab?(o.isHori?_resizeW:_resizeH):"default"
+}
+,setMinMax : function(min,max)
+{
+// Set the range in pixels
+// min [int] minimum value
+// min [int] maximum value
+this.min=min
+this.max=max
+}
+,setButtonImage : function(isRollover,tooltip)
+{
+// PRIVATE
+var o=this
+o.getImgOffset(isRollover)
+o.tooltipButton=tooltip
+if (o.layer)
+{
+var buttonLyr = o.getButtonLyr();
+if (buttonLyr)
+{
+changeSimpleOffset(buttonLyr,o.dx,o.dy,null,tooltip)
+}
+}
+}
+,getImgOffset : function (isRollover)
+{
+// PRIVATE
+var o=this
+if (o.isHori)
+{
+o.dx=(o.collapsed?12:0)+(isRollover?6:0)
+o.dy=0
+}
+else
+{
+o.dy=(o.collapsed?12:0)+(isRollover?6:0)
+o.dx=0
+}
+}
+,getButtonLyr : function()
+{
+// PRIVATE
+var o = this;
+if (o.buttonLyr==null)
+o.buttonLyr=getLayer("grabImg_"+o.id)
+return o.buttonLyr;
+}
+,buttonMouseDownCB : function(e)
+{
+// PRIVATE
+var o=this
+o.isFromButton=true
+return false
+}
+,buttonMouseUpCB : function(e)
+{
+// PRIVATE
+this.mouseUpCB(e)
+}
+,buttonMouseOverCB : function(e)
+{
+// PRIVATE
+this.setButtonImage(true)
+return false
+}
+,buttonMouseOutCB : function(e)
+{
+// PRIVATE
+this.setButtonImage(false)
+return false
+}
+})
+}
+function new_GrabberWidget(prms)
+{
+JITCreate_class_GrabberWidget()
+return new class_GrabberWidget(prms)
+}
+function newGrabberWidget(id,resizeCB,x,y,w,h,isHori,buttonCB,buttonTooltip)
+{
+// CONSTRUCTOR - DEPRECATED (use new_GrabberWidget instead)
+return new_GrabberWidget({
+id:id, 
+resizeCB:resizeCB,
+x:x,
+y:y,
+w:w,
+h:h,
+isHori:isHori,
+buttonCB:buttonCB,
+buttonTooltip:buttonTooltip
+});
+}
+function JITCreate_class_MultiSplitZoneWidget()
+{
+JITCreate_class_Widget()
+if (window.class_MultiSplitZoneWidget == null) window.class_MultiSplitZoneWidget = Class.create(class_Widget,
+{
+initialize : function ($super, prms)
+{
+$super(prms)
+var o = this
+// Parameters parsing
+o.resizeCB = Widget_param(prms, "resizeCB", null) // Callback when split has changed
+o.width    = Widget_param(prms, "width", 200)
+o.height   = Widget_param(prms, "height", 200)
+o.isHori   = Widget_param(prms, "isHori", true)// Layout
+o.panes    = Widget_param(prms, "panes", [{min:10, dim:97, overflow:"auto", html:"", hidden:false}, {min:10, dim:97, overflow:"auto", html:"", hidden:false}])
+o.paneLayers = []
+o.splitLayers = []
+o.checkIntegrity()
+}
+,getSplitThickness : function()
+{
+    return 6;
+}
+,init : function($super, layer)
+{
+// init
+$super(layer)
+var o=this, tBody=o.layer.childNodes[0], len=o.panes.length
+// The pane layers are the layers that handle contents. 
+// The split layers are the layers that allow resize. There are one less that panes
+for (var i=0; i<len; i++)
+{
+var j = i*2, l
+// get Pane layer
+l = o.getSubLayer(tBody, j)
+o.paneLayers.push(l)
+// Get Split layer
+if (i < len-1)
+{
+l = o.getSubLayer(tBody, j+1)
+o.splitLayers.push(l)
+l.setAttribute("layerIndex", ""+i)
+addEvent(l, 'mousedown', o.splitDown)
+l.style.cursor = o.isHori ? _resizeW : _resizeH
+}
+}
+if (o.resizeCB)
+o.resizeCB()
+}
+,getSubLayer : function(tBody, i)
+{
+// Get a pane layer or a split layer
+return (this.isHori) ? tBody.childNodes[0].childNodes[i].childNodes[0] : tBody.childNodes[i].childNodes[0].childNodes[0]
+}
+,getHTML : function()
+  {
+// HTML Generation
+  var o=this, s=[], len=o.panes.length
+  s.push('<table style="width:'+o.width+'px;height:'+o.height+'px" id="'+o.id+'" cellspacing="0" cellpadding="0" border="0"><tbody>')
+  if (o.isHori)
+  {
+  s.push('<tr>')
+  for (var i=0; i<len; i++)
+  {
+// Pane zone
+s.push('<td><div '+o.getPaneStyle(i)+'>')
+s.push(o.panes[i].html)
+s.push('</div></td>')
+// Split zone
+if (i < len-1)
+{
+s.push('<td><div '+o.getSplitStyle(i)+'>')
+s.push('<div onmousedown="return false" class="horizSplitZoneImg" style="overflow:hidden;margin-top:'+o.getSplitImgMargin()+'px;"></div>')
+s.push('</div></td>')
+}
+            }  
+  s.push('</tr>')
+  }
+  else
+  {
+  for (var i=0; i<len; i++)
+  {
+// Pane zone
+s.push('<tr><td><div '+o.getPaneStyle(i)+'>')
+s.push(o.panes[i].html)
+s.push('</div></td></tr>')
+// Split zone
+if (i < len-1)
+{
+s.push('<tr><td><div '+o.getSplitStyle(i)+'>')
+s.push('<div onmousedown="return false" class="vertSplitZoneImg" style="overflow:hidden;margin-'+(_rtl ? 'right' : 'left')+':'+o.getSplitImgMargin()+'px;"></div>')
+s.push('</div></td></tr>')
+}
+            }  
+  }
+  s.push('</tbody></table>')
+  return s.join('')
+  }
+,getPaneStyle : function(i)
+{
+// style for the pane DIV tag
+var o=this, pane = o.panes[i]
+return 'style="overflow:'+pane.overflow+';width:' + (o.isHori ? pane.dim : o.width) + 'px;height:' + (o.isHori ? o.height : pane.dim) + 'px;display:' + (pane.hidden ? 'none' : 'block') + ';"'
+}
+,getPanes : function()
+{
+return this.panes
+}
+,getSplitStyle : function(i)
+{
+// style for the split DIV tag
+var o=this, pane = o.panes[i]
+return 'style="overflow:hidden;width:' + (o.isHori ? o.getSplitThickness() : o.width) + 'px;height:' + (o.isHori ? o.height : o.getSplitThickness()) + 'px;display:' + (pane.hidden ? 'none' : 'block') + ';"'
+}
+,getZoneDimensions : function(i)
+{
+// return a dimension object {width, height}
+var o=this, pane = o.panes[i]
+return o.isHori ? {width: pane.dim, height:o.height} : {width: o.width, height:pane.dim}
+}
+    ,getSplitImgMargin : function()
+    {
+return Math.max(0, (this.isHori ? this.height : this.width)/2 - 15)
+    }
+,resize : function ($super, width, height)
+{
+// Attention, size can't be
+var o=this
+if (width != null)  o.width=width
+if (height != null) o.height=height
+o.checkIntegrity()
+$super(o.width, o.height)
+o.resizeSubLayers()
+if (o.resizeCB)
+o.resizeCB()
+}
+,resizeSubLayers : function()
+{
+// PRIVATE
+var o=this
+if (o.layer)
+{
+var len=o.panes.length
+for (var i=0; i<len; i++)
+{
+var pane=o.panes[i], dim = o.getZoneDimensions(i), next=o.getNextVisiblePaneIdx(i, true)
+// If a pane have been hidden/shown
+// we need to recalculate the next/prev pane dimension
+if (pane.hasChanged) {
+delete pane.hasChanged
+if (pane.hidden)
+{
+if (next == -1) next=o.getNextVisiblePaneIdx(i, false)
+if (next!=-1)
+{
+o.panes[next].dim += (o.panes[i].dim + o.getSplitThickness())
+o.resizeSubLayers()
+return
+}
+}
+else
+{
+if (next == -1) next=o.getNextVisiblePaneIdx(i, false)
+if (next!=-1)
+{
+if (o.panes[next].dim < o.panes[i].dim + o.getSplitThickness()) {
+total = o.panes[next].dim
+half = Math.floor(total/2)
+o.panes[i].dim = half
+o.panes[next].dim = Math.max(0, total - half - o.getSplitThickness())
+}
+else {
+o.panes[next].dim -= (o.panes[i].dim + o.getSplitThickness())
+}
+o.resizeSubLayers()
+return
+}
+}
+}
+// Resize the pane zone
+var layer = o.paneLayers[i]
+var css = layer.style
+css.display = pane.hidden ? "none" : "block"
+if (pane.hidden) {
+css.display = "none"
+}
+else {
+css.display = "block"
+css.width = "" + dim.width + "px"
+css.height = "" + dim.height + "px"
+}
+// Resize the split zone
+if (i < o.splitLayers.length) {
+var layer = o.splitLayers[i]
+var css = layer.style
+// If the pane is hidden or the split is the last visible, hide it
+if (pane.hidden || next==-1) {
+css.display = "none"
+}
+else {
+css.display = "block"
+if (o.isHori) {
+css.height = "" + dim.height + "px"
+layer.childNodes[0].style.marginTop = "" + o.getSplitImgMargin()+"px"
+}
+else {
+css.width = "" + dim.width + "px"
+layer.childNodes[0].style.marginLeft = "" + o.getSplitImgMargin()+"px"
+}
+}
+}
+}
+}
+}
+,setPaneHTML : function(i, html)
+{
+var o=this
+o.panes[i].html = html
+if (o.layer) o.paneLayers[i].innerHTML = html
+}
+,getTotalPaneDim : function()
+{
+// PRIVATE
+var o=this, panes=o.panes, len=panes.length
+var dim = 0
+for (var i=0; i<len; i++)
+{
+var pane = panes[i]
+if (!pane.hidden) {
+dim += pane.dim
+if (i < len-1) dim += o.getSplitThickness()
+}
+}
+return dim
+}
+,getWidgetDim : function()
+{
+return this.isHori ? this.width : this.height
+}
+,setWidgetDim : function(dim)
+{
+if (this.isHori)
+this.width = dim
+else 
+this.height = dim
+}
+,checkMinSizes : function()
+{
+var o=this, panes=o.panes, len=panes.length
+for (var i=0; i<len; i++) {
+var pane = panes[i]
+pane.dim = Math.max(pane.min, pane.dim)
+}
+}
+,checkIntegrity : function()
+{
+  // PRIVATE
+var o=this
+// Step1 : Chech the min dimension for each pane
+o.checkMinSizes()
+// Step2 : Resize the panes from right to left to fit the widget dim
+dim=o.getWidgetDim(), total=o.getTotalPaneDim(), panes=o.panes, len=panes.length
+for (var i=len-1; i>=0; i--) {
+if (dim != total) {
+var pane = panes[i]
+if (!pane.hidden) {
+var delta=total-dim
+pane.dim = Math.max(pane.min, pane.dim - delta)
+total = o.getTotalPaneDim()
+}
+}
+else break
+}
+}
+,splitDown : function(e)
+{
+// PRIVATE - mouse handler on splitter
+var o=getWidget(this), i=parseInt(this.getAttribute("layerIndex"))
+window._currSplitCapture = o
+var next=o.getNextVisiblePaneIdx(i, true)
+o.oldDim1 = o.panes[i].dim
+o.oldDim2 = o.panes[next].dim
+o.splitIdx = i
+o.mouse = {x:eventGetX(e), y:eventGetY(e)}
+    o.createCapture(i)
+return false;
+}
+,splitMove : function(e)
+{
+// PRIVATE - mouse handler on splitter
+var o=window._currSplitCapture, i=o.splitIdx
+o.current = {x:eventGetX(e), y:eventGetY(e)}
+o.recalculate(i)
+if (o.resizeCB) o.resizeCB()
+}
+,splitUp : function(e)
+{
+// PRIVATE - mouse handler on splitter
+var o=window._currSplitCapture, i=o.splitIdx
+o.splitMove(e)
+o.removeCapture(i)
+delete o.oldPos
+delete o.mouse
+delete o.current
+delete o.splitIdx
+delete o.oldDim1
+delete o.oldDim2
+window._currSplitCapture = null
+window._currSplitCaptureIdx = null
+}
+,createCapture : function(i)
+{
+// PRIVATE - Capture mouse events
+var o=this
+if (_ie) {
+var l = o.splitLayers[i]
+l.setCapture(true)
+addEvent(l, 'mousemove', o.splitMove)
+addEvent(l, 'mouseup', o.splitUp)
+}
+else {
+if (o.capture==null)
+o.capture=getLayer('capture_'+o.id)
+if (o.capture==null) {
+append(_curDoc.body, '<div id="capture_'+o.id+'" onselectstart="return false" style="z-index:10000;position:absolute;top:0px;left:0px;width:'+winWidth()+'px;height:'+winHeight()+'px">'+(_ie?img(_skin+'../transp.gif','100%','100%',null):'')+'</div>')
+var l = o.capture = getLayer('capture_'+o.id)
+addEvent(l, 'mousemove', o.splitMove)
+addEvent(l, 'mouseup', o.splitUp)
+}
+else {
+var css=o.capture.style
+css.width=""+winWidth()+"px"
+css.height=""+winHeight()+"px"
+}
+var b=_curDoc.body
+addEvent(b, 'mousemove', o.splitMove)
+addEvent(b, 'mouseup', o.splitUp)
+var css = o.capture.style 
+css.display = "block"
+css.cursor = o.isHori ? _resizeW : _resizeH
+}
+}
+,removeCapture : function(i)
+{
+// PRIVATE - release capture on mouse events
+var o=this
+if (_ie) o.splitLayers[i].releaseCapture()
+else o.capture.style.display="none"
+var l = _ie ? o.splitLayers[i] : _curDoc.body
+removeEvent(l, 'mousemove', o.splitMove)
+removeEvent(l, 'mouseup', o.splitUp)
+}
+,getNextVisiblePaneIdx : function(i, right)
+{
+if (right){
+for (var j=i+1; j<this.panes.length; j++) {
+var pane = this.panes[j]
+if (!pane.hidden) return j
+}
+}
+else {
+for (var j=i-1; j>=0; j--) {
+var pane = this.panes[j]
+if (!pane.hidden) return j
+}
+}
+return -1
+}
+,recalculate : function(i)
+{
+// PRIVATE - Recalculate pane sizes taking constraints in account
+var o=this, delta = o.isHori ? (_rtl ? o.mouse.x-o.current.x : o.current.x-o.mouse.x) : (o.current.y-o.mouse.y)
+var pane1 = o.panes[i], j=o.getNextVisiblePaneIdx(i, true)
+if (j == -1) return
+var pane2 = o.panes[j]
+if (delta < 0) {
+var old = pane1.dim
+pane1.dim = Math.max(o.oldDim1 + delta, pane1.min)
+pane2.dim = pane2.dim + old - pane1.dim
+}
+else {
+var old = pane2.dim
+pane2.dim = Math.max(o.oldDim2 - delta, pane2.min)
+pane1.dim = pane1.dim + old - pane2.dim
+}
+if(o.pos)
+{
+o.pos = pane1.dim + 3;
+}
+o.resizeSubLayers()
+}
+,hidePane : function(i, hide)
+{
+    var o=this, pane = o.panes[i]
+    if (pane.hidden != hide) {
+pane.hidden = hide
+pane.hasChanged = true
+o.resizeSubLayers()
+if (o.resizeCB)
+o.resizeCB()
+    }
+}
+,zoneIsDisplayed : function(i)
+{
+    return this.panes[i].hidden
+}
+})
+}
+function new_MultiSplitZoneWidget(prms)
+{
+JITCreate_class_MultiSplitZoneWidget()
+return new class_MultiSplitZoneWidget(prms)
+}
+function JITCreate_class_SplitZoneWidget()
+{
+JITCreate_class_MultiSplitZoneWidget()
+if (window.class_SplitZoneWidget == null) window.class_SplitZoneWidget = Class.create(class_MultiSplitZoneWidget,
+{
+initialize : function ($super, prms)
+{
+var o = this
+prms = prms ? prms : {}
+prms.width  = Widget_param(prms, "width", 200)
+prms.height = Widget_param(prms, "height", 200)
+prms.isHori = Widget_param(prms, "isHori", true)
+var dim  = prms.isHori ? prms.width : prms.height
+var over = Widget_param(prms, "overflow", "auto")
+var pos  = Widget_param(prms, "pos", 100)
+o.pos      = Widget_param(prms, "pos", 100) // must be between 0 and width
+prms.panes = [
+    {min:Math.max(0, Widget_param(prms, "min", 20)), dim:pos-3, overflow:over, html:"", hidden:false}
+   ,{min:20, dim:dim - pos - 3, overflow:over, html:"", hidden:false}
+]
+$super(prms)
+}
+,setMinimalDimensions : function(firstMin, secondMin)
+{
+this.panes[0].min = firstMin
+this.panes[1].min = secondMin
+}
+,setFirstZoneHTML : function(html)
+{
+this.setPaneHTML(0, html)
+}
+,setSecondZoneHTML : function(html)
+{
+this.setPaneHTML(1, html)
+}
+,getFirstZoneDimensions : function()
+{
+// Returns an object: width, height
+return this.getZoneDimensions(0)
+}
+,getSecondZoneDimensions : function()
+{
+// Returns an object: width, height
+return this.getZoneDimensions(1)
+}
+,hideOneZone : function(zoneIndex, hide)
+{
+if (zoneIndex == 0) this.hidePane(0, hide)
+if (zoneIndex == 2) this.hidePane(1, hide)           
+}
+,zoneIsDisplayed : function(zoneIndex)
+{
+if (zoneIndex == 0) return !this.panes[0].hidden
+if (zoneIndex == 2) return !this.panes[1].hidden
+return true
+}
+,getFirstZoneIndex : function()
+{
+return 0
+}
+,getSecondZoneIndex : function()
+{
+return 2
+}
+,resizePos: function (pos)
+{
+var o=this;
+var total=o.getTotalPaneDim();
+if(pos==null || pos>=total) return;
+//if(pos==null) return;
+o.panes[0].dim = pos-3;
+o.panes[1].dim = total - pos - 3;
+o.pos=pos;
+o.checkIntegrity();
+o.resizeSubLayers()
+if (o.resizeCB)
+o.resizeCB()
+}
+})
+}
+function new_SplitZoneWidget(prms)
+{
+JITCreate_class_SplitZoneWidget()
+return new class_SplitZoneWidget(prms)
+}
+function JITCreate_class_ButtonWidget()
+{
+JITCreate_class_Widget()
+if (window.class_ButtonWidget == null) window.class_ButtonWidget = Class.create(class_Widget,
+{
+initialize : function ($super, prms)
+{
+// CONSTRUCTOR
+// id       [String] button ID
+// label    [String Optional] button label
+// w        [int optional] : text zone minimal width
+// hlp      OBSOLETE
+// tooltip  [String Optional] button tooltip
+// tabIndex [int Optional] for 508/IE : tab index for keyboard navigation
+// src      [String Optional] : the combined image url
+// w        [int Optional] the visible image part width
+// dx       [int Optional] the horizontal offset in image
+// dy       [int Optional] the vertical offset in image
+// disDx    : [int - optional] horizontal offset for disabled state
+// disDy    : [int - optional] vertical offset for disabled state
+$super(prms)
+var o=this
+    // Parameters parsing
+    o.label = Widget_param(prms, "label", null);
+    o.cb = Widget_param(prms, "clickCB", null);
+    o.width = Widget_param(prms, "width", null);
+    o.hlp = Widget_param(prms, "hlp", null);
+    o.tooltip = Widget_param(prms, "tooltip", null);
+    o.tabIndex = Widget_param(prms, "tabIndex", null);
+    o.margin = Widget_param(prms, "margin", 0)
+// icon parameters
+    o.url = Widget_param(prms, "src", null)
+    o.w = Widget_param(prms, "w", 16);
+    o.h = Widget_param(prms, "h", 16);
+    o.dx = Widget_param(prms, "dx", 0);
+    o.dy = Widget_param(prms, "dy", 0);
+    o.disDx =  Widget_param(prms, "disDx", o.dx)
+o.disDy =  Widget_param(prms, "disDy", o.dy)        
+    o.imgRight = Widget_param(prms, "imgRight", false)
+// Private fields
+    o.imgFile=_skin+"buttons.png"
+    o.icnid='BtnIcon_'+o.id
+    o.realbtnid='RealBtn_'+o.id
+    o.txtid='Btn_'+o.id
+    o.leftimgid="BtnLImg_"+o.id
+    o.rightimgid="BtnRImg_"+o.id
+    o.centerimgid="BtnCImg_"+o.id
+    o.icnBackgdid="BtnIcnBakgdImg_"+o.id
+o.isGray = false
+    o.isDefault = false 
+    o.txt = null
+    o.icn = null
+    o.btn = null    
+    o.extraStyle = ""
+    o.leftImg=null;
+    o.centerImg=null;
+    o.rightImg=null;
+    o.icnBackgd=null;
+}
+,init : function ($super, layer)
+{
+var o=this
+$super(layer)
+o.txt=getLayer(o.txtid)
+o.icn=getLayer(o.icnid)
+o.btn=getLayer(o.realbtnid)
+o.leftImg=getLayer(o.leftimgid)
+o.centerImg=getLayer(o.centerimgid)
+o.rightImg=getLayer(o.rightimgid)
+o.icnBackgd=getLayer(o.icnBackgdid)
+if (o.layer)
+{
+addEvent(o.layer, "mouseover", o.mover)
+addEvent(o.layer, "mouseout",  o.mover)
+addEvent(o.layer, "mousedown", o.mdown)
+addEvent(o.layer, "mouseup",   o.mdown)
+addEvent(o.layer, "keydown",   o.keydownCB)
+addEvent(o.layer, "click",     o.clickCB)
+if (_ie) {
+addEvent(o.layer, "dblclick", o.clickCB)
+}
+o.layer.onselectstart=function() {return false;}
+o.layer.ondragstart=function() {return false;}
+}
+}
+,getHTML : function()
+{
+// returns [String] widget HTML
+var o=this
+var isDefaultSty=(o.isDefault && !o.isGray);
+var addPar=' style="'+o.extraStyle+'cursor:'+_hand+';margin-left:'+o.margin+'px; margin-right:'+o.margin+'px; "  '
+var tip=attr('title', o.tooltip);
+var lnkB='<a '+attr('id',o.txtid)+' '+tip+' '+attr('tabindex',o.tabIndex)+' href="javascript:void(0)" class="wizbutton">'
+var l=(o.label!=null)
+var r=isDefaultSty?_buttonFocus:_buttonNormal;
+// Layout
+var totalW = o.width ? (o.width+14) : null // CAN BE NULL
+var imgTDWidth = o.url ? ((!l&&(totalW!=null)) ? (Math.max(o.w,totalW)+6) : (o.w+6)) : 0 // ALWAYS DEFINED
+var textTDWidth = totalW ? Math.max(totalW - 10 - imgTDWidth, 0) : null // CAN BE NULL
+var textWidth = totalW ? Math.max(totalW - 16 - imgTDWidth, 0) : null // CAN BE NULL
+// Image part of the button - only if the url parameter is defined
+var cls='btnBase '+_buttonCSS[r][_buttonMid]
+var im=(o.url ? ('<td '+ attr('id',o.icnBackgdid)+attr('class',cls)+' align="center" style="'+(l?(o.imgRight?'"padding-left:6px"':'"padding-right:6px"'):'"padding-left:3px;padding-right:3px"') + '" width="'+ imgTDWidth +'">'+(l?'':lnkB)+
+simpleImgOffset(o.url,o.w,o.h, (o.isGray?disDs:o.dx), (o.isGray?o.disDy:o.dy), o.icnid, null,(l?'':o.tooltip),'cursor:'+_hand)+
+(l?'':'</a>')+'</td>'):'')
+// HTML Table begin
+var s= new Array, i = 0 
+s[i++] = '<table '+attr("width", totalW)+attr("height", _buttonImgHeight)+attr('id',o.id)+' '+addPar+' border="0" cellspacing="0" cellpadding="0"><tr valign="middle">'; 
+var buttonLeft  = _rtl ? _buttonRight : _buttonLeft
+var buttonRight = _rtl ? _buttonLeft  : _buttonRight
+// Left button border
+cls='btnBase '+_buttonCSS[r][buttonLeft]
+s[i++] = '<td width=5 '+attr('id',o.leftimgid)+attr('class',cls)+'><div style="width:5px" '+attr('class','btnLRBase')+'></div></td>';
+// left image
+var cls='btnBase btnMidBase '+_buttonCSS[r][_buttonMid]
+s[i++] = (o.imgRight?'':im)
+// Center zone
+s[i++] = (l ?('<td  '+attr("width", textTDWidth)+attr('id',o.centerimgid)+' align="center" class="'+cls+'" >'+
+'<button style="overflow:visible;'+sty("width", textWidth)+'" class="wizbuttoninner" '+attr('id', o.realbtnid)+
+(o.isGray?'disabled="disabled" ':' ')+tip+' ' + attr('tabindex',o.tabIndex)+'>'+
+'<nobr '+attr('id',o.txtid)+ attr('class','wizbutton')+ '>'+convStr(o.label)+'</nobr>'+
+'</button>'+'</td>'):'')
+// right image
+s[i++] =(o.imgRight?im:'')
+// Left button border
+cls='btnBase '+_buttonCSS[r][buttonRight]
+s[i++] ='<td width=5 '+attr('id',o.rightimgid)+attr('class',cls)+'><div style="width:5px" '+attr('class','btnLRBase')+'></div></td>';
+// HTML Table End
+s[i++] ='</tr></table>'
+return s.join('')
+}
+    ,setDisabled : function(d)
+{
+// Enable/Disable d [boolean] if true disable the button
+var o=this,newCur=d?'default':_hand
+o.isGray=d
+if (o.layer)
+{
+var newClassName=d?'wizbuttongray':'wizbutton'
+// Ensure the button state hasn't changed to avoid unnecessary processing
+// The text className is a safe way to do the test
+if (o.txt.className!=newClassName)
+{
+o.txt.className=newClassName
+o.txt.style.cursor=newCur
+o.css.cursor=newCur
+if (o.btn)
+{
+o.btn.disabled=d?true:false
+o.btn.style.cursor=newCur
+}
+if (o.icn)
+{
+changeSimpleOffset(o.icn,o.isGray?o.disDx:o.dx,o.isGray?o.disDy:o.dy)
+o.icn.style.cursor=newCur
+if ("A" == o.icn.parentNode.tagName) { // disable focus for link (A) 
+o.icn.parentNode.tabIndex = d?-1:0
+}
+}
+o.changeLook();
+}
+}
+}  
+,setText : function (str)
+{
+// Changes the button text
+this.txt.innerHTML=convStr(str)
+}
+,changeImg : function(dx,dy,disDx,disDy,url,tooltip)
+{
+var o=this
+if (url) o.url=url
+if (dx!=null) o.dx=dx
+if (dy!=null) o.dy=dy
+if (disDx!=null) o.disDx=disDx
+if (disDy!=null) o.disDy=disDy
+if (tooltip!=null) o.tooltip=tooltip
+if (o.icn)
+changeSimpleOffset(o.icn,o.isGray?o.disDx:o.dx,o.isGray?o.disDy:o.dy, o.url, o.tooltip)
+}
+,isDisabled : function()
+{
+return this.isGray
+}
+,setDefaultButton : function(isDefault)
+{
+var o=this;
+o.isDefault = (isDefault==null) ? true : isDefault
+if (o.layer)
+o.changeLook();
+}
+,executeCB : function ()
+{
+// PRIVATE internal click event handler
+var o=this
+if (o.cb)
+{
+if (typeof o.cb!="string")
+o.cb()
+else
+eval(o.cb)
+}
+}
+,setTooltip : function(tooltip)
+{
+var o=this
+o.tooltip=tooltip
+if (o.layer) o.layer.title=tooltip
+if (o.txt) o.txt.title=tooltip
+if (o.btn) o.btn.title=tooltip
+if (o.icn) o.icn.title=tooltip
+}
+,setCB : function(cb)
+{
+this.cb=cb;
+}
+    ,mover : function(evt)
+{
+var o=getWidget(this);
+if (o.isDisabled()) return false;
+var evt=getEvent(evt);
+var over=(evt && evt.type=="mouseover")?true:false;
+var r=over?_buttonHover:(o.isDefault?_buttonFocus:_buttonNormal);
+return o.changeBackgndImg(r);
+}
+    ,mdown : function(evt)
+{
+var o=getWidget(this);
+if (o.isDisabled()) return false;
+evt=getEvent(evt);
+var down=(evt && evt.type=="mousedown")?true:false;
+var r=down?_buttonPressed:(o.isDefault?_buttonFocus:_buttonNormal);
+return o.changeBackgndImg(r);
+}
+    ,changeBackgndImg : function(r)
+{
+var o=this;
+var buttonLeft  = _rtl ? _buttonRight : _buttonLeft
+var buttonRight = _rtl ? _buttonLeft  : _buttonRight
+removeAddClassName(o.leftImg, _buttonCSS[r][buttonLeft], 1);
+if (o.centerImg) removeAddClassName(o.centerImg, _buttonCSS[r][_buttonMid], 2);
+removeAddClassName(o.rightImg, _buttonCSS[r][buttonRight], 1);
+if (o.icnBackgd) removeAddClassName(o.icnBackgd, _buttonCSS[r][_buttonMid], 1);
+return false;
+}
+    ,changeLook : function()
+{
+var o=this;
+var r=o.isGray?_buttonDisabled:(o.isDefault?_buttonFocus:_buttonNormal);
+o.changeBackgndImg(r);
+}
+    ,keydownCB : function(e)
+{
+var o=getWidget(this);
+var k=eventGetKey(e);
+if((k == 13 || k == 32)  && o.cb )//enter && spacebar
+{
+eventCancelBubble(e);
+}
+return true;
+}
+    ,clickCB : function()
+{
+// PRIVATE internal click event handler
+var o=getWidget(this);
+if (o && !o.isGray)
+{
+safeSetFocus(o.btn);
+o.setTimeout("delayClickCB", 1)
+}
+return _webKit ? true: false;
+}
+,delayClickCB : function()
+{
+this.executeCB();
+}
+})
+}
+function new_ButtonWidget(prms)
+{
+JITCreate_class_ButtonWidget()
+return new class_ButtonWidget(prms)
+}
+function newButtonWidget(id,label,clickCB,width,hlp,tooltip,tabIndex,margin,src,w,h,dx,dy,imgRight,disDx,disDy)
+{
+return new_ButtonWidget({id: id, label: label, clickCB: clickCB, width: width, hlp: hlp,
+tooltip: tooltip, tabIndex: tabIndex, margin: margin, src: src, w: w, h: h, dx: dx, dy: dy,
+imgRight: imgRight, disDx: disDx, disDy: disDy})
+}
+function JITCreate_class_ScrolledZoneWidget()
+{
+JITCreate_class_Widget()
+if (window.class_ScrolledZoneWidget == null) window.class_ScrolledZoneWidget = Class.create(class_Widget,
+{
+initialize : function ($super, prms)
+{
+// id      [String] the id for DHTML processing
+// borderW [int] widget border width
+// padding [int] widget padding
+// w       [int] widget width, including borders
+// h       [int] widget height, including borders
+// Return  [ScrolledZoneWidget] the instance
+$super(prms)
+    var o = this;
+    o.borderW = Widget_param(prms, "borderW", 1)
+    o.padding = Widget_param(prms, "padding", 0)
+    o.w = Widget_param(prms, "w", null)
+    o.h = Widget_param(prms, "h", null)
+o.bgClass =  Widget_param(prms, "bgClass", 'solidBorder') // insetBorder or solidBorder
+}
+,resize : function($super, w,h)
+{
+// w [int]  widget width, including borders
+// h [int]  widget height, including borders
+var o=this
+if (w!=null) o.w=w
+if (h!=null) o.h=h
+if (_dtd4)
+{
+var ofs=2*(o.borderW+o.padding)
+if (w!=null) w=Math.max(0,w-ofs)
+if (h!=null) h=Math.max(0,h-ofs)
+}
+$super(w,h)
+}
+    ,beginHTML : function()
+{
+var w=this.w,h=this.h;
+var ofs=_dtd4?2*(this.borderW+this.padding):0
+if (typeof(w)=="number")
+{
+if (_dtd4)
+w=Math.max(0,w-ofs)
+w=""+w+"px"
+}
+if (typeof(h)=="number")
+{
+if (_moz || _dtd4)
+h=Math.max(0,h-ofs)
+h=""+h+"px"
+}
+var st=(_ie8CompView?'':'position:relative;')+'border-width:'+this.borderW+'px;padding:'+this.padding+'px;'+sty("width",w)+sty("height",h)+'overflow:auto';
+var s= '<div align="'+(_rtl ? 'right' : 'left')+'" onselectstart="return false" class="' + this.bgClass + '" id="'+this.id+'" style="'+st+'">'
+return s;
+}
+    ,endHTML : function()
+{
+return '</div>'
+}
+    ,getHTML : function()
+{
+var o=this
+return (o.beginHTML() + (o.initialHTML?o.initialHTML:'') + o.endHTML());
+}
+})
+}
+function new_ScrolledZoneWidget(prms)
+{
+JITCreate_class_ScrolledZoneWidget()
+    return new class_ScrolledZoneWidget(prms)
+}
+function newScrolledZoneWidget(id,borderW,padding,w,h,bgClass)
+{
+    return new_ScrolledZoneWidget({id:id, borderW:borderW, padding:padding, w:w, h:h, bgClass:bgClass})
+}
+function new_TooltipWidget(prms)
+{
+var id = Widget_param(prms, "id","theGlobalTooltip"); 
+if(id == "theGlobalTooltip")
+{
+if ((window._theGlobalTooltip!=null))
+    {
+    var o=window._theGlobalTooltip
+        o.maxw = Widget_param(prms, "maxw", null)
+        o.maxh = Widget_param(prms, "maxh", null)
+        return o; 
+    }
+}
+else
+{
+var l=getLayer(id),o=getWidget(l);
+if(o!=null)return o;
+}
+var o=new_Widget({id: id})
+    o.maxw = Widget_param(prms, "maxw", null)
+    o.maxh = Widget_param(prms, "maxh", null)
+o.getPrivateHTML=TooltipWidget_getPrivateHTML
+    o.init=TooltipWidget_init
+    o.oldShow=o.show
+    o.show=TooltipWidget_show
+    o.hide=TooltipWidget_hide
+    o.setPos=TooltipWidget_setPos    
+o.inputs=null
+o.eventWin=_curWin
+    preloadImg(_skin+'../swap.gif')
+    o.isShown=false;
+if(id == "theGlobalTooltip")
+window._theGlobalTooltip=o  
+    return o;
+}
+function newTooltipWidget(maxw,maxh)
+{
+// constructor @deprecated use new_TooltipWidget instead
+return new_TooltipWidget({
+maxw:maxw,
+maxh:maxh
+})
+}
+function TooltipWidget_init()
+{
+//cancels the default init behaviour
+}
+function TooltipWidget_getPrivateHTML()
+{
+// aria-live is for 508 compliancy
+var o=this   
+return getBGIframe('tipIframe_'+o.id)+img(_skin + "../transp.gif",null,null,null,'id="tipBgImage_'+o.id+'" class="tooltipBG"')+
+    '<div aria-live="polite" class="dragTooltip" id="'+o.id+'" style="visibility:hidden;z-index:10000;position:absolute;top:0px;left:0px,display:none"'+attr("width",o.w)+attr("height",o.h)+'></div>'+
+'<img width="11" height="11" border="0" hspace="0" vspace="0" src="'+_skin+'../swap.gif" id="swap_'+o.id+'" style="position:absolute;top:0px;left:0px;display:none;z-index:10000;">'
+}
+function TooltipWidget_show(show,str,url,w,h,dx,dy,isHTML, e, x, y, tipWidth, yAlt)
+{
+var o=this
+oldWin=_curWin
+_curWin=_tooltipWin
+_curDoc=_tooltipWin.document
+// object not init yet, 2 cases
+if (o.layer==null)
+{
+o.layer=getLayer(o.id)
+// another instance hasn't written it's HTML yet
+if (o.layer==null)
+{
+targetApp(o.getPrivateHTML())
+o.layer=getLayer(o.id)
+}
+o.css=o.layer.style
+o.swapLayer=getLayer("swap_"+o.id)
+o.iframe=newWidget('tipIframe_'+o.id)
+o.iframe.init()
+o.bgImage=newWidget('tipBgImage_'+o.id);
+o.bgImage.init();
+o.layer._widget=o.widx;
+}
+dx=dx!=null?dx:0
+dy=dy!=null?dy:0
+if (show)
+{
+var maxw = tipWidth?tipWidth:o.maxw
+var s=null
+if (url)
+s=simpleImgOffset(url,w,h,dx,dy,null,null,null,(null != str)?"margin-right:4px;margin-left:0px;":"",'top')
+o.css.visibility=_hide;
+o.css.display="block";
+   if (null != str) {
+        o.setHTML('<table class="tooltipBorder" '+(tipWidth?'width="100%" ':'')+'cellspacing="0" cellpadding="0"><tr valign="middle">'+(s?'<td align="center">'+s+'</td>':'')+'<td >'+(isHTML?str:convStr(str))+'</td></tr></table>');
+o.layer.childNodes[0].style.width=tipWidth?(''+tipWidth+'px'):'';      
+} else {
+o.setHTML(s);
+}
+o.setPos(null,e,x,y,yAlt)
+o.css.visibility=_show;
+o.iframe.setDisplay(true)
+o.bgImage.setDisplay(true)
+o.isShown=true;
+}
+else
+{
+o.oldShow(false)
+o.setHTML('')
+o.move(0,0)
+o.swapLayer.style.display="none"
+o.iframe.setDisplay(false)
+o.bgImage.setDisplay(false)
+o.isShown=false;
+}
+_curWin=oldWin
+_curDoc=_curWin.document
+}
+function TooltipWidget_hide()
+{
+var o=this
+o.show(false)
+}
+function TooltipWidget_setPos(shift,e,x,y,yAlt)
+{
+var o=this
+if (o.layer==null)
+return
+if ((x==null)&&(y==null))
+{
+if (e) {
+var x=absxpos(e), y=absypos(e)
+} else {
+var ew=o.eventWin,x=ew.event.x+_curDoc.body.scrollLeft,y=ew.event.y+_curDoc.body.scrollTop
+}
+x+=_tooltipDx
+y+=_tooltipDy
+var dX = 27, x2 = x+dX
+if (_rtl) {
+x2 = Math.max(0, (x -dX -o.getWidth()))
+} 
+o.move(x2,y+10);
+o.iframe.move(x2,y+10);
+o.iframe.resize(o.getWidth(),o.getHeight())
+o.bgImage.move(x2,y+10);
+o.bgImage.resize(o.getWidth(),o.getHeight())
+var c=o.swapLayer.style;
+c.display=shift?"":"none"
+if (shift)
+{
+y+=18
+x+=14
+if (_moz)
+{
+c.left=""+x+"px"
+c.top=""+y+"px"
+}
+else
+{
+c.pixelLeft=x
+c.pixelTop=y
+}
+}
+}
+else
+{
+var w=o.getWidth(), h=o.getHeight();
+var x2=x+w,y2=y+h;
+if (x2-winScrollX()>winWidth())
+{
+x=Math.max(0,winWidth()-w)
+}
+if (y2-winScrollY()>winHeight())
+{
+if (yAlt!=null)
+y = yAlt-h;
+else
+y=winHeight()-h
+y=Math.max(0, y)
+}
+if (_rtl) {
+x=Math.max(0,x-w)
+} 
+o.move(x,y)
+o.iframe.move(x,y);
+o.iframe.resize(w,h)
+o.bgImage.move(x,y);
+o.bgImage.resize(w,h);
+}
+}
+function initTooltipWin(tooltipWin)
+{
+_tooltipWin=tooltipWin
+}
+function setTooltipOffset(dx,dy)
+{
+_tooltipDx=dx
+_tooltipDy=dy
+}
+function JITCreate_class_ComboWidget()
+{
+JITCreate_class_Widget()
+if (window.class_ComboWidget == null) window.class_ComboWidget = Class.create(class_Widget,
+{
+initialize : function ($super, prms)
+{
+// id       [String]   the id for DHTML processing
+// changeCB [Function] calback when selection is changed by the user
+// noMargin [boolean - optional] default is false - no margin (else 10px left margin )
+// width    [int - optional] combo width (if not, auto width)
+// tooltip  [String - optional] combo tooltip for 508
+// Return   [ComboWidget] the widget instance
+$super(prms)
+var o = this
+    o.changeCB = Widget_param(prms, "changeCB", null)
+    o.noMargin = Widget_param(prms, "noMargin", null)
+    o.tooltip = Widget_param(prms, "tooltip", null)
+    o.width = Widget_param(prms, "width", null)
+if (null != o.width) o.width = ''+o.width+'px'
+o.isDisabled=false
+    o.multi=false
+    o.undef=false
+    o.isCombo=true
+    o.size=1
+    o.selValBeforDisabled=null
+    o.undefId=o.id+"__undef"
+    o.disabledId=o.id+"__disabled"
+}
+,init : function($super, layer)
+{
+var o=this
+if (o.layer) removeAllEvents(o.layer)
+$super(layer)
+addEvent(o.layer, "change", o.internalChangeCB)
+addEvent(o.layer, "dblclick", o.internalDblClickCB)
+addEvent(o.layer, "keyup", o.internalKeyUpCB)
+addEvent(o.layer, "keydown", o.internalKeyDownCB)
+}
+,internalChangeCB : function(e)
+{
+// PRIVATE
+var o=getWidget(this); if(o.changeCB) o.changeCB(e)
+}
+,internalDblClickCB : function(e)
+{
+// PRIVATE
+var o=getWidget(this); if(o.dblClickCB) o.dblClickCB(e)
+}
+,internalKeyUpCB : function(e)
+{
+// PRIVATE
+var o=getWidget(this);if(o.keyUpCB) o.keyUpCB(e)
+}
+,internalKeyDownCB : function(e)
+{
+// PRIVATE
+var k=eventGetKey(e)
+var o=getWidget(this)
+// be careful ! usefull for dialog box close by Enter ou Escape keypressed
+if(o.isCombo && (k==27 || k==13))//Escape ou Enter
+{
+eventCancelBubble(e);
+}
+else if(k==13 && o.keyUpCB) // Enter can be attached to an action in listwidget
+{
+eventCancelBubble(e);
+}
+}
+,getHTML : function(inner)
+{
+return this.beginHTML()+(inner?inner:'')+this.endHTML()
+}
+    ,beginHTML : function()
+{
+var o=this,_extrCmbS=((_moz&&!_saf&&!o.isCombo)?'font-size:12px;':'')
+return '<select '+(o.multi?'multiple':'')+' '+(o.noMargin?'style="'+sty("width",o.width)+_extrCmbS+'"':'style="'+sty("width",o.width)+'margin-left:10px;'+_extrCmbS+'"')+' class="listinputs" '+attr('id',o.id)+attr('name',o.id)+attr('title',o.tooltip)+'size="'+o.size+'">'
+}
+    ,endHTML : function()
+{
+return '</select>'
+}
+    ,add : function (s, val, sel, id, grayed, tooltip, pos)
+{
+// Add an item in the list. if pos is ommited, will add at the end
+// s       [String]              : the text
+// val     [String]              : the item identifier
+// sel     [boolean - optional]  : select the new item (False if ommitted)
+// id      [String - optional]   : HTML id - not necessary most of the time
+// grayed  [boolean - optional]  : the item color will be gray (false if ommitted)
+// tooltip [String - optional]   : tooltip
+// pos     [int >=-1 <= item count - optional] : position (-1 means at the end)
+var e=this.layer,opt=null
+// Add item
+if (pos != null && pos!= -1 && pos != e.options.length)
+{
+if ((typeof pos !="number") || pos < 0 || pos > e.options.length || ""+pos=="NaN")
+return false
+opt=_curDoc.createElement('option');
+if (_ie)
+{
+e.options.add(opt, pos)
+}
+else
+{
+var posOpt = e.options[pos]
+e.insertBefore(opt, posOpt);
+}
+}
+else
+{
+opt=_curDoc.createElement('option');
+if (_ie)
+e.options.add(opt);
+else
+e.appendChild(opt);
+}
+// Set text content
+if (opt.innerText!=null)
+opt.innerText=s;
+else
+opt.innerHTML=convStr(s);
+// Set other attributes
+opt.value=val;
+if(id!=null)
+opt.id=id;
+if (sel)
+opt.selected=true;
+if (grayed) 
+{
+opt.style.color='gray'
+}
+if (tooltip)
+opt.title=tooltip;
+return opt;
+}
+    ,del : function(i)
+{
+var e=this.layer
+if (i==null || typeof(i)=="undefined")
+e.options.length=0
+else
+{
+if (_ie) e.remove(i)
+else e.options[i]=null
+this.select(i)
+}
+}
+    ,getSelection : function()
+{
+var e=this.layer,i=e.selectedIndex;if (i<0) return null;var ret=new Object;ret.index=i;ret.value=e.options[i].value;ret.text=e.options[i].text;return ret
+}
+    ,select : function(i)
+{
+var o=this,e=o.layer,len=e.options.length
+if (i==null) e.selectedIndex=-1
+if ((i<0)||(i>=len))
+i=len-1
+if (i>=0)
+e.selectedIndex=i
+o.setUndefined(false)
+}
+    ,valueSelect : function(v)
+{
+var o=this,e=o.layer,opts=e.options,len=opts.length
+for (var i=0;i<len;i++)
+{
+if (opts[i].value==v)
+{
+    opts[i].selected=true
+o.setUndefined(false)
+break;
+}
+}
+}
+    ,getCount : function()
+{
+return this.layer.options.length
+}
+,setDisabled : function ComboWidget_setDisabled($super, d,addEmptyElt)
+{
+// Disable/enable the combo box
+// d [boolean] if true disable
+// addEmptyElt [boolean - Optional] if true the combo display a blank value - default is true
+$super(d)
+var o=this, alreadyDisabled = o.isDisabled;
+o.isDisabled=d;
+addEmptyElt = (addEmptyElt == null ? true : addEmptyElt)
+if (d==true)
+{
+if (!alreadyDisabled)
+o.selValBeforDisabled = o.getSelection()
+if (addEmptyElt)
+{
+var old=getLayer(o.disabledId)
+if (old==null)
+o.add('','',true,o.disabledId);
+else
+o.layer.selectedIndex=old.index
+}
+}
+else
+{
+o.delByID(o.disabledId)
+if (o.selValBeforDisabled != null && o.selValBeforDisabled.value != null)
+o.valueSelect (o.selValBeforDisabled.value)
+}
+}
+    ,setUndefined : function(u)
+{
+var o=this
+o.undef=u;
+if (u==true)
+{
+var old=getLayer(o.undefId)
+if (old==null)
+o.add('','',true,o.undefId);
+else
+o.layer.selectedIndex=old.index
+}
+else
+o.delByID(o.undefId)
+}
+    ,delByID : function(id)
+{
+// PRIVATE
+var opt=getLayer(id)
+if (opt!=null)
+this.del(opt.index)
+opt=null
+}
+    ,move : function(delta)
+{
+    var e=this.layer,i=e.selectedIndex,len=e.options.length-1,newI=i+delta
+    if ((i==-1)||(newI<0)||(newI>len))
+        return false
+    var oldOpt = e.options[i],newOpt = e.options[newI]
+    var oldVal=oldOpt.value,oldHTML=oldOpt.innerHTML,oldID=oldOpt.id,newID=newOpt.id,oldColor=oldOpt.style.color,newColor=newOpt.style.color
+    oldOpt.value=newOpt.value
+    oldOpt.innerHTML=newOpt.innerHTML
+    newOpt.id=null
+    oldOpt.id=newOpt.id
+oldOpt.style.color=newColor
+    newOpt.value=oldVal
+    newOpt.innerHTML=oldHTML
+    newOpt.id=oldID
+newOpt.style.color=oldColor
+    e.selectedIndex=newI
+    return true
+}
+    ,findByValue : function(val)
+{
+//return the data if already exist else null
+var o=this,e=o.layer,opts=e.options,len=opts.length
+for (var i=0;i<len;i++)
+{
+if (opts[i].value==val)
+{
+var ret=new Object;
+ret.index=i;
+ret.value=e.options[i].value;
+return ret
+}
+}
+return null
+}
+    ,findByText : function(txt)
+{
+//return the data if already exist else null
+var o=this,e=o.layer,opts=e.options,len=opts.length
+for (var i=0;i<len;i++)
+{
+if (opts[i].text==txt)
+{
+var ret=new Object;
+ret.index=i;
+ret.value=e.options[i].value;
+ret.txt=e.options[i].txt;
+return ret
+}
+}
+return null
+}
+    ,getValue : function(i)
+{
+//return the value at index i
+var o=this,e=o.layer,opts=e.options,len=opts.length
+if(i==null || i<0 || i>len)  return null;
+var ret=new Object;
+ret.index=i;
+ret.value=e.options[i].value;
+return ret
+}
+    ,isGrayed : function(i)
+{
+//return true is the option is gray
+var o=this,e=o.layer,opts=e.options,len=opts.length
+if(i==null || i<0 || i>len)  return false;
+return (e.options[i].style.color=="gray")
+}
+})
+}
+function new_ComboWidget(prms)
+{
+JITCreate_class_ComboWidget()
+return new class_ComboWidget(prms)
+}
+function newComboWidget(id,changeCB,noMargin,width,tooltip)
+{
+    return new_ComboWidget({id:id, changeCB:changeCB, noMargin:noMargin, width:width, tooltip:tooltip})
+}
+function JITCreate_class_ListWidget()
+{
+JITCreate_class_ComboWidget()
+if (window.class_ListWidget == null) window.class_ListWidget = Class.create(class_ComboWidget,
+{
+initialize : function ($super, prms)
+{
+$super(prms)
+var o = this
+o.dblClickCB = Widget_param(prms, "dblClickCB", null)
+o.keyUpCB = Widget_param(prms, "keyUpCB", null)
+o.size = Widget_param(prms, "lines", null)
+o.multi = Widget_param(prms, "multi", null)
+o.isCombo=false
+o.noMargin=true
+}
+,getMultiSelection : function()
+{
+var e=this.layer,rets=new Array,len=e.options.length
+for (var i=0;i<len;i++)
+{
+var opt=e.options[i]
+if (opt.selected)
+{
+var ret=new Object;
+ret.index=i;ret.value=opt.value;ret.text=opt.text;rets[rets.length]=ret
+}
+}
+return rets
+}
+,setUndefined : function(u)
+{
+var o=this
+o.undef=u;
+if (u==true){
+o.layer.selectedIndex = -1
+}
+}
+,isUndefined : function()
+{
+return (this.layer.selectedIndex == -1)
+}
+,unselect : function()
+{
+var e=this.layer,len=e.options.length
+for (var i=0;i<len;i++){
+e.options[i].selected = false;
+}
+}
+,change : function(multi,lines)
+{
+var o=this
+if(multi!=null)
+{
+o.multi=multi
+o.layer.multiple=multi
+}
+if(lines!=null)
+{
+o.size=lines
+o.layer.size=lines
+}
+}
+})
+}
+function new_ListWidget(prms)
+{
+JITCreate_class_ListWidget()
+return new class_ListWidget(prms)
+}
+function newListWidget(id,changeCB,multi,width,lines,tooltip,dblClickCB,keyUpCB)
+{
+// constructor @deprecated use new_ListWidget instead
+return new_ListWidget({id:id, changeCB:changeCB, multi:multi, width:width,
+lines:lines, tooltip:tooltip, dblClickCB:dblClickCB, keyUpCB:keyUpCB})
+}
+function JITCreate_class_InfoWidget()
+{
+JITCreate_class_Widget()
+if (window.class_InfoWidget == null) window.class_InfoWidget = Class.create(class_Widget,
+{
+initialize : function ($super, prms)
+{
+$super(prms)
+var o = this
+o.title = Widget_param(prms, "title", "")
+o.boldTitle = Widget_param(prms, "boldTitle", "")
+o.text = Widget_param(prms, "text", "")
+o.height =  Widget_param(prms, "height", (_dtd4?52:72))    //infoArea:padding top & bottom:10px
+    o.textLayer=null
+}
+    ,getHTML : function()
+{
+var o=this, s=[]
+var paddingLeft = _rtl ? "padding-right:5px" : "padding-left:5px"
+s.push('<div class="infoArea" style="overflow:hidden;'+sty("width",o.width)+sty("height",""+o.height+"px")+'" id="'+o.id+'">')
+s.push('<div style="white-space:nowrap;">'+img(_skin+'../help.gif',16,16,'top',null,_helpLab))
+var title = '<span  style="'+paddingLeft+'" id="infotitle_'+o.id+'">'+convStr(o.title)+'</span>'
+var boldTitle = '<span style="'+paddingLeft+'" class="dlgContentbold" id="infotitlebold_'+o.id+'">'+convStr(o.boldTitle) + '</span>'
+if (_rtl)
+s.push(boldTitle + title)
+else
+s.push(title + boldTitle)
+s.push('</div>')
+// 20:infozone & infoArea
+s.push('<div class="infozone" id="infozone_'+o.id+'" style="margin-top:2px;height:'+(o.height-18-(_dtd4?10:20))+'px;overflow'+(_ie?'-y':'')+':auto">')
+s.push(convStr(o.text,false,true)+'</div>')
+s.push('</div>')
+return s.join("")
+}
+    ,setText : function(text,isHTML)
+{
+var o=this
+text=text?text:""
+o.text=text
+if (o.layer)
+{
+var l=o.textLayer
+if (l==null)
+l=o.textLayer=getLayer('infozone_'+o.id)
+if (l) l.innerHTML=isHTML?text:convStr(text,false,true)
+}
+}
+    ,setTitle : function(text)
+{
+var o=this
+text=text?text:""
+o.title=text
+if (o.layer)
+{
+var l=o.titleLayer
+if (l==null)
+l=o.titleLayer=getLayer('infotitle_'+o.id)
+if (l) l.innerHTML=convStr(text)
+}
+}
+    ,setTitleBold : function(text)
+{
+var o=this
+text=text?text:""
+o.boldTitle=text
+if (o.layer)
+{
+var l=o.titleLayerBold
+if (l==null)
+l=o.titleLayerBold=getLayer('infotitlebold_'+o.id)
+if (l) l.innerHTML=convStr(text)
+}
+}
+    ,resize : function($super, w,h)
+{
+var o=this;
+if (w!=null) o.w=w
+if (h!=null) o.h=h
+$super(w,h)
+if (o.layer)
+{
+var l=o.textLayer
+if (l==null)
+l=o.textLayer=getLayer('infozone_'+o.id)
+if (l)
+{
+if (o.h!=null) l.style.height=""+Math.max(0, o.h-(_dtd4?28:18))+"px"
+}
+}
+}
+})
+}
+function new_InfoWidget(prms)
+{
+JITCreate_class_InfoWidget()
+    return new class_InfoWidget(prms)
+}
+function newInfoWidget(id,title,boldTitle,text,height)
+{
+// constructor @deprecated use new_InfoWidget instead
+return new_InfoWidget({id:id, title:title, boldTitle:boldTitle, text:text, height:height})
+}
+function JITCreate_class_CheckWidget()
+{
+JITCreate_class_Widget()
+if (window.class_CheckWidget == null) window.class_CheckWidget = Class.create(class_Widget,
+{
+initialize : function ($super, prms)
+{
+$super(prms)
+var o = this
+    o.text = Widget_param(prms, "text", null)
+    o.convText = Widget_param(prms, "bconvtext", null)
+    o.bnbsp = Widget_param(prms, "bnbsp", false)
+    o.changeCB = Widget_param(prms, "changeCB", null)
+    o.bold = Widget_param(prms, "bold", null)
+    o.imgUrl = Widget_param(prms, "imgUrl", null)
+    o.imgW = Widget_param(prms, "imgW", 16)
+    o.imgH = Widget_param(prms, "imgH", 16)
+    o.height=Widget_param(prms, "height", 20)  
+    o.noMargin=Widget_param(prms, "noMargin", false)
+    o.inputCheckCls=Widget_param(prms, "inputCheckCls", null);
+    o.nobr=Widget_param(prms, "nobr", true);
+    o.checked = Widget_param(prms, "check", false)
+o.nonCheckableText = Widget_param(prms, "nonCheckableText", false)
+o.idCheckbox='check_'+o.id
+o.checkbox=null
+o.kind='checkbox'
+o.name=o.idCheckbox    
+o.layerClass=('dlgContent'+(o.bold?'bold':''))
+   }
+,init : function($super, layer)
+{
+var o=this
+if (o.checkbox)
+removeAllEvents(o.checkbox)
+$super(layer)
+o.checkbox=getLayer(o.idCheckbox)
+addEvent(o.checkbox, "click", o.internalChangeCB)
+if (o.layer)
+{
+        if (o.labelLyr==null)
+    o.labelLyr=getLayer('label_'+o.id)
+            }
+}
+,getHTML : function()
+{
+var o=this,cls=o.layerClass, s=[]
+var sty=o.noMargin?'':' style="margin:'+(_moz?3:0)+'px" ';
+var inputCls=o.inputCheckCls?' class="'+o.inputCheckCls+'" ':'';
+s.push('<table border="0" onselectstart="return false" cellspacing="0" cellpadding="0" class="'+cls+'"'+attr('id',o.id)+'>')
+s.push('<tr valign="middle">')
+s.push('<td style="height:'+o.height+'px;width:21px"><input '+sty+inputCls)
+s.push(' type="'+o.kind+'"'+attr('id',o.idCheckbox)+attr('name',o.name)+ (o.checked?' checked ':'') +'>')
+s.push('</td>')
+var labelFor = o.nonCheckableText?'':(' for="'+o.idCheckbox+'"')
+s.push((o.imgUrl?'<td><label style="padding-left:2px" '+ labelFor + '>'+img(o.imgUrl,o.imgW,o.imgH)+'</label></td>':''))
+s.push('<td>'+(o.nobr?'<nobr>':'')+'<label style="padding-left:'+ (o.imgUrl?4:2) +'px" id="label_'+o.id+'"'+ labelFor +'>')
+//s.push((o.convText?convStr(o.text):o.text)+'</label>'+(o.nobr?'</nobr>':'')+'</td>')
+s.push((o.convText?convStr(o.text,o.bnbsp):o.text)+'</label>'+(o.nobr?'</nobr>':'')+'</td>')
+s.push('</tr></table>')
+return s.join("")
+}
+,noTextGetHTML : function()
+{
+var o=this
+return '<table border="0" onselectstart="return false" cellspacing="0" cellpadding="0" title= "'+ convStr(o.tooltip) + '" ' + attr('id',o.id) +'>' +
+'<tr>'+
+'<td align="center"><label style="padding-left:2px" for="'+o.idCheckbox+'">'+img(o.imgUrl,o.imgW,o.imgH, null, null, convStr(o.tooltip))+'</label></td>'+
+'</tr>'+
+'<tr>'+
+'<td align="center"><input style="margin:'+(_moz?3:0)+'px" ' +
+'type="'+o.kind+'"'+attr('id',o.idCheckbox)+attr('name',o.name)+'>' +
+'</td>'+
+'</tr></table>'
+}
+,internalChangeCB : function(e)
+{
+var o=getWidget(this)
+o.uncheckOthers()
+if (o.changeCB) o.changeCB(e)
+}
+,setText : function(s)
+{
+var o=this
+o.text=s
+if (o.layer)
+{
+if (o.labelLyr==null)
+o.labelLyr=getLayer('label_'+o.id)
+o.labelLyr.innerHTML=o.convText?convStr(s):s
+}
+}
+,check : function(c)
+{
+this.checkbox.checked=c;
+if(c)this.uncheckOthers()
+}
+,isChecked : function()
+{
+return this.checkbox?this.checkbox.checked:false
+}
+,setDisabled : function(d) 
+{
+    var o=this;
+    o.checkbox.disabled=d;
+    if(_moz){        
+        if (o.inputCheckCls){
+            o.checkbox.className=(d?'mclDisabledCheckBox':o.inputCheckCls)
+        }
+        else{        
+            o.checkbox.className=(d?'dialogzone':'')
+        }
+    }
+    if (o.labelLyr)
+    {
+        o.labelLyr.className=d?"disabledTxtInCheck":"";
+    }
+}
+,isDisabled : function()
+{
+return this.checkbox.disabled
+}
+,uncheckOthers : function()
+{
+// redefined in radio
+}
+,isIndeterminate : function()
+{
+return this.checkbox.indeterminate
+}
+,setIndeterminate : function(b)
+{
+this.checkbox.indeterminate=b
+}
+,getValue : function()
+{
+return this.isChecked()
+}
+})
+}
+function new_CheckWidget(prms)
+{
+JITCreate_class_CheckWidget()
+    return new class_CheckWidget(prms)
+}
+function newCheckWidget(id,text,changeCB,bold,imgUrl,imgW,imgH,bconvtext,bnbsp)
+{
+// CONSTRUCTOR - @DEPRECATED (use new_CheckWidget instead)
+return new_CheckWidget({id:id, text:text, changeCB:changeCB, bold:bold, imgUrl:imgUrl, imgW:imgW, imgH:imgH, bconvtext:bconvtext, bnbsp:bnbsp})
+}
+function JITCreate_class_RadioWidget()
+{
+JITCreate_class_CheckWidget()
+if (window.class_RadioWidget == null) window.class_RadioWidget = Class.create(class_CheckWidget,
+{
+initialize : function ($super, prms)
+{
+$super(prms)
+var o = this
+var group = Widget_param(prms, "group", null)
+o.name = group
+    if (_RadioWidget_groups[group]==null) _RadioWidget_groups[group]=[]
+    o.groupInstance=_RadioWidget_groups[group]
+    var g=o.groupInstance
+    o.groupIdx=g.length
+    g[g.length]=o
+o.kind='radio'
+}
+,uncheckOthers : function()
+{
+var g=this.groupInstance,idx=this.groupIdx,len=g.length
+for (var i=0;i<len;i++)
+{
+if (i!=idx)
+{
+var c=g[i].checkbox
+if(c) c.checked=false
+}
+}
+}
+})
+}
+function new_RadioWidget(prms)
+{
+    JITCreate_class_RadioWidget()
+return new class_RadioWidget(prms)
+}
+function newRadioWidget(id,group,text,changeCB,bold,imgUrl,imgW,imgH,bconvtext,bnbsp)
+{
+return new_RadioWidget({id:id, group:group, text:text, changeCB:changeCB, bold:bold, imgUrl:imgUrl, imgW:imgW, imgH:imgH, bconvtext:bconvtext,bnbsp:bnbsp})
+}
+function JITCreate_class_IconNoTextCheckWidget()
+{
+JITCreate_class_CheckWidget()
+if (window.class_IconNoTextCheckWidget == null) window.class_IconNoTextCheckWidget = Class.create(class_CheckWidget,
+{
+initialize : function ($super, prms)
+{
+$super(prms)
+this.tooltip = Widget_param(prms, "tooltip", "")
+}
+,getHTML : function ()
+{
+return this.noTextGetHTML()
+}
+})
+}
+function new_IconNoTextCheckWidget(prms)
+{
+JITCreate_class_IconNoTextCheckWidget()
+    return new class_IconNoTextCheckWidget(prms)
+}
+function newIconNoTextCheckWidget(id,changeCB,imgUrl,imgW,imgH,tooltip)
+{
+return new_IconNoTextCheckWidget({id:id, changeCB:changeCB, imgUrl:imgUrl, imgW:imgW, imgH:imgH, tooltip:tooltip})
+}
+function JITCreate_class_IconNoTextRadioWidget()
+{
+JITCreate_class_RadioWidget()
+if (window.class_IconNoTextRadioWidget == null) window.class_IconNoTextRadioWidget = Class.create(class_RadioWidget,
+{
+initialize : function ($super, prms)
+{
+$super(prms)
+this.tooltip = Widget_param(prms, "tooltip", "")
+}
+,getHTML : function ()
+{
+return this.noTextGetHTML()
+}
+})
+}
+function new_IconNoTextRadioWidget(prms)
+{
+JITCreate_class_IconNoTextRadioWidget()
+return new class_IconNoTextRadioWidget(prms)
+}
+function newIconNoTextRadioWidget(id,group,changeCB,imgUrl,imgW,imgH,tooltip)
+{
+return new_IconNoTextRadioWidget({id:id, group:group, changeCB:changeCB, imgUrl:imgUrl, imgW:imgW, imgH:imgH, tooltip:tooltip})
+}
+function JITCreate_class_TextFieldWidget()
+{
+JITCreate_class_Widget()
+if (window.class_TextFieldWidget == null) window.class_TextFieldWidget = Class.create(class_Widget,
+{
+initialize : function ($super, prms)
+{
+// id       : [String]              the icon id for DHTML processing
+// changeCB : [Function - optional] callback called when selecting or typing a value
+// maxChar  : [int]                 text field maximum length
+// keyUpCB  : [Function - optional] calback when a key
+// enterCB  : [Function - optional] calback when enter key pressed
+// noMargin : [boolean - optional]  default is false - no margin (else 10px left margin )
+// tooltip  : [String - optional]   arrow icon tooltip
+// width    : [int - optional]      widget width, including borders
+// focusCB  : [Function - optional] calback when Widget get the focus
+// blurCB   : [Function - optional] calback when Widget lose the focus 
+$super(prms)
+var o = this
+o.tooltip= Widget_param(prms, "tooltip", null)
+    o.changeCB= Widget_param(prms, "changeCB", null)
+    o.maxChar= Widget_param(prms, "maxChar", null)
+    o.keyUpCB= Widget_param(prms, "keyUpCB", null)
+    o.enterCB= Widget_param(prms, "enterCB", null)
+   o.imeCB= Widget_param(prms, "imeCB", null)
+    o.width= Widget_param(prms, "width", 60)
+o.width = Math.max(10, o.width)
+    o.focusCB= Widget_param(prms, "focusCB", null)
+    o.blurCB= Widget_param(prms, "blurCB", null)
+    o.clickCB= Widget_param(prms, "clickCB", null)
+// don't use, these are internal parameters
+o.hasOuterClass= Widget_param(prms, "hasOuterClass", (_google || _ff || _ff2))
+o.className= Widget_param(prms, "className", ((o.hasOuterClass)?"textInnerField":"textOuterField")) 
+o.outerClassName="textOuterField"
+o.noMargin= o.param(prms, "noMargin", (o.hasOuterClass?true:null))
+// for change value label display 
+    o.hasChangeValueLabel= false
+o.valueChangeLabel = null
+o.labelValue = null
+o.noMargin= Widget_param(prms, "noMargin", (o.hasOuterClass?true:null))
+    o.disabled=false
+    o.readOnly=false
+    o.oldValue=""
+    o.helpTxt=''
+    o.isHelpTxt=false
+    o.enterCancelBubble=true
+o.inputLyr=null;
+}
+,init : function($super, layer)
+{
+var o=this
+if (o.layer) removeAllEvents(o.layer)
+if (layer && o.hasOuterClass)
+layer = layer.childNodes[0]
+$super(layer)
+    o.inputLyr=o.layer
+o.inputLyr.value=""+ (o.oldValue != "")? o.valueToLabel(o.oldValue): ""
+if (o.helpTxt && !o.oldValue) o.setHelpTxt(o.helpTxt)
+if (o.autocompleteUrl) new Ajax.Autocompleter(o.id, o.id+'_autocomplete', o.autocompleteUrl, {"paramName":"txt"})
+addEvent(o.layer, "change", o.internalChangeCB)
+addEvent(o.layer, "focus", o.internalFocusCB)
+addEvent(o.layer, "blur", o.internalBlurCB)
+addEvent(o.layer, "keydown", o.internalKeyDownCB)
+addEvent(o.layer, "keyup", o.internalKeyUpCB)
+addEvent(o.layer, "click", o.internalClickCB)
+}
+,getHTML : function()
+{
+ var o=this, id=' id="'+o.id+'" name="'+o.id+'"', s=[]
+if (o.hasOuterClass) s.push('<div class="'+o.outerClassName+'" style="height:18px;width:'+(o.width-2)+'px">')
+ s.push('<input'+(o.disabled?' disabled':'')+(o.readOnly?' readonly':'')+' oncontextmenu="event.cancelBubble=true;return true" style="')
+s.push(sty("width",""+(o.width-6)+"px")+(_dtd4?'padding-left:2px;padding-right:2px;':'') + (_dtd4?'height:16px;':'height:20px;') + 'padding-top:2px;padding-bottom:0px;margin-'+(_rtl ? 'right' : 'left')+':')
+s.push((o.noMargin?0:10)+'px;" ')
+s.push('type="text" '+attr('maxLength',o.maxChar))
+s.push(' ondragstart="event.cancelBubble=true;return true" onselectstart="event.cancelBubble=true;return true" class="'+o.className+'"')
+    s.push((id)+attr('title',o.tooltip)+' value="'+((o.oldValue!=null)?o.valueToLabel(o.oldValue):"")+'" />')
+if (o.hasOuterClass) s.push('</div>')
+ if (o.autocompleteUrl) s.push('<div id="'+o.id+'_autocomplete" class="autocomplete"></div>')
+ return s.join("")
+}
+,beforeChange : function()
+{
+}
+,internalKeyUpCB : function(e)
+{
+// PRIVATE
+var o=getWidget(this)
+if(!_IME)
+{
+    o.eraseHelpTxt()
+    if (eventGetKey(e)==13)
+    {
+    o.beforeChange()
+    if (o.enterCB) {
+    if (o.enterCancelBubble) eventCancelBubble(e)
+    o.enterCB(e)
+    }
+    return false
+    }
+    else if(o.keyUpCB) {
+    o.keyUpCB(e)
+    }
+    return true;
+}
+else if(o.imeCB){
+o.imeCB(e);
+}else{
+o.keyUpCB(e);
+}
+//ADAPT01720945 
+/*else if (_ie && _IME) {
+if (eventGetKey(e)==13)
+    {
+    o.beforeChange()
+    if (o.enterCB) {
+    if (o.enterCancelBubble) eventCancelBubble(e)
+    o.enterCB(e)
+    }
+    return false
+    }
+else
+    o.keyUpCB(e);
+}*/
+}
+,internalKeyDownCB : function(e)
+{
+// PRIVATE
+    isIME(e,this);
+var o=getWidget(this)
+var key=eventGetKey(e)
+o.eraseHelpTxt()
+var className = _ie?o.className:o.outerClassName
+if (key==13)
+{
+if (o.enterCB)
+{
+if (o.enterCancelBubble)
+eventCancelBubble(e)
+}
+// Force validation for int or float widgets (ADAPT01089068)
+o.setValue(o.inputLyr.value)
+return false
+}
+else if (key==8 || key==46)//back space
+{
+eventCancelBubble(e);
+// SRI - Incident 877351 / 2015 / <L4 BUG> Copy or Edit Selected value / SAP Delivered Support
+if (o.readOnly && e.preventDefault)
+e.preventDefault();
+}
+else if(key==38) // up arrow
+{
+if (className=="spinnerTextField")
+{
+var val = Number(o.labelToValue(o.inputLyr.value))
+if (val != NaN)
+{
+val += o.parentWidget.interval
+if (val >= o.max)
+val = o.max
+val=val.toFixed(o.parentWidget.precision);
+o.inputLyr.value = o.valueToLabel(val)
+} 
+}
+return false
+}
+else if(key==40) // down arrow
+{
+if (className=="spinnerTextField")
+{
+var val = Number(o.labelToValue(o.inputLyr.value))
+if (val != NaN)
+{
+val -= o.parentWidget.interval
+if (val <= o.min)
+val = o.min
+val=val.toFixed(o.parentWidget.precision);
+o.inputLyr.value = o.valueToLabel(val)
+} 
+}
+return false
+}
+else
+{
+if (key!=27) // 27 is Escape
+eventCancelBubble(e);
+}
+return true;
+}
+,internalClickCB : function() //BOEWEBI-14247 
+{
+// PRIVATE
+var o=getWidget(this)
+if (o.clickCB) o.clickCB()
+return true;
+}
+,internalFocusCB : function()
+{
+// PRIVATE
+var o=getWidget(this)
+o.eraseHelpTxt()
+if (o.focusCB) o.focusCB()
+}
+,internalBlurCB : function()
+{
+// PRIVATE
+var o=getWidget(this)
+o.beforeChange()
+if (o.blurCB) o.blurCB()
+}
+,internalChangeCB : function(e)
+{
+// PRIVATE
+var o=getWidget(this)
+o.eraseHelpTxt()
+o.beforeChange()
+if(o.changeCB) o.changeCB(e)
+}
+    ,resize : function TextFieldWidget_resize($super, w, h)
+{
+var o=this;
+if (o.layer)
+{
+if (o.hasOuterClass)
+{              
+            if (w!=null){
+                $super(w-6);
+o.layer.parentNode.style.width=''+(Math.max(0,w-2))+'px'
+            }
+}
+else {
+$super(w-6);
+}
+}
+}
+    ,getValue : function()
+{
+var o=this
+if (o.isHelpTxt) { 
+return ''
+}
+else {
+return o.inputLyr ? o.labelToValue(o.inputLyr.value) : o.oldValue
+}
+}
+    ,setValue : function(s)
+{
+var o=this
+if (o.inputLyr) {
+o.eraseHelpTxt()
+o.inputLyr.value=o.valueToLabel(s)
+} 
+else 
+o.oldValue=s
+}
+    ,intValue : function(nanValue)
+{
+var n=parseInt(this.getValue())
+return isNaN(n)?nanValue:n
+}
+    ,floatValue : function(nanValue)
+{
+var n=parseFloat(this.getValue())
+return isNaN(n)?nanValue:n
+}
+    ,intPosValue : function(nanValue)
+{
+var n=this.intValue(nanValue)
+return (n<0)?nanValue:n
+}
+,valueToLabel : function(valueToDisplay)
+{
+var o = this
+return (o.hasChangeValueLabel && valueToDisplay==o.valueChangeLabel)? o.labelValue : valueToDisplay
+}
+    ,labelToValue : function(labelValue)
+{
+var o = this
+return (o.hasChangeValueLabel && labelValue==o.labelValue)? o.valueChangeLabel : labelValue
+}
+,setLabelValue : function(value,label)
+{
+// If no parameters, reset to no label
+var o = this
+if(value != null && label != null)
+{
+o.labelValue = label
+o.valueChangeLabel = value
+o.hasChangeValueLabel = true
+}
+else
+{
+o.labelValue = null
+o.valueChangeLabel = null
+o.hasChangeValueLabel = false
+}
+}
+    ,select : function()
+{
+var o=this
+if (o.inputLyr)
+o.inputLyr.select()
+}
+    ,setDisabled : function(d)
+{
+var o=this
+o.disabled=d
+if (o.inputLyr)
+{
+o.inputLyr.disabled=d;
+o.inputLyr.style.color=d?"#7B8694":"black";
+    }
+}
+    ,setReadOnly : function(r)
+{
+var o=this
+o.readOnly=r
+if (o.inputLyr)
+{
+o.inputLyr.readOnly=r
+}
+}
+    ,setClasses : function(className)
+{
+if (className)
+{
+var o=this
+o.className=className
+if (o.inputLyr) {
+o.inputLyr.className=className
+}
+}
+}
+,setOuterClass : function(className)
+{
+if (!className) return;
+var o=this
+if (o.hasOuterClass)
+{
+o.outerClassName=className
+if (o.layer && o.layer.parentNode)
+o.layer.parentNode.className=className
+}
+else
+o.setClasses(className);
+}
+    ,setHelpTxt : function(h)
+{
+var o=this
+o.helpTxt=h
+if (o.inputLyr && (o.inputLyr.value == "")) 
+{
+o.isHelpTxt=true
+o.inputLyr.value=h
+o.inputLyr.style.color="#808080"
+}
+}
+    ,eraseHelpTxt : function()
+{
+// PRIVATE
+var o=this
+if (o.isHelpTxt) { 
+if (o.inputLyr) {
+o.inputLyr.value= ""
+o.inputLyr.style.color="black"
+}
+}
+o.isHelpTxt = false
+}
+    ,setAutocompleteUrl : function(url)
+{
+this.autocompleteUrl=url
+}
+,focus : function()
+{
+    safeSetFocus(this.inputLyr)
+}
+    ,setDisplay : function(d)
+{
+this.__hidden = !d
+var style=this.layer?this.layer.parentNode.style:null
+var css=this.hasOuterClass?style:this.css;
+if (css)
+css.display=d?"":"none"
+}
+    ,setClassName : function(className, outerClassName)
+    {
+        if (className)
+        {
+            this.className=className;
+        }   
+        if (outerClassName)
+        {
+            this.outerClassName=outerClassName;
+        }    
+    }   
+})
+}
+function new_TextFieldWidget(prms)
+{
+JITCreate_class_TextFieldWidget()
+    return new class_TextFieldWidget(prms)
+}
+function newTextFieldWidget(id,changeCB,maxChar,keyUpCB,enterCB,noMargin,tooltip,width,focusCB,blurCB)
+{
+return new_TextFieldWidget({id:id, changeCB:changeCB, maxChar:maxChar, keyUpCB:keyUpCB,
+enterCB:enterCB, noMargin:noMargin, tooltip:tooltip, width:width, focusCB:focusCB, blurCB:blurCB})
+}
+function JITCreate_class_IntFieldWidget()
+{
+JITCreate_class_TextFieldWidget()
+if (window.class_IntFieldWidget == null) window.class_IntFieldWidget = Class.create(class_TextFieldWidget,
+{
+initialize : function ($super, prms)
+{
+// id            : [String]              the icon id for DHTML processing
+// changeCB      : [Function - optional] callback called when selecting or typing a value
+// maxChar       : [int]                 text field maximum length
+// keyUpCB       : [Function - optional] calback when a key
+// enterCB       : [Function - optional] calback when enter key pressed
+// noMargin      : [boolean - optional]  default is false - no margin (else 10px left margin )
+// tooltip       : [String - optional]   arrow icon tooltip
+// width         : [int - optional]      widget width, including borders
+// customCheckCB : [Function - optional] calback check when the value change
+// focusCB       : [Function - optional] calback when Widget get the focus
+// blurCB        : [Function - optional] calback when Widget lose the focus
+// min        : [int - optional] min value
+// max        : [int - optional] max value
+$super(prms)
+var o = this
+o.min = Widget_param(prms, "min", -Number.MAX_VALUE)
+    o.max = Widget_param(prms, "max", Number.MAX_VALUE)
+    o.customCheckCB = Widget_param(prms, "customCheckCB", null) // Returns a boolean
+o.value=''
+ }
+,setMin : function(min)
+{
+if (!isNaN(min))
+this.min=min
+}
+    ,setMax : function(max)
+{
+if (!isNaN(max))
+this.max=max
+}
+    ,setValue : function(s)
+{
+var o=this,l=o.inputLyr
+s = '' + s
+if (s =='')
+{
+if (l)
+l.value= ''
+o.oldValue = ''
+return
+}
+var n=parseInt(s)
+var value = ''
+if (!isNaN(n) && (n >= o.min) && (n <= o.max) && ((o.customCheckCB==null) || o.customCheckCB(n))) {
+ value = n
+ o.oldValue = value
+} else {
+if (o.oldValue)
+value = o.oldValue
+}
+if (l)
+l.value= '' + value
+}
+    ,beforeChange : function()
+{
+var o=this
+o.setValue(o.inputLyr.value)
+}
+})
+}
+function new_IntFieldWidget(prms)
+{
+JITCreate_class_IntFieldWidget()
+return new class_IntFieldWidget(prms)
+}
+function newIntFieldWidget(id,changeCB,maxChar,keyUpCB,enterCB,noMargin,tooltip,width,customCheckCB,focusCB,blurCB)
+{
+return new_IntFieldWidget({id:id, changeCB:changeCB, maxChar:maxChar, keyUpCB:keyUpCB, enterCB:enterCB,
+noMargin:noMargin, tooltip:tooltip, width:width, customCheckCB:customCheckCB, focusCB:focusCB, blurCB:blurCB})
+}
+function JITCreate_class_FloatFieldWidget()
+{
+JITCreate_class_IntFieldWidget()
+if (window.class_FloatFieldWidget == null) window.class_FloatFieldWidget = Class.create(class_IntFieldWidget,
+{
+initialize : function ($super, prms)
+{
+// id            : [String]              the icon id for DHTML processing
+// changeCB      : [Function - optional] callback called when selecting or typing a value
+// maxChar       : [int]                 text field maximum length
+// keyUpCB       : [Function - optional] calback when a key
+// enterCB       : [Function - optional] calback when enter key pressed
+// noMargin      : [boolean - optional]  default is false - no margin (else 10px left margin )
+// tooltip       : [String - optional]   arrow icon tooltip
+// width         : [int - optional]      widget width, including borders
+// customCheckCB : [Function - optional] calback check when the value change
+// focusCB       : [Function - optional] calback when Widget get the focus
+// blurCB        : [Function - optional] calback when Widget lose the focus
+$super(prms)
+var o = this
+o.precision=10 // default precision !!is it enough?
+    o.sep='.' // default separator
+}
+,setValue : function(s,keepPrecision)
+{
+var o=this,l=o.inputLyr
+s = '' + s
+if (s =='')
+{
+if (l) l.value= ''
+o.oldValue = ''
+return
+}
+var n=parseFloat(s)
+value = ''
+if (!isNaN(n) && (n >= parseFloat(o.min)) && (n <= parseFloat(o.max)) && ((o.customCheckCB==null) || o.customCheckCB(n))) {
+value = '' + o.toPrecision(n,keepPrecision)
+o.oldValue = value
+} else {
+if (o.oldValue)
+value = o.oldValue
+}
+if (l) l.value = o.valueToLabel(value)
+}
+    ,setPrecision : function(p)
+{
+this.precision=p
+}
+    ,toPrecision : function(n, keepPrecision)
+{
+    var o=this
+    n = '' + n
+    if(keepPrecision)
+    {
+    n=n.replace(/\./,o.sep);
+    var v=Number(n);
+    v=v.toFixed(o.precision);
+    n=''+v;
+    n=n.replace(o.sep,'.');
+    return n;
+    }
+    else
+    {
+    var nAr = n.split(o.sep)
+    if (nAr.length == 1) return nAr[0]
+    var dec = (nAr[1].length >= o.precision)? nAr[1].substr(0, o.precision) : nAr[1]
+    return nAr[0] + o.sep + dec
+    }
+}
+    ,setSeparator : function(s)
+{
+this.sep=s
+}
+    ,beforeChange : function FloatFieldWidget_checkChangeCB()
+{
+var o=this
+o.setValue(o.inputLyr.value)
+}
+})
+}
+function new_FloatFieldWidget(prms)
+{
+    JITCreate_class_FloatFieldWidget()
+    return new class_FloatFieldWidget(prms)
+}
+function newFloatFieldWidget(id,changeCB,maxChar,keyUpCB,enterCB,noMargin,tooltip,width,customCheckCB,focusCB,blurCB)
+{
+return new_FloatFieldWidget({id:id, changeCB:changeCB, maxChar:maxChar, keyUpCB:keyUpCB, enterCB:enterCB,
+noMargin:noMargin, tooltip:tooltip, width:width, customCheckCB:customCheckCB, focusCB:focusCB, blurCB:blurCB})
+}
+function JITCreate_class_TextAreaWidget()
+{
+JITCreate_class_Widget()
+if (window.class_TextAreaWidget == null) window.class_TextAreaWidget = Class.create(class_Widget,
+{
+initialize : function ($super, prms)
+{
+$super(prms)
+var o = this
+    o.rows = Widget_param(prms, "rows", null)
+    o.cols = Widget_param(prms, "cols", null)    
+    o.tooltip = Widget_param(prms, "tooltip", null) 
+    o.changeCB = Widget_param(prms, "changeCB", null)
+    o.enterCB = Widget_param(prms, "enterCB", null)
+    o.cancelCB = Widget_param(prms, "cancelCB", null)
+    o.readOnly = Widget_param(prms, "readOnly", false)
+o.oldValue=""    
+    o.allowCR=true
+    if ((o.rows!=null)&&!_ie&&!_saf)
+        o.rows--
+}
+    ,init : function($super, layer)
+{
+var o=this
+$super(layer)
+o.layer.value=""+o.oldValue
+addEvent(o.layer, "keydown", o.internalKeyDownCB)
+}
+,getHTML : function()
+{
+return '<textarea ' + (this.readOnly ? 'readonly ' : '') + 'oncontextmenu="event.cancelBubble=true;return true" id="'+this.id+'" '+attr('title',this.tooltip)+ 'rows="'+this.rows+'" cols="'+this.cols+'" class="textareainputs" value="" ondragstart="event.cancelBubble=true;return true" onselectstart="event.cancelBubble=true;return true" ></textarea>'
+}
+    ,getValue : function()
+{
+return this.layer.value
+}
+    ,setValue : function(s)
+{
+if (this.layer)
+this.layer.value=''+s
+else
+this.oldValue=s
+}
+    ,resizePixels : function(w, h)
+{
+this.resize(w, h, true)
+}
+    ,resize : function($super, lines,cols, isPixel)
+{
+// isPixel (optional - default false) resize in pixels, else in lines and colums
+var o=this
+if (isPixel) {
+$super(lines,cols)
+}
+else {
+if(lines && lines >0) {
+o.layer.rows=lines
+o.rows = lines;
+}
+if(cols && cols>0) {
+o.layer.cols=cols
+o.cols = cols;
+}
+} 
+}
+    ,setReadOnly : function (r)
+    {
+    var o=this
+    o.readOnly=r
+    if (o.layer) {
+    o.layer.readOnly=r
+    }
+    }
+,internalKeyDownCB: function(e)
+{
+// PRIVATE
+var key = eventGetKey(e),o=getWidget(this)
+if (key==13)//enter
+{
+if (o.enterCB)
+{
+eventCancelBubble(e)
+o.enterCB(e)
+}
+else if (o.allowCR)
+{
+eventCancelBubble(e)
+setTimeout('_widgets['+o.widx+'].delayedChangeCB('+key+')',1)
+}
+return o.allowCR;
+}
+else if(key==27)//escape
+{
+if(o.cancelCB) return o.cancelCB(e)
+else  return true;
+}
+else if(key == 8)// back space
+{
+if(o.readOnly) // check to avoid hang (Internal Incident:1472009722)
+    {
+return false;
+}
+eventCancelBubble(e);
+setTimeout('_widgets['+o.widx+'].delayedChangeCB('+key+')',1)
+return true;
+}
+else 
+{
+eventCancelBubble(e);
+//setTimeout to be sure that the key is writen in the textarea
+//we do not use the keyup event because of rapid keyboard pression
+setTimeout('_widgets['+o.widx+'].delayedChangeCB('+key+')',1)
+return true;
+}
+}
+,delayedChangeCB : function(key)
+{
+// PRIVATE
+if (this.changeCB) this.changeCB(key)
+}
+})
+}
+function new_TextAreaWidget(prms)
+{
+JITCreate_class_TextAreaWidget()
+    return new class_TextAreaWidget(prms)
+}
+function newTextAreaWidget(id,rows,cols,tooltip,changeCB,enterCB,cancelCB)
+{
+return new_TextAreaWidget({id:id, rows:rows, cols:cols, tooltip:tooltip, changeCB:changeCB, enterCB:enterCB, cancelCB:cancelCB})
+}
+function JITCreate_class_FrameZoneWidget()
+{
+JITCreate_class_Widget()
+if (window.class_FrameZoneWidget == null) window.class_FrameZoneWidget = Class.create(class_Widget,
+{
+initialize : function ($super, prms)
+{
+$super(prms)
+var o = this
+    var w = Widget_param(prms, "w", null)
+    var h = Widget_param(prms, "h", null)    
+    o.w=(w!=null)?""+Math.max(0,_dtd4 ? w-10 : w-8)+"px":null
+    o.h=(h!=null)?""+Math.max(0,_dtd4 ? h-10 : h-8)+"px":null
+    o.reverse = Widget_param(prms, "reverse", false)
+    o.zoneClass=Widget_param(prms, "zoneClass", "dlgFrame")
+o.cont=null
+}
+    ,beginHTML : function()
+{
+var o=this, s=[]
+s.push('<table width="100%" style="'+sty("width",o.w)+sty("height",o.h))
+s.push('" id="'+o.id+'" cellspacing="0" cellpadding="4" border="0"><tbody>')
+s.push('<tr><td valign="top" class="'+o.zoneClass+'" ')
+s.push('id="frame_cont_'+o.id+'" style="padding:5px">')
+return s.join("")
+}
+    ,endHTML : function FrameZoneWidget_endHTML()
+{
+return '</td></tr></tbody></table>'
+}
+    ,getHTML : function()
+{
+var o=this
+return (o.beginHTML() + (o.initialHTML?o.initialHTML:'') + o.endHTML());
+}
+    ,resize : function($super,w,h)
+{
+var o=this
+var d=o.layer.display!="none"
+if (d&_moz&&!_saf) o.setDisplay(false)
+$super(w,h)
+if (d&_moz&&!_saf) o.setDisplay(true)
+}
+})
+}
+function new_FrameZoneWidget(prms)
+{
+    JITCreate_class_FrameZoneWidget()
+    return new class_FrameZoneWidget(prms)
+}
+function newFrameZoneWidget(id,w,h,reverse)
+{
+return new_FrameZoneWidget({id:id, w:w, h:h, reverse:reverse})
+}
+function JITCreate_class_SearchWidget()
+{
+JITCreate_class_Widget()
+if (window.class_SearchWidget == null) window.class_SearchWidget = Class.create(class_Widget,
+{
+initialize : function ($super, id, w, searchCB, helpText)
+{
+$super({id:id})
+var o = this
+o.bMatchCase = false
+o.bSearchInKey = false;
+o.bSearchOnDB = false;
+    o.isSearchInKeyAllowed = false;
+o.isSearchOnDBAllowed = false;
+o.bSearchIconDisabled = false;
+o.bDelegateSearch = false;
+o.helpText = (helpText? helpText:_lovSearchFieldLab);
+o.searchField = newTextFieldWidget(id+"Txt", null, 50, o.internalKeyUpCB, o.internalSearchCB, true, o.helpText, w?(w-35):null);
+o.searchField.par = o;
+o.searchIcn = newIconMenuWidget(id+"Icn", _skin+'../../../viewer/images/main/galleries/icon16x16gallery1b.png', o.internalSearchCB,null,_lovSearchLab, 16, 16, 0, 4, 4, 4)
+o.searchIcn.par = o
+o.searchMenu = o.searchIcn.getMenu();
+o.matchCaseMenuItem = o.searchMenu.addCheck(id+"matchCase", _lovMatchCase, o.internalMatchCaseCB)
+o.searchInKeyMenuItem = o.searchMenu.addCheck(id+"searchInKey", _lovSearchInKey, o.internalSearchInKeyCB)
+    o.searchOnDBMenuItem = o.searchMenu.addCheck(id+"searchOnDB", _lovSearchOnDB, o.internalSearchOnDBCB)
+o.searchCB = searchCB
+}
+,init : function($super, layer)
+{
+var o=this
+$super(layer)
+o.searchField.init()
+o.searchIcn.init()
+o.searchIcn.setDisabled(o.bSearchIconDisabled || o.searchField.getValue()=='')// Disabled if no value set on loading widget
+o.updateMatchCase(o.bMatchCase)
+o.searchField.setHelpTxt(o.helpText);
+o.setSearchInKeyAllowed(o.isSearchInKeyAllowed)
+o.setSearchOnDBAllowed(o.isSearchOnDBAllowed)
+}
+,getHTML : function()
+{
+var o=this, s =[]
+s.push('<table id="'+o.id+'" border="0" cellspacing="0" cellpadding="0"><tbody><tr><td>')
+s.push(o.searchField.getHTML())
+s.push('</td><td>')
+s.push(o.searchIcn.getHTML())
+s.push('</td></tr></tbody></table>')
+return s.join("")
+}
+,internalSearchCB : function()
+{
+var p=this.par;
+if (p.searchCB != null && !p.searchIcn.isDisabled()) //Case "Enter", dont call CallBack if icon is disabled
+{
+if (p.bDelegateSearch && p.searchField.getValue()=='') return; //ADAPT01729384 /ADAPT01729354 /ADAPT01729518 
+p.searchCB();
+}
+}
+,internalKeyUpCB : function()
+{
+var o=this
+var p=o.par
+p.searchIcn.setDisabled( false);
+}
+,internalSearchOnDBCB : function()
+{
+var o=this.par.parIcon.par;
+o.bSearchOnDB=this.isChecked();
+o.updateSearchOnDB();
+}
+,internalMatchCaseCB : function()
+{
+var o=this.par.parIcon.par;
+o.bMatchCase=this.isChecked();
+o.updateMatchCase(o.bMatchCase);
+}
+,internalSearchInKeyCB : function()
+{
+    var o=this.par.parIcon.par;
+    o.bSearchInKey=this.isChecked();    
+    o.updateSearchInKey();
+}
+,setCaseSensitive : function(b)
+{
+// function setCaseSensitive
+// check or uncheck the match case checkbox
+// update the icon
+// b [boolean] used as is
+var o=this
+if(o.bMatchCase!=b) {
+    o.bMatchCase=b;
+o.updateMatchCase();
+}
+}
+,isCaseSensitive : function()
+{
+return this.bMatchCase;
+}
+,updateMatchCase : function()
+{
+var o=this
+o.matchCaseMenuItem.check(o.bMatchCase);
+o.updateSearchIcon();
+}
+,searchInKeyAllowed : function()
+{
+    var o=this
+    return o.isSearchInKeyAllowed
+}
+,isSearchInKey : function()
+{
+    var o=this
+    return o.bSearchInKey
+}
+,setSearchInKeyAllowed : function(b)
+{
+    var o=this
+    o.isSearchInKeyAllowed=b      
+    o.searchInKeyMenuItem.setDisabled(!b)       
+    if (b){
+        o.updateSearchInKey()
+        }        
+}
+,updateSearchInKey : function()
+{
+    var o=this
+    var dy
+    o.searchInKeyMenuItem.check(o.bSearchInKey)
+    o.updateSearchIcon()          
+}
+,setSearchMandatory : function(b)
+{
+//isDelegatedSearchMandatory:Indicates if the search is automatically delegated to the underlying data base or not.
+    var o=this
+    if (!o.isSearchOnDBAllowed) {
+        o.bSearchOnDB=b;
+    }
+    o.updateSearchOnDB();
+}
+,searchOnDBAllowed : function()
+{
+    return this.isSearchOnDBAllowed;
+}
+,isSearchOnDB : function()
+{
+    return this.bSearchOnDB;
+}
+,setSearchOnDBAllowed : function(b)
+{
+//isUserDelegatedSearchAllowed:Indicates if the user can specify if the search is delegated to the underlying data base or not.
+    var o=this
+    o.isSearchOnDBAllowed=b
+    o.searchOnDBMenuItem.setDisabled(!b)    
+    if (b) {
+        o.updateSearchOnDB()
+        }        
+}
+,checkAndDisableSearchOnDBAllowed : function(b)
+{
+// if b, check and disable "Search On database" and "Match case"
+    var o=this;
+    if (!b) return;
+    o.bSearchOnDB = b;
+    o.searchOnDBMenuItem.setDisabled(b);    
+    if (b) {
+    o.updateSearchOnDB();
+        }        
+}
+,updateSearchIcon : function()
+{
+    var o=this;
+    var dy=4*16;   
+        //key:45, db:46, casesensitive:23, search:4
+        if (o.isCaseSensitive() && o.isSearchInKey()) {
+            //case+key
+            //todo
+            dy=23*16;
+        }
+        else if (o.isSearchInKey() && o.isSearchOnDB()) {
+            //key+db
+            //todo
+            dy=46*16
+        }
+        else if (o.isSearchOnDB()) {
+            dy=46*16
+        }
+        else if (o.isCaseSensitive()) {
+            dy=23*16;
+        }
+        else if (o.isSearchInKey()) {
+            dy=45*16
+        }                 
+    o.searchIcn.icon.changeImg(0,dy, null, 16, dy);
+}
+,updateSearchOnDB : function()
+{
+    var o=this;     
+// ADAPT01651354 - allow sensitive case search
+    /*o.matchCaseMenuItem.setDisabled(o.bSearchOnDB);
+    if (o.bSearchOnDB) {
+        o.bMatchCase=true;
+        o.matchCaseMenuItem.check(o.bMatchCase);
+    }*/
+    o.searchOnDBMenuItem.check(o.bSearchOnDB);
+    o.updateSearchIcon();    
+}
+,getSearchValue : function()
+{
+// Return the value inserted in the search text field
+// return a string with the value entered in the search field
+return this.searchField.getValue();
+}
+,setSearchValue : function(s)
+{
+// Set the value of the search text field
+// s [String] string that will be displayed in the textfield
+var o=this;
+o.searchField.setValue(s);
+}
+,resize : function(w,h)
+{
+this.searchField.resize(w-35,h);
+}
+,setSearchIconDisabled : function(b)
+{
+// setSearchIconDisabled(b)
+// Disable seach icon
+this.bSearchIconDisabled=(b)?true:false;
+}
+,setDisabled:function(d)
+{
+    var o=this;
+    o.searchField.setDisabled(d);          
+    o.searchIcn.setDisabled(d);                        
+}
+,setDelegateSearch : function(b)
+{
+this.bDelegateSearch=(b)?true:false;
+}
+,updateSearchIconDisabled : function()
+{
+var o=this
+//o.searchIcn.setDisabled(o.bDelegateSearch && (o.bSearchIconDisabled || o.searchField.getValue()=='')); //ADAPT01729384 /ADAPT01729354 //ADAPT01729518 
+}
+,showSearchMenu : function(b)
+{
+var o=this
+o.searchIcn.arrow.setDisplay(b);
+}
+})
+}
+function newSearchWidget(id,w,searchCB,helpText)
+{
+JITCreate_class_SearchWidget()
+return new class_SearchWidget(id,w,searchCB,helpText)
+}
+function JITCreate_class_TreeSearchWidget()
+{
+JITCreate_class_Widget()
+if (window.class_TreeSearchWidget == null) window.class_TreeSearchWidget = Class.create(class_Widget,
+{
+initialize : function ($super, prms)
+{
+$super(prms)
+var o = this
+o.width = Widget_param(prms, "width",null)
+o.height = Widget_param(prms, "height","24")
+o.searchCB = Widget_param(prms, "searchCB",null)
+o.resetCB = Widget_param(prms, "resetCB",null)
+o.helpText = Widget_param(prms, "helpText",_treeSearchFieldLab)
+o.enterCB = Widget_param(prms, "enterCB",null)
+o.keyUpCB = Widget_param(prms, "keyUpCB",null)
+o.maxChar = Widget_param(prms, "maxChar",null)
+o.searchField = new_TextFieldWidget({id:o.id+"_text", noMargin:true,
+hasOuterClass:false, className:(_ie10R?"searchTextFieldWithoutX":"searchTextField"), maxChar:o.maxChar, 
+keyUpCB:o.internalKeyUpCB, enterCB:o.searchCB?o.searchCB:o.enterCB,imeCB:o.internalKeyUpCB,
+blurCB:o.internalBlurCB,tooltip:o.helpText, width:(o.width?(o.width-25):null)})
+o.searchField.par = o;
+o.resetIcn = new_IconWidget({id:o.id+"_reset", clickCB:o.internalResetCB, tooltip:_treeSearchResetLab, icon:{src:_skin+"dialogelements.gif", w:16, dx:0}, border:0, marginTop:0, margin:0, icontype:23})
+o.resetIcn.par = o;
+o.timerWait=null
+}
+,init : function($super, layer)
+{
+var o=this
+$super(layer);
+o.searchField.init();
+o.resetIcn.init();
+o.resetIcn.show(o.getSearchValue()!='');
+o.searchField.setHelpTxt(o.helpText);
+}
+,getHTML : function()
+{
+var o=this, s =[]
+    s.push('<div id="'+o.id+'" class="solidBorder"  ')
+s.push('style="width:'+(o.width-2)+'px;height:'+o.height+'px;overflow:hidden;background-image:url('+_skin+'textarea.png);background-repeat:repeat-x">')
+s.push('<table  border="0" cellspacing="0" cellpadding="0" border=1><tbody><tr><td style="height:'+o.height+'px">')
+s.push(o.searchField.getHTML())
+s.push('</td><td style="height:'+o.height+'px">')
+s.push(o.resetIcn.getHTML())
+s.push('</td></tr></tbody></table></div>')
+return s.join("")
+}
+,internalKeyUpCB : function()
+{
+var o=this.par
+o.resetIcn.show(o.getSearchValue()!='');
+if (o.keyUpCB) {
+    o.keyUpCB();
+    return;
+}
+//launch search after 300ms
+if(o.timerWait!=null) 
+clearTimeout(o.timerWait)
+o.timerWait=setTimeout(function (){o.searchCB()},300);
+}
+,internalResetCB : function()
+{
+var o=this.par
+o.setSearchValue("");
+o.resetIcn.show(false);
+o.searchField.focus();
+if(o.resetCB)
+o.resetCB()
+}
+,internalBlurCB:function()
+{
+var o=this;
+if(!o.getValue())
+o.setHelpTxt(o.par.helpText);
+}
+,setDisplay : function ($super, d)
+{
+    var o=this;
+    $super(d);
+    o.searchField.setDisplay(d);
+o.resetIcn.setDisplay(d);
+}
+,setDisabled : function($super, d)
+{
+    var o=this;
+    $super(d);
+    o.searchField.setDisabled(d);
+o.resetIcn.setDisabled(d);
+}
+,resize : function($super, w,h)
+{
+var resetIconW = 25;
+$super(Math.max(0,(w-2)));
+this.searchField.resize(Math.max(0,w-resetIconW));
+}
+,getSearchValue : function()
+{
+return this.searchField.getValue();
+}
+,setSearchValue : function(s)
+{
+    var o=this;
+this.searchField.setValue(s);
+o.resetIcn.show(o.getSearchValue()!='');
+}
+,getSearchField : function()
+    {
+        return this.searchField;
+    }
+,setTooltip : function(tooltip)
+    {
+        this.searchField.setTooltip(tooltip);
+    }
+})
+}
+function new_TreeSearchWidget(prms)
+{
+JITCreate_class_TreeSearchWidget()
+return new class_TreeSearchWidget(prms)
+}
+function JITCreate_class_ToggleButtonWidget()
+{
+JITCreate_class_ButtonWidget()()
+if (window.class_ToggleButtonWidget == null) window.class_ToggleButtonWidget = Class.create(class_ButtonWidget,
+{
+initialize : function ($super, prms)
+{
+// id       [String] button ID
+// label    [String Optional] button label
+// w        [int optional] : text zone minimal width
+// hlp      OBSOLETE
+// tooltip  [String Optional] button tooltip
+// tabIndex [int Optional] for 508/IE : tab index for keyboard navigation
+// url      [String Optional] : the combined image url
+// w        [int Optional] the visible image part width
+// dx       [int Optional] the horizontal offset in image
+// dy       [int Optional] the vertical offset in image
+// disDx    : [int - optional]      horizontal offset for disabled state
+// disDy    : [int - optional]      vertical offset for disabled state
+$super(prms)
+var o = this
+    o.togX = Widget_param(prms, "togX", null)
+    o.togY = Widget_param(prms, "togY", null)
+o.checked=false
+    }
+,executeCB : function()
+{
+// PRIVATE internal click event handler
+var o=this
+o.check(!o.checked) // toggle
+if (o.cb) {
+if (typeof o.cb!="string") o.cb()
+else eval(o.cb)
+}
+}
+    ,check : function(checked)
+{
+var o=this
+if (o.checked != checked)
+{
+o.checked=checked
+if (o.checked) {
+changeSimpleOffset(o.icn,o.togX,o.togY,o.url)
+} else {
+changeSimpleOffset(o.icn,o.dx,o.dy,o.url);
+}
+}
+if (o.checked&&o.beforeClickCB) {
+if (o.layer) o.beforeClickCB()
+}
+}
+    ,isChecked : function()
+{
+return this.checked
+}    
+})
+}
+function new_ToggleButtonWidget(prms)
+{
+JITCreate_class_ToggleButtonWidget()
+return new class_ToggleButtonWidget(prms)
+}
+function newToggleButtonWidget(id,label,cb,width,hlp,tooltip,tabIndex,margin,src,w,h,dx,dy,imgRight,disDx,disDy,togX,togY)
+{
+return new_ToggleButtonWidget({id:id, label:label, clickCB:cb, width:width, hlp:hlp, tooltip:tooltip,
+tabIndex:tabIndex, margin:margin, src:src, w:w, h:h, dx:dx, dy:dy, imgRight:imgRight,
+disDx:disDx, disDy:disDy, togX:togX, togY:togY})
+}
+function JITCreate_class_BrowseWidget()
+{
+JITCreate_class_Widget()
+if (window.class_BrowseWidget == null) window.class_BrowseWidget = Class.create(class_Widget,
+{
+initialize : function ($super, prms)
+{
+// id           [String]    button ID
+// tooltip      [String]    tooltip
+// editable     [boolean]   if true, text value is editable
+$super(prms)
+var o = this
+o.tooltip =  Widget_param(prms, "tooltip", "")
+o.contentEditable =  Widget_param(prms, "editable", false)
+o.width =  Widget_param(prms, "w", null)
+o.changeCB =  Widget_param(prms, "changeCB", null)
+o.keyDownCB =  Widget_param(prms, "keyDownCB", null)
+    o.disabled=false
+ }    
+,init : function($super, layer)
+{
+var o=this
+if (o.layer) removeAllEvents(o.layer)
+$super(layer)
+var l=o.layer
+if (l==null) return
+addEvent(l, "keydown", o.internalKeydownCB)
+addEvent(l, "focus", o.internalOnchangeCB)
+addEvent(l, "change", o.internalOnchangeCB)
+addEvent(l, "keyup", o.internalOnchangeCB)
+}
+,getHTML : function()
+{
+var o=this
+return '<input' + (o.disabled?' disabled':'') + ' type="file" id="' + o.id + '" name="' + o.id + '" class="textinputs" ' + attr('title',o.tooltip)+ ' size="' + o.width + '" ondragstart="event.cancelBubble=true" onselectstart="event.cancelBubble=true" \>'
+}
+,getValue : function()
+{
+var l=this.layer
+return l ? l.value : null
+}
+    ,setDisabled : function (d)
+{
+var o=this
+o.disabled=d
+if (o.inputLyr)
+{
+o.inputLyr.disabled=d;
+o.inputLyr.style.color=d?"#7B8694":"black";
+    }
+}
+,internalOnchangeCB : function(e)
+{
+var value= _ie?_curWin.event.srcElement.value:e.target.value;
+var o=getWidget(this)
+if (o.changeCB) o.changeCB((value=="")?true:false);
+return true
+}
+,internalKeydownCB : function(e)
+{
+var key=eventGetKey(e);
+if (key == 46) return;//Suppr key
+if (key == 8) // Del key
+e.cancelBubble=true
+var o=getWidget(this)
+if (o.keyDownCB) o.keyDownCB(key);
+}
+})
+}
+function new_BrowseWidget(prms)
+{
+JITCreate_class_BrowseWidget()
+    return new class_BrowseWidget(prms)
+}
+function newBrowseWidget(id,tooltip,editable,w, keyDownCB, changeCB)
+{
+return new_BrowseWidget({id:id, tooltip:tooltip, editable:editable, w:w, keyDownCB:keyDownCB, changeCB:changeCB})
+}
+function newBOColor(r,g,b)
+{
+return new BOColor(r,g,b)
+}
+function BOColor(r,g,b)
+{
+var o=this
+if (r && (g==null) && (b==null))
+{
+s = r.split(",")
+o.r=parseInt(s[0])
+o.g=parseInt(s[1])
+o.b=parseInt(s[2])
+}
+else
+{
+o.r=r
+o.g=g
+o.b=b
+}
+}
+BOColor.prototype = {
+set : function (r,g,b)
+{
+this.r=r
+this.g=g
+this.b=b
+}
+,getCopy : function()
+{
+return new BOColor(this.r,this.g,this.b)
+}
+,getStringDef : function()
+{
+var o=this
+return ""+o.r+","+o.g+","+o.b
+}
+,setStringDef : function(s)
+{
+// set the color from a string definition
+var rgb=s?s.split(","):null
+var o=this
+if (rgb&&(rgb.length==3))
+{
+o.r = isNaN(rgb[0]) ? 255 : parseInt(rgb[0],10)
+o.g = isNaN(rgb[1]) ? 255 : parseInt(rgb[1],10)
+o.b = isNaN(rgb[2]) ? 255 : parseInt(rgb[2],10)
+}
+}
+,getStyleColor : function ()
+{
+var o=this
+// if undefined
+if (o.r == -1 || o.r == null) return null;
+if (o.g == -1 || o.g == null) return null;
+if (o.b == -1 || o.b == null) return null;
+return "rgb(" + o.r + "," + o.g + "," + o.b + ")"
+}
+}
+function JITCreate_class_DragDropData()
+{
+// CONSTRUCTOR - Widget class - Base class for widgets
+// prms: object. the following fields are valid and optional
+// id [String]: the widget base tag id
+if (window.class_DragDropData == null) window.class_DragDropData = Class.create(
+{
+initialize : function (widget,dragStartCB,dragCB,dragEndCB,acceptDropCB,leaveDropCB,dropCB)
+{
+// void    dragStartCB  (source,layer)
+// void    dragCB       (source,layer, shift)
+// void    dragEndCB    (source,layer)
+// boolean acceptDropCB (source, target, ctrl, shift, layer, enter)
+// void    leaveDropCB  (source, target, ctrl, shift, layer)
+// void    dropCB       (source, target, ctrl, shift, layer)
+var o = this
+o.widget=widget
+o.dragStartCB=dragStartCB
+o.dragCB=dragCB
+o.dragEndCB=dragEndCB
+o.acceptDropCB=acceptDropCB
+o.leaveDropCB=leaveDropCB
+o.dropCB=dropCB
+o.id=_ddData.length
+_ddData[o.id]=o
+}
+,attachCallbacks : function(lyr,onlyDrop)
+{
+if (_ie)
+{
+onlyDrop=(onlyDrop==null)?false:onlyDrop
+if (!onlyDrop)
+{
+lyr.ondragstart=DDD_dragStart
+lyr.ondragend=DDD_dragEnd
+}
+lyr.ondrop=DDD_drop
+lyr.ondragleave=DDD_dragLeave
+lyr.ondragover=DDD_dragOver
+lyr.ondrag=DDD_drag
+lyr._dragDropData=this.id
+}
+else if(_ffDD || _webKit) // support drag and drop on firefox 3.5 and chrome/safari
+{ 
+onlyDrop=(onlyDrop==null)?false:onlyDrop
+if (!onlyDrop)
+{
+lyr.addEventListener("dragstart",DDD_dragStart,false)
+lyr.addEventListener("dragend",DDD_dragEnd,false)
+}
+lyr.addEventListener("drop",DDD_drop,false)
+lyr.addEventListener("dragleave",DDD_dragLeave,false)
+lyr.addEventListener("dragover",DDD_dragOver,false)
+lyr.addEventListener("drag",DDD_drag,false)
+lyr._dragDropData=this.id
+}
+}
+})
+}
+function newDragDropData(widget,dragStartCB,dragCB,dragEndCB,acceptDropCB,leaveDropCB,dropCB)
+{
+JITCreate_class_DragDropData()
+return new class_DragDropData(widget,dragStartCB,dragCB,dragEndCB,acceptDropCB,leaveDropCB,dropCB)
+}
+function DDD_dragStart(e)
+{
+/*
+var e=_curWin.event,dt=e.dataTransfer
+dt.effectAllowed='copyMove'
+dt.dropEffect=_curWin.event.ctrlKey?'copy':'move'
+var o=_ddData[this._dragDropData]
+var src=o.dragStartCB(o.widget,this)
+window._globalDDD=src?src:o.widget
+e.cancelBubble=true
+*/
+var e=_ie?_curWin.event:e,dt=e.dataTransfer
+if(dt)
+{
+dt.effectAllowed='copyMove'
+dt.dropEffect=e.ctrlKey?'copy':'move'
+if(_ffDD || _webKit) //firefox/ chrome / safari
+{
+dt.setData('Text', ''); 
+//dt.setDragImage(this, -27, -10);//firefox: use default feedback
+}
+}
+var o=_ddData[this._dragDropData]
+var src=o.dragStartCB(o.widget,this,e);
+window._globalDDD=src?src:o.widget
+e.cancelBubble=true
+}
+function DDD_drag(e)
+{
+/*
+var e=_curWin.event,dt=e.dataTransfer
+dt.dropEffect=e.ctrlKey?'copy':'move'
+var o=_ddData[this._dragDropData]
+o.dragCB(o.widget,this,e.ctrlKey?false:e.shiftKey)
+e.cancelBubble=true
+*/
+var e=_ie?_curWin.event:e,dt=e.dataTransfer
+if(dt)
+dt.dropEffect=e.ctrlKey?'copy':'move'
+var o=_ddData[this._dragDropData]
+o.dragCB(o.widget,this,e.ctrlKey?false:e.shiftKey)
+e.cancelBubble=true
+}
+function DDD_dragEnd(e)
+{
+var o=_ddData[this._dragDropData]
+o.dragEndCB(o.widget,this)
+window._globalDDD=null
+}
+function DDD_dragEnter(e)
+{
+DDD_dragOverEnter(this,true,e)
+}
+function DDD_dragOver(e)
+{
+DDD_dragOverEnter(this,false,e)
+}
+function DDD_dragOverEnter(layer,isEnter,e)
+{
+/*
+var o=_ddData[layer._dragDropData],e=_curWin.event
+e.dataTransfer.dropEffect=e.ctrlKey?'copy':'move'
+var o=_ddData[layer._dragDropData];
+if (o.acceptDropCB(window._globalDDD,o.widget,e.ctrlKey,e.ctrlKey?false:e.shiftKey,layer,isEnter, e))
+e.returnValue=false
+if(!e.returnValue && e.) 
+e.cancelBubble=true
+*/
+var o=_ddData[layer._dragDropData],e=_ie?_curWin.event:e
+e.dataTransfer.dropEffect=e.ctrlKey?'copy':'move'
+var ret = o.acceptDropCB(window._globalDDD,o.widget,e.ctrlKey,e.ctrlKey?false:e.shiftKey,layer,isEnter, e);
+if (ret)
+{
+if(e.preventDefault)
+e.preventDefault()
+else
+e.returnValue=false
+}
+e.cancelBubble=true
+}
+function DDD_dragLeave(e)
+{
+var o=_ddData[this._dragDropData],e=_ie?_curWin.event:e
+o.leaveDropCB(window._globalDDD,o.widget,e.ctrlKey,e.ctrlKey?false:e.shiftKey,this)
+}
+function DDD_drop(e)
+{
+var o=_ddData[this._dragDropData],e=_ie?_curWin.event:e
+o.dropCB(window._globalDDD,o.widget,e.ctrlKey,e.ctrlKey?false:e.shiftKey,this, e)
+window._globalDDD=null
+if(e.preventDefault)
+e.preventDefault();
+e.cancelBubble=true
+}
+function arrayAdd(obj,fieldName,item,idx)
+{
+var array=obj[fieldName],len=array.length
+if ((idx==null)||(typeof idx!="number")) idx=-1
+if ((idx<0)||(idx>len)) idx=len
+if  (idx!=len)
+{
+var end=array.slice(idx)
+array.length=idx+1
+array[idx]=item
+array=array.concat(end)
+}
+else array[idx]=item
+obj[fieldName]=array
+return idx
+}
+function arrayRemove(obj,fieldName,idx)
+{
+var array=obj[fieldName],last=array.length-1
+if (idx==null)
+{
+array.length=0
+obj[fieldName]=array
+return -1
+}
+if ((idx<0)||(idx>last)) return -1
+if (idx==last) array.length=last
+else
+{
+var end=array.slice(idx+1)
+array.length=idx
+array=array.concat(end)
+}
+obj[fieldName]=array
+return idx
+}
+function arrayMove(obj,fieldName,i,j)
+{
+var array=obj[fieldName],len=array.length
+if ((i<0)||(i>=len)||(j<0)||(j>=len)) return false
+var old=array[i]
+arrayRemove(obj,fieldName,i)
+arrayAdd(obj,fieldName,old,j)
+return true;
+}
+function arrayGetCopy(arr)
+{
+var o=new Array,len=arr.length;
+for (var i=0;i<len;i++)
+o[i]=arr[i]
+return o;
+}
+function arrayObjectClone(arr, length)
+{
+return cloneObject(arr);
+}
+function cloneObject(obj)
+{
+var newObj;
+if (obj && typeof(obj) == 'object' && Object.isArray(obj)){ // if array
+newObj = new Array();
+for (var i = 0, len = obj.length; i < len; ++i) {
+var item = obj[i];
+if (item &&  typeof(item) == 'object'){
+newObj[i] = cloneObject(item);
+}else{
+newObj[i] = item;
+}
+}
+}else if (obj && typeof(obj)=="object"){// if object
+    newObj = new Object();
+    for(var prop in obj)
+{
+    newObj[prop] = cloneObject(obj[prop]);
+    }
+}
+else{// leaf
+newObj = obj;
+}
+return newObj;
+    }
+function arrayFind(obj,fieldName,v,subfield)
+{
+var array=obj[fieldName],len=array.length;
+for (var i=0;i<len;i++)
+{
+if(subfield)
+{
+if (array[i][subfield] == v) return i;
+}
+else 
+if(array[i]==v) return i;
+}
+return -1;
+}
+function arrayContains(arr1, arr2)
+{
+if (arr1 == null || arr2 == null) return false
+var len=arr1.length;
+if (len == 0) return false
+for (var i=0;i<len;i++)
+{
+if (arr2.indexOf(arr1[i]) > -1) return true
+}
+return false;
+}
+function getFrame(name,par)
+{
+if (par==null) par=self
+var frames=par.frames, w=frames[name] //,w=eval("frames."+name) //mvidart: remove eval for optimisation
+if (w==null) return w
+var l=frames.length
+for (var i=0;i<l;i++)
+{
+w=frames[i]
+try {
+if (w.name==name)
+return w
+} catch (exc) {
+// keep on
+}
+}
+return null
+}
+function frameNav(name,url,fillHistory,par,noRefreshDrillBar)
+{
+var fr=null
+if (noRefreshDrillBar && name=="Report")
+{
+var topfs=getTopFrameset();
+fr=topfs.getReportFrame()
+} else {
+fr=getFrame(name,par)
+}
+if (fr) {
+var l=fr.location
+if (fillHistory)
+l.href=url
+else
+l.replace(url)
+} else {
+var lay = document.getElementById(name)
+if (lay)
+lay.src=url;
+}
+}
+/*
+function genericIframeNav(url,fillHistory)
+{
+var l = getDynamicBGIFrameLayer()
+if (fillHistory)
+{
+l.href=url
+} else {
+l.replace(url)
+} 
+}
+*/
+function frameGetUrl(win)
+{
+return win.location.href
+}
+function frameReload(win)
+{
+var loc=win.location
+loc.replace(loc.href)
+}
+function setTopFrameset()
+{
+_curWin._topfs="topfs"
+}
+function getTopFrameset(f)
+{
+try
+{ 
+if(f == null)
+f = self
+if(f._topfs=="topfs")
+{
+return f;
+}
+else
+{
+if(f!= top)
+return getTopFrameset(f.parent)
+else
+return null;
+}
+}
+catch(err) 
+{
+    return null; 
+    }
+}
+function getParentTreeFrame(frameName){ 
+    var frame=this;    
+    while(frame.name != frameName && frame!==frame.parent)   
+    {      
+    frame=frame.parent;     
+    }      
+    return frame;      
+} 
+function convStr(s,nbsp,br)
+{
+s=""+s
+var ret=s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")
+if (nbsp)
+ret=ret.replace(/ /g,"&nbsp;")
+if (br)
+ret=ret.replace(/\n/g,"<br>")
+return ret
+}
+function HTMLtoText(s)
+{
+if (s)
+{
+s = s.replace(/<br>/g," ")
+var ret="", isInTag = false
+for (var i=0; i<s.length; i++)
+{
+var c = s.charAt(i)
+if (c=="<") isInTag = true
+if (!isInTag) ret+=c
+if (c==">") isInTag = false
+}
+return ret
+}
+return ""
+}
+function escapeCR(s)
+{
+s=""+s
+var ret=s.replace(/\r/g,"").replace(/\n/g,"\\n");
+return ret
+}
+function addDblClickCB(l,cb)
+{
+if (l.addEventListener && !_saf) {// ADAPT00521043 for Safari : Bug 7790: ondblclick doesn't fire when attached with addEventListener  
+  l.addEventListener("dblclick",cb,false)  
+} else {
+  l.ondblclick=cb
+} 
+}
+function img(src,w,h,align,att,alt)
+{
+att=(att?att:'')
+if (alt==null) alt=''
+return '<img'+attr('width',w)+attr('height',h)+attr('src', src)+attr('title',alt)+attr("align", align)+' border="0" hspace="0" vspace="0" '+(att?att:'')+'>'
+}
+function imgOffset(url,w,h,dx,dy,id,att,alt,st,align)
+{
+// replace by a div with padding to force width
+return '<div '+attr('id',id)+attr('title',(alt?convStr(alt):null))+'class="imo" style="width:'+w+'px;height:'+h+'px;'+backImgOffset(url,dx,dy)+(st?st:'')+'"'+(att?' '+att:'')+ '></div>'
+//return img(_skin+'../transp.gif',w,h,align,
+//(att?att:'') +' '+attr('id',id)+' style="'+backImgOffset(url,dx,dy)+(st?st:'')+'"',
+//alt)*/
+}
+function simpleImgOffset(url,w,h,dx,dy,id,att,alt,st,align)
+{
+if (_dtd4||_ie7)
+return imgOffset(url,w,h,dx,dy,id,att,alt,st,align)
+else
+{
+if (dx==null) dx=0
+if (dy==null) dy=0
+return '<span '+(att?att:'')+' '+attr("id",id)+' style="padding:0px;width:'+w+'px;height:'+h+'px;overflow:hidden;'+(st?st:'')+'">'+img(url,null,null,(align?align:'top'),'style="margin:0px;position:relative;top:'+(-dy)+'px;left:'+(-dx)+'px"',alt)+'</span>'
+}
+}
+function changeSimpleOffset(lyr,dx,dy,url,alt)
+{
+if (_dtd4||_ie7)
+changeOffset(lyr,dx,dy,url,alt)
+else
+{
+lyr=lyr.childNodes[0]
+var st=lyr.style
+if ((url!=null)&&(url!=lyr.src))
+lyr.src=url
+if (dx!=null)
+st.left=""+(-dx)+"px"
+if (dy!=null)
+st.top=""+(-dy)+"px"
+if (alt!=null)
+lyr.title=alt
+}
+}
+function backImgOffset(url,dx,dy)
+{
+return 'background-image:url(\''+url+'\');background-position:'+(-dx)+'px '+(-dy)+'px;'
+}
+function changeOffset(lyr,dx,dy,url,alt)
+{
+var st=lyr.style
+if (st)
+{
+if ((dx!=null)&&(dy!=null))
+st.backgroundPosition=''+(-dx)+'px '+(-dy)+'px'
+if (url)
+st.backgroundImage='url(\''+url+'\')'
+}
+if(alt) lyr.title=alt
+}
+function includeScript(url)
+{
+document.write('<scr'+'ipt type="text/javascript" charset="UTF-8" src="'+url+'"><\/scr'+'ipt>');
+}
+/*
+ * Warning: the Sync mode is being removed from web platform. Please don't use it
+ * @deprecated
+ */
+function synchronousIncludeScript(url)
+{
+console.log('The function synchronousIncludeScript is deprecated. Please use includeScript instead.');
+return;
+//ADAPT01579374 - CUV_BIP41: IE 8 Bayer Browser not useable 
+var request = null;
+if (window.XMLHttpRequest) {
+  // If IE7, Mozilla, Safari, and so on: Use native object.
+  request = new XMLHttpRequest();
+}
+else
+{
+  if (window.ActiveXObject) {
+     // ...otherwise, use the ActiveX control for IE5.x and IE6.
+     request = new ActiveXObject('MSXML2.XMLHTTP.3.0');
+  }
+}
+request.open('GET', url, false)
+request.send(null)
+if (request.status == 200)
+{
+var arr = []
+arr.push('<scr'+'ipt language="javascript" charset="UTF-8" >')
+arr.push(request.responseText)
+arr.push('<\/scr'+'ipt>')
+document.write(arr.join(''))
+}
+}
+function getLayer(id)
+{
+return _curDoc.getElementById(id)
+}
+function removeLayer(layer)
+{
+if (_ie && !_ie10R) {
+try {
+layer.outerHTML = ""
+}
+catch(expt) {
+layer.parentNode.removeChild(layer)
+}
+}
+else {
+layer.parentNode.removeChild(layer)
+}
+}
+function setLayerTransp(lyr,percent)
+{
+if (_ie && !_ie9R)
+lyr.style.filter=(percent==null) ? "" :  "progid:DXImageTransform.Microsoft.Alpha( style=0,opacity="+percent+")"
+else
+{
+//if (_saf||_winSaf)
+lyr.style.opacity=(percent==null) ? 1 : percent/100
+//else
+//lyr.style.MozOpacity=(percent==null) ? 1 : percent/100
+}
+}
+function getPos(el,relTo)
+{
+relTo = relTo?relTo:null
+for (var lx=0,ly=0;(el!=null)&&(el!=relTo);
+lx+=el.offsetLeft,ly+=el.offsetTop,el=el.offsetParent);
+return {x:lx,y:ly}
+}
+function getPosScrolled(el,relTo)
+{
+relTo = relTo?relTo:null
+/*if (_ie)
+{
+for (var lx=0,ly=0;(el!=null)&&(el!=relTo);
+lx+=el.offsetLeft-el.scrollLeft,ly+=el.offsetTop-el.scrollTop,el=el.offsetParent);
+}
+else
+{*/
+var oldEl=el
+for (var lx=0,ly=0;(el!=null)&&(el!=relTo);
+lx+=el.offsetLeft,ly+=el.offsetTop,el=el.offsetParent);
+for (el=oldEl;(el!=null)&&(el!=relTo);el=el.parentNode)
+{
+if (el.scrollLeft!=null)
+{
+lx-=el.scrollLeft
+ly-=el.scrollTop
+}
+}
+//}
+lx+=getScrollX()
+ly+=getScrollY()
+return {x:lx,y:ly}
+}
+function getScrolledPos(el,relTo)
+{
+relTo = relTo?relTo:null
+/*if (_ie)
+{
+for (var lx=0,ly=0;(el!=null)&&(el!=relTo);
+lx+=el.offsetLeft-el.scrollLeft,ly+=el.offsetTop-el.scrollTop,el=el.offsetParent);
+}
+else
+{*/
+var oldEl=el
+for (var lx=0,ly=0;(el!=null)&&(el!=relTo);
+lx+=el.offsetLeft,ly+=el.offsetTop,el=el.offsetParent);
+for (el=oldEl;(el!=null)&&(el!=relTo);el=el.parentNode)
+{
+if (el.scrollLeft!=null)
+{
+lx-=el.scrollLeft
+ly-=el.scrollTop
+}
+}
+//}
+if (!_ie)
+{
+lx+=winScrollX()
+ly+=winScrollY()
+}
+return {x:lx,y:ly}
+}
+function getWidget(layer)
+{
+if (layer==null)
+return null
+var w=layer._widget
+if (w!=null)
+return _widgets[w]
+else
+return getWidget(layer.parentNode)
+}
+function getWidgetFromID(id)
+{
+if (id==null)
+return null
+var l=getLayer(id)
+return getWidget(l)
+}
+function getWidgetFromIdx(idx)
+{
+if (idx==null)
+return null
+return _widgets[idx]
+}
+function attr(key,val)
+{
+return (val!=null?' '+key+'="'+val+'" ':'')
+}
+function sty(key,val)
+{
+return (val!=null?key+':'+val+';' :'')
+}
+function getSep(marg,solid)
+{
+//if (marg==null)marg=0;var spc=marg>0?'<td width="'+marg+'">'+getSpace(marg,1)+'</td>':''; return '<table style="margin-top:5px;margin-bottom:5px;" width="100%" cellspacing="0" cellpadding="0"><tr>'+spc+'<td background="'+_skin+'sep'+(solid?'_solid':'')+'.gif" class="smalltxt"><img alt="" src="'+_skin+'../transp.gif" width="10" height="2"></td>'+spc+'</tr></table>'
+return '<div class="sep"' + (marg? ' style="margin-left:'+marg+'px;margin-right:'+marg+'px"' : '') + '></div>'
+}
+function getGroupSep(prms)
+{          
+    var pad = Widget_param(prms, "marg", null); 
+    var title = Widget_param(prms, "title", ""); 
+    var padTop = Widget_param(prms, "margTop", 6); 
+    var padBottom = Widget_param(prms, "margBottom", 4); 
+    var padL=pad?'padding-left:'+pad+'px;':'';
+    var padR=pad?'padding-right:'+pad+'px;':'';
+    var sty=' style="padding-top:'+padTop+'px;padding-bottom:'+padBottom+'px;'+padL+padR+'" ';
+    var padTitle=(prms && prms.title)?' style="padding-right:5px;" ':'';
+    var padSep=' style="padding-left:0px;" ';   
+    var s = '<table border="0" cellspacing="0" cellpadding="0" width="100%" '+sty+' ><tbody>'+
+    '<tr>'+
+                '<td '+padTitle+' class="titlezone">' + title+'</td>'+     
+                '<td '+padSep+' width="100%" valign="bottom">'+                                                                                      
+                    '<div class="dlgGroupSep"></div>'+
+                '</td>'+
+ '</tr>' +
+            '</tbody></table>'; 
+    return s;
+}
+function writeSep(marg,solid)
+{
+_curDoc.write(getSep(marg,solid))
+}
+function getSpace(w,h)
+{
+w=w?w:0
+h=h?h:0
+//return '<table height="'+h+'" border="0" cellspacing="0" cellpadding="0"><tr><td>'+img(_skin+'../transp.gif',w,h)+'</td></tr></table>'
+return '<table height="'+h+'" border="0" cellspacing="0" cellpadding="0"><tr><td width="'+w+'"><div style="overflow:hidden;width:'+w+'px;height:'+h+'px"></td></tr></table>'
+}
+function writeSpace(w,h)
+{
+_curDoc.write(getSpace(w,h))
+}
+function winWidth(win)
+{
+win=win?win:_curWin
+var dtd4=!_ie||(win.document.compatMode!='BackCompat')
+return (_ie && !_ie9R) ? (dtd4 ? win.document.documentElement.clientWidth : win.document.body.clientWidth) : win.innerWidth
+}
+function winHeight(win)
+{
+win=win?win:_curWin
+var dtd4=!_ie||(win.document.compatMode!='BackCompat')
+return (_ie && !_ie9R) ? (dtd4 ? win.document.documentElement.clientHeight : win.document.body.clientHeight) : win.innerHeight
+}
+function winScrollX(win)
+{
+win=win?win:_curWin
+return _ie?win.document.documentElement.scrollLeft:win.scrollX
+}
+function getScrollX(win)
+{
+win=win?win:_curWin
+return _ie?win.document.body.scrollLeft:win.scrollX
+}
+function winScrollY(win)
+{
+win=win?win:_curWin
+return _ie?win.document.documentElement.scrollTop:win.scrollY
+}
+function getScrollY(win)
+{
+win=win?win:_curWin
+return _ie?win.document.body.scrollTop:win.scrollY
+}
+function getEvent(e,w)
+{
+//The event object passed to an event handler and the event object referred to by the window.event property are different in Internet Explorer from version 9 (except if the event handler is registered with the attachEvent method). //from dottoro
+//02/2013, mvidart: We should use window.event in ie9 to avoid problem but it could be risky at this end of the project 4.1
+if (_ie&&(e==null))
+e = w ? w.event : _curWin.event
+return e
+}
+function eventIsCtrl(e,w)
+{
+e=getEvent(e,w)
+return _mac ? e.metaKey : e.ctrlKey
+}
+function winScrollTo(x, y, win)
+{
+win=win?win:_curWin
+win.scrollTo(x,y)
+/*/if (_ie) {
+win.document.body.scrollLeft = x
+win.document.body.scrollTop = y
+} else {
+win.scrollTo(x,y)
+}*/
+}
+function eventIsLeftButton(e,w)
+{
+e=getEvent(e,w)
+if (_mac && e.button == _leftBtn && e.ctrlKey) {
+return false
+}
+return (e.button == _leftBtn);
+// Old code return (e.button == _leftBtn)||(_mac&&!e.ctrlKey)
+}
+function eventGetKey(e,win)
+{
+win=win?win:_curWin
+//return _ie?win.event.keyCode:e.which
+if (_ie) {
+return win.event.keyCode
+} else if (null != e) {
+return e.keyCode
+}
+return null
+}
+/* use getEventX() in the future use */
+function eventGetX(e,w)
+{
+e=getEvent(e,w)
+return _saf ? (e.pageX - getScrollX(w)) : e.clientX
+}
+/* use getEventY() in the future use */
+function eventGetY(e,w)
+{
+e=getEvent(e,w)
+return _saf ? (e.pageY - getScrollY(w)) : e.clientY
+}
+/* use xPos() for the future use */
+function xpos(o,e,doc,zoom)
+{
+if ((zoom==null)||(!_ie))
+zoom=1
+return (((eventGetX(e) + getScrollX())/zoom)-getPosScrolled(o).x)
+}
+/* use yPos() for the future use */
+function ypos(o,e,doc,zoom)
+{
+if ((zoom==null)||(!_ie))
+zoom=1
+return (((eventGetY(e) + getScrollY())/zoom)-getPosScrolled(o).y)
+}
+function absxpos(e,zoom,w)
+{
+var clientX=eventGetX(e,w)
+if (zoom==null) //BOEWEBI-6938  [DHTML] Bad behaviour when resizing columns with zoom different from 100% 
+{
+return clientX
+}
+else
+{
+return clientX/zoom
+}
+}
+function absypos(e,zoom,w)
+{
+var clientY=eventGetY(e,w)
+if (zoom==null) //BOEWEBI-6938  [DHTML] Bad behaviour when resizing columns with zoom different from 100%
+{
+return clientY
+}
+else
+{
+return clientY/zoom
+}
+}
+function eventCancelBubble(e,win)
+{
+win=win?win:_curWin
+_ie?win.event.cancelBubble=true:e.cancelBubble=true
+}
+function isHidden(lyr)
+{
+if ((lyr==null)||(lyr.tagName=="BODY")) return false;var sty=lyr.style;if ((sty==null)||(sty.visibility==_hide)||(sty.display=='none')) return true;return isHidden(lyr.parentNode)
+}
+function opt(val,txt,sel)
+{
+return '<option value="'+val+'" '+(sel?'selected':'')+'>'+convStr(''+txt)+'</option>'
+}
+function lnk(inner,clickCB,cls,id,att,dblClickCB)
+{
+if (clickCB==null)
+clickCB="return false"
+att=att?att:'';
+return '<a'+attr('class',cls)+attr('id',id)+attr('href','#'+id?id:"")+  // attr('href','javascript:void(0)')+
+attr('onclick',clickCB)+attr('ondblclick',dblClickCB)+att+'>'+inner +'</a>'
+}
+_oldErrHandler=null
+function localErrHandler()
+{
+return true
+}
+function canScanFrames(w)
+{
+//_excludeFromFrameScan variable is set by a frame that does not want to
+// be scaned, when the frame is used to download document for instance.
+var ex=true,d=null
+if (_moz)
+{
+_oldErrHandler=window.onerror
+window.onerror=localErrHandler
+}
+try
+{
+d=w.document
+//if ((d!=null&&(typeof(d)).toLowerCase()!="unknown"))
+//ex=(w._excludeFromFrameScan==true)?w._excludeFromFrameScan:false
+ex=false
+}
+catch(expt)
+{
+}
+if (_moz)
+window.onerror=_oldErrHandler
+return (!ex&&(d!=null))
+}
+function getTopAccessibleFrame(w)
+{
+var maxFrame=50;
+while (true)
+{
+var p=w.parent
+if (!canScanFrames(p))
+return w
+if (w==top)
+return w
+// protection from infinite loops
+maxFrame--
+if (maxFrame == 0)
+return w
+// get parent
+w=p
+}
+}
+function restoreAllInputs(win,level)
+{
+if (_ie&&_curWin._inptStackLevel!=null)
+{
+win=win?win:_curWin
+//_excludeFromFrameScan variable is set by a frame that does not want to
+// be scaned, when the frame is used to download document for instance.
+if (canScanFrames(win))
+{
+if (level==null)
+level=--_curWin._inptStackLevel
+var b=win.document.body,arr=b?b.getElementsByTagName("SELECT"):null,len=arr?arr.length:0
+for (var i=0;i<len;i++)
+{
+var inpt=arr[i]
+if (inpt._boHideLevel==level)
+{
+inpt.style.visibility=inpt._boOldVis
+inpt._boHideLevel=null
+}
+}
+// Process sub frames
+var frames=win.frames,flen=frames.length
+for (var k=0;k<flen;k++)
+restoreAllInputs(frames[k],level)
+}
+}
+}
+function hideAllInputs(x,y,w,h,win,level)
+{
+if (_ie)
+{
+win=win?win:_curWin
+//_excludeFromFrameScan variable is set by a frame that does not want to
+// be scaned, when the frame is used to download document for instance.
+if (canScanFrames(win))
+{
+var b=win.document.body,arr=b?b.getElementsByTagName("SELECT"):null,len=arr?arr.length:0
+if (level==null)
+{
+if (_curWin._inptStackLevel==null)
+_curWin._inptStackLevel=0
+level=_curWin._inptStackLevel++
+}
+for (var i=0;i<len;i++)
+{
+var inpt=arr[i],css=inpt.style;
+var inter=(x==null)||isLayerIntersectRect(inpt,x,y,w,h)
+if (!isHidden(inpt)&&inter)
+{
+inpt._boHideLevel=level
+inpt._boOldVis=css.visibility
+css.visibility=_hide
+}
+}
+// Process sub frames
+var frames=win.frames,flen=frames.length
+for (var k=0;k<flen;k++)
+hideAllInputs(null,null,null,null,frames[k],level)
+}
+}
+}
+function getBGIframe(id)
+{   
+return '<iframe id="'+id+'" name="'+id+'" style="display:none;left:0px;position:absolute;top:0px" src="' + _skin + '../../empty.html' + '" frameBorder="0" scrolling="no"></iframe>'
+}
+function getDynamicBGIFrameLayer()
+{
+var recycle=false
+if (_curWin.BGIFramePool) 
+{
+BGIFrames = _curWin.BGIFramePool.split(",")
+BGIFCount = BGIFrames.length
+for (var id = 0; id < BGIFCount; id++) {
+if (BGIFrames[id] != "1") {
+recycle=true
+break
+}
+}
+} else {
+id = 0
+BGIFrames = new Array
+}
+BGIFrames[id] = "1"
+_curWin.BGIFramePool = BGIFrames.join(",")
+if (!recycle) {
+targetApp(getBGIframe("BGIFramePool_" + id))
+}
+return getLayer("BGIFramePool_" + id)
+}
+function releaseBGIFrame(layerId) {
+var l = getLayer(layerId)
+if (l) {
+l.style.display="none"
+}
+id = parseInt(layerId.split('_')[1])
+BGIFrames = _curWin.BGIFramePool.split(",")
+BGIFrames[id]=0
+_curWin.BGIFramePool = BGIFrames.join(",")
+}
+function append(e,s,c)
+{
+if (_ie||_webKit)
+e.insertAdjacentHTML("BeforeEnd",s)
+else
+{
+var curDoc = c?c:_curDoc
+var r=curDoc.createRange()
+var frag=r.createContextualFragment(s)
+e.appendChild(frag)
+}
+}
+function insBefore(e,s,c)
+{
+if (_ie)
+e.insertAdjacentHTML("BeforeBegin",s)
+else
+{
+var curDoc = c?c:_curDoc
+var r=_curDoc.createRange()
+r.setEndBefore(e)
+var frag=r.createContextualFragment(s)
+e.parentNode.insertBefore(frag,e)
+}
+}
+function targetApp(s)
+{
+append(_curDoc.body,s)
+}
+function getBasePath()
+{
+var url=document.location.href,last1= url.lastIndexOf('?');if (last1>=0) url=url.slice(0,last1);var last = url.lastIndexOf('/');return (last>=0)?url.slice(0,last+1):url
+}
+function isLayerIntersectRect(l,x1,y1,w,h)
+{
+var xl1=getPos(l).x,yl1=getPos(l).y,xl2=xl1+l.offsetWidth,yl2=yl1+l.offsetHeight,x2=x1+w,y2=y1+h
+return ((x1>xl1)||(x2>xl1))&&((x1<xl2)||(x2<xl2)) && ((y1>yl1)||(y2>yl1))&&((y1<yl2)||(y2<yl2))
+}
+function preloadImg(url)
+{
+var img=_preloadArr[_preloadArr.length]=new Image;img.src=url
+}
+function convURL(str)
+{
+if (_dontNeedEncoding == null)
+{
+//first time call for this page, generates "static" variables
+_dontNeedEncoding = new Array(256);
+for (var i = 0 ; i < 256 ; i++) _dontNeedEncoding[i] = false;
+for (var i = (new String('a')).charCodeAt(0); i <= (new String('z')).charCodeAt(0); i++) _dontNeedEncoding[i] = true;
+for (var i = (new String('A')).charCodeAt(0); i <= (new String('Z')).charCodeAt(0); i++) _dontNeedEncoding[i] = true;
+for (var i = (new String('0')).charCodeAt(0); i <= (new String('9')).charCodeAt(0); i++) _dontNeedEncoding[i] = true;
+_dontNeedEncoding[(new String(' ')).charCodeAt(0)] = true; /* encoding a space to a + is done in the encode() method */
+_dontNeedEncoding[(new String('-')).charCodeAt(0)] = true;
+_dontNeedEncoding[(new String('_')).charCodeAt(0)] = true;
+_dontNeedEncoding[(new String('.')).charCodeAt(0)] = true;
+_dontNeedEncoding[(new String('*')).charCodeAt(0)] = true;
+_thex = new Array("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F");
+}
+var encstr = "";
+for (var i = 0 ; i < str.length ; i++) encstr += URLEncodeUTF8Char(str.charAt(i));
+return encstr;
+}
+function URLEncodeUTF8Char(c)
+{
+var unicodeval = c.charCodeAt(0);
+if (unicodeval < 128)
+{
+//first case should generate a simple byte with high bit at 0 (7 bit ASCII US)
+if (_dontNeedEncoding[unicodeval]) return (c == ' ' ? '+' : c);
+else return ("%" + _thex[unicodeval >> 4] + _thex[unicodeval & 15]);
+}
+else if (unicodeval < 2048)
+{
+//on 2 bytes 110xxxxx 10xxxxxx
+return ("%" + _thex[(unicodeval >> 10) | 12]
++ _thex[(unicodeval >> 6) & 15]
++ "%"+ _thex[(unicodeval >> 4) & 3 | 8]
++ _thex[unicodeval & 15]);
+}
+else
+{
+//on 3 bytes 1110xxxx 10xxxxxx 10xxxxxx
+return ("%"+ _thex[14]
++ _thex[unicodeval >> 12]
++ "%" + _thex[(unicodeval >> 10) & 3 | 8]
++ _thex[(unicodeval >> 6) & 15]
++ "%"+ _thex[(unicodeval >> 4) & 3 | 8]
++ _thex[unicodeval & 15]);
+}
+}
+function encString(s)
+{
+var res=''
+if (s!=null)
+{
+var len=s.length
+for (var i=0;i<len;i++)
+{
+var c=s.charAt(i)
+switch (c)
+{
+case '$': res+='$3'; break
+case ',': res+='$4'; break
+case '[': res+='$5'; break
+case ']': res+='$6'; break
+default: res+=c; break
+}
+}
+}
+return res
+}
+function enc()
+{
+var args=enc.arguments,len=args.length,s='['
+if (len>0) s+=args[0]
+for (var i=1;i<len;i++) s+=','+args[i]
+return s+']'
+}
+function remSpaceAround(s)
+{
+var len = s.length;
+if(len<=0) return "";
+var start=0,end=len
+var c=s.substr(start,1);
+while (c==' ' && start<len)
+{
+start++
+c=s.substr(start,1);
+}
+if(start<len)
+{
+c=s.substr(end-1,1);
+while (c==' ')
+{
+end--
+c=s.substr(end-1,1);
+}
+}
+var sub = s.substring(start,end);
+return sub
+}
+function getArrows(upCb,downCB,hori,newNode,newNodeCB)
+{
+if (hori==null) hori=false;
+var s=''
+if (hori) s+='<nobr>'
+s+=lnk(img(_skin+(hori?'left.gif':'up.gif'),12,12,'top',null,hori?"_LEFT ARROW":"_UP ARROW"),upCb,null,null,null,(_moz?null:upCb))
+s+=(hori?'':img(_skin+'../transp.gif',1,5)+'<br>')
+s+=lnk(img(_skin+(hori?'right.gif':'down.gif'),hori?11:12,hori?12:11,'top',null,hori?"_RIGHT ARROW":"_LEFT ARROW"),downCB,null,null,null,(_moz?null:downCB))
+if (newNode)
+{
+s+=img(_skin+'../transp.gif',1,5)+'<br>'
+s+=lnk(img(_skin+('node.gif'),12,12,'top',null,"_NEW NODE"),newNodeCB,null,null,null,(_moz?null:newNodeCB))
+}
+if (hori) s+='</nobr>'
+return s
+}
+_staticUnicBlockWhileWaitWidgetID = "staticUnicBlockWhileWaitWidgetID"
+function hideBlockWhileWaitWidget()
+{
+if (_curWin._BlockWhileWaitWidget)
+_curWin._BlockWhileWaitWidget.show(false)
+}
+function newBlockWhileWaitWidget(urlImg)
+{
+if (_curWin._BlockWhileWaitWidget!=null)
+return _curWin._BlockWhileWaitWidget
+var o=newWidget(_staticUnicBlockWhileWaitWidgetID)
+o.getPrivateHTML=BlockWhileWaitWidget_getPrivateHTML
+o.init=BlockWhileWaitWidget_init
+o.show=BlockWhileWaitWidget_show
+_curWin._BlockWhileWaitWidget=o
+o.keyboardCapturer=null
+return o
+}
+function BlockWhileWaitWidget_init()
+{
+//cancels the default init behaviour
+}
+function BlockWhileWaitWidget_getPrivateHTML()
+{
+return '<input disabled type="text" id="'+ this.id+'_keyboardCapturer" style="display:none;position:absolute;left:-100px;top:-100px;"><div id="'+ this.id+'" onselectstart="return false" ondragstart="return false" onmousedown="'+_codeWinName+'.eventCancelBubble(event)" border="0" hspace="0" vspace="0"  style="background-image:url('+_skin+'../transp.gif);z-index:5000;cursor:wait;position:absolute;top:0px;left:0px;width:100%;height:100%"></div>'
+}
+function BlockWhileWaitWidget_cancelKeybEvents(e)
+{
+e=getEvent(e);
+if (e.preventDefault)
+e.preventDefault();
+if (e.stopPropagation)
+e.stopPropagation();
+e.cancelBubble=true;
+e.returnValue=false;
+}
+function BlockWhileWaitWidget_show(show)
+{
+var o=this
+// object not init yet, 2 cases
+if (o.layer==null)
+{
+o.layer=getLayer(o.id)
+// another instance hasn't written it's HTML yet
+if (o.layer==null)
+{
+targetApp(o.getPrivateHTML())
+o.layer=getLayer(o.id)
+}
+o.css=o.layer.style;
+o.keyboardCapturer=getLayer(o.id+'_keyboardCapturer')
+o.keyboardCapturer.onkeydown=BlockWhileWaitWidget_cancelKeybEvents;
+o.keyboardCapturer.onkeyup=BlockWhileWaitWidget_cancelKeybEvents;
+o.keyboardCapturer.onkeypress=BlockWhileWaitWidget_cancelKeybEvents;
+}
+// This text field captires the focus in order to avoid underired keyboard actions
+// this fixes the FR ADAPT00918153 :  "Perform delete operation by hitting delete key twice causes error"
+// WARNING
+// it has a side effect: when clicking on a button like the "bold" icon
+// the focus on this element is lost after the action performed
+if (show)
+{
+o.layer.tabIndex = 0
+o.keyboardCapturer.tabIndex = 0
+o.keyboardCapturer.disabled=false
+o.keyboardCapturer.tabIndex = 0
+safeSetFocus(o.keyboardCapturer);
+}
+else
+{
+o.layer.tabIndex = -1
+o.keyboardCapturer.disabled=true
+o.keyboardCapturer.tabIndex = -1
+}
+o.setDisplay(show)
+o.keyboardCapturer.style.display=show?"inline":"none";
+}
+var regLang= /^[a-zA-Z]{2}$|^[a-zA-Z]{2}_[a-zA-Z]{2}$/, regIntPos=/^\d+$/, regYes=/^yes$/, regPath=/^[\w|\/|:|.|-]+$/, regAlphanumDot=/^\w+\.+\w+$/, regAlphanumDotEx=/^\w+\.*\w+\.*\w+$/, regBoolean=/[true||false]/, regAlphanumComma=/^\w+\,+\w+$/, regColor = /rgb([\\d,.-]*)/, regNumPlusComma = /[\\d,]*/, regAplhaNumOptionalDot = /^\w+\.*\w*/;;
+var paramRegs = new Array()
+paramRegs["ID"]=regAplhaNumOptionalDot
+paramRegs["allTableCells"]=regYes
+paramRegs["gotoPivot"]=regYes
+paramRegs["reportIndex"]=regIntPos
+paramRegs["fromLPane"]=regYes
+paramRegs["skin"]=regPath
+paramRegs["lang"]=regLang
+paramRegs["noGrabber"]=regYes
+paramRegs["isFormulaEdit"]=regYes
+paramRegs["fromQuery"]=regYes
+paramRegs["isFromHyperlinkEditor"]=regYes
+paramRegs["iAction"]=regIntPos
+paramRegs["callback"]=regAlphanumDotEx
+paramRegs["callbackin"]=regAlphanumDotEx
+paramRegs["callbackout"]=regAlphanumDotEx
+paramRegs["fntSt"]=regNumPlusComma
+paramRegs["fgColor"]=regColor
+paramRegs["bgColor"]=regColor
+paramRegs["isNum"]=regBoolean
+paramRegs["formatName"]=regAlphanumDotEx
+paramRegs["index"]=regIntPos
+paramRegs["regionId"]=regPath
+function requestQueryString(win, par){
+params = win.location.search.substr(1).split("&")
+for(i=0;i<params.length;i++){
+var param = params[i].split("="), key = param[0], val = param[1]
+if (key == par){
+var reg = new RegExp(paramRegs[key])
+if ((paramRegs[key]==null) || (val == "") || (reg.test(val))) {
+return val
+} else {
+//alert("bad param error, val=" + val + ", key=" + key)
+// the following code is not library independant at all...
+var tpfs = getTopFrameset()
+if (tpfs != null) {
+tpfs._askConfirmationBeforeClosingDoc=false
+tpfs.document.location.replace(tpfs._root+"html/badparamserror.html");
+} else {
+tpfs=getTopFrameset(window.opener)
+if (tpfs != null)
+{
+document.location.replace(tpfs._skin+"../../../html/badparamserror.html");
+}
+}
+}
+}
+}
+}
+function trim(strString) {
+    if (strString != null) {
+        var iLength = strString.length;
+        //Left side
+        var i;
+        for (i=0; i<iLength; i++) {
+            if (strString.charAt(i) != " ") {
+                break;
+            }
+        }
+        strString = strString.substring(i);
+        iLength = strString.length;
+        //Right Side
+        for (i=iLength; i>0; i--) {
+            if (strString.charAt(i-1) != " ") {
+                break;
+            }
+        }
+        strString = strString.substring(0,i);
+    }
+    return strString;
+}
+function startsWithIgnoreCase(strString, strToFind) {
+    var blnRet = false;
+    if (strToFind != null) {
+        var strVar = strString.substring(0, strToFind.length);
+        if (strVar.toLowerCase() == strToFind.toLowerCase()) {
+            blnRet = true;
+        }
+    }
+    return blnRet;
+}
+function endsWithIgnoreCase(strString, strToFind) {
+    var blnRet = false;
+    if (strToFind != null) {
+        var iRight = strString.length- strToFind.length;
+        if (iRight >= 0) {
+            var strVar = strString.substring(iRight);
+            if (strVar.toLowerCase() == strToFind.toLowerCase()) {
+                blnRet = true;
+            }
+        }
+    }
+    return blnRet;
+}
+function isTextInput(ev, win)
+{
+if (_ie) {
+var locWin = win?win:_curWin
+ev = ev ? ev : locWin.event;
+}
+var source = _ie?ev.srcElement:ev.target;
+var isText=false;
+if(source.tagName=="TEXTAREA")
+isText=true
+if((source.tagName=="INPUT") && (source.type.toLowerCase()=="text"))
+isText=true
+return isText;
+}
+function isTextArea(ev)
+{
+var source = _ie?ev.srcElement:ev.target;
+if(source.tagName=="TEXTAREA")
+return true;
+else 
+return false;
+}
+function shrinkTooltip(t,n)
+{ 
+var n = n?n:360
+return (t.length < n)? t : (t.substring(0,n) + "...")
+}
+function setDateValue(strDateValue, strInputFormat)
+{
+var strRet = ",,";
+var strYear = "";
+var strMonth = "";
+var strDay = "";
+//Get separator
+var length = strInputFormat.length;
+var sep = "";
+for (var i=0; i<length; i++) 
+{
+var c = strInputFormat.charAt(i);
+switch(c) 
+{
+case "/":
+case "-":
+case ".":
+case ",":
+case "\"": sep = c; break;
+}
+if (sep != "") break;
+}
+if (sep != "") 
+{
+var arrInputFormat = strInputFormat.split(sep);
+var arrDateValue = strDateValue.split(sep);
+for (var i=0; i<arrDateValue.length; i++) 
+{
+if (arrInputFormat[i] != null && typeof(arrInputFormat[i]) != "undefined") 
+{
+//Year
+if (arrInputFormat[i].indexOf('y')>=0) 
+{
+var iPosA = arrInputFormat[i].indexOf('y');
+var iPosB = arrInputFormat[i].lastIndexOf('y');
+if (iPosB>=0) 
+{
+strYear = arrInputFormat[i].substring(iPosA, iPosB + 1);
+if (strYear.length >= arrDateValue[i].length) strYear = arrDateValue[i];
+else 
+{
+iPosB = iPosA;
+for (var j=iPosA; j<arrDateValue[i].length; j++) 
+{
+var c = arrDateValue[i].charAt(j);
+if (c < '0' || c > '9') break;
+else iPosB = j + 1;
+}
+strYear = arrDateValue[i].substring(iPosA, iPosB);
+if (strYear.length <= 2) 
+{
+var iYear = parseInt(strYear);
+if (iYear>=70) iYear += 1900;
+else iYear += 2000;
+strYear = iYear.toString();
+}
+}
+}
+else 
+{
+return strRet;
+}
+}
+//Month
+else if (arrInputFormat[i].indexOf('M')>=0) 
+{
+var iPosA = arrInputFormat[i].indexOf('M');
+var iPosB = arrInputFormat[i].lastIndexOf('M');
+if (iPosB>=0) 
+{
+strMonth = arrInputFormat[i].substring(iPosA, iPosB + 1);
+if (strMonth.length >= arrDateValue[i].length) strMonth = arrDateValue[i];
+else 
+{
+iPosB = iPosA;
+for (var j=iPosA; j<arrDateValue[i].length; j++) 
+{
+var c = arrDateValue[i].charAt(j);
+if (c < '0' || c > '9') break;
+else iPosB = j + 1;
+}
+strMonth = arrDateValue[i].substring(iPosA, iPosB);
+}
+}
+else 
+{
+return strRet;
+}
+}
+//Day
+else if (arrInputFormat[i].indexOf('d')>=0) 
+{
+var iPosA = arrInputFormat[i].indexOf('d');
+var iPosB = arrInputFormat[i].lastIndexOf('d');
+if (iPosB>=0) 
+{
+strDay = arrInputFormat[i].substring(iPosA, iPosB + 1);
+if (strDay.length >= arrDateValue[i].length) strDay = arrDateValue[i];
+else {
+iPosB = iPosA;
+for (var j=iPosA; j<arrDateValue[i].length; j++) 
+{
+var c = arrDateValue[i].charAt(j);
+if (c < '0' || c > '9') break;
+else iPosB = j + 1;
+}
+strDay = arrDateValue[i].substring(iPosA, iPosB);
+}
+}
+else 
+{
+return strRet;
+}
+}
+}
+}
+if (strMonth != "" && strDay != "" && strYear != "" && !(isNaN(strMonth) || isNaN(strDay) || isNaN(strYear))) 
+{
+//Set Date
+strRet = strMonth + ',' + strDay + ',' + strYear;
+}
+}
+return strRet;
+}
+function LZ(x) {
+    return(x<0||x>9?"":"0")+x
+}
+function formatDate(date,format)
+{
+var format=format+"";
+    var result="";
+    var i_format=0;
+    var c="";
+    var token="";
+    var y=date.getFullYear()+"";
+    var M=date.getMonth()+1;
+    var d=date.getDate();
+    var E=date.getDay();
+    var H=date.getHours();
+    var m=date.getMinutes();
+    var s=date.getSeconds();
+    var yyyy,yy,MMM,MM,dd,hh,h,mm,ss,ampm,HH,H,KK,K,kk,k;
+    // Convert real date parts into formatted versions
+    var value=new Object();
+    if (y.length==2) {
+if (y-0>=70) y=""+(y-0+1900);
+else y=""+(y-0+2000);
+    }
+    value["y"]=""+y;
+    value["yyyy"]=y;
+    value["yy"]=y.substring(2,4);
+    value["M"]=M;
+    value["MM"]=LZ(M);
+    value["MMM"]=_month[M-1];
+    value["NNN"]=_month[M+11];
+    value["d"]=d;
+    value["dd"]=LZ(d);
+    value["E"]=_day[E+7];
+    value["EE"]=_day[E];
+    value["H"]=H;
+    value["HH"]=LZ(H);
+    if (H==0){value["h"]=12;}
+    else if (H>12){value["h"]=H-12;}
+    else {value["h"]=H;}
+    value["hh"]=LZ(value["h"]);
+    if (H>11){value["K"]=H-12;} else {value["K"]=H;}
+    value["k"]=H+1;
+    value["KK"]=LZ(value["K"]);
+    value["kk"]=LZ(value["k"]);
+    if (H > 11) { value["a"]=_PM; value["aa"]=_PM;; }
+    else { value["a"]=_AM; value["aa"]=_AM; }
+    value["m"]=m;
+    value["mm"]=LZ(m);
+    value["s"]=s;
+    value["ss"]=LZ(s);
+    while (i_format < format.length) {
+        c=format.charAt(i_format); 
+        token="";
+        while ((format.charAt(i_format)==c) && (i_format < format.length)) {
+            token += format.charAt(i_format++);
+        }
+        if (value[token] != null) { result=result + value[token]; }
+        else { result=result + token; }
+     }
+   return result;
+}
+function ajaxUpdater(prms, doPost) {
+var url = Widget_param(prms, "url", null);
+if (null == url) return;
+prms.url = null
+var widx = Widget_param(prms, "widx", null)
+widg = (null != widx)?getWidgetFromIdx(widx):_curWin
+var _postAjaxCB =  Widget_param(prms, "postCB", null)
+prms.postCB = null // dont't forget this or else wrong url
+var _ajaxErrorCB = Widget_param(prms, "ajaxErrorCB", null) 
+prms.ajaxErrorCB = null
+new Ajax.Request(url, { method:(doPost)?'post':'get',
+    parameters: prms,
+    onComplete: function(transport) {
+var response = transport.responseText || "KO";
+var myObj;
+if ("KO" == response) {
+myObj = {"response":"KO"};
+} else {
+myObj = response.evalJSON();
+} 
+var widx = myObj.widx;
+var widg = (null != widx)?getWidgetFromIdx(widx):_curWin;
+try {
+if (null != _ajaxErrorCB) {
+widg._privateAjaxErrorCB = _ajaxErrorCB
+widg._privateAjaxErrorCB(myObj, Widget_param(prms, "cancelCB", null), Widget_param(prms, "labelDlgTitle", ""));
+}
+} catch(e) {}
+ if (null != _postAjaxCB) {
+ widg._privatePostAjaxCB = _postAjaxCB; //Please, don't have another _privatePostAjaxCB() in your widget!!!!
+ widg._privatePostAjaxCB(myObj);
+}
+else {
+widg.setValue(myObj.value);
+}
+}
+  });  
+}
+function getCurrentStyle(layer, attributeName)
+{
+if (layer&&attributeName)
+{
+if (_ie)
+return layer.currentStyle[attributeName.camelize()]
+else
+{
+var df=layer.ownerDocument.defaultView
+if (df==null)
+return null
+//var st=df.getComputedStyle(layer,'')
+var st = null
+try {
+st = df.getComputedStyle(layer,null)
+} catch(e) {} // bug Moz : exception launched on text node
+return st ? st.getPropertyValue(attributeName) : null;
+}
+}
+return null;
+}
+function createAppearEffect(layer, duration)
+{
+return new Effect.Appear(layer, {duration: duration});
+}
+function createFadeEffect(layer, duration)
+{
+return new Effect.Fade(layer, {duration: duration});
+}
+function getParentWindow(layer)
+{
+return _ie ? (layer.parentWindow ? layer.parentWindow : layer.ownerDocument.parentWindow) : (layer.defaultView ? layer.defaultView : layer.ownerDocument.defaultView)
+}
+function pixelToMetrics(px, dpi)
+{
+return parseInt((px*3600)/dpi)
+}
+function xPos(o,e,doc,zoom)
+{
+if ((zoom==null)||(!_ie))
+zoom=1
+return (((getEventX(e) + winScrollX())/zoom)-getScrolledPos(o).x)
+}
+function yPos(o,e,doc,zoom)
+{
+if ((zoom==null)||(!_ie))
+zoom=1
+return (((getEventY(e) + winScrollY())/zoom)-getScrolledPos(o).y)
+}
+function getEventX(e,w)
+{
+e=getEvent(e,w)
+return _saf ? (e.pageX - winScrollX(w)) : e.clientX
+}
+function getEventY(e,w)
+{
+e=getEvent(e,w)
+return _saf ? (e.pageY - winScrollY(w)) : e.clientY
+}
+function getHostIFrameDlgWidget()
+{ 
+    var dlgId= window.frameElement.name;         
+    var dlgWidget=null;
+    if (dlgId && parent && parent.document)
+    {
+        var dlgLyr=parent.document.getElementById(dlgId);
+        dlgWidget=parent.getWidget(dlgLyr);            
+    }
+    return dlgWidget;
+}        
+function toolboxImg(zyx)
+{
+if (!isNaN(zyx))
+{
+var src= 'images/main/galleries/icon16x16gallery' + Math.floor(zyx / 100) + 'b.png';
+var yx = zyx % 100;
+dy =(yx*16); 
+return {src:src, dx:0, dy:dy, disDx:16, disDy: dy, w:16, h:16}
+}
+else {
+var src= 'images/main/' + zyx; 
+return {src:src, dx:0, dy:0, w:16, h:16}
+}
+}
+function toolboxImgFromLib(zyx, skinpath)
+{
+//var src= '../viewer/images/main/galleries/icon16x16gallery' + Math.floor(zyx / 100) + 'b.png';
+var icns = skinpath?skinpath+'../../../viewer/images/main/galleries/icon16x16gallery': '../viewer/images/main/galleries/icon16x16gallery';
+var src= icns + Math.floor(zyx / 100) + 'b.png';
+var yx = zyx % 100;
+dy =(yx*16); 
+return {src:src, dx:0, dy:dy, disDx:16, disDy: dy, w:16, h:16}
+}
+function getWordWrapDivHTMLInnerHTML(text)
+{
+text = text ? text : ''
+if (_moz && !_webKit && !_opera) {
+var words = text.split(' ')
+var s=[]
+if (words&&words.length>0)
+{
+var len=words.length
+for (var i = 0; i < len; i++) {
+var w = words[i]
+s[s.length] = (w.length > 40) ? (w.split('').join(String.fromCharCode('8203'))) : w
+}
+text = s.join(' ')
+}
+}
+return convStr(text,false,true)
+}
+function getWordWrapDivHTML(text, width, id, className)
+{
+return '<div '+attr("id", id)+' '+(className?('class="'+className+'"'):'') + '" style="'+sty('width',width!=null?(''+width+'px'):null)+'overflow:hidden;word-wrap:break-word;">' + getWordWrapDivHTMLInnerHTML(text) + '</div>'
+}
+function new_ChildrenCustomTooltipWidget(prms)
+{
+var o=new_TooltipWidget({}) //({id:prms.id})
+o.curWin = Widget_param(prms, "win", null);
+    o.tipWidth=Widget_param(prms, "tipWidth", 150);
+o.hideFrames = ["DlgFrame","SecondDlgFrame","ThirdDlgFrame","QP_SecondDlgFrame","QP_ThirdDlgFrame","QP_FourthDlgFrame"]; 
+o.showCustomTooltip=function (ev,parentWidget, tooltip, childId)
+{
+var o=this;
+o.showTooltip=true;
+o.childId=childId;
+var htmlTooltip =  getCustomTooltipHTML(tooltip);   
+//cursor
+var pos={x:0,y:0};
+var winName = o.curWin? o.curWin.name:"";
+if((winName != _curWin.name) && (o.hideFrames.indexOf(winName)<0))
+{
+var layers= o.curWin.parent.document.getElementsByName(o.curWin.name);
+pos = getPos(layers[0]);//position of the parent frame
+}
+var info = {x:pos.x, y:pos.y, parentWidget:parentWidget, childId:o.childId}
+var delay = function(){o.delayedShowCB(htmlTooltip,info)};
+setTimeout(delay,900);
+}
+o.delayedShowCB=function(tooltip,info)
+{
+var o=this
+if(o.showTooltip==true && (!info.childId || info.childId==o.childId))
+{
+var mpos = info.parentWidget.mousePos;    //get mouse position from parent onmousemove listener
+//TooltipWidget_show(show,str,url,w,h,dx,dy,isHTML, e, x, y, tipWidth, yAlt)
+o.show(true,tooltip,null,null,null,null,null,true,null, info.x+(mpos?mpos.x:0)+10, info.y+(mpos?mpos.y:0)+10, o.tipWidth)//add the parent position
+}
+}
+o.hideCustomTooltip=function()
+{
+var o=this
+if(o.showTooltip)
+{
+o.showTooltip=false;
+o.show(false);
+}
+}
+return o
+}
+function cleanTagMem(layer)
+{
+if (layer) {
+layer.onmousedown = null
+layer.onmouseup = null
+layer.onclick = null
+layer.onmouseover = null
+layer.onmouseout = null
+layer.onmousemove = null
+layer.onkeydown=null
+layer.onkeyup=null
+layer.onkeypress=null
+layer.onfocus=null
+layer.onblur=null
+var c=layer.childNodes,l=c.lenght
+for (var i = 0; i < l; i++) {
+cleanTagMem(c[i])
+}
+}
+}
+function cleanUpAllWidgets()
+{        
+    var len=_widgets.length;
+    for (var i=0; i<len; i++)
+    {      
+        if (_widgets[i])
+        {
+            _widgets[i].userData=null;        
+            if (_widgets[i].layer)
+            {                    
+                _widgets[i].layer=null;
+            }
+            _widgets[i]=null;       
+        }
+    }
+    _widgets.length=0;          
+}
+addEvent.callbackGuid = 0
+addEvent.elemGuid = 0
+globalEventHandler = []
+function addEvent(element, type, callback)
+{
+// Element is a layer
+// Type is an event type LOWERCASE
+// callback is a function pointer
+// These handlers has the code page life duration
+// Add unique IDs to elements and callbacks
+if (element.__winInstance != _codeWinNameInstance)
+{
+// no event has already has been attached OR the iframe instance is obsolete
+element.__winInstance = _codeWinNameInstance
+element.__guid  = addEvent.elemGuid++
+}
+if (callback.__guid==null) callback.__guid = addEvent.callbackGuid++
+// globalEventHandler is a table on elements GUID
+var record = globalEventHandler[element.__guid]
+if (!record) record = globalEventHandler[element.__guid] = {}
+// each record has members named with the event type
+var evDesc = record[type]
+if (!evDesc) evDesc = record[type]=[]
+// each event type has 
+evDesc[evDesc.length] = callback
+// listen to events
+element["on"+type] = globalEventHandlerCB
+}
+function removeEvent(element, type, callback)
+{
+if (element.__guid!=null && callback.__guid!=null)
+{
+var evDesc = globalEventHandler[element.__guid][type], len = evDesc.length, guid = callback.__guid
+for (var i=len-1; i>=0; i--)
+{
+var currCB = evDesc[i]
+if (currCB.__guid == guid)
+{
+evDesc.splice(i,1)
+break
+}
+}
+}
+}
+function removeAllEvents(element)
+{
+if (element.__guid!=null)
+{
+globalEventHandler[element.__guid] = null
+}
+}
+function globalEventHandlerCB(e)
+{
+if (_ie) e=_curWin.event
+// Get the record that store the callback
+var record = globalEventHandler[this.__guid]
+if (record==null) return
+var evDesc = record[e.type]
+if (evDesc==null) return 
+// Execute all callbacks
+var returnValue = undefined, len = evDesc.length
+for (var i=0; i<len; i++)
+{
+this.__currHandler = evDesc[i]
+var ret = this.__currHandler(e)
+this.__currHandler = undefined
+if (ret==false && returnValue==undefined) returnValue=false
+if (ret==true && returnValue!=true) returnValue=true
+}
+return returnValue
+}
+function setSmartResizeHandler(cb)
+{
+if (_ie) setInterval("smartResizeHandler()", 500)
+_curWin.onresize = smartResizeHandler
+window.__curSmartResizeHandler = cb
+}
+function smartResizeHandler()
+{
+var size = window.__curSmartResizePrevSize
+if (size == null) {
+size = window.__curSmartResizePrevSize = {w: -1, h: -1}
+}
+var w = winWidth(), h = winHeight();
+if ((size.w != w) || (size.h != h)) {
+window.__curSmartResizeHandler()
+//sometimes, the result of the resize is different than the window size, 
+//so to avoid perpetual resize, keep the real size after the resize action
+window.__curSmartResizePrevSize = {w: winWidth(), h: winHeight()};
+}
+}
+function removeAddClassName(objElement, strClass, removeIdx)
+{
+// if there is a class
+if ( objElement.className )
+{
+// the classes are just a space separated list, so first get the list
+var arrList = objElement.className.split(' ');
+if (typeof(removeIdx)!="undefined" && (arrList.length > removeIdx))
+arrList.splice(removeIdx, 1);
+// if the new class name may already exist in list
+// get uppercase class for comparison purposes
+var strClassUpper = strClass.toUpperCase();
+// find all instances and remove them
+for ( var i = 0; i < arrList.length; i++ )
+{
+if ( arrList[i].toUpperCase() == strClassUpper )
+{
+   arrList.splice(i, 1);
+   // decrement loop counter as we have adjusted the array's contents
+   i--;
+}
+}
+// add the new class to end of list
+arrList[arrList.length] = strClass;
+objElement.className = arrList.join(' ');
+}
+else
+{ 
+objElement.className = strClass;
+}
+}
+function isIME(e,t)
+{
+_IME=false;
+if(e.keyCode==229)
+_IME=true;
+}
+function swapContiguousDOMNodes(a, b){
+var pa1= a.parentNode, pa2= b.parentNode, sib= b.nextSibling
+if (sib === a) {
+sib = b;
+}
+pa1.replaceChild(b, a);
+if (sib) {
+pa2.insertBefore(a, sib)
+} else {
+pa2.appendChild(a)
+}
+}
+function stopEvent(e,w) {
+e = getEvent(e,w)
+e.cancelBubble = true; // IE
+if (e.stopPropagation) {
+e.stopPropagation()// Firefox
+}
+}
+function stopEvent2(e,w) {
+e = getEvent(e)
+e.cancelBubble = true; // IE
+if (e.stopPropagation) {
+e.stopPropagation()// Firefox
+}
+if (e.preventDefault)
+e.preventDefault()
+else
+e.returnValue=false
+}
+/* 
+function setFocusOnFirstVisibleChild(layer)
+{
+if (null == layer) return
+if ((-1 != layer.tabIndex) && (getCurrentStyle(layer, "display") != "none") && (getCurrentStyle(layer, "visibility") != "hidden") && ("#text" != layer.nodeName)) {
+var w = getWidget(layer)
+//var role = w.role
+//if ((null != w) && ("dialog" != role)) {
+if (null != w) {
+//alert(role)
+layer.tabIndex = 0
+safeSetFocus(layer)
+return
+}
+} 
+var lcn = layer.childNodes.length
+for (var i = 0; i < lcn; i++) {
+setFocusOnFirstVisibleChild(layer.childNodes[i])
+}
+}
+*/

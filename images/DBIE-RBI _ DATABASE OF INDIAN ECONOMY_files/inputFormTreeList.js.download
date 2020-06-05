@@ -1,0 +1,627 @@
+/*
+=============================================================
+WebIntelligence(r) Report Panel
+Copyright(c) 2001-2005 Business Objects S.A.
+All rights reserved
+
+Use and support of this software is governed by the terms
+and conditions of the software license agreement and support
+policy of Business Objects S.A. and/or its subsidiaries. 
+The Business Objects products and technology are protected
+by the US patent number 5,555,403 and 6,247,008
+
+=============================================================
+*/TreeList_frmZoneMinWidth  = 250;
+TreeList_frmZoneMinHeight = 30;
+TreeList_lineHeight= 14;
+var IconFilePath=_skin+'../../../viewer/images/main/galleries/';
+var keyIconFile=IconFilePath+"icon16x16gallery3b.png";
+var expandIconFile=IconFilePath+"icon16x16gallery1b.png";
+function new_TreeListWidget(prms)
+{
+var o = new_Widget(prms);
+o.cplx    = o.param(prms, "complexe", true);
+o.multi   = o.param(prms, "multi", true);
+o.nblines = o.param(prms, "nbLines", 15);
+o.Uuid = o.param(prms, "Uuid", null);
+o.expandAll = true;
+var w = o.param(prms, "w", TreeList_frmZoneMinWidth);
+var h = TreeList_lineHeight*(parseInt(o.nblines)) + TreeList_frmZoneMinHeight;
+o.applyCB = o.param(prms, "applyCB", null);
+o.nblines=parseInt(o.nblines);
+o.w=parseInt(w)+30;
+o.h=parseInt(h);
+var selectionType = o.multi?'':PromptSelectionType.Mono
+o.lovZoneInfo   = {id:o.id+"_TreeListLovZone",showTooltip:false, noTreeHeader:true, selectionType:selectionType};
+o.lovleftzone   = new LovLeftZone(o.lovZoneInfo);
+o.expressionList = newMultiColumnList(o.id+"_ExpressionList",null,false,o.w,o.h,null,null,true);
+o.expressionList.addColumn("Selection",o.w,false,-1);
+o.expressionList._treeList = o;
+o.arrayRowsData  = {};
+o.previousValues = o.param(prms, "values", null);
+o.listPreviousValuesNames = new Array;
+o.listPreviousValuesKeys = new Array;
+o.selectedItem = null;
+o.listView       = o.param(prms, "listView", true);
+o.toolBarContainer = new_PaletteContainerWidget({id:o.id+"_ToolBarCont", margin:0, className:""});
+o.toolBar          = new_PaletteWidget({id:o.id+"_ToolBar", leftPadding:0});
+o.toolBarContainer.add(o.toolBar);
+o.selection = new_ButtonWidget({id:o.id+"_selIcon",label:"Tree list",clickCB:TreeList_viewChangeCB});
+o.selection._treeList = o;
+o.toolBar.add(o.selection);
+o.toolBar.beginRightZone();
+    o.showCaption=1;
+    o.showCaptionAndKey=2;
+o.displayMode=o.showCaption;
+    o.singleSelection=1;
+    o.multipleSelection=2; 
+    o.complexSelection=3;
+o.selectionMode = o.singleSelection;
+o.DisplayMode = new_IconCheckWidget({id:o.id+"_DisplayModeIcon", src:keyIconFile, width:16, height:16,clickCB:TreeList_displayModeCB,tooltip:"Display both caption and unique name", dx:0, dy:39*16, disDx:16, disDy:39*16});  
+o.expandCollapseAll = new_IconCheckWidget({id:o.id+"_expandCollapseAll", src:expandIconFile, width:16, height:16, clickCB:TreeList_collapseCB,tooltip:"Collapse All Hierarchies", dx:0, dy:51*16, disDx:16, disDy:51*16});
+o.DisplayMode._treeList = o;
+o.expandCollapseAll._treeList = o;
+o.toolBar.add(o.DisplayMode);
+o.toolBar.add();
+o.toolBar.add(o.expandCollapseAll);
+o.okBtn    = newButtonWidget(o.id+"_Apply","OK",o.applyCB?o.applyCB:TreeList_okCB);
+o.resetBtn = newButtonWidget(o.id+"_Reset","Reset",TreeList_cancelCB);
+o.okBtn._treeList = o;
+o.resetBtn._treeList = o;
+o.init    = TreeList_init;
+o.getHTML = TreeList_getHTML;
+o.resize  = TreeList_resize;
+o.restore = TreeList_restore;
+o.resize  = TreeList_resize;
+o.showMode = TreeList_showMode;
+o.updateLayer    = TreeList_updateLayer;
+o.getSelection   = TreeList_getSelection;
+o.setDisplayMode = TreeList_setDisplayMode;
+o.viewChange     = TreeList_viewChangeCB;
+o.setItemDisplayMode   = TreeList_setListItemDisplaymode;
+o.setChildDisplayMode  = TreeList_setChildDisplayMode;
+o.updateExpressionList = TreeList_updateExpressionList;
+o.setListDisplaymode   = TreeList_setListDisplaymode;
+o.setSelectionMode     = TreeList_setSelectionMode;
+o.showContextMenu      = TreeList_showContextMenu;
+o.setPreviousValues    = TreeList_setPreviousValues;
+o.setPreviousSelection = TreeList_setPreviousSelection;
+o.updateExpressionListForChildren    = TreeList_updateExpressionListForChildren;
+o.updateExpressionListForDescendants = TreeList_updateExpressionListForDescendants;
+o.contextMenu=newMenuWidget(o.id+"_TreeListContextMenu",null,TreeList_beforeShowCB);
+o.contextMenu._inputFromTreeList=o;
+o.contextMenu_Self = o.contextMenu.addCheck(o.id+"_TreeList_Self","Self",TreeList_checkCB);
+o.contextMenu_Children = o.contextMenu.addCheck(o.id+"_TreeList_Children","Children",TreeList_checkCB);
+o.contextMenu_Descendants = o.contextMenu.addCheck(o.id+"_TreeList_Descendants","Descendants",TreeList_checkCB);
+return o;
+}
+function TreeList_beforeShowCB()
+{
+    var o=this;
+var treeList=o._inputFromTreeList;
+var lovTree = treeList.lovleftzone.getLovTree();
+treeitem = lovTree.getFocusElem();
+var hasChildren = treeitem.sub.length>0;
+o.items[1].setDisabled(!hasChildren);
+o.items[2].setDisabled(!hasChildren);
+o.items[0].check(treeitem.checked);
+o.items[1].check(hasChildren && treeitem.allChildrenChecked);
+o.items[2].check(hasChildren && treeitem.allDescendantsChecked);
+}
+function TreeList_showContextMenu(elemId, evt)
+{
+var treeitem =_TreeWidgetElemInstances[elemId];
+if(treeitem._inputFromTreeList.selectionMode < 3) return;
+    var x=eventGetX(evt);
+    var y=eventGetY(evt);
+    if (treeitem.userData && !treeitem.userData.overfetch) {
+    treeitem._inputFromTreeList.contextMenu.show(true, x,y);
+    }
+    stopEvent(evt)
+}
+function TreeList_expand(prms)
+{
+}
+function TreeList_collapseCB()
+{
+var o = this;
+o._treeList.lovleftzone.getLovTree().collapseAllOfTreeItems();
+}
+function TreeList_setPreviousSelection()
+{
+var o = this;
+if(o.previousValues == null) return;
+var len = o.previousValues.length
+if(len && len>0)
+{
+for(var i=0;i<len;i++)
+{
+treeitem = {userData:{pathName:o.previousValues[i][0],key:o.previousValues[i][1]}};
+o.updateExpressionList(treeitem,true); 
+o.listPreviousValuesNames[i] =  o.previousValues[i][0];
+o.listPreviousValuesKeys[i] = o.previousValues[i][1];
+}
+}
+}
+function TreeList_setPreviousValues(treeitem)
+{
+var o = this;
+if (o.previousValues == null) return;
+var len = o.previousValues.length
+if(len)
+{
+if(len>0)
+{
+for(var i=0;i<len;i++)
+{
+if((treeitem.userData.pathName==o.previousValues[i][0] || treeitem.userData.caption==o.previousValues[i][0]) && treeitem.userData.key==o.previousValues[i][1])
+{
+if (o.multi) {
+treeitem.check(true);
+o.updateExpressionList(treeitem,treeitem.checked);
+} else {
+}
+break;
+}
+}
+}
+}
+}
+function TreeList_additionalXtraNodeInfoCB(treeitem)
+{
+var o = this;
+treeitem.isCheck=o.treeList.multi
+if (treeitem.userData && treeitem.userData.overfetch) {
+treeitem.isCheck = false
+}
+treeitem.indeterminateMode=true;
+treeitem.checkCB = TreeList_checkCB;
+treeitem._inputFromTreeList=o.treeList;
+o.treeList.setPreviousValues(treeitem);
+if (treeitem.par && treeitem.par.userAction) { 
+o.treeList.lovZoneInfo.treeList.firstAsyncFilled = true
+}
+treeitem.updateAncestors(o.treeList.updateLayer,{ms:treeitem})
+}
+function TreeList_getSelection()
+{
+var o = this;
+var rows = new Array;
+if (o.multi) {
+for(var item in o.arrayRowsData)
+{
+if(o.arrayRowsData[item])
+{
+var row = new Array;
+row[0] = o.arrayRowsData[item].pathName;
+row[1] = o.arrayRowsData[item].key;
+rows[rows.length]=row;
+} 
+}
+} else {
+var sel = o.lovleftzone.getLovTree().getSelections()
+if (sel.length > 0) {
+var val = sel[0].userData
+if (val.overfetch) return null 
+var row = new Array;
+row[0] = val.pathName;
+row[1] = val.key;
+rows.push(row); 
+}
+}
+return (rows.length>0?rows:null); 
+}
+function TreeList_okCB()
+{
+}
+function TreeList_checkCB()
+{
+var o = this
+var isCheck = o.checked;
+var type = null
+var treeList=o._inputFromTreeList;
+if(treeList==null)
+{
+treeList = o.par._inputFromTreeList;
+type = o.id;
+var lovTree = treeList.lovleftzone.getLovTree();
+o = lovTree.getFocusElem();
+if(type == treeList.id+"_TreeList_Self")
+o.check(!o.checked);
+else if(type == treeList.id+"_TreeList_Children")
+{
+if(o.allDescendantsChecked)
+{
+o.checkDescendants(!o.allDescendantsChecked);
+treeList.updateExpressionListForDescendants(o,o.allDescendantsChecked);
+}
+o.checkChildren(!o.allChildrenChecked);
+treeList.updateExpressionListForChildren(o,o.allChildrenChecked);
+}
+else if(type == treeList.id+"_TreeList_Descendants")
+{
+if(o.allChildrenChecked)
+{
+o.checkChildren(!o.allChildrenChecked);
+treeList.updateExpressionListForChildren(o,o.allChildrenChecked);
+}
+if (!o.descandentsFetched)
+{
+p.wt();
+var prms = o.ajaxParamsFn(o);
+prms.url = o.ajaxUpdateUrl.replace("ajaxIncGetLov", "ajaxIncExpandAllLov");
+prms.ajaxErrorCB = p.manageAjaxError;
+prms.postCB = function(jsObj) 
+{
+o.descandentsFetched = true;
+treeList_checkDescendants(treeList, o, jsObj);
+p.hideWt();
+};
+ajaxUpdater(prms, true);
+}
+else
+{
+treeList_checkDescendants(treeList, o);
+}
+return;
+}
+}
+if (treeList.selectionMode == 1)
+treeList.restore();
+o.setIndeterminate(false);
+if(type==null)
+o.check(isCheck);
+o.updateAncestors(TreeList_updateLayer,{ms:o})
+treeList.updateExpressionList(o,o.checked);
+}
+function treeList_checkDescendants(treeList, node, jsObj)
+{
+try
+{
+if (node.sub != null && jsObj != null && jsObj.values != null)
+{
+var lovWidget = node.treeView.userData;
+for (var i=0; i<node.sub.length; i++)
+{
+if (jsObj.values[i] != null)
+{
+treeList_addDescendants(lovWidget, node.sub[i], jsObj.values[i].value);
+}
+}
+node.treeView.rebuildHTML();
+}
+node.checkDescendants(!node.allDescendantsChecked);
+treeList.updateExpressionListForDescendants(node, node.allDescendantsChecked);
+}
+catch(e)
+{
+if (typeof(console) != "undefined" && console.log != null)
+console.log(e);
+}
+}
+function treeList_addDescendants(lovWidget, node, jsObj)
+{
+if (jsObj != null && jsObj.values != null && node != null)
+{
+fillTreeItems.call(lovWidget, node, jsObj.values);
+node.expanded = true;
+node.isIncomplete = false;
+if (node.sub)
+{
+for (var i=0; i<node.sub.length; i++)
+{
+var item = node.sub[i];
+var itemVal = jsObj.values[i];
+if (item != null && itemVal != null)
+treeList_addDescendants(lovWidget, item, itemVal.value);
+}
+}
+}
+}
+function TreeList_updateLayer(prms)
+{
+prms.setIndIfAllChecked = true;
+prms.updateLayer();
+}
+function TreeList_resize(w,h)
+{
+var o = this;
+if (w!=null)
+{
+o.w=parseInt(w)-5; 
+o.layer.style.width='' + ((_dtd4?-2:0)+o.w) + 'px';
+o.lovleftzone.resize(o.w);
+o.expressionList.resize(o.w);
+}
+}
+function TreeList_displayModeCB()
+{
+var o = this;
+o._treeList.setDisplayMode(o.checked?2:1);
+}
+function TreeList_cancelCB()
+{
+var o = this;
+if (o._treeList.multi) {
+o._treeList.restore();
+} else {
+o._treeList.expressionList.del();
+o._treeList.lovleftzone.getLovTree().unselect()
+}
+if (o._treeList.applyCB)
+o._treeList.applyCB()
+o._treeList.lovleftzone.loadAndExpandUntil(o._treeList.lovZoneInfo);
+o._treeList.previousValues=null;
+}
+function selectAfterTreeLoadedCB(evId, treeWidget) {
+var listPreviousValuesKeys = treeWidget.lovZoneInfo.treeList.listPreviousValuesKeys
+if (!treeWidget.multi && !treeWidget.lovZoneInfo.treeList.firstAsyncFilled && (listPreviousValuesKeys.length > 0)) {
+treeWidget.getLovTree().selectInData(listPreviousValuesKeys[0], "key", true)
+}
+}
+selectAfterTreeLoadedEv = null
+function TreeList_viewChangeCB()
+{
+var o = this;
+o._treeList.firstAsyncFilled = false
+if (o._treeList.listView)
+{
+if (p.newObserverOneEvent && (null == selectAfterTreeLoadedEv)) {
+selectAfterTreeLoadedEv = p.newObserverOneEvent(p._EVT_TREE_LOADED, selectAfterTreeLoadedCB)
+}
+if (!o._treeList.lovleftzone.hasBeenFilled) { 
+o._treeList.lovleftzone.loadAndExpandUntil(o._treeList.lovZoneInfo, o._treeList.listPreviousValuesNames, o._treeList.listPreviousValuesKeys);
+o._treeList.lovleftzone.hasBeenFilled = true
+o._treeList.resize(o._treeList.w+5,o._treeList.h);
+}
+getLayer(o._treeList.id+'_List').style.display='none';
+getLayer(o._treeList.id+'_Sel').style.display='';
+o._treeList.listView = false;
+o.setText("Selection"); 
+}
+else
+{
+if (!o._treeList.multi) {
+o._treeList.expressionList.del();
+var sel = o._treeList.lovleftzone.getLovTree().getSelections()
+if (sel.length > 0) {
+if (sel[0].userData && !sel[0].userData.overfetch) {
+o._treeList.updateExpressionList(sel[0], true)
+}
+}
+} 
+getLayer(o._treeList.id+'_List').style.display='';
+getLayer(o._treeList.id+'_Sel').style.display='none';
+o._treeList.listView = true;
+o.setText("Tree list"); 
+}
+}
+function TreeList_setSelectionMode(mode)
+{
+var o = this;
+if(mode)
+o.selectionMode = mode;
+else
+{
+o.selectionMode = 1;
+if(o.multi)
+{
+o.selectionMode = 2;
+if(o.cplx)
+o.selectionMode = 3;
+}
+}
+}
+function TreeList_restore()
+{
+var o = this;
+o.expressionList.del();
+for(var item in o.arrayRowsData)
+{
+if(o.arrayRowsData[item])
+o.arrayRowsData[item] = null; 
+}
+var treeWidget = o.lovleftzone.getLovTree();
+treeWidget.updateAllOfTreeItems(TreeList_unCheck,{ms:o});
+}
+function TreeList_unCheck(prms)
+{
+prms.check(false);
+prms.setIndeterminate(false);
+}
+function TreeList_setListDisplaymode(mode)
+{
+var o = this;
+var row = null;
+var text = new Array;
+var key  = new Array;
+o.displayMode = (mode == o.showCaption? o.showCaption: o.showCaptionAndKey);
+for(var item in o.arrayRowsData)
+{
+if(o.arrayRowsData[item])
+{
+if (mode == o.showCaption) 
+{
+text[0] = o.arrayRowsData[item].pathName;
+key[0]  = null;
+}
+else
+{
+text[0] = o.arrayRowsData[item].pathName;
+key[0]  = "  (" + o.arrayRowsData[item].key + ")";
+}
+var ret = o.expressionList.findByValue(o.arrayRowsData[item].key);
+var key=(mode == o.showCaption)?"":o.arrayRowsData[item].key
+o.expressionList.rewriteRow(ret.index,[{textArr:[o.arrayRowsData[item].pathName, key]}]);
+} 
+}
+}
+function TreeList_setListItemDisplaymode(itemKey)
+{
+var o = this;
+var row = null;
+var text = new Array;
+var key = new Array;
+if(o.arrayRowsData[itemKey])
+{
+if (o.displayMode == o.showCaption)
+{
+text[0] = o.arrayRowsData[itemKey].pathName;
+key[0]  = null;
+} 
+else
+{
+text[0] = o.arrayRowsData[itemKey].pathName;
+key[0]  = "  (" + o.arrayRowsData[itemKey].key + ")";
+}
+var ret = o.expressionList.findByValue(o.arrayRowsData[itemKey].key);
+var key=(o.displayMode == o.showCaption)?"":o.arrayRowsData[itemKey].key
+o.expressionList.rewriteRow(ret.index,[{textArr:[o.arrayRowsData[itemKey].pathName, key]}]);
+} 
+}
+function TreeList_setDisplayMode(mode)
+{
+var o = this; 
+o.lovleftzone.updateOnDisplayOption (mode==1?LovDisplayOption.caption:LovDisplayOption.caption_key)
+o.setListDisplaymode(mode);
+}
+function TreeList_setChildDisplayMode(sub,mode)
+{
+var o = this;
+var len = sub.length;
+if(len == 0) return;
+for(var i=0;i<len;i++)
+{
+elem = sub[i];
+o.showMode(elem,mode);
+if(elem.sub.length>0)
+o.setChildDisplayMode(elem.sub,mode);
+}
+}
+function TreeList_showMode(item,mode)
+{
+var o = this;
+if(item.domElem == null) return;
+if (mode == o.showCaption)
+item.domElem.innerHTML=item.name;
+else if (mode == o.showCaptionAndKey)
+item.domElem.innerHTML=item.name+" ("+ item.userData + ")";     
+}
+function TreeList_updateExpressionListForDescendants(item,add)
+{
+var o = this;
+o.updateExpressionListForChildren(item,add);
+    var sub=item.sub;
+    if(sub)
+    {
+    var len=sub.length;
+    for (var i=0;i<len; i++)
+    {               
+    o.updateExpressionListForDescendants(sub[i],add);    
+    }   
+    }  
+}
+function TreeList_updateExpressionListForChildren(item,add)
+{
+var o = this;
+    var sub=item.sub;
+    if(sub)
+    {
+    var len=sub.length;
+    for (var i=0;i<len; i++)
+    {               
+    o.updateExpressionList(sub[i],add);       
+    }   
+    }    
+}
+function TreeList_updateExpressionList(item,add)
+{
+var o = this;
+    var ret = o.expressionList.findByValue(item.userData.key);
+    if (add)  
+    {
+        if (!ret)
+        {  
+var textStyleArr = null
+if (o.displayMode == o.showCaption)
+textStyleArr=[{textArr:[item.userData.pathName,""], clsArr:["", "lovKey"]}];  
+else
+textStyleArr=[{textArr:[item.userData.pathName,item.userData.key], clsArr:["", "lovKey"]}];
+o.expressionList.addRow(item.userData.key, false, item.userData.pathName, textStyleArr);
+o.arrayRowsData[item.userData.key] = {pathName:item.userData.pathName, key:item.userData.key};
+        } 
+    }
+    else
+    if (ret!=null)
+    {       
+    o.expressionList.del(ret.index);
+o.arrayRowsData[item.userData.key] = null;
+    }     
+}
+function TreeList_init()
+{
+var o = this;
+o.layer = getLayer(o.id);
+var selectionType = o.multi?'':PromptSelectionType.Mono
+o.lovZoneInfo   = { promptType:PromptType.constrained, 
+                showSearch:false,                                
+                Uuid:o.Uuid,
+treeList:o,
+                displayKeyIcon:false,
+                refreshLOVFirst:true,
+lovContentWidth:o.w, 
+lovContent_nbLine:o.nblines,          
+                lovContentViewMode:LovViewMode.tree,
+                additionalXtraNodeInfoCB:TreeList_additionalXtraNodeInfoCB,
+                dataType: _dataType.txt,
+selectionType:selectionType
+};
+o.lovleftzone.init(); 
+var treeWidget = o.lovleftzone.getLovTree(); 
+treeWidget.setRightClickMenuCB(TreeList_showContextMenu);
+o.expressionList.init();
+o.toolBarContainer.init();
+o.toolBar.init();
+o.okBtn.init();
+o.resetBtn.init();
+o.setSelectionMode();
+o.setPreviousSelection();
+}
+function TreeList_getHTML()
+{
+ var o = this; 
+ var i = 0;
+ var arr = [];
+ arr[i++]='<table id="'+o.id+'" border="0" cellspacing="0" cellpadding="0">';
+ arr[i++]='  <tr valign="top">';
+ arr[i++]='     <td colspan=2>';
+ arr[i++]=        o.toolBarContainer.beginHTML(); 
+ arr[i++]=           o.toolBar.getHTML();
+     arr[i++]=           o.toolBarContainer.endHTML();
+ arr[i++]='     </td>';
+ arr[i++]='  </tr>';
+ arr[i++]='  <tr valign="top">';
+ arr[i++]='     <td colspan=2>';
+ arr[i++]='     <div id="'+o.id+'_Sel" style="'+(o.listView?'display:none':'display:block')+';">';
+ arr[i++]=                o.lovleftzone.getHTML();
+ arr[i++]='     </div>'; 
+ arr[i++]='     <div id="'+o.id+'_List" style="'+(o.listView?'display:block':'display:none')+';">';
+ arr[i++]=          o.expressionList.getHTML();
+ arr[i++]='     </div>'; 
+ arr[i++]='     </td>';
+ arr[i++]='  </tr>';
+ arr[i++]='  <tr valign="top">';
+ arr[i++]='     <td>';
+ arr[i++]='        <div style="padding-top:5px;">'
+ arr[i++]=     o.resetBtn.getHTML();
+ arr[i++]='        </div>'
+ arr[i++]='     </td>';
+ arr[i++]='     <td>';
+ arr[i++]='        <div style="float:right;padding-top:5px;">'
+ arr[i++]=         o.okBtn.getHTML();
+ arr[i++]='        </div>'
+ arr[i++]='     </td>';
+ arr[i++]='  </tr>';
+ arr[i++]='</table>';
+ return arr.join('');
+}

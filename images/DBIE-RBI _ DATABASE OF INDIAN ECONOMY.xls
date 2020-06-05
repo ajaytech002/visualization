@@ -1,0 +1,996 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!-- saved from url=(0053)https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics -->
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+
+
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Cache-Control" content="no-cache, no-store">
+<meta http-equiv="Expires" content="Sat, 01 Dec 2001 00:00:00">
+
+<!-- <meta http-equiv="X-UA-Compatible" content="IE=8" /> -->
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE">
+<title>DBIE-RBI : DATABASE OF INDIAN ECONOMY</title>
+<link rel="icon" href="https://dbie.rbi.org.in/DBIE/images/org.png">
+<link href="./DBIE-RBI _ DATABASE OF INDIAN ECONOMY_files/stylesheet.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="./DBIE-RBI _ DATABASE OF INDIAN ECONOMY_files/jquery-1.12.4.js.download"></script>
+<script type="text/javascript" src="./DBIE-RBI _ DATABASE OF INDIAN ECONOMY_files/jquery-migrate-1.4.1.js.download"></script>	
+<!-- <link href="css/jquery.lightbox-0.5.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="js/jquery.lightbox-0.5.js"></script> -->
+<link href="./DBIE-RBI _ DATABASE OF INDIAN ECONOMY_files/menu.css" rel="stylesheet" type="text/css">
+<script src="./DBIE-RBI _ DATABASE OF INDIAN ECONOMY_files/menudb.js.download" type="text/javascript"></script>
+<!--DROPDOWN SCRIPT-->
+<link href="./DBIE-RBI _ DATABASE OF INDIAN ECONOMY_files/breadCrumb.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" type="text/css" href="./DBIE-RBI _ DATABASE OF INDIAN ECONOMY_files/tabs.css">
+<script type="text/javascript" src="./DBIE-RBI _ DATABASE OF INDIAN ECONOMY_files/ajaxtabs.js.download"></script>
+<script type="text/javascript" src="./DBIE-RBI _ DATABASE OF INDIAN ECONOMY_files/jquery.iframe-auto-height.plugin.1.5.0.min.js.download"></script>
+<script type="text/javascript" src="./DBIE-RBI _ DATABASE OF INDIAN ECONOMY_files/marquee.js.download"></script>
+<!-- <script type="text/javascript" src="scripts/jquery.jcryption-1.1.min.js"></script> -->
+<script type="text/javascript" src="./DBIE-RBI _ DATABASE OF INDIAN ECONOMY_files/jquery.jcryption.3.1.0.js.download"></script> 
+ 
+<script type="text/javascript">
+//    if (inIframe){
+// 		 console.log("In Iframe");  
+//    }else{
+// 	   console.log("In Window");
+//    }
+   
+   if (self === top) {
+       var antiClickjack = document.getElementById("antiClickjack");
+       antiClickjack.parentNode.removeChild(antiClickjack);
+   } else {
+       top.location = self.location;
+   }  
+   function inIframe () {
+	    try {
+	        return window.self !== window.top;
+	    } catch (e) {
+	        return true;
+	    }
+	}
+</script>
+<script type="text/javascript">
+/*    if(top.location!=self.locaton) {
+  parent.location = self.location;
+} */
+  
+	$(document)
+			.ready(
+					function() {
+
+						$('a[rel=helplinks]')
+								.click(
+										function(e) {
+											$('.cont')
+													.empty()
+													.html(
+															'<iframe src="'
+																	+ this.href
+																	+ '" frameborder="0" height="500px" width="'
+																	+ ($(
+																			document)
+																			.width() - 20)
+																	+ 'px"></iframe>');
+											return false;
+										});
+
+					});
+					   /* if (self === top) {
+       var antiClickjack = document.getElementById("antiClickjack");
+       antiClickjack.parentNode.removeChild(antiClickjack);
+   } else {
+       top.location = self.location;
+   } */
+</script>
+<style type="text/css">
+#searchTxt {
+	/*border: 0 none;*/
+	font: bold 13px Palatino Linotype;
+	height: 14px;
+	margin: 1px 0 0 2px;
+	border-bottom: 1px solid #488ac7;
+	border-top: 1px solid #488ac7;
+}
+
+#searchTxt.empty {
+	color: black;
+	background-color: white;
+}
+
+#searchTxt.focus {
+	color: black;
+	background-color: white;
+}
+	 #simplemodal-overlay{
+	 display:none;
+	 }
+	 
+	 
+#mLoginFormLogout>div{
+	display:none;
+}
+</style>
+</head>
+<body>
+	<iframe id="refFrame" src="./DBIE-RBI _ DATABASE OF INDIAN ECONOMY_files/dbie.html" width="0" height="0" style="" frameborder="0" marginheight="0" marginwidth="0" scrolling="no"></iframe>
+	<div id="overlay" style="position: absolute; left: 0px; top: 0px; width: 100%; height: 100%; text-align: center; z-index: 1000; visibility: hidden; background-color: whitesmoke; opacity: 0.5; display: none"></div>
+	<div class="main">
+
+
+		<!--HEADER-->
+		<div class="header">
+			<div class="logo" style="width: 35%; height: 100%">
+				<!-- <img src="images/RBI_LOGO_NEW.JPG" width="55%" alt="logo"
+					height="100%" /> -->
+					<img src="./DBIE-RBI _ DATABASE OF INDIAN ECONOMY_files/RBI LOGO Final.png" width="55%" alt="logo" height="85%"> 
+			</div>
+
+			<ul style="float: right; list-style: none; margin-top: 0; margin-bottom: 0;">
+				<li><div class="feed_links">
+						<ul>
+							<li>Welcome Guest</li>
+							
+							<li><a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=feedback" rel="site">Feedback </a></li>
+							<li>|</li>
+							<li><a href="https://dbie.rbi.org.in/DBIE/jsp/ContactUs.jsp" rel="helplinks">Contact Us</a></li>
+							<li>|</li>
+							<li><a href="https://dbie.rbi.org.in/DBIE/doc/dbiefaq.pdf" target="blank">FAQ</a></li>
+							<li>|</li>
+							<li><a href="https://dbie.rbi.org.in/DBIE/doc/disclaimer.html?26215" rel="helplinks">Disclaimer</a></li>
+							<li><a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=english" rel="site"></a></li>
+							<li><a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=hindi" rel="site" style="font-size: 0.9em;">&#2361;&#2367;&#2344;&#2381;&#2342;&#2368; &#2360;&#2366;&#2311;&#2335;</a></li>
+
+						</ul>
+					</div></li>
+				<li>
+					<div style="float: right; margin: 25px 0px 0 0; position: absolute; right: 0; top: 0px;" class="feed_links">
+
+
+						
+						<script type="text/javascript">
+							function validateForm() {
+								var mForm = document
+										.getElementById("mLoginForm");
+								var str = "";
+								var valid = true;
+								if (!(mForm.mUserName.value.length > 0)) {
+									valid = false;
+									str += "Username cannot be empty\n";
+								}
+								if (!(mForm.mPassword.value.length > 0)) {
+									valid = false;
+									str += "Password cannot be empty\n";
+								}
+
+								if (!valid) {
+									alert(str);
+								}
+								return valid;
+							}
+
+// 							$(document).ready(function() {
+
+// 							});
+
+							/*function submitForm()
+							{
+							   	if(validateForm())
+							   		document.mLoginForm.submit();
+							}*/
+						</script>
+
+						
+
+						<form name="loginForm" id="mLoginForm" method="post" action="https://dbie.rbi.org.in/DBIE/login.rbi"><div><input type="hidden" name="org.apache.struts.taglib.html.TOKEN" value="ab542fd8aafc51e130b5c11f280f9687"></div>
+							<table cellpadding="1" cellspacing="0">
+								<tbody><tr>
+									<td>User Name <br>
+									<i style="font-size: 9px;">(For RBI Users)      </i></td>
+									<td>:</td>
+									<td><input type="text" name="mUserName" size="15" value="" id="mUserName" autocomplete="off"></td>
+								</tr>
+								<tr>
+									<td>Password</td>
+									<td>:</td>
+									<td><input type="password" name="mPassword" size="15" value="" id="mPassword" autocomplete="off"></td>
+									<td><input type="submit" value="Login" style="background: none repeat scroll 0 0 transparent; cursor: pointer; border: medium none; color: #333333; font: 11px &#39;Trebuchet MS&#39;,&#39;Lucida Grande&#39;,Verdana,Lucida,Geneva,Helvetica,Arial,sans-serif; text-decoration: underline;"></td>
+								</tr>
+							</tbody></table>
+							<input type="hidden" name="org.apache.struts.taglib.html.TOKEN" value="ab542fd8aafc51e130b5c11f280f9687">
+						</form>
+
+						
+						
+						<script type="text/javascript">
+							//this fixes an issue with the old method, ambiguous values
+							//with this test document.cookie.indexOf( name + "=" );
+							function Get_Cookie(check_name) {
+								// first we'll split this cookie up into name/value pairs
+								// note: document.cookie only returns name=value, not the other components
+								var a_all_cookies = document.cookie.split(';');
+								var a_temp_cookie = '';
+								var cookie_name = '';
+								var cookie_value = '';
+								var b_cookie_found = false; // set boolean t/f default f
+
+								for (i = 0; i < a_all_cookies.length; i++) {
+									// now we'll split apart each name=value pair
+									a_temp_cookie = a_all_cookies[i].split('=');
+
+									// and trim left/right whitespace while we're at it
+									cookie_name = a_temp_cookie[0].replace(
+											/^\s+|\s+$/g, '');
+
+									// if the extracted name matches passed check_name
+									if (cookie_name == check_name) {
+										b_cookie_found = true;
+										// we need to handle case where cookie has no value but exists (no = sign, that is):
+										if (a_temp_cookie.length > 1) {
+											cookie_value = unescape(a_temp_cookie[1]
+													.replace(/^\s+|\s+$/g, ''));
+										}
+										// note that in cases where cookie is initialized but no value, null is returned
+										return cookie_value;
+										break;
+									}
+									a_temp_cookie = null;
+									cookie_name = '';
+								}
+								if (!b_cookie_found) {
+									return null;
+								}
+							}
+
+							function Delete_Cookie(name, path, domain) {
+								if (Get_Cookie(name))
+									document.cookie = name
+											+ "="
+											+ ((path) ? ";path=" + path : "")
+											+ ((domain) ? ";domain=" + domain
+													: "")
+											+ ";expires=Thu, 01-Jan-1970 00:00:01 GMT";
+							}
+
+							function deleteDefaultCookies() {
+								Delete_Cookie('JSESSIONID', '/OpenDocument');
+								Delete_Cookie('JSESSIONID',
+										'/AnalyticalReporting');
+								Delete_Cookie('JSESSIONID', '/PlatformServices');
+								Delete_Cookie('JSESSIONID', '/Xcelsius');
+								/*Delete_Cookie('JSESSIONID', '/DBIE');
+								Delete_Cookie('JSESSIONID', '/InfoViewAppActions');
+								Delete_Cookie('JSESSIONID', '/InfoViewApp');*/
+							}
+							deleteDefaultCookies();
+						</script>
+						
+					</div>
+				</li>
+			</ul>
+		</div>
+		<!--HEADER END-->
+		<div class="heading">
+			<!--<div class="text">
+    	<img src="images/Header.JPG" width="100%" alt="Database on Indian Economy"></img>
+    </div>
+  -->
+			<div class="text" style="margin-top: -65px;">
+				<h1 style="margin: 0pt; padding: 0pt; text-decoration: none; border: 0; color: #555555; font-weight: bold; font-family: Calibri; line-height: 15px;">
+					<center>
+						Database on Indian Economy  
+					</center>
+				</h1>
+				<br>
+				<h1 style="margin: 0pt; padding: 0pt; text-decoration: none; border: 0; color: #555555; font-size: 15px; font-weight: normal; font-family: Calibri; line-height: 15px;">
+					<center>
+						RBI's Data Warehouse 
+					</center>
+				</h1>
+			</div>
+		</div>
+		<!--MAIN MENU-->
+		<div class="main_menu_bg" style="">
+
+			<div class="main_menu_links">
+				<ul>
+					<li><a id="Home" href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=home" rel="site">Home </a></li>
+					<li>|</li>
+					<li><a id="Statistics" href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics" rel="site">Statistics</a></li>
+					<li>|</li>
+					<li><a id="Publications" href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=publications" rel="site">Time-Series Publications</a></li>
+						
+												
+					 <li>|</li>
+					<li><a id="UnitLevelData" href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=unitLevelData" rel="site">Unit Level Data</a></li> 
+					 
+					
+				</ul>
+			</div>
+			<div style="float: right; text-align: center; margin-right: 2.5%;">
+			<input type="hidden" size="15" name="test" id="test" value="en_US">
+						<input type="hidden" size="15" name="test" id="hindiname" value="&#2326;&#2379;&#2332; . . .">
+				<form onsubmit="search(); return false;">
+					<!-- <div style="border-left:2px solid white;border-right:2px solid white;width:100%; margin-right:20px; padding:0; height:19px; background-color:#488AC7;"> -->
+					<div style="position: relative;">
+						
+						<input type="text" size="15" name="s" id="searchTxt" class="empty" value="Search . . .">
+						
+						<!-- <input type="text" size="15" name="s" id="searchTxt" class="empty"></input> -->
+						<input type="submit" value="" style="margin: 0pt; padding: 0px; cursor: pointer; background: url(&#39;images/search.jpg&#39;) no-repeat scroll 50% 50% transparent; border: 0pt none; width: 18px; height: 17px;">
+					</div>
+					<!-- </div> -->
+				</form>
+				<script type="text/javascript" charset="utf-8">
+					$(document).ready(function() {
+						/* $("#searchTxt").val("Search . . .").addClass("empty");	
+						
+						$("#searchTxt").val($("<div>").html("&#2360;&#2375;&#2309;&#2352;&#2381;&#2330;&#2381;&#46;&#46;&#46;").text()).addClass("empty");
+						$("#searchTxt").val($(document.getElementByID("hindiname")).addClass("empty");
+						 if(document.getElementByID("test") == "hi")){
+							$("#searchTxt").val($(document.getElementByID("hindiname"))).addClass("empty");
+						}
+						else{
+							$("#searchTxt").val("Search . . .").addClass("empty");
+						} */
+						//$("#searchTxt").val(document.getElementByID("searchTxt"))).addClass("empty");
+						$("#searchTxt").bind("cut copy paste",function(e) {
+						  e.preventDefault();
+							//  alert("You cannot paste OTP!. Please type ");
+						 });
+					
+						$("#searchTxt").focus(function() {
+							if ($(this).val() != "") {
+								$(this).val("").removeClass("empty");
+								$(this).addClass('focus');
+							}
+						});
+						$("#searchTxt").blur(function() {
+							if ($(this).val() == "") {
+								$(this).val("").removeClass('focus');
+								var name = document.getElementByID("searchTxt");
+								$(this).val(name).addClass("empty");	
+							}
+						});
+						
+						 $("#searchTxt").keypress( function(e) {
+							//console.log("key press event called");
+						   // var chr = String.fromCharCode(e.which);
+						    var k = e.which;
+						   // console.log(String.fromCharCode(e.which),k);
+// 						    var ok = k >= 65 && k <= 90 || // A-Z
+// 				            k >= 97 && k <= 122 || // a-z
+// 				            k >= 48 && k <= 57; // 0-9
+					          
+							if(k==124 || k==38 || k==36 || k==37 ||
+					            k==64 || k==39 || k==34 || k==92 || k==60 ||
+					            k==62 || k==40 || k==41 || k==43 || k==44 ||
+					            k==92 || k==13 || k ==59)
+					        	  e.preventDefault();						   
+						});  
+						 $("#mUserName").bind("cut copy paste",function(e) {
+							  e.preventDefault();
+								//  alert("You cannot paste OTP!. Please type ");
+							 });
+						 $("#mUserName").keypress( function(e) {
+								//console.log("key press event called");
+							   // var chr = String.fromCharCode(e.which);
+							    var k = e.which;
+							   // console.log(String.fromCharCode(e.which),k);
+//	 						    var ok = k >= 65 && k <= 90 || // A-Z
+//	 				            k >= 97 && k <= 122 || // a-z
+//	 				            k >= 48 && k <= 57; // 0-9
+						          
+								if(k==124 || k==38 || k==36 || k==37 ||
+						            k==64 || k==39 || k==34 || k==92 || k==60 ||
+						            k==62 || k==40 || k==41 || k==43 || k==44 ||
+						            k==92 || k==13 || k ==59)
+						        	  e.preventDefault();						   
+							}); 
+// 						 $("#mPassword").keypress( function(e) {
+// 							    var k = e.which;
+// 								if(k==124 || k==38 || k==36 || k==37 ||
+// 						            k==64 || k==39 || k==34 || k==92 || k==60 ||
+// 						            k==62 || k==40 || k==41 || k==43 || k==44 ||
+// 						            k==92 || k==13 || k ==59)
+// 						        	  e.preventDefault();						   
+// 							}); 						
+					});
+
+					function refreshIframe() {
+						var iframe = document.getElementById("refFrame");
+						iframe.src = iframe.src;
+						setTimeout(refreshIframe, 900000);
+					}
+
+					function search() {
+						if ($('#searchTxt').val() == '' ){
+							return;
+						} else {
+							try {
+								var pettabdiv = $('<div/>', {
+									'id' : 'pettab',
+									'style' : 'padding: 50px 0 0 20px'
+								});
+								var pettabul = $(
+										'<ul/>',
+										{
+											style : 'list-style:none;font-weight:bold; padding:0;'
+										});
+								var pettabli = $('<li/>');
+								var pettaba = $(
+										'<a/>',
+										{
+											style : 'background: none repeat scroll 0% 0% #488AC7; padding: 5px; color: #FFFFFF',
+											href : 'home.rbi?action=search&s='+ $("#searchTxt").val(),
+											rel : '#iframe',
+											'class' : 'selected',
+											text : 'Searched By "'
+													+ $("#searchTxt").val()
+													+ '"'
+										});
+								var pettabcontainerdiv = $(
+										'<div/>',
+										{
+											'id' : 'petsdivcontainer',
+											style : 'border:0px double lightgray; width: 95%; padding: 0 0 0 20px; margin-bottom: 1em; background:#FFFFFF;'
+										});
+								var pettabcontaineriframe = $(
+										'<iframe/>',
+										{
+											name : '_ddajaxtabsiframe-petsdivcontainer',
+											src : 'about:blank',
+											marginwidth : 0,
+											marginheight : 0,
+											vspace : 0,
+											hspace : 0,
+											'class' : 'tabcontentiframe',
+											style : 'width: 100%; height: auto; min-height: 450px;',
+											frameborder : 0
+										});
+								pettabli.append(pettaba);
+								pettabul.append(pettabli);
+								pettabdiv.append(pettabul);
+								pettabcontainerdiv
+										.append(pettabcontaineriframe);
+								$('.cont').html(pettabdiv);
+								$('.cont').append(pettabcontainerdiv);
+								var mypets = new ddajaxtabs("pettab",
+										"petsdivcontainer");
+								mypets.setpersist(false);
+								mypets.setselectedClassTarget("link");
+								//mypets.onajaxpageload(resizeIframe);
+								mypets.init();
+							} catch (e) {
+								alert(e);
+							}
+						}
+						function resizeIframe(iframe) {
+							$('[name=' + iframe.name + ']').iframeAutoHeight({
+								debug : false
+							});
+						} 
+						return false;
+					}
+				</script>
+				<!-- <div class="rss_links" style="float:right;">
+    <a href="#" style="float:right;"><img src="images/rss_logo.jpg" width="20" height="22" alt="" align="absmiddle" />&nbsp;RSS</a>
+   </div> -->
+			</div>
+		</div>
+		<!--MAIN MENU END-->
+<!--SUB MENU-->
+<!--  <div id="menu_bg">-->
+   
+   <div style="clear:both;"></div>
+<!--  </div>-->
+  <div style="clear:both;"></div>
+  <!--SUB MENU END-->
+  <!--CONTENT-->
+  <div class="cont">
+   <!--CONTENT WRAP-->
+   <div class="cont_wrap" style="width:100%; margin:0;">
+   
+   <ul id="sddm" style="float: left; width:99%; padding-left:1%; z-index:30; border-bottom: 1px solid black;">
+    
+     <li><a onmouseover="mopen(&#39;m1&#39;)" onmouseout="mclosetime()" rel="content" did="1">Real Sector</a>
+     <div id="m1" onmouseover="mcancelclosetime()" onmouseout="mclosetime()" style="visibility: hidden;">
+      
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!1_29" rel="FR">Agriculture</a>
+		
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!1_30" rel="FR">Industrial Statistics</a>
+		
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!1_32" rel="FR">National Income</a>
+		
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!1_40" rel="FR">Prices &amp; Wages</a>
+		
+		</div>
+     </li>
+     <li>|</li>
+     
+     <li><a onmouseover="mopen(&#39;m2&#39;)" onmouseout="mclosetime()" rel="content" did="2">Corporate Sector</a>
+     <div id="m2" onmouseover="mcancelclosetime()" onmouseout="mclosetime()">
+      
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!2_46" rel="FR">Finances of FDI Companies</a>
+		
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!2_42" rel="FR">Listed Non-Government Non-Financial Companies</a>
+		
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!2_43" rel="FR">Non-Government Non-Banking Financial and Investment Companies</a>
+		
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!2_45" rel="FR">Non-Government Non-Financial Private Limited Companies</a>
+		
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!2_44" rel="FR">Non-Government Non-Financial Public Limited Companies</a>
+		
+		</div>
+     </li>
+     <li>|</li>
+     
+     <li><a onmouseover="mopen(&#39;m3&#39;)" onmouseout="mclosetime()" rel="content" did="3">Financial Sector</a>
+     <div id="m3" onmouseover="mcancelclosetime()" onmouseout="mclosetime()">
+      
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!3_36" rel="FR">Banking - Assets &amp; Liabilities</a>
+		
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!3_35" rel="FR">Banking - Branch Statistics</a>
+		
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!3_37" rel="FR">Banking - Performance Indicators</a>
+		
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!3_10" rel="FR">Banking - Sectoral Statistics</a>
+		
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!3_9" rel="FR">Financial Institutions</a>
+		
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!3_41" rel="FR">Key Rates</a>
+		
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!3_23" rel="FR">Monetary Statistics</a>
+		
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!3_11" rel="FR">Non Banking Financial Companies</a>
+		
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!3_24" rel="FR">Payment Systems</a>
+		
+		</div>
+     </li>
+     <li>|</li>
+     
+     <li><a onmouseover="mopen(&#39;m4&#39;)" onmouseout="mclosetime()" rel="content" did="4">Financial Market</a>
+     <div id="m4" onmouseover="mcancelclosetime()" onmouseout="mclosetime()">
+      
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!4_5" rel="FR">Equity and Corporate Debt Market</a>
+		
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!4_6" rel="FR">Forex Market</a>
+		
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!4_7" rel="FR">Government Securities Market</a>
+		
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!4_8" rel="FR">Money Market</a>
+		
+		</div>
+     </li>
+     <li>|</li>
+     
+     <li><a onmouseover="mopen(&#39;m5&#39;)" onmouseout="mclosetime()" rel="content" did="5">External Sector</a>
+     <div id="m5" onmouseover="mcancelclosetime()" onmouseout="mclosetime()">
+      
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!5_25" rel="FR">External Debt</a>
+		
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!5_26" rel="FR">External Sector Indices</a>
+		
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!5_31" rel="FR">Forex Reserve</a>
+		
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!5_3" rel="FR">International Finance</a>
+		
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!5_4" rel="FR">International Trade</a>
+		
+		</div>
+     </li>
+     <li>|</li>
+     
+     <li><a onmouseover="mopen(&#39;m6&#39;)" onmouseout="mclosetime()" rel="content" did="6">Public Finance</a>
+     <div id="m6" onmouseover="mcancelclosetime()" onmouseout="mclosetime()">
+      
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!6_22" rel="FR">Central &amp; State Govt. Finance (Combined)</a>
+		
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!6_12" rel="FR">Central Govt. Finance</a>
+		
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!6_13" rel="FR">State Govt. Finance</a>
+		
+		</div>
+     </li>
+     <li>|</li>
+     
+     <li><a onmouseover="mopen(&#39;m7&#39;)" onmouseout="mclosetime()" rel="content" did="7">Socio-Economic Indicators</a>
+     <div id="m7" onmouseover="mcancelclosetime()" onmouseout="mclosetime()">
+      
+		<a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics#!7_20" rel="FR">Socio-Economic Indicators</a>
+		
+		</div>
+     </li>
+     
+     
+
+   </ul>
+    <div id="breadCrumb" style="margin: 20px 0 0 20px;"> <ul> <li class="first"> <span><a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=home">Home</a></span> </li> <li> <span><a href="https://dbie.rbi.org.in/DBIE/dbie.rbi?site=statistics">Statistics</a></span> </li> <li> <span><b>Real Sector</b></span> </li> <li class="last"> <span><b>Prices &amp; Wages</b></span> </li> </ul></div>  
+    <!--PAGE STATUS-->
+    
+    <div style="clear:both;"></div>
+    <div id="body_content"><!--RIGHT CONTENT-->  <div class="right_tab_cont">  <!-- TAB PANELS --> <div id="pettabs"> <ul class="tabs"> <li><a href="https://dbie.rbi.org.in/DBIE/statistics.rbi?action=RL&amp;f=7&amp;sd=40" rel="#iframe" class="">Weekly</a></li> <li><a href="https://dbie.rbi.org.in/DBIE/statistics.rbi?action=RL&amp;f=30&amp;sd=40" rel="#iframe" class="">Monthly</a></li> <li><a href="https://dbie.rbi.org.in/DBIE/statistics.rbi?action=RL&amp;f=90&amp;sd=40" rel="#iframe" class="selected">Quarterly</a></li> <li><a href="https://dbie.rbi.org.in/DBIE/statistics.rbi?action=RL&amp;f=365&amp;sd=40" rel="#iframe" class="">Yearly</a></li></ul> <br style="clear: left;"> </div> 			<div id="petsdivcontainer" style="border:4px double lightgray; width: 100%; padding: 5px; margin-bottom: 1em; background:#FFFFFF;"><iframe name="_ddajaxtabsiframe-petsdivcontainer" src="./DBIE-RBI _ DATABASE OF INDIAN ECONOMY_files/saved_resource.html" marginwidth="0" height="0" marginheight="0" frameborder="0" vspace="0" hspace="0" class="tabcontentiframe" style="width: 100%; height: 550px; min-height: 550px;"></iframe></div> <!-- TAB PANELS END --> <!--RIGHT CONTENT END--></div></div>
+  <!--CONTENT END-->
+  <style type="text/css">
+  #content_div h2{
+  	text-align: center;
+  	font: bold 15px Arial,Helvetica,sans-serif;
+  }
+  .first.column {
+  	margin-right : 4%;
+  	margin-top: 10px;
+  }
+  .last.column {
+  	margin-top: 10px;
+  }
+  .first li{
+  	color:black;
+  }
+  </style>
+<!--   <script type="text/javascript" src="scripts/jquery.columnizer.min.js"></script> -->
+  <script type="text/javascript">
+  
+  var breadCrumbStatsHTML = document.getElementById("breadCrumb").innerHTML;
+  
+$(document).ready(function(){
+	// set onlick event for buttons
+	$("a[rel='FR']").click(function(){
+		
+		var hash = this.hash;
+		hash = hash.replace(/^.*#!/, '');
+		if($('#simplemodal-container').length>0)
+			$.modal.close();
+		reportsLoad(hash);
+		return false;
+	});
+	
+	if(document.location.hash)
+		$('a[href="'+document.location.hash+'"]').click();
+});
+
+
+function resizeIframe(iframe, pageurl)
+{
+	$('[name='+iframe.name+']').iframeAutoHeight({debug: false});
+	if(pageurl!=null)
+		if(pageurl.indexOf('AnalyticalReporting')>0){
+			if($.browser.mozilla){
+				frames[1].onload = function(){var iframe = frames[1].document;		var adhocTable = iframe.getElementsByTagName("table")[0];		if(adhocTable!=null || adhocTable!=undefined){		adhocTable.style.display = 'none';				var noOfRows = adhocTable.rows.length;		for(var i=0; i<noOfRows; i++)		{			adhocTable.rows[i].cells[5].style.display="none";			adhocTable.rows[i].cells[6].style.display="none";			adhocTable.rows[i].cells[7].style.display="none";			adhocTable.rows[i].cells[8].style.display="none";		}		for(var i=0; i<noOfRows; i++)	{		if($.trim($(adhocTable.rows[i].cells[2]).text())=="")		{			$(adhocTable.rows[i]).hide();		}	}	adhocTable.style.display = 'block';}};
+			}
+			else{
+				$('[name='+iframe.name+']').load(function(){var iframe = frames[1].document;		var adhocTable = iframe.getElementsByTagName("table")[0];		if(adhocTable!=null || adhocTable!=undefined){		adhocTable.style.display = 'none';				var noOfRows = adhocTable.rows.length;		for(var i=0; i<noOfRows; i++)		{			adhocTable.rows[i].cells[5].style.display="none";			adhocTable.rows[i].cells[6].style.display="none";			adhocTable.rows[i].cells[7].style.display="none";			adhocTable.rows[i].cells[8].style.display="none";		}		for(var i=0; i<noOfRows; i++)	{		if($.trim($(adhocTable.rows[i].cells[2]).text())=="")		{			$(adhocTable.rows[i]).hide();		}	}	adhocTable.style.display = 'block';}});
+			}
+		}
+}
+
+function reportsLoad(hash) {
+	// hash doesn't contain the first # character.
+	if(hash) {
+		// restore ajax loaded state
+		$.ajax({
+			url: 'statistics.rbi',
+			type: 'POST',
+			/* data:{
+				action:'FR',
+				d:hash.split('_')[0],
+				sd:hash.split('_')[1]
+			} */
+			data:{
+				action:'FR',
+				p:(hash=='FR'?'':hash)
+			},
+			success: function(response, obj)
+			{
+				try{
+					var JSONResponse = $.parseJSON(response);
+					$("#breadCrumb").html(JSONResponse.bread_crumb);
+					$("#body_content").html(JSONResponse.body_content);
+					if(JSONResponse.success){
+						var mypets=new ddajaxtabs("pettabs", "petsdivcontainer");
+			 			mypets.setpersist(false);
+			 			mypets.setselectedClassTarget("link");
+			 			mypets.onajaxpageload(resizeIframe);
+			 			mypets.init();
+			 			//$('a[site=adhoc]').click(function(){
+				 			//setTimeout(frames[1].onload = function(){ var iframe = frames[1].document;		var adhocTable = iframe.getElementsByTagName("table")[0];		if(adhocTable!=null || adhocTable!=undefined){		adhocTable.style.display = 'none';				var noOfRows = adhocTable.rows.length;		for(var i=0; i<noOfRows; i++)		{			adhocTable.rows[i].cells[5].style.display="none";			adhocTable.rows[i].cells[6].style.display="none";			adhocTable.rows[i].cells[7].style.display="none";			adhocTable.rows[i].cells[8].style.display="none";		}		for(var i=0; i<noOfRows; i++)	{		if($.trim($(adhocTable.rows[i].cells[2]).text())=="")		{			$(adhocTable.rows[i]).hide();		}	}	adhocTable.style.display = 'block';}},1000);
+				 		//});
+					}
+				}
+				catch(e)
+				{
+					window.location.href = window.location.href;
+				}
+			}
+			
+		});
+	} else {
+		// start page
+		$("#breadCrumb").html(breadCrumbStatsHTML);
+		$("#body_content").hide();
+		$("#body_content").empty().html('<div class="warningbox" > Invalid Page Requested </div>').slideDown();
+	}
+}
+
+
+/*********************************************************************************
+Statistics Page Domains Content
+**********************************************************************************/
+/*
+var content_images = ['images/real_sector.jpg'];
+
+var content = {
+				1 : {
+						'dName' : 'Real Sector',
+						'data' : [{
+									'sdName' : 'Agriculture',
+									'para' : 'The primary source of the Agriculture data is the annual data from Ministry of Agriculture, Government of India. Annual data series are available for more than 18 variables under agricultural production and inputs.<br /><br />'
+										+'Annual indices on Area under Cultivation, Yield per Hectare and Production Indices for 25 Crops are available. Production and Area under Cultivation data is available from 1951 onwards for major food grains and commercial crops. State-Wise Production data for major food grains and non-food crops are also available from 1981 onwards.<br /><br />' 
+										+'Data series on agricultural inputs like Sown Area, Irrigated Area and Consumption of Fertilizer are available from 1951 onwards. Data series on Procurement, Off-Take and Stock data for rice and wheat are available from 1972. Minimum Support Price for 7 food grains and 9 major non-food grains are available from 1976 onwards.'
+								},{
+									'sdName' : 'Industrial Statistics',
+									'para' : 'The primary source of industrial production data is Central Statistics Office, Ministry of Statistics and Program Implementation (MOSPI) and the data is available on monthly basis.<br /><br />'
+										+'Data series on Industrial Production with respect to industry classification and use base classification are available from April 1994. Data series on Index number of Industrial Production (IIP) is available sector wise and use-based classification wise from March 1995.'
+								},{
+									'sdName' : 'National Income',
+									'para' : 'The primary source of National Income data is Central Statistics Office. Quarterly estimates of Gross Domestic Products at Factor Cost/Market Prices are available industry wise at current and constant prices. Components of GDP such as Private Final Consumption Expenditure (PFCE), Government Final Consumption Expenditure (GFCE), Gross Fixed Capital Formation GFCF), Exports, Imports are also made available at current and constant prices on a quarterly basis.<br /><br />'
+										+'Annual data series at industry level are available on Net State Domestic Products at Factor Cost. Long time series data on various GDP aggregates, Savings, Capital Formation at various sector levels are available from 1950 onwards.'
+								},{
+									'sdName' : 'Prices',
+									'para' : 'Weekly index on Wholesale Price Index (WPI) are available for food and non-food primary articles covering 121 commodities. Monthly index on WPI are available for 676 commodities. Inflation Rates Based on WPI is also made available for various commodity groups on monthly basis.<br /><br />'
+										+'Annual inflation rates based on monthly Consumer Price Indices (CPI), viz., Industrial Worker Index, Urban Non-Manual Employee Index and Agricultural Laborers Index are available. Apart from the above, monthly Average Prices of Gold and Silver is also available from 1990 onwards. Housing Price Indices compiled based on data from registrar offices for major cities are available on a quarterly basis.'
+								}],
+						'imgUrl' : 'images/real_sector.jpg',
+						'seqNo' : 1
+					},
+				2 : {
+						'dName' : 'Corporate Sector',
+						'data' : [{
+							'sdName' : '',
+							'para' : 'The Reserve Bank of India has been publishing studies on the financial performance of Indian private corporate business sector at regular interval. The studies are undertaken with a view to capture the trends in income, value of production, sales, profitability, saving, investment, borrowings, etc. in the private corporate business sector.<br /><br />' 
+								+'Main sources for the corporate sector statistics are the Annual Reports and Account of the Companies i.e. Balance Sheet, Manufacturing, Trading and Profit and Loss Accounts.<br /><br />'
+								+'Data related to Non-Government Non-Financial Public Limited Companies and Private Limited Companies are presented at aggregate level and available for select industry groups. Also, data relating to Non-Government Financial and Investment Companies are presented at aggregate level for major activity groups.<br /><br />' 
+								+'Annual data on different financial ratios, viz. Capital Structure Ratios, Liquidity Ratios, Assets Utilization and Turnover Ratios of Select Public Limited Companies (Industry-wise) are made available since March 2000 onwards.<br /><br />'
+								+'<b>Capital Structure Ratios</b><br />' 
+								+'<ul>'
+								+'<li>Net fixed assets to total net assets</li>' 
+								+'<li>Net worth to total net assets</li>' 
+								+'<li>Debt to equity</li>' 
+								+'<li>Debt to equity (adjusted for revaluation)</li>' 
+								+'<li>Short term bank borrowings to inventories</li>' 
+								+'<li>Total outside liabilities to net worth </li>' 
+								+'</ul>'
+								+'<b>Liquidity Ratios</b><br />' 
+								+'<ul>'
+								+'<li>Current assets to current liabilities</li>'  
+								+'<li>Quick assets to current liabilities </li>' 
+								+'<li>Current assets to total net assets </li>' 
+								+'<li>Sundry creditors to current assets </li>' 
+								+'<li>Sundry creditors to net working capital </li>' 
+								+'</ul>'
+								+'<b>Assets Utilization and Turnover Ratios </b><br />'
+								+'<ul>'
+								+'<li>Sales to total net assets </li>' 
+								+'<li>Sales to gross fixed assets </li>' 
+								+'<li>Inventories to sales </li>' 
+								+'<li>Sundry debtors to sales </li>' 
+								+'<li>Exports to sales </li>' 
+								+'<li>Gross value added to gross fixed assets </li>' 
+								+'<li>Raw materials consumed to value of production </li>' 
+								+'</ul>'
+								+'<br />'
+								+'Data on Performance of Non-Government Non-Financial Companies are available in the form of major items i.e.  Sales, Value of Production, Total Income, Manufacturing Expenses, Remuneration to Employees, Depreciation Provision, Gross Profits, Interest, Operating Profits,  Non-Operating Surplus/Deficit,  Profits Before Tax,  Net Worth , Total Borrowings, Gross Fixed Assets,  Net Fixed Assets,  Inventories etc. from 1999 onwards.<br />'
+								+'Data on New Capital Issues by Non-Government Public Limited Companies can also be accessed from 1970 to 2011.'
+								}],
+						'imgUrl' : 'images/corporate-governance_16664244_std.jpg',
+						'seqNo' : 2
+					},
+				3 : {
+						'dName' : 'Financial Sector',
+						'data' : [{
+									'sdName' : 'Banking Statistics - Liabilities & Assets',
+									'para' : 'Information on assets and liabilities of Scheduled Commercial Banks are received through various statutory returns submitted to RBI. Various data sets that are made available under this section are listed below.<br /><br />'
+										+'Aggregated data on various items of Liabilities and Assets of all Scheduled Commercial Banks in India are made available on fortnightly basis at all India level and Bank group level.<br /><br />'
+										+'Bank level detailed data on various items of Capital, Liabilities and Assets of Scheduled Commercial Banks based on annual reports submitted by the banks are available annually with 15 months lag.<br /><br />'
+										+'State-wise distribution of Liabilities and Assets of State Co-Operative Banks and District Co-Operative Banks based on data provided by NABARD.<br /><br />'
+										+'Yearly bank level data on Maturity Pattern of select items of Liabilities and Assets of Scheduled Commercial Banks.'
+								},{
+									'sdName' : 'Branch Banking Statistics',
+									'para' : 'The branch banking statistics are based on the Directory of Scheduled Commercial Banks in India maintained at the Banking Statistics Division, Department of Statistics and Information Management of RBI.<br /><br />'
+										+'Statistics on Number of Banks, Branches, Newly Opened Branches, Closed Branches etc. of banks, are summarised at district, bank group and population group level are made available on a quarterly basis.<br /><br />'
+										+'List of Bank Branches with details of Address and other Functional Characteristics are also made available.<br /><br />'
+										+'Bank- wise Number of ATMS based on information submitted by banks. Summary statistics on Number of Branches of State and District Co-Operative Banks sourced from NABARD is also available.'
+								},{
+									'sdName' : 'Bank Performance Indicators',
+									'para' : 'This section provides data required to assess the banks\' performance based on the annual statements of the banks. They include: <br /><br />'
+										+'Measures such as Income, Expenditure, Profitability and various ratios such as Profit per Employee, Business per Employee, Return on Assets etc. are made available bank-wise from 2003.<br /><br />'
+										+'Ratios such as Credit to Deposit, Investment to Deposit, Credit to GDP and yearly growth rates for Deposit and Credit are maintained at aggregate level from 1951 onwards.<br /><br />'
+										+'At bank group level, Gross and Net NPA (Non-Performing Asset) data are available from 1996 onwards.'
+								},{
+									'sdName' : 'Sectoral Banking Statistics',
+									'para' : 'This section contains banking statistics with respect to different dimensions like sectors, industry, district, state, region, bank group, population group etc. Various data sets that are made available under this section are listed below.<br /><br />'
+										+'Weekly data on Food and Non-food Credit of Scheduled commercial Banks is available from 1993.<br /><br />'
+										+'Monthly Data on Bank Credit to various sectors and industry at all India level is available from April 2007 and is updated with a lag of one and half month. This data is based on returns submitted by selected banks that account for 95% of the bank total bank credit.<br /><br />'
+										+'Data on Credit and Deposit with respect to Bank, District, State, Population Group are made available on a quarterly basis with a lag of one and half month and this data is available from 1991.<br /><br />'
+										+'Micro level data on Bank Credit (credit amount outstanding as on March 31) under various dimensions such as Industry, District (place of sanction and place of utilization), Population Group, Bank Group and Interest Rate are released annually with a lag of a year and the data is available from 2001.<br /><br />'
+										+'Micro level data on Deposits under various dimensions such as District, Bank Group, Population Group, Type of Deposit, Maturity, Interest Rate, Size of Deposit etc., are released annually with a lag of a year and the data is available from 2001.<br /><br />'
+										+'Micro data on Number of Employees of Banks at District, Bank Group, Population Group Level are released annually and the data is available from 2001.<br /><br />'
+										+'Data on Priority Sector Advances of Scheduled Commercial Banks at state and bank level are released on a yearly basis with 15 month time lag. '
+								},{
+									'sdName' : 'Key Rates',
+									'para' : 'Different interest rates, structure of interest rates and major monetary policy rates are available vis-à-vis various frequencies.<br /><br />'
+										+'Source of these data are mainly the concerned financial institutions and the Reserve Bank of India.<br /><br />'
+										+'Deposit Rate, Base Rate, Prime Lending Rate (PLR) are made available on weekly basis since Oct, 1996, whereas LAF (Repo, Reverse Repo, Marginal Standing Facility), Statutory Liquidity Ratio (SLR) are presented on quarterly basis starting from second quarter of 1935. Both weekly as well as quarterly figures for Bank Rate and Cash Reserve ratio (CRR) are available.<br /><br />'
+										+'Annual data on Call/Notice Money rates, Deposit Rates, Commercial Bank Rates (Deposit and Lending Rates) etc. are also available from 1970-71 to accomplish users\' requirements.'
+								},{
+									'sdName' : 'Monetary Statistics',
+									'para' : 'Being a Central Bank, compiling monetary statistics is one of the principle responsibilities of the Bank. Monetary statistics is compiled on a weekly/fortnightly/monthly basis by the Reserve Bank of India.<br /><br />'
+										+'Data series on Reserve Money (M0), M1, M2, M3 and M4 along with its components and sources are made available from March 2006. Data for New Monetary Liquidity Aggregates such as L1, L2, L3 and NM3 are also available from 1998 onwards. Banking system\'s assets supporting these liabilities such as RBI\'s Credit to Government, Commercial Banks Credit to Government, Commercial Bank\'s Credit to Commercial Sector, Net Foreign Exchange Assets of Banking Sector are also available.<br /><br />'
+										+'RBI\'s Balance Sheet Positions are available on a weekly basis from August 2007 with a lag of 7 days. Data series of various liability items that are available are Notes Issued by RBI, Deposits Held by Banks (mainly for maintaining CRR), Central Government and State Governments, Other Liabilities etc. On the asset side, data series on Foreign Currency Assets, Gold Coins and Bullions, Rupee Securities, Loans and Advances to Governments, Banks and Other Financial Institutions are made available.'
+								},{
+									'sdName' : 'Payment Systems',
+									'para' : 'Monthly as well as yearly data on clearing and settlement systems, retail electronic payment systems, cheque clearances etc. relating to Payment Systems are available. <br /><br />'
+										+'The Reserve Bank of India is the main source of these data.<br /><br />'
+										+'Both Number and Amount of Settlement through RBI operated systems, viz. RTGS; CCIL operated systems, viz. Government Securities Settlement - Outright, Repo, Forex, CBLO Settlement etc. are available from Jan, 2000 whereas the same data pertaining to Retail Electronic Payment Systems viz. ECS Credit, ECS Debit, Electronic Funds Transfer (EFT), credit Card, Debit Card are available since Apr, 2004.<br /><br />' 
+										+'Annual data on Total Number and Amount of Cheque Clearances at all India level along with that at RBI centers are made accessible from 1970-71. Also, data pertaining to remittances through RBI telegraphic transfers, viz. Total Telegraphic Transfer Issued and Total Telegraphic transfer Paid etc. are available on yearly basis for the same time period.'
+								}],
+						'imgUrl' : 'images/FinancialSector.JPG',
+						'seqNo' : 3
+					},
+				4 : {
+						'dName' : 'Financial Market',
+						'data' : [{
+									'sdName' : 'Money Market',
+									'para' : 'Money Market is a key component of the financial system which is used by the Central Bank in its monetary operations. It is a market of short-term funds with maturity ranging from overnight to one year and includes financial instruments that are deemed to be close substitute of money.<br /><br />'
+										+'Daily data series are available on Maximum and Minimum Rate, Weighted Average Rates and Turnover from 2005 onwards for various money markets such as Call, CBLO and Market Repo. <br /><br />'
+										+'Daily data series on Mumbai Inter-Bank Bid Rate (MIBID) and Mumbai Inter-Bank Offer Rate (MIBOR) for overnight, 14 days, 1 month and 3 months are also available from 1998 onwards.'
+								},{
+									'sdName' : 'Government Securities Market',
+									'para' : 'The Reserve Bank, as a monetary authority, has a special interest in developing the government securities market given its criticality in acting as the transmission channel of monetary policy. Moreover, it is important for the Reserve Bank, as a manager of public debt, to have a well-developed government securities market as it provides flexibility to exercise various options for optimizing maturity as well as interest cost to the Government.<br /><br />'
+										+'The data series based on the auction data available are Notified Amount, Bid Amount, Issue Amount, Cut-off Price, Implicit Yield at Cut-Off Price, No. of Bids Received, Devolvement on PDs, and Outstanding Amount on date of issuance of T-Bills (91 days, 182 days and 364 days). These series are available on a weekly and fortnightly basis. Holder-wise Outstanding Positions on treasury bills are available since 2007 onwards.<br />'
+										+'Details of Central Government Borrowing are available from 1995 onwards with details such as Date of Issue, Notified Amount, Residual Maturity Period, Bids Received, Bids Accepted, and Yield to Maturity.<br />'
+										+'As regards outstanding positions in regard to Government of India dated securities, presently only the Latest Outstanding Position is available security-wise with maturity date. <br />'
+										+'Secondary market Turnover of Central Government Dated Securities, State Government in Government Securities and Treasury Bills including RBI\'s Open Market Operation volume are available on a weekly basis since April 1998. Similarly, Turnovers of Repo Transactions in the secondary market are available for Central Government Dated Securities, State Government in Government Securities and Treasury Bills on a weekly basis since April 1998. Data on Month-end Average Yield on transactions in Central Government securities according to residual maturity is available since April 1996. Security-wise Mean Weighted Average Yield is also available as Hand Book of Statistics publication report. <br />'
+										+'Ownership Pattern of Central and State Government Securities are available on an annual basis. Finally, List of SLR (Statutory Liquidity Ratio) Securities of Central Government, State Government and Central/State Government Institutions are also maintained.' 
+								},{
+									'sdName' : 'Forex Market',
+									'para' : 'Daily data series on Exchange Rates for four major currencies viz.; USD, Euro, GBP, and Japanese Yen against the domestic currency (INR) are available from April 2004. <br />'
+										+'Based on the derivatives market, data series for Forward Premia for INR per USD is available for one month, three months and six months since August 2000.  <br />'
+										+'The data available in respect of other forex rates available are: RBI Reference Rate, Inter-Bank Rates (open/ high/ low/ close) for USD since August 2000.<br />'
+										+'Daily data series are also available on Turnover on account of merchant and interbank transactions from January 2007.<br />'
+										+'Monthly series of Min, Max, Average, Month-end Exchange Rates for major currencies (USD, EURO, Yen) are available from 1993 onwards. Monthly data series on Average Forward Premia is also available since 1993 onwards. Monthly Historical Average Exchange Rates for major currencies are also available since 1966 onwards. Outright Sale and Purchase and Net of Forward Sale/Purchase of Foreign Currency by RBI are available as monthly series from 1997 onwards. Monthly data series are also available on Turnover on account of merchant and interbank transactions from August 1996 onwards. Quarter-ended Exchange Rate for 29 Currencies are available since 2000 onwards.'
+								},{
+									'sdName' : 'Capital Markets',
+									'para' : 'Daily data series on BSE, NSE stock exchange indices (Open, Close, High, Low), Turnover and Market Capitalization are available. BSE SENSEX, BSE 100, Bankex since January 1990; NSE S&P CNX Nifty from November 1999; daily turnover at BSE/ NSE and market capitalization at NSE since March 2003 are available. Historical daily data series on Dowjones Industrial Average and Nasdaq-100 are also available<br />'
+										+'Daily series on Traded Volume, Equity Turn'
+										+'over and Market Capitalization on BSE/NSE are available from 2003 onwards.<br />'
+										+'Net Investments by FII (Foreign Institutional Investors) in the Indian Capital Market is available on a monthly basis. New capital issues (equity as well as bonds/ debentures) by companies, euro issues, amount raised through private placements are available since 1990 onwards.<br />'
+										+'Other data on capital market in DBIE are monthly traded volume in corporate debt at NSE (since April 1997); Euro issues (monthly April 1992); net resources mobilized by select mutual funds (annual since 1993-94); Turnover in equity derivative markets at BSE/ NSE (monthly June 2000). '
+								},{
+									'sdName' : 'Financial Institutions',
+									'para' : 'Data series on Number of Fully Insured Accounts and Total Amount of Insured Deposits by the Deposit Insurance and Credit Guarantee Corporation (DICGC) is available since 1971 onwards. Assets and Liabilities of DICGC, IFCI, EXIM Bank, NABARD, NHB, SIDBI and SFCS are also available. Investment details of Life Insurance Corporation (LIC) are available since 1979 onwards.'
+								}],
+						'imgUrl' : 'images/FinancialMarkets.jpg',
+						'seqNo' : 4
+					},
+				5 : {
+						'dName' : 'External Sector',
+						'data' : [{
+									'sdName' : 'External Debt',
+									'para' : 'Quarterly data series on External Debt at various component levels (Government Borrowing, Commercial Borrowing, NRE Deposit, Export Credit, etc.) are available as a time series formatted report from 1999 onwards. <br /><br />'
+										+'Currency Composition of External Debtis is available on a quarterly basis since March 1997.  Key External Debt Indicators such as Debt Service Ratio, Ratio of Short Term Debt to Total Debt, Ratio of Short Term Debt to Foreign Currency Assets, Ratio of Foreign Exchange Reserves to Total Debt and Ratio of External Debt to GDP are also available.'
+								 },{
+									 'sdName' : 'External Sector Indices',
+									 'para' : 'Data series on Multilateral Exchange Rates (Base: 1993-94), Real Effective Exchange Rate (REER) and Nominal Effective Exchange Rate (NEER) based on 36-currency trade as well as export based weights and 6-currency trade based weights are available. These data series are available in monthly as well as in annual frequencies since April 1993. Historical data is available for 36 country based on bilateral rate with Base 1985=100 from January 1975 to August 2005.  Historical data series on Annual Average Exchange Rates for four major currencies are available since 1971 onwards. Index Numbers of Imports and Exports on Quantum and Unit Value are also available since 1999 onwards.'
+								 },{
+									 'sdName' : 'Forex Reserve',
+									 'para' : 'Weekly data series on Components of Foreign Exchange Reserve is available since April 2001 onwards. These series are also presented on a monthly basis. Historical data are available on yearly basis since 1951 onwards.'
+								 },{
+									 'sdName' : 'International Finance',
+									 'para' : 'Annual and monthly data on Foreign Investments Inflows (FIIs) (FDI and Portfolio investments) are available. Month-End Positions of NRI Deposits are available since 1990 onwards. Data series on Outward Remittance by Resident Individuals are available since 2008 onwards. Monthly Data series on Net Drain on Foreign Currency Assets is available since 2001 onwards. Quarterly data series on various items under International Investment Positions is available from 2006 onwards.'
+								 },{
+									 'sdName' : 'International Trade',
+									 'para' : 'Monthly summarized data series on Oil and Non-Oil Export and Import are available since April 1997. Principal Commodity-Wise Export and Import data is also available as monthly and annual series. Country-Wise Export/Import details are available as annual series since 1987 onwards.'
+								 },{
+									 'sdName' : 'Balance of Payments (BoP)',
+									 'para' : 'From the Balance of Payments (BoP) statistics, data series on various components of BoP such as Current Account Balance, Merchandise Trade, Services Income, Capital Account Balance, Foreign Investment etc., are available on a quarterly basis since 2000 onwards. Historical data on key components of BoP is available since 1950 onwards. Data series on key Balance of Payments Indicators such as Current Account to GDP Ratio, Import Cover by Reserves, Ratio of Exports to GDP etc., are available since 1970 onwards.'
+								 }],
+						'imgUrl' : '',
+						'seqNo' : 5
+					},
+				6 : {
+						'dName' : 'Public Finance',
+						'data' : [{
+									'sdName' : 'Central Government Finance',
+									'para' : 'Data series on major components of Central Government Account Receipts are available from 1970 onwards. Similarly, data series on major components of expenditure are also available from 1970 onwards.<br /><br />' 
+										+'Data series on Gross Fiscal Deficit and its financing components like are available from 1980 onwards. Data series on key deficit indicators are also available from 1970 onwards. Selected fiscal indicators on tax revenues, interest payments, subsidy, fiscal deficits and its financing are also available. Data series on outstanding liabilities such as loans, external liabilities etc., of central Government are also available. Gross Fiscal Deficit data is also presented on a monthly basis.'
+								},{
+									'sdName' : 'State Government Finance',
+									'para' : 'Data series on major components of expenditure of all states combined are also available from 1970 onwards. Data series on key deficit indicators such as Gross Fiscal Deficit, Revenue Deficit, RBI Credit, etc., are also available from 1970 onwards. Data series on major components of receipts such as various Tax Receipts, Interest Receipts, Non-Tax Receipts and Grants from Center are available.'
+								}],
+						'imgUrl' : '',
+						'seqNo' : 6
+					},
+				7 : {
+						'dName' : 'Socio-Economic Indicators',
+						'data' : [{
+									'sdName' : '',
+									'para' : 'Primary sources of different data series, viz. Employment, Education, Poverty etc. pertaining to Socio-Economic Indicators are National Sample Survey Organization, Ministry of Statistics and Programme Implementation (MoSPI), Government of India; Directorate General of Employment and Training, Ministry of Labour & Employment, Government of India; Planning Commission, Government of India; and Ministry of Human Resource Development, Government.<br /><br />'
+										+'Data series on Per Thousand Distributions of Employee in different sectors; viz. Primary Sector, Secondary Sector, Tertiary Sector are available on yearly basis vis-à-vis gender and region from 1983 revealing overall employment situation in India.<br /><br />'
+										+'Annual data series on Employment in the Private Sector, Public Sector along with Number of Persons on the Live Register are also made available from 1970-71.<br /><br />'
+										+'State/Union Territory Wise Distribution of Number of Persons below Poverty Line both in rural and urban area are also available from 1973-74.<br /><br />'
+										+'Annual data series on Number of Educational Institutions with respect to education standards; viz. Primary Education, Upper Primary Education, High/Hr. Sec./Inter/Pre Jr. Colleges, Colleges for General Education, Universities/Deemed Universities/Institute of National Importance etc. are also made available from 1955-56 onwards.'
+								 }],
+						'imgUrl' : '',
+						'seqNo' : 7
+					}
+			};
+
+
+$(document).ready(function(){
+
+	$(content_images).each(function(){
+		$('<img/>')[0].src = this;
+	});
+	
+	
+	$('a[rel=content]').mouseover(function(){
+		var dID = $(this).attr('did');
+		$('#content_div > h2').empty();
+		$('.right_cont_stats').empty();
+		$('#img_div > center >img').attr({'src':''});
+		$('#content_div > h2').text(content[dID].dName);
+		var data = content[dID].data;
+		for(var i=0; i<data.length; i++)
+		{
+			var sdName = '<span rel="header">'+data[i].sdName+'</span>';
+			var para = '<div>'+data[i].para+'</div>';
+			$('.right_cont_stats').append(sdName+para+'<br />');
+		}
+		$('#img_div > center >img').attr({'src':content[dID].imgUrl});
+
+		$('.right_cont_stats').columnize({'width' : ($('.right_cont_stats').width()/2-15), doneFunc : resizeColumns});
+		
+	});
+
+	$('a[did=1]').trigger('mouseover');
+	$('a[did=1]').trigger('mouseout');
+	
+});
+
+function resizeColumns()
+{
+	$('.first.column').css({'width' : '48%'});
+	$('.last.column').css({'width' : '48%'});
+}
+
+
+*/
+$(document).ready(function(){
+
+	var display = 0;
+	
+	$('a[rel=content]').mouseover(function(){
+		var dID = $(this).attr('did');
+		$('#stats_'+display).hide();
+		$('#stats_'+dID).show();
+		display = dID;
+	});
+
+	$('a[did=1]').trigger('mouseover');
+	$('a[did=1]').trigger('mouseout');
+	
+});
+/*********************************************************************************/
+ 
+//-->
+</script>
+<!--FOOTER-->
+
+  <div style="clear:both"></div>
+  
+  <!--FOOTER END-->
+  
+   </div>
+  
+
+
+</div></div></body></html>

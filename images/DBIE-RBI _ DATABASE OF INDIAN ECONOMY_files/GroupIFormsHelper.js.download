@@ -1,0 +1,89 @@
+/*
+=============================================================
+WebIntelligence(r) Report Panel
+Copyright(c) 2001-2005 Business Objects S.A.
+All rights reserved
+
+Use and support of this software is governed by the terms
+and conditions of the software license agreement and support
+policy of Business Objects S.A. and/or its subsidiaries. 
+The Business Objects products and technology are protected
+by the US patent number 5,555,403 and 6,247,008
+
+=============================================================
+*/function isGlobalInputForm(iForm)
+{
+return (iForm.id.substring(0, 1) == 'D');
+}
+function getInputFormContainer(iForm)
+{
+var cont = localIFormContainer;
+    if (isGlobalInputForm(iForm))
+        cont = globalIFormContainer;
+    return cont;
+}
+function getGroupSeparatorFromId(id)
+{
+if (groupSepGlobal.id == id)
+return groupSepGlobal;
+else if (groupSepLocal.id == id)
+return groupSepLocal;
+else
+return null;
+}
+function iFormContainer_getSelection()
+{
+var ifpane = globalIFormContainer.getSelection();
+if (ifpane == null)
+ifpane = localIFormContainer.getSelection();
+return ifpane;
+}
+function iFormContainer_isLastItem(ifpane)
+{
+var cont = getInputFormContainer(ifpane);
+return (ifpane == cont.getLastItem());
+}
+function iFormContainer_move(ifpane, newPos)
+{
+var cont = getInputFormContainer(ifpane);
+cont.move(ifpane, newPos);
+}
+function iFormContainer_remove(ifpane)
+{
+var cont = getInputFormContainer(ifpane);
+cont.remove(ifpane);
+}
+function iFormContainer_getItemByValue(id)
+{
+var ifp = globalIFormContainer.getItemByValue(id);
+if (ifp == null)
+ifp = localIFormContainer.getItemByValue(id);
+return ifp;
+}
+function iFormContainer_getAllItems()
+{
+var items = new Array();
+return items.concat(globalIFormContainer.items).concat(localIFormContainer.items);
+}
+function updateInputFormArray(iForm)
+{
+for (var i=0; i<arrIForms.length; i++)
+{
+if (arrIForms[i].id == iForm.id)
+{
+arrIForms[i] = iForm;
+break;
+}
+}
+}
+function removeInputFormArray(iForm)
+{
+for (var i=0; i<arrIForms.length; i++)
+{
+if (arrIForms[i].id == iForm.id)
+{
+var end=arrIForms.splice(i,1)
+break;
+}
+}
+}

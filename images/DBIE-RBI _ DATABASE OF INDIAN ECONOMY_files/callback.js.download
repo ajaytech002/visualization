@@ -1,0 +1,351 @@
+/*
+©2010 - 2013 SAP AG or an SAP affiliate company.  All rights reserved.
+ 
+SAP and other SAP products and services mentioned herein as well as their respective logos are trademarks or registered trademarks of SAP AG in Germany and other countries.  Please see http://www.sap.com/corporate-en/legal/copyright/index.epx#trademark for additional trademark information and notices.
+*/
+
+function findCallback(name) {
+    try {
+        if(name != "") {
+            var mywin = window;
+    
+            // search in the current window first
+            if (mywin[name])
+            {
+                return mywin[name];
+            }
+            // if not found in the current window, search in opener then parent
+            if (mywin.opener)
+            {
+                mywin = mywin.opener;
+            }
+            else if (mywin.parent)
+            {
+                mwyin = mywin.parent;
+            }
+            else
+            {
+                return null;
+            }
+            while(mywin) {
+                if(mywin[name]) {
+                    return mywin[name];
+                }
+                if (mywin == mywin.parent)
+                {
+                    if (mywin.opener) {
+                        mywin = mywin.opener;
+                    } else {
+                        return null;
+                    }
+                } else {
+                    mywin = mywin.parent;
+                }
+            }
+        }    
+    } catch (exception) {
+        // Probably domain restriction exception 
+    }
+    return null;
+}
+/**
+* <p>
+* Calls the Application callback function to invoke the specified action.
+* </p>
+* @param (String) url the URL of the action (relative to the invoking page)
+* @param (String) actionId the SI_ID of the action infoObject
+* @param (String) objIds the SI_ID(s) of the target infoObjects. Separate IDs with a comma if there are more than one.
+* @param (String) containerId the SI_ID of the current container (folder, inbox, category, object package)
+* @param (String) actionType the SI_ACTION_TYPE of the action infoObject
+* @param (String) actionSetPageType the SI_PAGE_TYPE of the action set. Allowed values are
+*					 <code>S</code> for a Singlepage action set,
+*					 <code>M</code> for a Multipage action set,
+*					 <code>null</code> or <code>empty string</code> when not an action set
+* @param (String) extraUrlParams optional. Contains extra parameters that will be passed into the action via a URL query string parameter.
+*					Values must be in the form 'name=value'. Separate values with '&'.
+* @param (Object) infoForApp optional. An associative array whose name value pairs contain additional information or context.  The
+*                   application implementing the invoked callback must know which, if any, of these extended parameters it will use, as well
+*                   as their type.
+* @param (Object) usepost optional, only in the case of long profile values. It is the fix for ADAPT01709801 to send long profile values as post request 
+
+*/
+function invokeAction(url, actionId, objIds, containerId, actionType, actionSetPageType, extraUrlParams, infoForApp , usepost)
+{
+	// Sending an extra argument for the fix for ADAPT01709801 to send long profile values as post request
+	if(usepost != null && "true" == usepost.value.toString().toLowerCase())
+	{
+		var invokeActionCallback = findCallback("caf_callback_invokeActionProfile");
+		if ( invokeActionCallback != null )
+		{
+			invokeActionCallback(url, actionId, objIds, containerId, actionType, actionSetPageType, extraUrlParams, window, usepost);
+		}
+	}
+	else
+	{
+		var invokeActionCallback = findCallback("caf_callback_invokeAction");
+		if ( invokeActionCallback != null )
+		{
+			invokeActionCallback(url, actionId, objIds, containerId, actionType, actionSetPageType, extraUrlParams, window, infoForApp);
+		}
+	}
+}
+/**
+* <p>
+*  Displays a title in the action's page.
+*</p>
+* @deprecated
+* @param (String) header the header to display. Use a localized string.
+*/
+function displayTitle(header)
+{
+    displayHeaderInfo(null,1,header);
+    alert("This callback function (displayTitle(...)) is deprecated!  Do not use this anymore.");
+}
+
+function getAppKind()
+{
+    var getAppKindCallback = findCallback("caf_callback_getAppKind");
+    if ( getAppKindCallback != null )
+    {
+        getAppKindCallback(status, currentActionId, params);
+    }
+}
+
+
+/**
+*
+* <p>
+* Displays the header info for an action.  This requires passing in both the action name and
+* name of object the action is working on.  In case of bulk, the objName string should
+* be a blank string.
+*</p>
+* @param (String) actionName The name of the action
+* @param (int) numObjs The number of objects (normally this is 1, but in the case of bulk this can be more)
+* @param (String) objName The name of the object
+*
+*/
+function displayHeaderInfo(actionName, numObjs, objName, opts){
+    var displayHeaderInfoCallback = findCallback("caf_callback_displayHeaderInfo");
+    if (displayHeaderInfoCallback)
+    {
+        displayHeaderInfoCallback(actionName, numObjs, objName, window, opts);
+    }
+}
+
+/**
+* <p>
+*  Displays an alert box.
+*</p>
+* @param (String) message The message to display in the alert box. Use a localized string.
+*/
+function displayAlert(message, args) {
+    if (args) {
+        args["message"] = message;
+    } else {
+        args = {message: message};
+    }
+    var displayAlertCallback = findCallback("caf_callback_alert");
+    if ( displayAlertCallback != null )
+    {
+        return displayAlertCallback(args);
+    }
+    else
+    {
+        // if can't find application callback, just display an alert
+        alert(message);
+        return null;
+    }
+}
+
+/**
+* <p>
+*  Displays a dialog box containing an arbitrary URL passed in by the caller.
+*</p>
+* @param (Object) args A javascript object containing at least the following fields:
+*  - (String) title The title for the dialog (displayed in the header)
+*  - (String) url The url of the page to be loaded into the dialog body
+*  - (int) height The height of the dialog
+*  - (int) width The width of the dialog
+*  - (boolean) showButtons Whether or not to show OK and Cancel buttons
+*  - (function) handler The callback function to be invoked on OK/Cancel/Close
+*/
+function displayDialog(args) {
+
+    var displayDialogCallback = findCallback("caf_callback_dialog");
+    if ( displayDialogCallback != null ) {
+        return displayDialogCallback(args);
+    }
+}
+/**
+* <p>
+* Calls the Application onDoneOrCancel callback function.
+*	Use this function to notify the Application that the current action is finished or has been cancelled.
+*</p>
+* @param (String) status <code>done</code> or <code>cancel</code>
+* @param (String) currentActionId The SI_ID of the current action infoObject.
+* @param (Array) params An array of CAF parameter values indexed by the parameter name.
+*/
+function onDoneOrCancel(status, currentActionId, params)
+{
+    var onDoneOrCancelCallback = findCallback("caf_callback_onDoneOrCancel");
+    if ( onDoneOrCancelCallback != null )
+    {
+        onDoneOrCancelCallback(status, currentActionId, params);
+    }
+}
+
+/**
+ * Note: the application needs to provide these functions:
+ * caf_callback_invokeAction(url, actionId, objIds, containerId, actionType, actionSetPageType, extraUrlParams, window, infoForApp)
+ * caf_callback_alert(message)
+ * caf_callback_dialog(config)
+ * caf_callback_onDoneOrCancel(status, currentActionId, params)
+ * caf_callback_displayHeaderInfo(actionName, numObjs, objName)
+ */
+ 
+ 
+/**
+ * <p>
+ *	Calls the application's caf_callback_handleSelectedItems. Use this function to update the state 
+ *  of the application (i.e. Enable/Disable menu items) when a user selects an object(s) in URE.
+ * </p>
+ *
+ *	
+ * @param (array) selectedUreItems array of selected item(s). Generated by the onSelect parameter of URE.
+ *
+ */
+ function handleSelectedItems(selectedUreItems)
+ {
+      var selectItemAppCallback = findCallback( "caf_callback_handleSelectedItems" );
+      if ( undefined != selectItemAppCallback ) {
+          selectItemAppCallback(selectedUreItems);
+      }
+ 
+ }
+ 
+/**
+ * <p>
+ *	Calls the application's caf_callback_setSelectedItems, use this function to update the state 
+ *  of the application i.e.(Enable/Disable menu items) when a user selects an object(s) in URE
+ * </p>
+ *
+ * @param (array) selectedObjects is an array of object(s) in the format that URE returns when object(s) are selected. Each object contains
+ * 	action information for the selected infoObject.
+ * @param (array) sendToEnabled is an associative array of state(s) for objects on the current page, states will either be 
+ *	true or false to determine if the selected object has the ability to be sentTo a destination. If 
+ *  parameter is null the send to Menu will be disabled.
+ *
+ *  @deprecated
+ *  An alternative solution has been impletemented which does not require this method.
+ *  Please use caf_callback_handleSelectedItems() defined in the headerPlus.jsp file in InfoView
+ *	 
+ */
+function setSelectedItems(selectedObjects, sendToEnabled )
+{
+	var setSelectedItemsCallBack = findCallback("caf_callback_setSelectedItems");
+	if( setSelectedItemsCallBack != null )
+	{
+		setSelectedItemsCallBack(selectedObjects, sendToEnabled);
+	}
+
+}
+
+
+/**
+ * <p>
+ *  CMC and InfoView have both implemented this callback. This is added so that CMC/InfoView can run correctly within a frame. 
+ *  Calls the application's caf_callback_getApplicationTopWindow, which returns the top frame window the application is in instead of "window.top" 
+ * </p>
+ */
+function getApplicationTopWindow()
+{
+    var getApplicationTopWindowCallBack = findCallback("caf_callback_getApplicationTopWindow");
+    if( getApplicationTopWindowCallBack != null )
+    {
+        return getApplicationTopWindowCallBack();
+    }
+    return window.top;
+}
+
+/**
+ * <p>
+ *  If an action allows modification of content, the application may need/want to know about the changes
+ *  For example, details stored at tab creation time could become incorrect/out-of-date if the contents of a tab are
+ *  updated (in the case of a WebI SaveAs, for instance). 
+ *  This callback allows the application to make necessary changes based on updates made to the contents
+ *  of an action by passing an object with the changes to the callback.
+ *  
+ *  @param {object} properties - an object containing the properties updated 
+ *  Updateable properties at this time are (names are well-known - i.e. cannot be changed):
+ *  name - the document title for display in the tab
+ *  id - the InfoObject id for unique identification of a tab
+ *  url - the well formed, relative URL for the contents of the tab
+ * </p>
+ */
+function actionContentChanged(properties) {
+    var actionContentChangedCallback = findCallback("caf_callback_actionContentChanged");
+    if (actionContentChangedCallback) {
+        return actionContentChangedCallback(properties);
+    }
+    return actionContentChangedCallback;
+}
+
+/*
+ * This callback allows an action to notify the application that it is going to start loading
+ * One example use could be to load a "Loading" mask/progres bar until the action has finished loading 
+ * (as indicated by the actionLoaded callback below)
+ */
+function actionLoading() {
+    var actionLoadingCallback = findCallback("caf_callback_actionLoading");
+    if (actionLoadingCallback) {
+        return actionLoadingCallback();
+    }
+    return actionLoadingCallback;
+}
+
+/*
+ * As mentioned above, this callback allows an action to notify the application that it has finished loading
+ * This will allow the application to hide any "Loading" mask or progress bar that has been shown while the
+ * action was loading
+ */
+function actionLoaded() {
+    var actionLoadedCallback = findCallback("caf_callback_actionLoaded");
+    if (actionLoadedCallback) {
+        return actionLoadedCallback();
+    }
+    return actionLoadedCallback;
+}
+
+/**
+* <p>
+*  When a view action loads an embedded add-on/plugin (e.g. PDF viewer within browser) to show the document, 
+*  the plugin sometimes doesn't follow the HTML rendering rules or is not even part of the DOM tree. In such case
+*  it needs to notify the application so that the application can re-adjust the viewer frame size. E.g. BI launchpad 
+*  needs to leave some space at the right-side so that the Open Details panel handler won't be blocked by the plugin.
+*</p>
+*/
+function resizeViewerFrameForEmbeddedPlugin() {
+    var callback = findCallback("caf_callback_resizeViewerFrameForEmbeddedPlugin");
+    if (callback) {
+        return callback();
+    }
+    return callback;
+}
+
+/**
+* <p>
+*  Handles an error produced by an invisible action
+*</p>
+* @param (Object) args A javascript object containing at least the following fields:
+*  - (String) actionId The SI_ID of the current action infoObject.
+*  - (String) message The error message produced
+*/
+
+function onInvisibleError(args) {
+    var callback = findCallback("caf_callback_onInvisibleError");
+    if (callback) {
+        return callback(args);
+    }
+    
+    return callback;
+}

@@ -1,0 +1,95 @@
+/*
+©2010 - 2013 SAP AG or an SAP affiliate company.  All rights reserved.
+ 
+SAP and other SAP products and services mentioned herein as well as their respective logos are trademarks or registered trademarks of SAP AG in Germany and other countries.  Please see http://www.sap.com/corporate-en/legal/copyright/index.epx#trademark for additional trademark information and notices.
+*/
+
+if ('undefined' == typeof businessobjects ) { var businessobjects = {}; }
+businessobjects['portal'] = businessobjects['portal'] || {};
+
+/**
+ * Execute a JavaScript ancestor method with the rest of the arguments passed to this method 
+ */
+businessobjects.portal.callAncestorMethodWithArguments = function(methodName) {
+    if (methodName) {
+        var targetFunction = findCallback(methodName);
+        if (targetFunction) {
+            // Convert the arguments into a JavaScript Array using slice()
+            var argumentArray = Array.prototype.slice.call(arguments);             
+            targetFunction.apply(this, argumentArray.slice(1));
+        } else {
+            return null;
+        }    
+    }
+}   
+
+/**
+ * Communicate session information to an ancestor frame to facilitate session management.
+ * Used by both SAP Enterprise Portal and all Portlet containers.
+ */
+businessobjects.portal.communicateSessionInfoToAncestorFrame = function(argObject) {
+    var commonDomain = argObject['commonDomain'];
+	var strictDomain = argObject['strictDomain'];
+	var parentMethod = argObject['parentMethod'];
+	var serializedSession = argObject['serializedSession'];
+	var cmsName = argObject['cmsName'];
+	var logoffUrl = argObject['logoffUrl'];	
+	var refresh = argObject['refresh'];	
+	var setParentDomain = argObject['setParentDomain'];
+	var iViewAutoLogOff = argObject['iViewAutoLogOff'];
+
+	// Communicate to parent frames to facilitate session management
+	var embeddedInSAP = false;
+	if (commonDomain == null || commonDomain === '') {
+		// Use SAP domain relaxing standard and remove the hostname to get common domain
+		var liBehindFirstDot = location.hostname.indexOf( "." ) + 1;
+		if (liBehindFirstDot > 0) {
+			commonDomain = location.hostname.substr(liBehindFirstDot);
+		}            
+	}
+
+	if (parentMethod == 'SAPWP_receiveSessInfo') {
+		embeddedInSAP = true;
+	}
+
+	if (!strictDomain && parentMethod != '') {
+		try {
+			if (setParentDomain) {
+			    try {
+			        // Set parent domain if we can
+			        parent.document.domain = commonDomain;
+			    } catch (exception) {
+			        // Do nothing
+			    }
+			}
+			// Set the current page's domain so that we can communicate across domain boundaries
+			document.domain = commonDomain;
+
+			if (embeddedInSAP) {
+			    if (iViewAutoLogOff) {
+				    var sapClientSessionInfo = {
+				            sessUrl: logoffUrl,
+				            lastSessCmd: "USR_OPEN",
+				            protocolVersion: "1.0"
+				    }
+				
+				    
+					businessobjects.portal.callAncestorMethodWithArguments(parentMethod, sapClientSessionInfo, window);			    
+					// Add strictDomain parameter and reload page
+					if (refresh) {
+						var url = window.location.href + '&strictDomain=true';
+						window.location = url;
+					}
+				}
+				// else do nothing
+			} else if (serializedSession) {
+				var parentObj = new Object;
+				parentObj.entSession = serializedSession;
+				parentObj.cms = cmsName;
+				businessobjects.portal.callAncestorMethodWithArguments(parentMethod, parentObj);
+			} 
+		} catch (exception) {
+			// Leave the domain as is
+		}
+	} 
+}

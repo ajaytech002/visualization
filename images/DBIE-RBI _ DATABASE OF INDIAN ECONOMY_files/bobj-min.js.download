@@ -1,0 +1,7 @@
+/*
+©2010 - 2013 SAP AG or an SAP affiliate company.  All rights reserved.
+ 
+SAP and other SAP products and services mentioned herein as well as their respective logos are trademarks or registered trademarks of SAP AG in Germany and other countries.  Please see http://www.sap.com/corporate-en/legal/copyright/index.epx#trademark for additional trademark information and notices.
+*/
+
+if(typeof BusinessObjects=="undefined"){var BusinessObjects={};}BusinessObjects.createPackage=function(packageName){var packageNameArray=packageName.split(".");var baseObject=BusinessObjects;for(var i=0;i<packageNameArray.length;i++){if(!baseObject[packageNameArray[i]]){baseObject[packageNameArray[i]]={};}baseObject=baseObject[packageNameArray[i]];}};

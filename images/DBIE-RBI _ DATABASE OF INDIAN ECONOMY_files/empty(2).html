@@ -1,0 +1,1600 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!-- saved from url=(0125)https://dbie.rbi.org.in/BOE/OpenDocument/1608101727/AnalyticalReporting/webiDHTML/viewer/language/en/html/inputFormsPane.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      
+<style type="text/css">
+#iformPaletteCont{position:absolute;top:0;left:0px;overflow:hidden;}
+#iFormMessage{position:absolute;top:26px;left:0px;overflow:auto;}
+#iFormContainer{position:absolute;top:26px;left:0px;overflow:auto;}
+#iFormTree{position:absolute;top:26px;left:0px;overflow:auto;}
+</style>
+<script language="javascript" src="./dom.js.download"></script>
+<script language="javascript" src="./menu.js.download"></script>
+<script language="javascript" src="./palette.js.download"></script>
+<script language="javascript" src="./multilist.js.download"></script>
+    <script language="javascript" src="./lov.js.download"></script>
+<script language="javascript" src="./treeview.js.download"></script>
+<script language="javascript" src="./dashboard.js.download"></script>
+<script language="javascript" src="./calendar.js.download"></script>
+<script language="javascript" src="./slider.js.download"></script>
+<script language="javascript" src="./CommonWom.js.download"></script>
+<script language="javascript" src="./GroupIFormsHelper.js.download"></script>
+<script language="javascript">
+p = parent;
+initDom("../../../../dhtmllib/images/"+p._skinName+"/", p._lang)
+initTooltipWin(p);
+p.setKeyCB(this, false);
+</script><script type="text/javascript" charset="UTF-8" src="./labels.js.download"></script><script type="text/javascript" charset="UTF-8" src="./prototype.js.download"></script>
+<script language="javascript" src="./lovSelector.js.download"></script>
+<script language="javascript" src="./inputFormTreeList.js.download"></script>
+<script language="javascript" src="./inputFormsFct.js.download"></script>
+<script language="javascript">styleSheet()</script><link id="dhtmlLibCurrCss" rel="stylesheet" type="text/css" href="./style.css">
+<script language="javascript">
+isPageLoaded = false   
+isEditing = p.isInteractive && p.isEnableUserRight(p.WS._usrCreateEditInputControls)
+everythingOK = true;
+arrIForms=new Array;
+newStorageToken = null;
+arrIFormsLov=null;
+_arrEvts=null;
+var url =  p._root + "incInputForms" + p._appExt;
+url += p.urlParamsNoBID()+ "&sNullValueLab="+encodeURIComponent(_nullValueLab);
+includeScript(url); 
+</script><script type="text/javascript" charset="UTF-8" src="./incInputForms.jsp"></script>     
+<script language="javascript">
+if (newStorageToken != null)
+p.changeEntry(newStorageToken);
+function hasCustomValues(iform)
+{
+var cv = iform.widget.customValues
+return ((cv!=null) && (cv.length > 0))
+}
+function useCustomValues(iform)
+{
+var isRestrictedLov = iform.isRestrictedLov; 
+return (hasCustomValues(iform) && isRestrictedLov);
+}
+if(everythingOK && (arrIForms.length>0))
+{
+var ids="",len=arrIForms.length;
+var allowNullValuesArr="";
+var iFormArr="";
+for(var i=0;i<len;i++)
+{
+var iform = arrIForms[i]
+if(iform.widget.hasLov)
+{
+if(useCustomValues(iform))
+iform.lov=iform.widget.customValues;
+else
+{
+if(ids!="") ids+=",";
+ids+=iform.bindedObject.id;
+if(allowNullValuesArr!="") allowNullValuesArr+=",";
+allowNullValuesArr+=iform.allowNullValues;
+if(iFormArr!="") iFormArr+=",";
+iFormArr+=iform.id;
+}
+}
+}
+if(ids!="")
+{
+var url =  p._root + "ajaxIncInputFormsLov" + p._appExt;
+url += p.urlParamsNoBID();
+url += "&sOid="+ids;
+url += "&sAllowNullValuesArr=" + allowNullValuesArr;
+url += "&sIFormArr=" + iFormArr;
+url += "&includeObject=arrIFormsLov" + "&sNullValueLab="+encodeURIComponent(_nullValueLab);
+includeScript(url); 
+}
+}
+</script>     
+<script language="javascript">
+if(arrIFormsLov!=null)
+fillIFLov(arrIFormsLov);
+function fillIFLovUpdate(jObj)
+{
+for(var i=0;i<jObj.size();i++)
+{
+fillLov(jObj[i].objId,jObj[i].lov,jObj[i].ifId,jObj[i].values);
+for(var j=0;i<arrIForms.length;j++)
+{
+if (jObj[i].ifId==arrIForms[j].id)
+{
+iFormModify(arrIForms[j]);
+break;
+}
+}
+}
+ p.hideWt();
+}
+function fillIFLovUpdateForAllowNullValue(jObj)
+{
+for(var i=0;i<arrIForms.length;i++)
+{
+if (jObj[0].ifId==arrIForms[i].id)
+{
+fillLov(jObj[0].objId,jObj[0].lov,jObj[0].ifId,jObj[0].values);
+iFormModify(arrIForms[i]);
+break;
+}
+}
+ p.hideWt();
+}
+function fillIFLov(jObj)
+{
+for(var i=0;i<jObj.size();i++)
+fillLov(jObj[i].objId,jObj[i].lov,jObj[i].ifId,jObj[i].values);
+}
+function fillLov(id,arrLov,iformID,arrValues)
+{
+var ids="",len=arrIForms.length;
+if(iformID!=null && iformID!="")
+{
+var iform = findIFormById(iformID);
+if(iform!=null)
+{
+iform.lov=arrLov;
+iform.values=arrValues;
+try
+{
+if(_ifActionParam == _actionAdd)
+{
+addInputForm(iform);
+}
+}
+catch (e)
+{
+}
+}
+}
+else
+{
+for(var i=0;i<len;i++)
+{
+var iform = arrIForms[i]
+if((iform.widget.hasLov) && (iform.bindedObject.id == id) && !useCustomValues(iform))
+{
+iform.lov=arrLov;
+iform.values=arrValues;
+}
+}
+}
+}
+</script>
+<script language="javascript">
+ _error = (window._isSessionInvalid || !everythingOK)
+ _decChar=(typeof(decChar)!="undefined")?''+decChar:'.';
+ _formatForDate=(typeof(formatForDate)!="undefined")?''+formatForDate:null;
+ dirImg = getBasePath()+'../../../images/main/';
+ curImg = dirImg+"inputForm.gif";
+contW = p.leftPane.getWidth();
+contH = 500;
+paletteH = 26;
+_iFormIconID = 55;
+_folderCloseIconID = 1;
+_folderOpenIconID = 9;
+_qualifImg=dirImg+"qualificationIcons.gif";
+_newQualifImg=null;
+function getQualificationIcon(qualif)
+{
+var icon = p.mapKindToTreeIcon(qualif);
+_newQualifImg = icon.src;
+return icon.idx;
+}
+function getIFControlInfo(type)
+{
+var info = _widgetMap.get(type);
+if(info!=null)
+return {idx:info.icon.dy/16, alt:info.text, src:p._root+info.icon.src}
+return {idx:-1, alt:"", src: null};
+}
+_actionAdd=0;
+_actionEdit=1;
+_actionRemove=2;
+_actionMove=3;
+_ifActionParam=null;
+ var s_filter = "Filter:"
+var s_section = "Section"
+var s_cell = "Cell:"
+var s_sectioncell = "Section Cell:"
+function getBlockSubType(subType)
+{
+var subTypeString = new Array( "", "", "", "", "", "", "","Horizontal Table", "Vertical Table", "Cross Table", "Form", "Vertical Grouped", "Horizontal Grouped", "Vertical Stacked", "Horizontal Stacked", "Vertical Percent", "Horizontal Percent", "3D Bar", "Vertical \nBar & Line", "Horizontal \nBar & Line", "Vertical Mixed","Horizontal Mixed", "Vertical Stacked", "Horizontal Stacked", "Vertical Percent", "Horizontal Percent", "3D Line Chart", "3D Surface", "Vertical Absolute", "Horizontal Absolute", "Vertical Stacked", "Horizontal Stacked", "Vertical Percent", "Horizontal Percent", "3D Area", "3D Volume", "Pie", "Donut", "3D Pie", "3D Donut", "Radar Line", "Radar Stacked Area", "Polar", "Scatter Plot");
+return subTypeString[subType];
+}
+if (window._isSessionInvalid) 
+{
+p.alertSessionInvalid();
+} 
+else if (everythingOK)  
+{
+iFormMsg = new_Widget({id:"iFormMessage"}) 
+iFormContainer = newDasboardContainerWidget("iFormContainer",contW,contH,null,null,true,false);
+globalIFormContainer = newDasboardContainerWidget("globalIFormContainer",contW,0,null,changeCB,false,true);
+localIFormContainer = newDasboardContainerWidget("localIFormContainer",contW,0,null,changeCB,false,true);
+if(isEditing)
+{
+globalIFormContainer.setDragDrop(dragCB,acceptDropCB,dropCB);
+localIFormContainer.setDragDrop(dragCB,acceptDropCB,dropCB);
+}
+if (p.isEnableUserRight(p.WS._usrShowRightClickMenu)) 
+{
+globalIFormContainer.contextCB=showContextMenu;
+localIFormContainer.contextCB=showContextMenu;
+}
+iFormToolbar = new_PaletteWidget({id:"iformToolbar", className:"toolbarBackgnd"})
+iformToolbarCont = new_Widget({id:"iformPaletteCont"})
+createIFormBt = addIcn("createIFormBt",1,"New","add a new input control", IFormCreateCB)
+strucIFormBt = addCheckIcn("strucIFormBt",null,"Map","Show input controls in report map",iFormStructureCB)
+resetValuesBt = addIcn("resetValuesIFormBt",null,"Reset","Reset all input control filters", iFormResetAllCB) 
+moveUpIFormBt = addIcn("moveUpIFormBt",5,null,"move selected input control up", iFormMoveCB)
+moveDownIFormBt = addIcn("moveDownIFormBt",6,null,"move selected input control down", iFormMoveCB)
+iFormTree = newTreeWidget('iFormTree', contW, contH,dirImg+"typeIcons.gif", mapClickCB, null, "panelzone",null,null,null);
+iFormContextMenu=menu=p.newMenuWidget("iFormContextMenu",null,initInputFormContextMenu);
+iFormEditMenu=menu.add("iFormEditMenu","Edit",menuEditCB,curImg,16*2,0);
+iFormHighlightMenu=menu.add("iFormHighlightMenu","Highlight",null,curImg,16*3,0);
+iFormResetMenu=menu.add("iFormResetMenu","Reset",menuResetCB);
+iFormEnableMenu=menu.add("iFormEnableMenu","",menuEnableDisableCB);
+iFormMoveMenu=menu.add("iFormMoveMenu","Move");
+iFormRemoveMenu=menu.add("iFormRemoveMenu","Remove",menuRemoveCB,curImg,16*4,0);
+menu2=p.newMenuWidget("iFormHighlightSMenu",null,initHighlightContextMenu);
+iFormHSourceMenu=menu2.add("iFormHSourceMenu","Source",menuHighlightCB);
+iFormHDependenciesMenu=menu2.add("iFormHDependenciesMenu","Dependencies",menuHighlightCB)
+iFormHighlightMenu.attachSubMenu(menu2);
+menu3=p.newMenuWidget("iFormMoveSMenu",null,initMoveContextMenu);
+iFormMFirstMenu=menu3.add("iFormMFirstMenu","First",menuMoveCB);
+iFormMUpMenu=menu3.add("iFormMUpMenu","Up",menuMoveCB);
+iFormMDownMenu=menu3.add("iFormMDownMenu","Down",menuMoveCB);
+iFormMLastMenu=menu3.add("iFormMLastMenu","Last",menuMoveCB);
+iFormMoveMenu.attachSubMenu(menu3);
+groupSepGlobal = newDasboardGroupSeparator("groupSeparatorGlobal","Document Input controls",groupSepGlobalExpandCB,groupSepGlobalCollapseCB,"global");
+groupSepLocal = newDasboardGroupSeparator("groupSeparatorLocal","Report Input controls",groupSepGlobalExpandCB,groupSepGlobalCollapseCB,"local");
+bEmptyPane=(arrIForms.length==0);
+if(bEmptyPane)
+iFormToolbar.disableChildren(true);
+else
+buildInputForms();
+iFormContainer.add(groupSepGlobal,-1);
+iFormContainer.add(globalIFormContainer,-1);
+iFormContainer.add(groupSepLocal,-1);
+iFormContainer.add(localIFormContainer,-1);
+globalIFormContainer.par=iFormContainer;
+localIFormContainer.par=iFormContainer;
+}
+ function groupSepGlobalExpandCB(id)
+ {
+ showHideContainers(id, true);
+ }
+ function groupSepGlobalCollapseCB(id)
+        {
+ showHideContainers(id, false);
+        }
+ function showHideContainers(id, bShow)
+ {
+ var gs = getGroupSeparatorFromId(id);
+            if (gs != null)
+            {
+                if (gs.type == "global")
+                    globalIFormContainer.setDisplay(bShow);
+                else if (gs.type == "local")
+                    localIFormContainer.setDisplay(bShow);
+                resizeCB();
+            }
+ }
+function buildInputForms()
+{
+var len = arrIForms.length;
+for(i=0;i<len;i++)
+{
+addInputForm(arrIForms[i]);
+}
+}
+function addInputForm(iform,index)
+{
+var comefromAddOrEdit = (_ifActionParam==_actionAdd || _ifActionParam==_actionEdit);
+_ifActionParam = null;
+var ifLov = getIFLov(iform); 
+if (ifLov == null && iform.widget.hasLov)
+{
+if(useCustomValues(iform))
+{
+iform.lov=iform.widget.customValues;
+if (iform.allowNullValues)
+{
+iform.lov[iform.lov.length] = _nullValueLab;
+}
+}
+else
+{
+_ifActionParam = _actionAdd;
+var url =  p._root + "ajaxIncInputFormsLov" + p._appExt;
+url += p.urlParamsNoBID();
+url += "&sOid="+iform.bindedObject.id;
+url += "&sID="+iform.id;
+url += "&sAllowNullValuesArr="+iform.allowNullValues;
+p.wt();
+ajaxUpdater({"url":url, "postCB":fillIFLov, "ajaxErrorCB":p.manageAjaxError,sNullValueLab:_nullValueLab});
+return;
+}
+ }
+else
+{
+if(useCustomValues(iform))
+{
+if (iform.lov!=null)
+{
+iform.lov=iform.widget.customValues;
+if (iform.allowNullValues)
+{
+iform.lov[iform.lov.length] = _nullValueLab;
+iform.tempLov[iform.tempLov.length] = {caption:_nullValueLab};
+}
+else
+{
+var nullValue_index = iform.lov.indexOf(_nullValueLab);
+if (nullValue_index > -1) {
+iform.lov.splice(nullValue_index, 1);
+iform.tempLov.splice(nullValue_index, 1);
+}
+}
+}
+}
+}
+var cont = getInputFormContainer(iform);
+var cb = iFormApplyCB;
+var iconCB = iFormActionCB;
+if((cont == null) || (iform == null)) return;
+var type=iform.widget.type;
+var nbLines=parseInt(iform.widget.numberOfLines);
+var idIForm=iform.id;
+var nameIForm=iform.name;
+var descIForm=getInputFormTooltip(iform);
+var helpIForm=_widgetMap.get(type)?_widgetMap.get(type).tooltip:"";
+var bMulti=false; 
+var contWidth=(cont.layer!=null)?cont.getWidth():cont.w;
+    var myHTML = null, myInit=null, myResize=null,w=null,h=null;
+    var newpane = newDashboardWidget(idIForm, idIForm, nameIForm,descIForm, null,h,null,null);
+    switch(type)
+    {
+    case _text:    
+        w = Math.max(10,contWidth-55);
+        h=60;
+        myHTML = IFormText_getHTML(newpane,idIForm,idIForm,w,cb);
+        myInit = IFormText_init;  
+        myResize = IFormText_resize;    
+        break;
+    case _combo:    
+        w = Math.max(10,contWidth-20);
+        h=60;
+        myHTML = IFormCombo_getHTML(newpane,idIForm,idIForm,w,cb);
+        myInit = IFormCombo_init;  
+        myResize = IFormCombo_resize;
+        break; 
+    case _list_multiselection:
+    bMulti=true;
+    case _list:
+        w = Math.max(10,contWidth-20);
+        h=120;
+        myHTML = IFormList_getHTML(newpane,idIForm,idIForm,bMulti,w,cb,nbLines);
+        myInit = IFormList_init;  
+        myResize = IFormList_resize;
+        break;
+    case _calendar:       
+        w = Math.max(10,contWidth-55);
+myHTML = IFormCalendar_getHTML(newpane,idIForm,idIForm,w,_formatForDate,cb);
+        myInit = IFormCalendar_init;   
+        myResize = IFormCalendar_resize;
+    break;
+    case _spinner:    
+        w = Math.max(10,contWidth-30);
+        h=70;
+        var min=iform.widget.minValue, max=iform.widget.maxValue,interval=iform.widget.increment;        
+        myHTML = IFormSpinner_getHTML(newpane,idIForm,idIForm,w,iFormApplySpinnerCB,min,max,interval,_decChar,delayApplyFilterCB);
+        myInit = IFormSpinner_init;   
+        myResize = IFormSpinner_resize;   
+    break;
+case _slider:    
+        w = Math.max(10,contWidth-15);
+        helpIForm="Increase or decrease a number";
+        var min=iform.widget.minValue,max=iform.widget.maxValue,interval=iform.widget.increment;
+var defaultValues=iform.widget.defaultValues ;        
+        myHTML = IFormSlider_getHTML(newpane,idIForm,defaultValues,w,cb,min,max,interval,_decChar);
+        myInit = IFormSlider_init;   
+        myResize = IFormSlider_resize;   
+    break;
+case _multiple_slider:
+w = Math.max(10,contWidth-55);
+        var min=iform.widget.minValue,max=iform.widget.maxValue,interval=iform.widget.increment;
+var defaultValues=iform.widget.defaultValues ;
+myHTML = IFormMultipleSlider_getHTML(newpane,idIForm,defaultValues,w,cb,min,max,interval,_decChar);
+        myInit = IFormMultipleSlider_init;   
+        myResize = IFormMultipleSlider_resize;
+    break;
+    case _radio:  
+        myHTML = IFormRadioBtn_getHTML(newpane,idIForm,idIForm,w,cb);
+        myInit = IFormRadioBtn_init;   
+        myResize = null; 
+        break;
+    case _check:  
+                    if ( p.WS._ICcheckboxwidgetExecuteNow == false ){ 
+     myHTML = IFormCheckBoxOKButton_getHTML(newpane,idIForm,idIForm,w,iFormApplyCheckBoxOKButtonCB);
+     myInit = IFormCheckBoxOKButton_init;
+    myResize = IFormCheckBoxOKButton_resize;
+    }else{
+    if ( iform.widget.enableOkButton  ){ 
+     myHTML = IFormCheckBoxOKButton_getHTML(newpane,idIForm,idIForm,w,iFormApplyCheckBoxOKButtonCB);
+     myInit = IFormCheckBoxOKButton_init;
+    myResize = IFormCheckBoxOKButton_resize;
+    }else{
+    myHTML = IFormCheckBox_getHTML(newpane,idIForm,idIForm,w,iFormApplyCheckCB);
+    myInit = IFormCheckBox_init; 
+    myResize = null; 
+    }
+    }
+        break;
+    case _block:  
+        myHTML = IFormBlock_getHTML(newpane,idIForm,idIForm,cb);
+        myInit = IFormBlock_init;   
+        myResize = null; 
+        break;
+    case _tree_list_multiselection:
+    bMulti=true;
+    case _tree_list:
+        w = Math.max(10,contWidth);
+        h=120;
+        myHTML = IFormTreeList_getHTML(newpane,bMulti,w,cb,nbLines,iform);
+        myInit = IFormTreeList_init;  
+        myResize = IFormTreeList_resize;
+        break;          
+    default:   
+    w=60;
+    myHTML = " not implemented ! ";
+    break;
+    }
+newpane.setCallback(myHTML,myInit,myResize);
+if(isEditing)
+{
+var shown = false; 
+newpane.add("edit","Edit",curImg,16*2,0,iconCB,shown)
+newpane.add("highlight","Highlight dependencies",curImg,16*3,0,iconCB,shown)
+newpane.add("remove","Remove",curImg,16*4,0,iconCB,shown)
+}
+else
+{
+var shown = false; 
+newpane.add("highlight","Highlight dependencies",curImg,16*3,0,iconCB,shown)
+}
+if(index ==  null) index=-1;
+newpane=cont.add(newpane,index);
+updateInputFormsCount();
+}
+function iFormStructureCB()
+{
+      if(bEmptyPane) return;
+if(strucIFormBt.isChecked())
+{
+iFormContainer.setDisplay(false);
+iFormTree.setDisplay(true);
+var url =  p._root + "ajaxIncDocumentStructure" + p._appExt
+url+= p.urlParamsNoBID()
+url+="&showCurrentReport=true";
+ajaxUpdater({"url":url, "postCB":buildIFormTree, "ajaxErrorCB":p.manageAjaxError,sNullValueLab:_nullValueLab});
+}
+else
+{
+iFormContainer.setDisplay(true);
+iFormTree.setDisplay(false);
+}
+resetValuesBt.setDisabled(strucIFormBt.isChecked());
+updateMoveButtons();
+}
+function buildIFormTree(jObj)
+{
+iFormTree.deleteAll(); 
+iFormTree.add(newTreeWidgetElemParams({
+iconId:0,
+name:"Input Controls",
+userData:null,
+iconUrl:curImg
+}));
+iFormTree = p.getDocumentStructureTree(jObj,iFormTree,self,null, null, true);
+attachIFormToTree();
+iFormTree.rebuildHTML();
+}
+function attachIFormToTree()
+{
+var len = arrIForms.length;
+var iform,type,bid,name,desc="",op,typeInfo,qualifIcon=-1,isBlockIF;
+var iformNode = iFormTree.sub[0];
+for(i=0;i<len;i++)
+{
+iform = arrIForms[i];
+isBlockIF=(iform.blockID!=null && iform.blockID!="");
+type=iform.widget.type;
+typeInfo = getIFControlInfo(type);
+id=iform.id;
+name=iform.name;
+desc=iform.description;
+op=iform.operator;
+var values="";
+var filterLabels=new Array;
+var objNames=new Array;
+var qualifIcons=new Array;
+if(isBlockIF)
+{
+if(iform.selectedValues!=null)
+{
+var len3=iform.selectedValues.length;
+var dataPath;
+for(var k=0;k<len3;k++)
+{
+dataPath=iform.selectedValues[k];
+filterLabels[k] = dataPath.name+" = "+dataPath.value;
+objNames[k]=dataPath.name; 
+qualifIcons[k]=5; 
+}
+if(iform.bindedObject!=null)
+qualifIcons[0] = getQualificationIcon(iform.bindedObject.qualification);
+}
+else
+{
+filterLabels[0]="No filters applied";
+objNames[0]="";
+qualifIcons[0]=-1;
+}
+}
+else
+{
+if(iform.selectedValues != null)
+{
+var len3=iform.selectedValues.length;
+for(var k=0;k<len3;k++)
+{
+if(k>0) values+=";";
+values+=iform.selectedValues[k];
+}
+}
+else
+values="("+sAllValues+")";
+objNames[0]= iform.bindedObject.name;
+qualifIcons[0] = getQualificationIcon(iform.bindedObject.qualification);
+filterLabels[0] = objNames[0]+" " + arrLabFil[op]+" "+values;
+}
+var len2 = iform.targets.length;
+var target, iformElem, targetElem, reportElem, filterElem;
+iformElem = newTreeWidgetElemParams({
+iconId:typeInfo.idx,
+name:name,
+userData:id,
+tooltip:desc,
+iconAlt:typeInfo.alt,
+iconUrl:typeInfo.src
+})
+iformElem = iformNode.add(iformElem);
+iformElem.expanded=true;
+for(var l=0;l<filterLabels.length;l++)
+{
+iformElem.add(newTreeWidgetElemParams({
+iconId:qualifIcons[l],
+name:filterLabels[l],
+userData:id,
+iconUrl:_newQualifImg
+}));
+}
+targetElem = iformElem.add(newTreeWidgetElemParams({
+iconId:1,
+iconSelId:9, 
+name:"Dependencies",
+userData:null,
+iconUrl:_qualifImg
+}));
+targetElem.expanded=true;
+for(j=0;j<len2;j++)
+{
+target = iform.targets[j];
+bid = target.bid; 
+reportElem = findTreeElemfromBid(iFormTree.sub[1],bid);
+if(reportElem!=null)
+{
+iformElem = newTreeWidgetElemParams({
+iconId:typeInfo.idx,
+name:name,
+userData:id,
+tooltip:desc,
+iconAlt:typeInfo.alt,
+iconUrl:typeInfo.src
+})
+if (reportElem.userData.className != "body")
+iformElem = reportElem.add(iformElem);
+else
+iformElem = reportElem.par.add(iformElem);
+for(var l=0;l<filterLabels.length;l++)
+{
+iformElem.add(newTreeWidgetElemParams({
+iconId:qualifIcons[l],
+name:filterLabels[l],
+userData:id,
+iconUrl:_newQualifImg
+}));
+}
+if (reportElem.userData.className == "body")
+{
+var nameTarget = "";
+for (var k=0;k<p.DS.arrReports.length;k++)
+{
+if (p.DS.iReportID == p.DS.arrReports[k].reportID)
+{
+nameTarget=p.DS.arrReports[k].name;
+break;
+}
+}
+targetElem.add(newTreeWidgetElemParams({
+iconId:p._reportIconID,
+name:nameTarget,
+userData:reportElem.userData,
+iconUrl:p.dsImgUrl
+}));
+}
+else
+{
+targetElem.add(newTreeWidgetElemParams({
+iconId:reportElem.iconId,
+name:reportElem.name,
+userData:reportElem.userData,
+iconUrl:reportElem.src
+}));
+}
+}
+else
+{
+if (bid="D")
+{
+targetElem.add(newTreeWidgetElemParams({
+iconId:p._documentIconID,
+name:p.DS.strDocName,
+userData:{className:"doc"},
+iconUrl: p.dsImgUrl
+}));
+iformElem = newTreeWidgetElemParams({
+iconId:typeInfo.idx,
+name:name,
+userData:id,
+tooltip:desc,
+iconAlt:typeInfo.alt,
+iconUrl:typeInfo.src
+})
+iformElem = iFormTree.sub[1].add(iformElem);
+for(var l=0;l<filterLabels.length;l++)
+{
+iformElem.add(newTreeWidgetElemParams({
+iconId:qualifIcons[l],
+name:filterLabels[l],
+userData:id,
+iconUrl:_newQualifImg
+}));
+}
+}
+}
+}
+}
+}
+function findTreeElemfromBid(node,bid)
+{
+var sub=node.sub,item=null
+if (!sub) return null
+for (var i=0; i<sub.length;i++)
+{
+item=sub[i].findInData(bid,"bid");
+if (item) 
+{
+return item;
+}
+findTreeElemfromBid(sub[i],bid)
+}
+}
+function mapClickCB()
+{
+if(!isEditing) return; 
+var sels= iFormTree.getSelections();
+if(sels!=null)
+{
+var sel = sels[0];
+if ((sel && sel.icns == null) || (sel.userData.className=="body") || (sel.userData.className=="doc"))
+{
+if(sel.userData!=null )
+highlightBlock(new Array(""+sel.userData.bid));
+}
+}
+}
+function iFormResetAllCB()
+{
+var len = arrIForms.length,iform,ifpane;
+var xml="";
+for(i=0;i<len;i++)
+{
+iform = arrIForms[i];
+xml += doReset(iform);
+}
+if(xml!="")
+{
+p.wt();
+var frm = document.submitIForm;
+frm.target="formFrame" + p.WS.iViewerID;
+    frm.action=p._root+"processInputForms"+p._appExt+p.urlParamsNoBID();
+        frm.elements["xmlParameter"].value = packageXMLParameter(xml);
+        frm.submit();
+}
+}
+function doReset(iform)
+{
+if (iform==null ) return "";
+var xml="",df;
+df = formatValuesKey(iform,iform.widget.defaultValues);
+iform.selectedValues=null; 
+if(df!=null && df.length>0)
+{
+iform.selectedValues=df;
+}
+ifpane = getInputFormContainer(iform).getItemByValue(iform.id);
+if(ifpane.setSelection)
+{
+ifpane.setSelection(iform.selectedValues);
+iform.selectedValues=getSelectedValues(ifpane);
+}
+xml += buildXMLParameter(iform,(iform.selectedValues==null?"remove":"update"),true);
+return xml;
+}
+function formatValuesKey(iform,arr)
+{
+var lovValues = iform.values, hasKeys = false  
+var ret = null;
+if (null != arr) {
+ret = arr.clone();
+ret = defaultValuesToLocale(ret, iform);
+if (null != lovValues) {
+hasKeys = hasKeysFn(lovValues)
+       if (hasKeys) { 
+        for (var i=0; i < ret.length; i++) {        
+        var val = getKeyFromVal(lovValues, ret[i])
+        if (null != val) {
+        ret[i] = val;
+        }
+        }
+        }
+}
+} 
+return ret; 
+}
+function defaultValuesToLocale(df,iform)
+{
+if (df == null) return null;
+var type=iform.widget.type;
+if (type==_spinner || type==_slider || type==_multiple_slider)
+{
+var arr=new Array();
+for (var i=0; i<df.length; i++)
+{
+var v = '' + df[i];
+v = v.replace(/\./,_decChar);
+arr[i] = v;
+}
+return arr;
+}
+else
+return df;
+}
+function iFormMoveCB()
+{
+var id=this.id;
+var newPos = null;
+var ifpane= iFormContainer_getSelection();
+if(ifpane == null) return; 
+        var pos=ifpane.getIndex();
+        if(id == "moveUpIFormBt") 
+        {
+        if((pos-1)>=0)                
+        newPos = pos-1;        
+        }
+        else 
+        {
+        if((pos+1)<arrIForms.length)             
+        newPos = pos+1;        
+        }
+        doMove(newPos);
+}
+function doMove(newPos)
+{
+if(newPos!=null)
+{
+_ifActionParam=_actionMove;
+var ifpane= iFormContainer_getSelection()
+if(ifpane == null) return; 
+var oldPos=ifpane.getIndex();
+iFormContainer_move(ifpane,newPos);
+newPos=ifpane.getIndex(); 
+        updateMoveButtons();
+arrayMove(window,"arrIForms",oldPos,newPos);
+var items=iFormContainer_getAllItems();
+for(var i=0;i<arrIForms.length;i++)
+{
+for(var j=0;j<items.length;j++)
+{
+if (arrIForms[i].id==items[j].value)
+{
+arrIForms[i].index=items[j].getIndex();
+break;
+}
+}
+}
+p.wt();
+        var iform = findIFormById(ifpane.value);           
+submitInputForm(iform, "move", true, false);
+resizeCB();
+IFormBlock_checkWarning(ifpane);
+}
+}
+function iFormActionCB()
+{
+var ifaction=this.paneElement
+if(ifaction.value == "remove")
+{
+p.showPromptDialog("Are you sure you want to delete this input control?",null,1,iFormDeleteCB)
+}
+else if(ifaction.value == "edit")
+{
+IFormEditCB();
+}
+else if(ifaction.value == "highlight")
+{
+iFormHightlightCB();
+}
+}
+function iFormHightlightCB()
+{
+var ifpane= iFormContainer_getSelection();
+var iform = findIFormById(ifpane.value);
+if(iform != null)
+{
+var len = iform.targets.length, bids="";
+for(var i=0;i<len;i++)
+{
+if(i>0) bids+=";";
+bids += iform.targets[i].bid;
+}
+highlightBlock(bids.split(";"));
+}
+}
+function iFormHightlightSourceCB()
+{
+var ifpane= iFormContainer_getSelection();
+var iform = findIFormById(ifpane.value);
+if(iform!=null && iform.blockID!="")
+{
+highlightBlock(new Array(""+iform.blockID));
+}
+}
+function iFormDeleteCB()
+{
+var ifpane= iFormContainer_getSelection();
+var iform = findIFormById(ifpane.value);
+_ifActionParam=_actionRemove; 
+removeInputFormArray(iform);
+iFormContainer_remove(ifpane);
+var items=iFormContainer_getAllItems();
+for(var i=0;i<arrIForms.length;i++)
+{
+for(var j=0;j<items.length;j++)
+{
+if (arrIForms[i].id==items[j].value)
+{
+arrIForms[i].index=items[j].getIndex();
+break;
+}
+}
+}
+updateUI();
+updateInputFormsCount()
+p.wt();
+submitInputForm(iform, "remove", true);
+}
+function iFormAdd(iform)
+{
+_ifActionParam=_actionAdd;
+arrIForms[arrIForms.length]=iform;
+var values = iform.widget.defaultValues;
+values = defaultValuesToLocale(values, iform);
+if (values!=null && values.length>0)
+iform.selectedValues = values;
+addInputForm(iform);
+updateUI();
+var userData = {id:iform.widget.id};
+p._IFarr[iform.id]={type:iform.widget.type,widget:userData};
+}
+function iFormModify(iform,inputFormIDNew)
+{
+_ifActionParam=_actionEdit;
+var index = iform.index;
+var id = iform.id;
+var ifpane = iFormContainer_getItemByValue(id);
+var oldiform=null;
+for(var i=0;i<arrIForms.length;i++)
+{
+if (arrIForms[i].id==id)
+{
+oldiform=arrIForms[i]
+break;
+}
+}
+updateInputFormArray(iform);
+if(iform.widget.type != oldiform.widget.type)
+iform.selectedValues=null 
+if(iform.selectedValues!=null)
+{
+var type = iform.widget.type;
+if (type==_multiple_slider)
+{
+if (!isNaN(iform.widget.minValue) && iform.widget.minValue > iform.selectedValues[0])
+iform.selectedValues[0] = iform.widget.minValue;
+if (!isNaN(iform.widget.maxValue) && iform.widget.maxValue < iform.selectedValues[1])
+iform.selectedValues[1] = iform.widget.maxValue;
+}
+else if (type == _slider)
+{
+if (!isNaN(iform.widget.minValue) && iform.widget.minValue > iform.selectedValues[0])
+iform.selectedValues[0] = iform.widget.minValue;
+if (!isNaN(iform.widget.maxValue) && iform.widget.maxValue < iform.selectedValues[0])
+iform.selectedValues[0] = iform.widget.maxValue;
+}
+}
+var values = iform.widget.defaultValues;
+values = defaultValuesToLocale(values, iform);
+if (values!=null && values.length>0)
+iform.selectedValues = values;
+iFormContainer_remove(ifpane);
+if (typeof(inputFormIDNew)!="undefined")
+iform.id=inputFormIDNew;
+var bAllowNullValuesChanged=false;
+if (iform.allowNullValues!=oldiform.allowNullValues)
+bAllowNullValuesChanged=true;
+addInputForm(iform,index);
+updateUI();
+if (bAllowNullValuesChanged && !useCustomValues(iform))
+{
+var url =  p._root + "ajaxIncInputFormsLov" + p._appExt;
+url += p.urlParamsNoBID();
+url += "&sOid="+iform.bindedObject.id;
+url += "&sID="+iform.id;
+url += "&sAllowNullValuesArr=" + iform.allowNullValues;
+url += "&includeObject=arrIFormsLov"
+p.wt();
+ajaxUpdater({"url":url, "postCB":fillIFLovUpdateForAllowNullValue, "ajaxErrorCB":p.manageAjaxError,sNullValueLab:_nullValueLab});
+return;
+}
+}
+function setAsUndoableAction(b)
+{
+if (b)
+{
+p.DS.bUndoableAction=true;
+p.saveStateCB();
+}
+}
+function iFormApplyCB()
+{
+window.__ifSrcWidget=this
+setTimeout("delayApplyFilterCB(__ifSrcWidget)",100);
+}
+function updateNullValue(sels)
+{
+if (sels!=null) 
+{
+for (var i = 0; i< sels.length;i++)
+{
+if (sels[i] == _nullValueLab) sels[i] = "[NULL_VALUE]";
+}
+}
+}
+function delayApplyFilterCB(widget)
+{
+if(_timeWait!=null) _timeWait=null; 
+var iform = null;
+var ifpane = null;
+var type = "mouse";
+if(widget != null)
+type = widget.srcWidgetAction?widget.srcWidgetAction:"mouse";
+if (type == "mouse")
+{
+ifpane= iFormContainer_getSelection();
+if(ifpane == null )
+{
+if(widget != null)
+setTimeout("delayApplyFilterCB(widget)",100);
+else
+setTimeout("delayApplyFilterCB()",100);
+return;
+}
+iform = findIFormById(ifpane.value);
+}
+else if(type == "key")
+{
+var iFormId = null
+for(var i=0; i< iFormContainer.items.length; i++ )
+{
+var reg1=new RegExp(iFormContainer.items[i].id,"i");
+if (widget.srcIFormId.match(reg1))
+{
+iFormId = iFormContainer.items[i].id
+ifpane= iFormContainer.items[i]
+break
+}
+} 
+if (iFormId)
+iform = findIFormById(iFormId);
+else
+return
+} 
+var isBlockIF=(iform.blockID!=null&&iform.blockID!="");
+if(isBlockIF)
+{
+var xml=doReset(iform);
+if (p._previousSelectionBifs)
+p._previousSelectionBifs[iform.id]=null;
+if(hasNoMoreDependancies(iform))
+{
+ifpane.showWarning(true,"There are no dependent elements in the report.");
+return; 
+}
+if(xml!="")
+{
+p.wt();
+var frm = document.submitIForm;
+frm.target="formFrame" + p.WS.iViewerID;
+    frm.action=p._root+"processInputForms"+p._appExt+p.urlParamsNoBID();
+        frm.elements["xmlParameter"].value = packageXMLParameter(xml);
+        frm.submit();
+}
+return;
+}
+if(ifpane.showWarning) 
+{
+if(hasNoMoreDependancies(iform))
+{
+ifpane.showWarning(true,"There are no dependent elements in the report.");
+return; 
+}
+else 
+ifpane.showWarning(false);
+}
+var sels = getSelectedValues(ifpane);
+var oldSels = iform.selectedValues;
+updateNullValue(sels);
+updateNullValue(oldSels);
+var sSels=null,sOldSels=null;
+if (sels!=null) 
+{
+if((sels.length > 0) && (sels[0] == sAllValues))
+{
+sels= null;
+}
+else
+sSels=sels.join(";");
+}
+if(oldSels!=null)
+{
+if((oldSels.length > 0) && (oldSels[0] == sAllValues))
+{
+oldSels= null;
+}
+else
+sOldSels=oldSels.join(";");
+}
+if(sSels!=sOldSels)
+{
+p.wt();
+var frm = document.submitIForm;
+frm.target="formFrame" + p.WS.iViewerID;
+    frm.action=p._root+"processInputForms"+p._appExt+p.urlParamsNoBID()+"&sNullValueLab="+encodeURIComponent(_nullValueLab);
+iform.selectedValues = sels;
+if(sels == null)
+            frm.elements["xmlParameter"].value = buildXMLParameter(iform,"remove");           
+else
+frm.elements["xmlParameter"].value = buildXMLParameter(iform,"update");
+frm.submit();
+}
+}
+function iFormApplyCheckCB()
+{
+var id = this.id;
+var iformWidgets = this.par.widgets;
+var len = iformWidgets.length;
+if(id.indexOf("_checkSelectAll")>0)
+{
+for(var i=1;i<len;i++)
+{
+iformWidgets[i].check(this.isChecked());
+}
+}
+else
+{
+if(iformWidgets[0].text==sSelectAll) 
+{
+var toCheck = true;
+for(var i=1;i<len;i++)
+{
+if(!iformWidgets[i].isChecked())
+{
+toCheck=false;
+break;
+}
+}
+iformWidgets[0].check(toCheck);
+}
+}
+iFormApplyCB();
+}
+function iFormApplyCheckBoxOKButtonCB()
+{
+var id = this.id;
+var iformWidgets = this.par.widgets;
+var len = iformWidgets.length;
+if(id.indexOf("_checkSelectAll")>0)
+{
+for(var i=1;i<(len-1);i++)
+{
+iformWidgets[i].check(this.isChecked());
+}
+}
+else
+{
+if(iformWidgets[0].text==sSelectAll) 
+{
+var toCheck = true;
+for(var i=1;i<(len-1);i++)
+{
+if(!iformWidgets[i].isChecked())
+{
+toCheck=false;
+break;
+}
+}
+iformWidgets[0].check(toCheck);
+}
+}
+if(id.indexOf("_btnOK")>0){
+    iFormApplyCB();
+}
+}
+_timeWait=null 
+function iFormApplySpinnerCB()
+{
+ if(_timeWait!=null) 
+clearTimeout(_timeWait)
+window.__ifSrcWidget=this 
+_timeWait=setTimeout("delayApplyFilterCB(__ifSrcWidget)",1000); 
+}
+function iFormUpdateDataPath(id,selInfo)
+{
+if(selInfo!=null)
+{
+var iform = findIFormById(selInfo.id); 
+if(iform != null)
+{
+var ifpane = iFormContainer_getItemByValue(iform.id); 
+                var arr = selInfo.values 
+                iform.selectedValues=null;
+                if(arr!=null && arr.length>0)
+                {
+                for(var i=0;i<arr.length;i++)
+                {
+                iform.addDataPath(arr[i][0],arr[i][1]);
+                }
+                }
+                if(ifpane.setSelection)
+        ifpane.setSelection(iform.selectedValues);
+}
+if (strucIFormBt.isChecked())
+iFormStructureCB();
+}
+}
+function iFormUpdateAfterRemove(id,selInfo)
+{
+if(selInfo!=null)
+{
+var iform = findIFormById(selInfo.id); 
+if(iform == null) return;
+var ifpane = iFormContainer_getItemByValue(iform.id);
+arrayRemove(window,"arrIForms",iform.index);
+iFormContainer_remove(ifpane);
+for(var i=0;i<arrIForms.length;i++)
+{
+arrIForms[i].index=i;
+}
+updateUI();
+if (strucIFormBt.isChecked())
+iFormStructureCB();
+}
+}
+function iFormBlockcheckWarning()
+{
+var items = iFormContainer_getAllItems();
+for (var i=0; i < items.length; i++)
+{
+var par = items[i];
+if (par != null && par.value != null)
+{
+for (var j=0; j<arrIForms.length; j++)
+{
+if (arrIForms[j].blockID != null && arrIForms[j].id == par.id)
+{
+    IFormBlock_checkWarning(par);
+break;
+}
+}
+}
+}
+}
+function iFormUpdateLov(evt,data)
+{
+if(data!=null && data.customGrouping==true)
+{
+if((arrIForms.length>0))
+{
+var ids="",len=arrIForms.length;
+var allowNullValuesArr="";
+var iFormArr="";
+for(var i=0;i<len;i++)
+{
+var iform = arrIForms[i]
+if(iform.bindedObject.id==data.varId)
+{
+if(iform.widget.hasLov)
+{
+if(useCustomValues(iform))
+iform.lov=iform.widget.customValues;
+else
+{
+if(ids!="") ids+=",";
+ids+=iform.bindedObject.id;
+if(allowNullValuesArr!="") allowNullValuesArr+=",";
+allowNullValuesArr+=iform.allowNullValues;
+if(iFormArr!="") iFormArr+=",";
+iFormArr+=iform.id;
+}
+}
+}
+}
+if(ids!="")
+{
+var url =  p._root + "ajaxIncInputFormsLov" + p._appExt;
+url += p.urlParamsNoBID();
+url += "&sOid="+ids;
+url += "&sAllowNullValuesArr=" + allowNullValuesArr;
+url += "&sIFormArr=" + iFormArr;
+url += "&includeObject=arrIFormsLov"
+p.wt();
+ajaxUpdater({"url":url, "postCB":fillIFLovUpdate, "ajaxErrorCB":p.manageAjaxError,sNullValueLab:_nullValueLab});
+return;
+}
+}
+}
+}
+function getSelectedValues(pane)
+{
+var arr = null;
+if(pane.innerSelection)
+arr =pane.innerSelection();
+return arr;
+}
+function getInputFormTooltip(iform)
+{
+var tooltip="";
+if(iform!=null)
+{
+tooltip=_widgetMap.get(iform.widget.type)?_widgetMap.get(iform.widget.type).tooltip:""
+if(iform.description!="")
+tooltip+="\n\n"+"Description:"+"\n"+iform.description;
+}
+return tooltip;
+}
+function addCheckIcn(a,b,c,d,e)
+{
+return iFormToolbar.add(newIconCheckWidget(a,(b!=null)?curImg:null,e,c,d,16,16,b?b*16:0,0,b?b*16:0,16))
+}
+ function addIcn(a,b,c,d,e)
+{
+return iFormToolbar.add(newIconWidget(a,(b!=null)?curImg:null,e,c,d,16,16,b?b*16:0,0,b?b*16:0,16))
+}
+function sp()
+{
+return iFormToolbar.add()
+} 
+        function loadCB()
+        {
+if (_error)
+{
+p.hideBlockWhileWaitWidget();
+return;
+}
+isPageLoaded = true;
+iFormContextMenu.init();
+iFormToolbar.init();
+iformToolbarCont.init();
+createIFormBt.init();
+resetValuesBt.init();
+moveUpIFormBt.init();
+moveDownIFormBt.init();
+iFormMsg.init();
+iFormContainer.init();  
+iFormTree.init();
+updateUI();
+iFormBlockcheckWarning()
+p.hideBlockWhileWaitWidget();
+_arrEvts= new Array;
+_arrEvts[_arrEvts.length]=p.newObserverTwoEvents(p._EVT_REP_DUPLICATED,p._EVT_PAGE_LOADED,p.refreshLeftPanelCB);
+_arrEvts[_arrEvts.length]=p.newObserverTwoEvents(p._EVT_REP_ADDED,p._EVT_PAGE_LOADED,p.refreshLeftPanelCB);
+_arrEvts[_arrEvts.length]=p.newObserverTwoEvents(p._EVT_REP_DELETED,p._EVT_WOM_LOADED,p.refreshLeftPanelCB);
+_arrEvts[_arrEvts.length]=p.newObserverTwoEvents(p._EVT_DRILL_ON,p._EVT_PAGE_LOADED,p.refreshLeftPanelCB);
+_arrEvts[_arrEvts.length]=p.newObserverTwoEvents(p._EVT_DRILL_OFF,p._EVT_PAGE_LOADED,p.refreshLeftPanelCB);
+_arrEvts[_arrEvts.length]=p.newObserverTwoEvents(p._EVT_BLOCK_AS_INPUT_FORM_VALUE_SELECTED, p._EVT_PAGE_LOADED, iFormUpdateDataPath);
+_arrEvts[_arrEvts.length]=p.newObserverTwoEvents(p._EVT_BLOCK_AS_INPUT_FORM_REMOVE, p._EVT_PAGE_LOADED, iFormUpdateAfterRemove);
+_arrEvts[_arrEvts.length]=p.newObserverTwoEvents(p._EVT_WOM_LOADED, iFormBlockcheckWarning);
+_arrEvts[_arrEvts.length]=p.newObserverTwoEvents(p._EVT_REPORT_FILTER_BAR_FILLED_UP,p._EVT_PAGE_LOADED,p.refreshLeftPanelCB)
+_arrEvts[_arrEvts.length]=p.newObserverOneEvent(p._EVT_SWITCH_TO_PERSPECTIVE, detachEvents);
+_arrEvts[_arrEvts.length]=p.newObserverTwoEvents(p._EVT_VARS_UPDATE,p._EVT_WOM_LOADED,iFormUpdateLov);
+resizeCB();
+updateInputFormsCount();
+    }
+function unloadCB()
+{
+detachEvents();
+}
+function detachEvents()
+{
+if(_arrEvts == null) return; 
+for (var i=0; i<_arrEvts.length; i++)
+{
+p.eventManager.detach(_arrEvts[i]);
+}
+p.eventManager.detach(selectAfterTreeLoadedEv)
+selectAfterTreeLoadedEv = null
+}
+    function resizeCB()
+    {
+    if (isPageLoaded)
+{
+var w=winWidth(), h=winHeight()
+if (w>0 && h>paletteH)
+{
+iFormContainer.css.padding='0px'; 
+iFormContainer.resize(Math.max(0,w+(_ie?-1:0)),Math.max(0,h-paletteH));
+iFormTree.resize(Math.max(0,w+2),Math.max(0,h-paletteH+2));
+iformToolbarCont.resize(w);
+}
+}
+}
+function updateUI()
+{
+bEmptyPane=(arrIForms.length==0);
+iFormMsg.setDisplay(bEmptyPane);
+iFormTree.setDisplay(false);
+iFormContainer.setDisplay(!bEmptyPane);
+iFormToolbar.disableChildren(false);
+strucIFormBt.check(false); 
+createIFormBt.setDisplay(isEditing);
+moveUpIFormBt.setDisplay(isEditing);
+moveDownIFormBt.setDisplay(isEditing);
+p.repairToolbar(iFormToolbar)
+strucIFormBt.setDisabled(bEmptyPane);
+resetValuesBt.setDisabled(bEmptyPane);
+updateMoveButtons();
+resizeCB();
+}
+function updateMoveButtons()
+{
+var pane=iFormContainer_getSelection();
+if(pane==null || bEmptyPane || strucIFormBt.isChecked())
+{
+moveUpIFormBt.setDisabled(true);
+moveDownIFormBt.setDisabled(true);
+}
+else
+{
+moveUpIFormBt.setDisabled(pane.getIndex()==0);
+moveDownIFormBt.setDisabled(iFormContainer_isLastItem(pane));
+}
+}
+    function updateCB(strToken)
+{
+var bReloadReport=false;
+    if (strToken != null) {
+p.changeEntry(strToken);
+bReloadReport = true;
+}
+else {
+var ifpane = iFormContainer_getSelection();
+var iform = findIFormById(ifpane.value);
+if (iform.blockID != '') 
+bReloadReport = true;
+}
+if(bReloadReport)
+{
+var url = "report" + p._appExt + p.urlParamsNoBID();
+p.frameNav("Report",url);
+}
+p.hideBlockWhileWaitWidget();
+}
+function changeCB(action)
+{
+updateMoveButtons();
+if(action=="select" || action =="forceselect")
+{
+var ifpane= iFormContainer_getSelection();
+var iform = findIFormById(ifpane.value);
+if(iform!=null && (iform.blockID!="") && (iform.blockID!=null))
+{
+IFormBlock_checkWarning(ifpane);
+if(action=="select")
+{
+iFormHightlightSourceCB();
+}
+}
+}
+}
+function initInputFormContextMenu()
+{
+iFormEditMenu.show(isEditing);
+iFormMoveMenu.show(isEditing);
+iFormRemoveMenu.show(isEditing);
+var ifpane=iFormContainer_getSelection();
+var iform = findIFormById(ifpane.value);
+var showEnableMenu = (isEditing && (iform.blockID!=null) && (iform.blockID!=""));
+iFormEnableMenu.show(showEnableMenu);
+if(showEnableMenu)
+{
+var id = ifpane.value;
+var itemText=p._disabledInputFormBlocks[id]?'Enable':'Disable'
+iFormEnableMenu.setText(itemText);
+}
+}
+ function initHighlightContextMenu()
+ {
+ var ifpane= iFormContainer_getSelection();
+var iform = findIFormById(ifpane.value);
+iFormHSourceMenu.setDisabled(iform.blockID=="" || iform.blockID==null)
+ }
+ function initMoveContextMenu()
+ {
+ var ifpane= iFormContainer_getSelection();
+ iFormMFirstMenu.setDisabled(ifpane.getIndex()==0);
+ iFormMUpMenu.setDisabled(ifpane.getIndex()==0);
+ iFormMDownMenu.setDisabled(iFormContainer_isLastItem(ifpane));
+ iFormMLastMenu.setDisabled(iFormContainer_isLastItem(ifpane));
+ }
+function menuEditCB()
+{
+IFormEditCB();
+}
+function menuHighlightCB()
+{
+var id=this.id;
+ if(id=="iFormHSourceMenu")
+ iFormHightlightSourceCB();
+ if(id=="iFormHDependenciesMenu")
+ iFormHightlightCB();
+}
+function menuMoveCB()
+{
+var id=this.id;
+var ifpane=iFormContainer_getSelection();
+var pos = ifpane.getIndex();
+var newPos=null;
+if(id=="iFormMFirstMenu")
+newPos=0;
+else if(id=="iFormMUpMenu")
+newPos=pos-1;
+else if(id=="iFormMDownMenu")
+newPos=pos+1;
+else if(id=="iFormMLastMenu")
+newPos=arrIForms.length-1;
+doMove(newPos)
+}
+function menuEnableDisableCB()
+{
+var ifpane=iFormContainer_getSelection();
+var id = ifpane.value;
+if (p._disabledInputFormBlocks[id])
+p._disabledInputFormBlocks[id]=false;
+else
+p._disabledInputFormBlocks[id]=true;
+var url=p._root+"report"+p._appExt+p.urlParamsNoBID();
+p.frameNav("Report",url,false);
+}
+function menuResetCB()
+{
+var ifpane=iFormContainer_getSelection();
+var iform = findIFormById(ifpane.value);
+var xml=doReset(iform);
+if(xml!="")
+{
+p.wt();
+if (iform.blockID!='')
+{
+if (p._previousSelectionBifs)
+p._previousSelectionBifs[iform.id]=null;
+}
+var frm = document.submitIForm;
+frm.target="formFrame" + p.WS.iViewerID;
+    frm.action=p._root+"processInputForms"+p._appExt+p.urlParamsNoBID();
+        frm.elements["xmlParameter"].value = packageXMLParameter(xml);
+        frm.submit();
+}
+}
+function menuRemoveCB()
+{
+p.showPromptDialog("Are you sure you want to delete this input control?",null,1,iFormDeleteCB)
+}
+function showContextMenu(ev)
+{
+p.escapeFormatPainter()
+var pos = p.workbenchW.getPerspective().getLeftPaneCoordinates(),x,y
+ev = _ie?_curWin.event:ev
+x=absxpos(ev)+pos.x
+y=absypos(ev)+pos.y
+if (!this._inputFromTreeList)
+iFormContextMenu.show(true,x,y);
+}
+    function lPaneContextMenu()
+{
+return false;
+}
+function dragCB(source)
+{
+}
+function acceptDropCB(targetLayer)
+{
+var o=getWidget(targetLayer)
+if(o && o.isContainer)
+return false;
+return true
+}
+function dropCB(source, target)
+{
+var sourceItem = source.selection
+var index      = target.dropIndex
+var srcIndex = sourceItem.getIndex()
+if(srcIndex < index)
+doMove(index-1);
+else
+doMove(index);
+}
+setSmartResizeHandler(resizeCB)
+</script>        
+</head>
+<body class="panelzone" style="overflow:hidden" marginheight="0" marginwidth="0" leftmargin="0" topmargin="0" onload="loadCB();" onunload="unloadCB();" oncontextmenu="return lPaneContextMenu();">
+<script language="javascript" class="dialogzone">
+if(everythingOK)
+{
+var s = new Array(), i=0;
+s[i++] = '<div id="iformPaletteCont">' + iFormToolbar.getHTML() + '</div>'
+   s[i++] = '<div id="iFormMessage"><br><i>'+(p.isInteractive?'There are no input controls defined on this report. To define a new one, click the New button.':'There are no input controls defined on this report. To define a new one, switch the document to Design mode.')+'</i></div>'
+   s[i++] = iFormContainer.getHTML();
+s[i++] = iFormTree.getHTML();
+document.write(s.join(""))
+}
+   </script><div id="iformPaletteCont" aria-labelledby="ariaLabelledBy_iformPaletteCont" style="width: 225px;"><table style="padding-top:0px;padding-left:4px;padding-right:4px" class="toolbarBackgnd" id="iformToolbar" height="31" cellspacing="0" cellpadding="0" width="100%" aria-labelledby="ariaLabelledBy_iformToolbar"><tbody><tr valign="middle"><td align="left"><div style="display:none" id="ariaLabelledBy_iformToolbar"></div><div id="leftZone_iformToolbar" style="overflow:hidden;"><table cellspacing="0" cellpadding="0"><tbody><tr valign="middle"><td><table role="button" aria-label="New" title="New" style="margin: 1px; display: none; cursor: pointer;" id="createIFormBt" class="" cellspacing="0" cellpadding="0" border="0" aria-labelledby="ariaLabelledBy_createIFormBt" tabindex="0"><tbody><tr valign="middle"><td id="iconleft_createIFormBt" class=""><div style="width:3px;height:22px"></div></td><td id="iconmid_createIFormBt" align="center" style="height:22px;" class=""><div style="overflow:hidden;height:20px;" valign="middle"><div id="IconImg_createIFormBt" class="imo" style="width:16px;height:16px;background-image:url(&#39;https://dbie.rbi.org.in/BOE/OpenDocument/1608101727/AnalyticalReporting/webiDHTML/viewer/language/en/html/../../../images/main/inputForm.gif&#39;);background-position:-16px 0px;margin-top:2px;cursor:pointer"></div></div></td><td class="" id="icontxtmid_createIFormBt" valign="middle" style="height:22px;padding-left:4px;padding-right:2px"><div id="IconImg_Txt_createIFormBt" class="iconText" style="white-space:nowrap;">New</div></td><td id="iconright_createIFormBt" class=""><div style="width:3px;height:22px"></div></td></tr></tbody></table></td><td><table role="button" aria-label="Map" aria-pressed="false" title="Map" style="display: block; cursor: pointer;" false"="" margin:1px"="" id="strucIFormBt" class="" cellspacing="0" cellpadding="0" border="0" aria-labelledby="ariaLabelledBy_strucIFormBt" tabindex="0"><tbody><tr valign="middle"><td id="iconleft_strucIFormBt" class=""><div style="width:3px;height:22px"></div></td><td id="iconmid_strucIFormBt" align="center" style="height:22px;" class=""><div class="iconText" style="width:1px;height:20px"></div></td><td class="" id="icontxtmid_strucIFormBt" valign="middle" style="height:22px;padding-left:2px;padding-right:2px"><div id="IconImg_Txt_strucIFormBt" class="iconText" style="white-space:nowrap;">Map</div></td><td id="iconright_strucIFormBt" class=""><div style="width:3px;height:22px"></div></td></tr></tbody></table></td><td><table role="button" aria-label="Reset" title="Reset" style="margin: 1px; display: block; cursor: pointer;" id="resetValuesIFormBt" class="" cellspacing="0" cellpadding="0" border="0" aria-labelledby="ariaLabelledBy_resetValuesIFormBt" tabindex="0"><tbody><tr valign="middle"><td id="iconleft_resetValuesIFormBt" class=""><div style="width:3px;height:22px"></div></td><td id="iconmid_resetValuesIFormBt" align="center" style="height:22px;" class=""><div class="iconText" style="width:1px;height:20px"></div></td><td class="" id="icontxtmid_resetValuesIFormBt" valign="middle" style="height:22px;padding-left:2px;padding-right:2px"><div id="IconImg_Txt_resetValuesIFormBt" class="iconText" style="white-space:nowrap;">Reset</div></td><td id="iconright_resetValuesIFormBt" class=""><div style="width:3px;height:22px"></div></td></tr></tbody></table></td><td><table role="button" aria-label="move selected input control up" title="move selected input control up" style="margin: 1px; display: none; cursor: default;" id="moveUpIFormBt" class="" cellspacing="0" cellpadding="0" border="0" aria-labelledby="ariaLabelledBy_moveUpIFormBt" tabindex="-1"><tbody><tr valign="middle"><td id="iconleft_moveUpIFormBt" class=""><div style="width:3px;height:22px"></div></td><td id="iconmid_moveUpIFormBt" align="center" style="height:22px;" class=""><div style="overflow:hidden;height:20px;" valign="middle"><div id="IconImg_moveUpIFormBt" class="imo" style="width: 16px; height: 16px; background-image: url(&quot;https://dbie.rbi.org.in/BOE/OpenDocument/1608101727/AnalyticalReporting/webiDHTML/viewer/language/en/html/../../../images/main/inputForm.gif&quot;); background-position: -80px -16px; margin-top: 2px; cursor: default;"></div></div></td><td id="iconright_moveUpIFormBt" class=""><div style="width:3px;height:22px"></div></td></tr></tbody></table></td><td><table role="button" aria-label="move selected input control down" title="move selected input control down" style="margin: 1px; display: none; cursor: default;" id="moveDownIFormBt" class="" cellspacing="0" cellpadding="0" border="0" aria-labelledby="ariaLabelledBy_moveDownIFormBt" tabindex="-1"><tbody><tr valign="middle"><td id="iconleft_moveDownIFormBt" class=""><div style="width:3px;height:22px"></div></td><td id="iconmid_moveDownIFormBt" align="center" style="height:22px;" class=""><div style="overflow:hidden;height:20px;" valign="middle"><div id="IconImg_moveDownIFormBt" class="imo" style="width: 16px; height: 16px; background-image: url(&quot;https://dbie.rbi.org.in/BOE/OpenDocument/1608101727/AnalyticalReporting/webiDHTML/viewer/language/en/html/../../../images/main/inputForm.gif&quot;); background-position: -96px -16px; margin-top: 2px; cursor: default;"></div></div></td><td id="iconright_moveDownIFormBt" class=""><div style="width:3px;height:22px"></div></td></tr></tbody></table></td></tr></tbody></table></div></td><td width="100%" align="right" style="padding-right:0px"><table cellspacing="0" cellpadding="0"><tbody><tr valign="middle"><td></td></tr></tbody></table></td></tr></tbody></table></div><div id="iFormMessage" aria-labelledby="ariaLabelledBy_iFormMessage" style="display: none;"><br><i>There are no input controls defined on this report. To define a new one, switch the document to Design mode.</i></div><div id="iFormContainer" style="padding: 0px; width: 225px; height: 465px; overflow: auto;" aria-labelledby="ariaLabelledBy_iFormContainer"><table cellspacing="0" cellpadding="0" border="0"><tbody><tr><td><table id="groupSeparatorGlobal" cellspacing="0" cellpadding="0" style="border: 0px; height: 17px; width: 225px; background-image: url(&quot;../../../images/main/taskPane.png&quot;); background-position: 0px 0px; margin-top: 4px;" aria-labelledby="ariaLabelledBy_groupSeparatorGlobal"><tbody><tr><td><div style="background-image:url(&#39;../../../images/main/taskPane.png&#39;);background-position:0px -17px;height:17px;width:7px;"></div></td><td style="vertical-align:middle;width:100%" nowrap=""><div style="width:13px;height:9px;cursor:pointer;display:inline-block;background-image:url(&#39;../../../images/main/taskPane.png&#39;);background-position:0px -51px;" id="icngroupSeparatorGlobal" onclick="_CW.DasboardGroupSeparator_click(this); if (_ie) return false;" ondblclick="_CW.DasboardGroupSeparator_click(this); if (_ie) return false;" onkeydown="_CW.DasboardGroupSeparator_click(this); if (_ie) return false;" title="Expanded"></div><div style="display:inline-block;padding-left:2px;text-overflow:ellipsis;white-space:nowrap;">Document Input controls</div><div id="groupSeparatorGlobalcount" style="display:inline-block;padding-left:4px;text-overflow:ellipsis;white-space:nowrap;"> (0)</div></td><td><div style="background-image:url(&#39;../../../images/main/taskPane.png&#39;);background-position:0px -34px;height:17px;width:7px;"></div></td></tr></tbody></table></td></tr><tr><td><div id="globalIFormContainer" style="padding-top: 4px; width: 220px; overflow: auto; padding-left: 5px;" aria-labelledby="ariaLabelledBy_globalIFormContainer"><table cellspacing="0" cellpadding="0" border="0"><tbody></tbody></table></div></td></tr><tr><td><table id="groupSeparatorLocal" cellspacing="0" cellpadding="0" style="border: 0px; height: 17px; width: 225px; background-image: url(&quot;../../../images/main/taskPane.png&quot;); background-position: 0px 0px; margin-top: 4px;" aria-labelledby="ariaLabelledBy_groupSeparatorLocal"><tbody><tr><td><div style="background-image:url(&#39;../../../images/main/taskPane.png&#39;);background-position:0px -17px;height:17px;width:7px;"></div></td><td style="vertical-align:middle;width:100%" nowrap=""><div style="width:13px;height:9px;cursor:pointer;display:inline-block;background-image:url(&#39;../../../images/main/taskPane.png&#39;);background-position:0px -51px;" id="icngroupSeparatorLocal" onclick="_CW.DasboardGroupSeparator_click(this); if (_ie) return false;" ondblclick="_CW.DasboardGroupSeparator_click(this); if (_ie) return false;" onkeydown="_CW.DasboardGroupSeparator_click(this); if (_ie) return false;" title="Expanded"></div><div style="display:inline-block;padding-left:2px;text-overflow:ellipsis;white-space:nowrap;">Report Input controls</div><div id="groupSeparatorLocalcount" style="display:inline-block;padding-left:4px;text-overflow:ellipsis;white-space:nowrap;"> (1)</div></td><td><div style="background-image:url(&#39;../../../images/main/taskPane.png&#39;);background-position:0px -34px;height:17px;width:7px;"></div></td></tr></tbody></table></td></tr><tr><td><div id="localIFormContainer" style="padding-top: 4px; width: 220px; overflow: auto; padding-left: 5px;" aria-labelledby="ariaLabelledBy_localIFormContainer"><table cellspacing="0" cellpadding="0" border="0"><tbody><tr><td><div style="overflow: hidden; visibility: hidden; background-color: black; height: 3px; width: 213px;"></div><div id="R2.IF0" title="Select single values from a list" class="treeZone" style="overflow: hidden; width: 213px;" onselectstart="return false" oncontextmenu="_CW.Dashboard_ContextMenuCB(&#39;R2.IF0&#39;, event);return false" aria-labelledby="ariaLabelledBy_R2.IF0"><div id="dbTop_R2.IF0" class="titleInputForm" style="overflow: hidden; width: 213px;" aria-labelledby="ariaLabelledBy_dbTop_R2.IF0"><table cellspacing="0" cellpadding="0" border="0" width="100%"><tbody><tr><td id="dbTopTitle_R2.IF0" valign="center" style="cursor: default;"><div class="titleTextInputForm" style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden; width: 182px;">V_base_Year input control</div></td><td id="dbTopIcons_R2.IF0" valign="top" align="right"><table cellspacing="0" cellpadding="0" border="0"><tbody><tr><td><table style="padding-top:0px;padding-left:4px;padding-right:4px" id="dbPalette_R2.IF0" height="31" cellspacing="0" cellpadding="0" width="100%" aria-labelledby="ariaLabelledBy_dbPalette_R2.IF0"><tbody><tr valign="middle"><td align="left"><div style="display:none" id="ariaLabelledBy_dbPalette_R2.IF0"></div><div id="leftZone_dbPalette_R2.IF0" style="overflow:hidden;"><table cellspacing="0" cellpadding="0"><tbody><tr valign="middle"><td><div style="padding-left: 0px; overflow: hidden; width: 0px;" id="R2.IF0_action_highlight_parentDiv"><table role="button" aria-label="Highlight dependencies" title="Highlight dependencies" style="margin: 1px; display: block;" id="R2.IF0_action_highlight" class="" cellspacing="0" cellpadding="0" border="0" aria-labelledby="ariaLabelledBy_R2.IF0_action_highlight" tabindex="0"><tbody><tr valign="middle"><td id="iconleft_R2.IF0_action_highlight" class=""><div style="width:3px;height:22px"></div></td><td id="iconmid_R2.IF0_action_highlight" align="center" style="height:22px;" class=""><div style="overflow:hidden;height:20px;" valign="middle"><div id="IconImg_R2.IF0_action_highlight" class="imo" style="width:16px;height:16px;background-image:url(&#39;https://dbie.rbi.org.in/BOE/OpenDocument/1608101727/AnalyticalReporting/webiDHTML/viewer/language/en/html/../../../images/main/inputForm.gif&#39;);background-position:-48px 0px;margin-top:2px;cursor:pointer"></div></div></td><td id="iconright_R2.IF0_action_highlight" class=""><div style="width:3px;height:22px"></div></td></tr></tbody></table></div></td><td><div style="padding-left: 0px; overflow: visible;" id="R2.IF0_action_colapse_parentDiv"><table role="button" aria-label="Minimize" title="Minimize" style="margin: 1px; display: block; cursor: pointer;" id="R2.IF0_action_colapse" class="null" cellspacing="0" cellpadding="0" border="0" aria-labelledby="ariaLabelledBy_R2.IF0_action_colapse" tabindex="0"><tbody><tr valign="middle"><td id="iconleft_R2.IF0_action_colapse" class=""><div style="width:3px;height:22px"></div></td><td id="iconmid_R2.IF0_action_colapse" align="center" style="height:22px;" class=""><div style="overflow:hidden;height:20px;" valign="middle"><div id="IconImg_R2.IF0_action_colapse" class="imo" style="width:16px;height:16px;background-image:url(&#39;../../../../dhtmllib/images/skin_standard/collapse_expand.gif&#39;);background-position:0px -16px;margin-top:2px;cursor:pointer"></div></div></td><td id="iconright_R2.IF0_action_colapse" class=""><div style="width:3px;height:22px"></div></td></tr></tbody></table></div></td></tr></tbody></table></div></td><td width="100%" align="right" style="padding-right:0px"><table cellspacing="0" cellpadding="0"><tbody><tr valign="middle"><td></td></tr></tbody></table></td></tr></tbody></table></td></tr></tbody></table></td></tr></tbody></table></div><div id="dbBody_R2.IF0" class="bodyInputForm" style="display:;overflow:auto;border-width:0px" aria-labelledby="ariaLabelledBy_dbBody_R2.IF0"><div id="R2.IF0_warning" style="padding-top:2px;padding-left:2px;display:none" aria-labelledby="ariaLabelledBy_R2.IF0_warning"><table><tbody><tr><td><div class="imo" style="width:16px;height:16px;background-image:url(&#39;https://dbie.rbi.org.in/BOE/OpenDocument/1608101727/AnalyticalReporting/webiDHTML/viewer/images/main/galleries/icon16x16gallery1b.png&#39;);background-position:0px -416px;"></div></td><td class="iconText" style="font-style:italic;color:black"></td></tr></tbody><tbody></tbody></table></div><table cellspacing="0" cellpadding="0" border="0" width="100%"><tbody><tr><td><table border="0" onselectstart="return false" cellspacing="0" cellpadding="0" class="bodyInputForm" id="R2.IF0_radioAll" aria-labelledby="ariaLabelledBy_R2.IF0_radioAll" title="All values"><tbody><tr valign="middle"><td style="height:20px;width:21px"><input style="margin:3px" type="radio" id="check_R2.IF0_radioAll" name="R2.IF0"></td><td><nobr><label style="padding-left:2px" id="label_R2.IF0_radioAll" for="check_R2.IF0_radioAll">All values</label></nobr></td></tr></tbody></table><table border="0" onselectstart="return false" cellspacing="0" cellpadding="0" class="bodyInputForm" id="R2.IF0_radio0" aria-labelledby="ariaLabelledBy_R2.IF0_radio0" title="2008-09"><tbody><tr valign="middle"><td style="height:20px;width:21px"><input style="margin:3px" type="radio" id="check_R2.IF0_radio0" name="R2.IF0"></td><td><nobr><label style="padding-left:2px" id="label_R2.IF0_radio0" for="check_R2.IF0_radio0">2008-09</label></nobr></td></tr></tbody></table></td></tr><tr><td><table border="0" onselectstart="return false" cellspacing="0" cellpadding="0" class="bodyInputForm" id="R2.IF0_radio1" aria-labelledby="ariaLabelledBy_R2.IF0_radio1" title="2010-11"><tbody><tr valign="middle"><td style="height:20px;width:21px"><input style="margin:3px" type="radio" id="check_R2.IF0_radio1" name="R2.IF0"></td><td><nobr><label style="padding-left:2px" id="label_R2.IF0_radio1" for="check_R2.IF0_radio1">2010-11</label></nobr></td></tr></tbody></table></td></tr></tbody></table></div></div><div style="overflow: hidden; visibility: hidden; background-color: black; height: 3px; width: 213px;"></div></td></tr></tbody></table></div></td></tr></tbody></table></div><div align="left" onselectstart="return false" class="panelzone" id="iFormTree" style="position: relative; border-width: 1px; padding: 4px; width: 217px; height: 457px; overflow: auto; display: none;" aria-labelledby="ariaLabelledBy_iFormTree"><div style="font-size:1px;" id="treeCont_iFormTree" onkeydown="return _CW.TreeWidget_keyDownCB(this,event)" onkeypress="return _CW.TreeWidget_keyPressCB(this,event)" role="tree"></div></div>
+   <iframe style="position:absolute;left:-100px;top:-100px;width:1px;height:1px;" id="ifsubframe" name="ifsubframe" src="./empty(10).html"></iframe>
+   <iframe style="position:absolute;left:-100px;top:-100px;width:1px;height:1px;" id="ifsubframe2" name="ifsubframe2" src="./empty(11).html"></iframe>
+   <!-- Hidden form -->
+<form style="display:none" name="submitIForm" method="post" action="https://dbie.rbi.org.in/BOE/OpenDocument/1608101727/AnalyticalReporting/webiDHTML/viewer/language/en/html/inputFormsPane.html">
+<input type="hidden" name="xmlParameter" id="xmlParameter">
+</form>
+<form name="frmInputForms" style="display:none" method="Post" target="ifsubframe">
+        <input type="hidden" name="InputFormParam" value="">
+        <input type="hidden" name="BindedObjectParam" value="">
+        <input type="hidden" name="WidgetParam" value="">
+       <input type="hidden" name="TargetsParam" value="">
+    </form> 
+
+
+</body></html>

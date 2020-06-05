@@ -1,0 +1,1456 @@
+if (window._DHTML_LIB_WORKBENCH_JS_LOADED==null)
+{
+window._DHTML_LIB_WORKBENCH_JS_LOADED=true;
+_currWorkbench = null;
+}
+function findInArrayByIndexOrValue(arr, indexOrValue)
+{
+if (typeof(indexOrValue) == "number")
+return arr[indexOrValue]
+else
+{
+var len = arr.length;
+for (var i=0; i<len; i++)
+{
+var item =arr[i]; 
+if (item.value == indexOrValue)
+return item;
+}
+return null;
+}
+}
+function getIndexInArrayByIndexOrValue(arr, indexOrValue)
+{
+if (typeof(indexOrValue) == "number")
+return ((indexOrValue >= 0) &&  (indexOrValue < arr.length)) ? indexOrValue : -1;
+else
+{
+var len = arr.length;
+for (var i=0; i<len; i++)
+{
+var item =arr[i]; 
+if (item.value == indexOrValue)
+return i;
+}
+}
+return -1;
+}
+function new_WorkbenchWidget(prms)
+{
+var o = new_Widget(prms);
+// Parameters parsing
+o.clickCB = Widget_param(prms, "clickCB", null);
+o.leftPaneW = Widget_param(prms, "leftPaneW", 200);
+o.leftGrabCB = Widget_param(prms, "leftGrabCB", null) // callback parameters: x, y
+o.keybCB = Widget_param(prms, "keybCB", null) // callback parameters: event
+o.beforeAddWidgetInActionCB = Widget_param(prms, "beforeAddWidgetInActionCB", null) // Callback parameters: actionId, prms
+o.afterAddWidgetInActionCB = Widget_param(prms, "afterAddWidgetInActionCB", null)  // Callback parameters: actionId, widget
+o.freezeResize = function (freeze) { o.isFreezeResize = freeze ? true : false }
+o.addPerspective = WorkbenchWidget_addPerspective;
+o.setPerspective = WorkbenchWidget_setPerspective;
+o.getPerspective = WorkbenchWidget_getPerspective;
+o.getAction = WorkbenchWidget_getAction;
+o.getHTML = WorkbenchWidget_getHTML;
+o.widgetInit = o.init;
+o.init = WorkbenchWidget_init;
+// menus
+o.addMenu = WorkbenchWidget_addMenu;
+o.getMenu = function(indexOrValue) {return findInArrayByIndexOrValue(this.menus, indexOrValue)}
+// components creation
+o.leftZoneGrab = new_GrabberWidget ({id:o.id + "leftGrab", x:-100, y:0, w:6, h:10, isHori:true, resizeCB:Workbench_leftGrabCB});
+o.leftZoneGrab.par = o;
+o.leftZoneGrabBg = newWidget("leftGrabBg_"+o.id);   
+// Keyboard shortcut listener - must be attached in sub-frames (content frame, left frame)
+o.addKeyboardListener = function (layer) { Event.observe(layer, "keydown", WorkbenchWidget_keyboardListener)}
+o.removeKeyboardListener = function (layer) {Event.stopObserving(layer, "keydown", WorkbenchWidget_keyboardListener)}
+// Private fields
+o.actions = new Hash;
+o.perspectives = new Array;
+o.currentPerspective = null;
+o.menus = new Array;
+// Private Methods
+o.registerAction = WorkbenchWidget_registerAction;
+o.getComponent = WorkbenchWidget_getComponent;
+o.getStatusBar = function (id) {return this.getComponent(id, "statusBar", "new_StatusBarWidget", {height:22})}
+o.getLeftPane = function (id) {return this.getComponent(id, "leftPane", "new_PaneWidget", 
+                                {paneType:"combo",noBorders:true,paletteOnTop:true, showTitle:false, 
+                                w:this.leftPaneW, h:10, x:-1000, y:-1000, 
+                                changeCB:WorkbenchPerspective_paneCB, minimizeCB:WorkbenchPerspective_minPaneCB,
+                                maxCB:WorkbenchPerspective_maxPaneCB, workbench:o})}
+o.getContentFrame = function (id) {return this.getComponent(id, "contentFrame", "new_Widget", {id:id})}
+o.getMenuPalette = function (id) {return this.getComponent(id, "menuPalette", "new_PaletteWidget", {id:id,height:31, rightPadding:0, className:"toolboxsmallBar"})}
+o.getFloatPalette = function (id) {return this.getComponent(id, "floatPalette", "new_PaletteWidget", {id:id, height:22,className:"paletteAbsolutePos"})}
+o.getToolboxBar = function (id) {return this.getComponent(id, "toolboxBar", "new_ToolboxBar", {id:id})}
+o.getFormulaBar = function (id) {return this.getComponent(id, "formulaBar", "new_PaletteWidget", {id:id,height:22, vAlign:"top",topPadding:2, className:"toolboxFormulaBar"})}
+o.repair = function()
+{
+// repair perspectives (remove uneeded sparators)
+for(var i=0; i<this.perspectives.length; i++)
+{
+this.perspectives[i].repair()
+}
+}
+o.fillActions = function(arrPrms)
+{
+var len=arrPrms.length
+for (var i=0;i<len;i++)
+this.addAction(arrPrms[i])
+}
+o.addAction = function(prms)
+{
+var o=this;
+var action = new_Action(prms);
+o.actions.set(prms.id, action);
+return action;
+}
+// Additional code
+_currWorkbench = o;
+o.emptyAction = new_Action({});
+o.isFreezeResize=false
+return o;
+}
+function WorkbenchWidget_init()
+{
+var o = this;
+var perspectives = o.perspectives, len = perspectives.length;
+var o = this; len = o.perspectives.length;
+var perspectives = o.perspectives;
+// Super Class Init
+o.widgetInit();
+// Init only the current perspective
+if (o.currentPerspective != null)
+o.getPerspective().init();
+_curWin.onresize = WorkbenchPerspective_resizeCB;
+_curDoc.body.oncontextmenu = WorkbenchWidget_contextMenu;
+o.addKeyboardListener(_curDoc)
+}
+function WorkbenchWidget_addMenu(prms)
+{
+var o=this;
+var menu = o.menus[o.menus.length] = Widget_param(prms, "menu", new_MenuWidget(prms))
+menu.value = Widget_param(prms, "value", "");
+menu.fill = WorkbenchPerspective_fillMenu
+return menu;
+}
+function WorkbenchWidget_keyboardListener(event)
+{
+var key = event.which || event.keyCode;
+var mod = []
+if (event.ctrlKey)  mod[mod.length] = _ctrl
+if (event.altKey)   mod[mod.length] = _alt
+if (event.shiftKey) mod[mod.length] = _shift
+if (event.metaKey)  mod[mod.length] = _meta
+var actions = _currWorkbench.actions;
+var initialWidget = null, action = null;
+var found = false
+if (traceLog)
+traceLog("KEY=" + key)
+// Search if key matches an action accelerator 
+actions.each(function(pair)
+{
+var actionId = pair.key;
+action = pair.value;
+var acc = action.accelerator;
+if (acc && acc.key!=null)
+{
+//Exception for some keycodes
+//'>' char in AZERTY keyboard
+if (key == 226)
+key = 62;
+var strKey = String.fromCharCode()
+var actionCharCode = (typeof(acc.key) == "number") ? getKeystroke(acc.key) : acc.key.toUpperCase().charCodeAt(0)
+if (actionCharCode == key)
+{
+// Check if the accelerators defined into the action are all the same
+// than the
+var modifier = acc.modifier
+if (typeof(modifier) == "number") modifier = [modifier]
+if (modifier==null) modifier = []
+var macModifier = acc.macModifier
+if (typeof(macModifier) == "number") macModifier = [macModifier]
+if (macModifier==null) macModifier = []
+if (_mac&&(macModifier!=null))
+modifier = macModifier
+var actionMod = modifier
+var hasAllModifiers = true
+for (var i = 0; i < 4; i++) {
+if (((actionMod.indexOf(i) == -1) && (mod.indexOf(i) != -1)) ||
+((actionMod.indexOf(i) != -1) && (mod.indexOf(i) == -1))) {
+hasAllModifiers = false
+break
+}
+}
+if (hasAllModifiers)
+{
+if (!action.disabled)
+{
+if(action.items.length>0)
+initialWidget = action.items[0];
+// Cancel default action (i.e. browser shortcuts)
+if (event.preventDefault)
+event.preventDefault()
+if (event.stopPropagation)
+event.stopPropagation()
+event.cancelBubble=true
+event.returnValue=false
+if (event.keyCode) event.keyCode=0
+//ADAPT01688185  - DeleteShorcut doesn't have an associated widget. 
+//TODO: This need to be revisited to associate 'Delete' modifier with UIElement
+if (action.actionId == "deleteShortcut")
+{
+found=true;
+}
+else
+{
+//BOEWEBI-19101
+//If the action does not have related UI Elements then not apply the shortcut
+found = (initialWidget!=null)?true:false;
+}
+}
+throw $break;
+}
+}
+}
+});
+if (found)
+{
+window.__initialWidget = initialWidget
+window.__initialAction = action
+window.__initialSrcElement = event ? (event.srcElement ? event.srcElement : event.target) : null
+setTimeout("WorkbenchWidget_clickOnObjFromAccel(window.__initialWidget, window.__initialAction, window.__initialSrcElement)", 1);
+}
+else
+{
+if (_currWorkbench.keybCB)
+_currWorkbench.keybCB(event)
+}
+}
+function WorkbenchWidget_getHTML()
+{
+var s = new Array();
+var o = this;
+var perspectives = o.perspectives, len = perspectives.length;
+o.htmlWritten = true;
+s[s.length] = '<div tabIndex="-1" id="'+o.id+'" class="workBench" style="width:100%;height:1px" onselectstart="return false" ondragstart="return false">';
+s[s.length] = '</div>';
+// Write only the current perspective
+// The other will be writtent just in time
+if (o.currentPerspective != null)
+s[s.length] =  perspectives[o.currentPerspective].getHTML();
+return s.join('');
+}
+function WorkbenchWidget_getComponent(componentId, name, construct, prms)
+{
+// Create a component (status bar for instances) stored in a hash table.
+// if the same id is used, the existing one is returned
+var o = this;
+var componentHash = eval("o."+name+"s");
+if (componentHash == null)
+{
+componentHash = new Hash;
+eval("o."+name+"s = componentHash");
+}
+prms.id = componentId;
+var component = componentHash.get(componentId);
+if (component == null)
+{
+component = eval(construct + "(prms)");
+component.workbench = o;
+component.getWorkbench = function () {return this.workbench;}
+componentHash.set(componentId, component);
+}
+return component;
+}
+function Workbench_leftGrabCB(x,y)
+{
+var o = this.par.getPerspective();
+if ((o.leftPaneAndBarVisible && o.leftPaneVisible) || (x >= this.min))
+{
+if (!o.leftPaneVisible)
+{
+o.showLeftPane(true);
+}
+o.leftPane.resize(x+3);
+o.par.leftPaneW = x+1;
+o.resizeElements();
+if (o.par.leftGrabCB)
+o.par.leftGrabCB(x,y)
+}
+}
+function WorkbenchWidget_contextMenu(e)
+{
+var o = _currWorkbench;
+var pers = o.getPerspective();
+if (pers)
+{
+var menu = pers.contextMenu;
+e = getEvent(e);
+e.returnValue = false;
+e.cancelBubble = true;
+if (menu)
+menu.show(true, absxpos(e), absypos(e));
+return false;
+}
+}
+function WorkbenchWidget_clickCB()
+{
+// The initial widget is this
+WorkbenchWidget_clickOnObj(this);
+}
+function WorkbenchWidget_clickOnObj(o)
+{
+if (o)
+{
+if (o.actionType == "check")
+{
+_currWorkbench.getAction(o.actionId).check(o.isChecked());
+}
+}
+if (_currWorkbench.clickCB)
+_currWorkbench.clickCB(o);
+}
+function WorkbenchWidget_clickOnObjFromAccel(widget, action, srcElement)
+{
+if (widget)
+{
+if (widget.actionType == "check")
+{
+_currWorkbench.getAction(widget.actionId).check(!widget.isChecked());
+}
+}
+if (_currWorkbench.clickCB) {
+_currWorkbench.clickCB(widget, action, srcElement);
+}
+}
+function WorkbenchWidget_registerAction(item, actionId)
+{
+var o=this;
+item.actionId = actionId;
+var action = o.actions.get(actionId);
+if (action == null)
+{
+action = new_Action({id:actionId});
+o.actions.set(actionId, action);
+}
+action.addItem(item);
+return action;
+}
+function WorkbenchWidget_getAction(actionId)
+{
+var o=this;
+var action = o.actions.get(actionId);
+//return action ? action : o.emptyAction;
+return action ? action : new_Action({id:'notFoundAction', defaultType:"icon", text:'('+actionId+')'});//JCC Une action non trouvee est creee avec son id entre parentheses !!!
+}
+function WorkbenchWidget_addPerspective(prms)
+{
+var o=this;
+if (prms == null)
+prms = new Object;
+prms.par = o;
+var perspective = o.perspectives[o.perspectives.length] = new_WorkbenchPerspective(prms);
+perspective.index = o.perspectives.length - 1;
+return perspective;
+}
+function WorkbenchWidget_setPerspective(indexOrValue)
+{
+var o=this;
+var index = getIndexInArrayByIndexOrValue(o.perspectives, indexOrValue)
+if (index != -1 && o.currentPerspective != index)
+{
+if (o.currentPerspective != null)
+{
+if (o.layer)
+o.getPerspective().setDisplay(false);
+o.getPerspective().isCurrent = false;
+}
+o.currentPerspective = index;
+var currPerspective = o.getPerspective()
+currPerspective.isCurrent = true;
+if (o.layer)
+{
+currPerspective.resizeElements();
+if (currPerspective.layer)
+currPerspective.setDisplay(true);
+else
+{
+append(o.layer, currPerspective.getHTML());
+currPerspective.init();
+currPerspective.setDisplay(true);
+}
+currPerspective.resizeElements();
+}
+}
+}
+function WorkbenchWidget_getPerspective(indexOrValue)
+{
+var o=this;
+if (indexOrValue == null)
+indexOrValue = o.currentPerspective;
+return findInArrayByIndexOrValue(o.perspectives, indexOrValue);
+}
+function Workbench_fillCommon(item, prms)
+{
+var work = _currWorkbench, action=null
+if (work)
+{
+if (item)
+{
+item.actionType = prms.type;
+if (prms.actionId)
+action = work.registerAction(item, prms.actionId);
+switch (prms.type)
+{
+case "iconMenu":
+case "radioMenu":
+work.addMenu({menu:item.getMenu()});
+if (prms.children)
+item.getMenu().fill(prms.children);
+break;
+}
+}
+if (action&&item)
+{
+if (prms.accelerator)
+{
+var acc = prms.accelerator
+action.setAccelerator(acc.key, acc.modifier, acc.macModifier);
+}
+else if (action.accelerator&&item.setAccelerator)
+{
+var acc = action.accelerator
+item.setAccelerator(acc.key, acc.modifier, acc.macModifier);
+}
+if (work.afterAddWidgetInActionCB)
+work.afterAddWidgetInActionCB(action.id, item)
+}
+}
+}
+function Workbench_prepareBeforeCreateWidget(prms)
+{
+if (prms.actionId)
+{
+var work = _currWorkbench
+var action = work.getAction(prms.actionId);
+// Set parameters from the base action if any
+if (action)
+{
+action.defaultPrms(prms)
+// to not display setup icon in specific case 
+var showIcon = (prms.userData && prms.userData == "noIcon")?false:true
+if (action.icon && showIcon)
+{
+var icon=action.icon
+prms.src=icon.src
+prms.w=icon.w
+prms.h=icon.h
+prms.dx=icon.dx 
+prms.dy=icon.dy 
+prms.disDx=icon.disDx 
+prms.disDy=icon.disDy
+}
+}
+var actionId = prms.actionId
+if (work.beforeAddWidgetInActionCB&&actionId)
+work.beforeAddWidgetInActionCB(actionId, prms)
+// to change a radioIconMenu to iconCheck 
+var noChildren = (prms.userData && prms.userData=="noChildren")?true:false
+if(noChildren)
+{
+prms.type="check"
+prms.children=null
+}
+switch (prms.type)
+{
+case "icon":
+case "check":
+case "iconMenu":
+case "radioMenu":
+case "colorMenu":
+if (prms.triggerAction != false)
+prms.clickCB = prms.clickCB ? prms.clickCB : WorkbenchWidget_clickCB;
+else
+prms.clickCB = null
+break;
+case "textField":
+case "intField":
+case "textArea":
+prms.enterCB = prms.enterCB ? prms.enterCB : WorkbenchWidget_clickCB;
+break;
+case "customCombo":
+case "intCombo":
+case "textCombo":
+case "spinner":
+prms.changeCB = prms.changeCB ? prms.changeCB : WorkbenchWidget_clickCB;
+prms.enterCB = prms.enterCB ? prms.enterCB : WorkbenchWidget_clickCB;
+break;
+case "bordersMenu":
+prms.bordersClickCB = prms.bordersClickCB ? prms.bordersClickCB : WorkbenchWidget_clickCB;
+break;
+}
+}
+return prms;
+}
+function new_WorkbenchPerspective(prms)
+{
+// Base class
+var o = new_Widget(prms)
+// Parameters parsing
+o.name = Widget_param(prms, "name", "");
+o.value = Widget_param(prms, "value", "");
+o.initTabBarCB = Widget_param(prms, "initTabBarCB", null)
+o.paneChangeCB = Widget_param(prms, "paneChangeCB", null)
+o.showLeftPaneCB = Widget_param(prms, "showLeftPaneCB", null) // callback parameters: x, y
+o.contentFrameURL = Widget_param(prms, "contentFrameURL", null)
+o.tabCB = Widget_param(prms, "tabCB", null)
+o.tabsDblclickCB = Widget_param(prms, "tabsDblclickCB", null) //  callback parameters : tab widget
+o.showHideFindBarCB = Widget_param(prms, "showHideFindBarCB", null) //  callback parameters : findbar widget
+o.getReportFrameCB = Widget_param(prms, "getReportFrameCB", null) //  callback parameters : getReportFrame function from viewer
+o.par = prms.par;
+// Parameters parsing - Components Id - to share a component 
+// between multiple perspectives, use the same Id
+o.statusBarId = Widget_param(prms, "statusBarId", generateDefaultLayerId());
+o.leftPaneId = Widget_param(prms, "leftPaneId", generateDefaultLayerId());
+o.contentFrameId = Widget_param(prms, "contentFrameId", generateDefaultLayerId());
+o.menuPaletteId = Widget_param(prms, "menuPaletteId", generateDefaultLayerId());
+o.floatPaletteId = Widget_param(prms, "floatPaletteId", generateDefaultLayerId());
+o.toolboxBarId = Widget_param(prms, "toolboxBarId", generateDefaultLayerId());
+o.formulaBarId = Widget_param(prms, "formulaBarId", generateDefaultLayerId());
+// Parameters parsing - visible workbench Component
+o.leftPaneAndBarVisible = Widget_param(prms, "leftPaneAndBarVisible", true);
+o.leftPaneVisible = Widget_param(prms, "leftPaneVisible", true);
+o.leftGrabVisible = Widget_param(prms, "leftGrabVisible", true);
+o.naviBarVisible = Widget_param(prms, "naviBarVisible", true);
+o.menuPaletteVisible = Widget_param(prms, "menuPaletteVisible", true);
+o.floatPaletteVisible = Widget_param(prms, "floatPaletteVisible", false);
+o.statusBarVisible = Widget_param(prms, "statusBarVisible", true);
+o.toolboxBarVisible = Widget_param(prms, "toolboxBarVisible", false);
+o.menuBarVisible = Widget_param(prms, "menuBarVisible", true);
+o.mainPalVisible = Widget_param(prms, "mainPalVisible", true);
+o.findBarVisible = Widget_param(prms, "findBarVisible", false);
+o.formulaBarVisible = Widget_param(prms, "formulaBarVisible", false);
+// redefined Public Methods
+o.getHTML = WorkbenchPerspective_getHTML;
+o.widgetInit = o.init;
+o.init = WorkbenchPerspective_init;
+o.widgetSetDisplay = o.setDisplay;
+o.setDisplay = WorkbenchPerspective_setDisplay;
+// Show Hide workbench Components
+o.showPalette = WorkbenchPerspective_showPalette;
+o.showleftPaneAndBar = function(show) {this.showElement("leftPaneAndBarVisible", show);}
+o.showLeftPane     = function(show) {this.showElement("leftPaneVisible", show); if (this.showLeftPaneCB) {this.showLeftPaneCB()}}
+o.showLeftGrab     = function(show) {this.showElement("leftGrabVisible", show);}
+o.showNaviBar      = function(show) {this.showElement("naviBarVisible", show)}
+o.showStatusBar    = function(show) {this.showElement("statusBarVisible", show)}
+o.showToolboxBar   = function(show) {this.showElement("toolboxBarVisible", show)}
+o.showMenuPalette  = function(show) {this.showElement("menuPaletteVisible", show)}
+o.showFloatPalette = function(show) {this.showElement("floatPaletteVisible", show)}
+o.showMenuBar      = function(show) {this.showElement("menuBarVisible", show)}
+o.showMainPal      = function(show) {this.showElement("mainPalVisible", show)}
+o.showFindBar      = function(show) {this.showElement("findBarVisible", show)}
+o.showFormulaBar   = function(show) {this.showElement("formulaBarVisible", show)}
+// Test if Workbench Components are visible
+o.isleftPaneAndBarVisible     = function() {return this.leftPaneAndBarVisible}
+o.isLeftPaneVisible     = function() {return this.leftPaneVisible}
+o.isLeftGrabVisible     = function() {return this.leftGrabVisible}
+o.isNaviBarVisible      = function() {return this.naviBarVisible}
+o.isStatusBarVisible    = function() {return this.statusBarVisible}
+o.isToolboxBarVisible   = function() {return this.toolboxBarVisible}
+o.isMenuPaletteVisible  = function() {return this.menuPaletteVisible}
+o.isFloatPaletteVisible = function() {return this.floatPaletteVisible}
+o.isMenuBarVisible      = function() {return this.menuBarVisible}
+o.isMainPalVisible      = function() {return this.mainPalVisible}
+o.isFindBarVisible      = function() {return this.findBarVisible}
+o.isFormulaBarVisible      = function() {return this.formulaBarVisible}
+// Get workbench Components
+o.getLeftPane     = function() {return this.leftPane}
+o.getMenuBar      = function() {return this.menuBar}
+o.getStatusBar    = function() {return this.statusBar}
+o.getToolboxBar   = function() {return this.toolboxBar}
+o.getMenuPalette  = function() {return this.menuPalette}
+o.getFloatPalette = function() {return this.floatPalette}
+o.getNaviBar      = function() {return this.naviBar}
+o.getLeftGrab     = function() {return this.par.leftZoneGrab}
+o.getToolbarMenu  = function() {return this.toolbarMenu}
+o.getFindBar      = function() {return this.findBar}
+o.getFormulaBar   = function() {return this.formulaBar}
+// Palettes
+o.addPalette = WorkbenchPerspective_addPalette;
+o.getPalette = function (indexOrName) { return findInArrayByIndexOrValue(this.palettes, indexOrName)}
+// Content Frame name : must be used as "target" in forms that must go to the content frame
+o.getContentFrameName = function() {return this.contentFrame.id} 
+// Content Frame
+o.setContentFrameURL = WorkbenchPerspective_setContentFrameURL;
+o.getContentFrameWindow = function() {return getFrame(this.getContentFrameName())}
+o.getContentFrameCoordinates = function() {return this.contentFramePos}
+o.getContentFrame = function () { return this.contentFrame}
+// Left Pane
+o.getLeftPaneCoordinates = function() {return this.leftPanePos}
+// Menus
+o.addMenu = function (prms) {return _currWorkbench.addMenu(prms)}
+o.getMenu = function(indexOrValue) {return _currWorkbench.getMenu(indexOrValue)}
+o.addMenuInMenuBar = WorkbenchPerspective_addMenuInMenuBar;
+o.fillMenuBar = WorkbenchPerspective_fillMenuBar;
+o.setContextMenu = function (menu) {this.contextMenu = menu}
+o.repair = function()
+{
+//this.leftPane
+this.statusBar.repair()
+this.toolboxBar.repair()
+this.menuPalette.repair()
+this.floatPalette.repair()
+this.formulaBar.repair()
+}
+// Groups
+o.addGroup = WorkbenchPerspective_addGroup;
+o.getGroup = function(indexOrValue) {return findInArrayByIndexOrValue(this.groups, indexOrValue)}
+// Private fields & Methods
+o.margin = 4;
+o.contextMenu = null;
+o.resizeElements = WorkbenchPerspective_resizeElements;
+o.showElement = WorkbenchPerspective_showElement;
+o.menuBar = new_MenuBarWidget({id:o.id + "_menuBar",cssClassName:"workbenchMenuBar",marginTop:0});
+o.toolbarMenu = new_MenuWidget({id:o.id + "_toolbarsMenu"});
+o.toolbarMenu.parPers = o;
+o.toolbarMenu.fill = WorkbenchPerspective_fillMenu
+o.isCurrent = false;
+o.htmlWritten = false;
+o.palettes = new Array;
+o.groups = new Array;
+o.mainPal = new_PaletteContainerWidget({id:o.id + "_mainPal", contextMenu:o.toolbarMenu, margin:0, className:"paletteAbsolutePos"});
+o.mainPal.className = null;
+o.palTopImg = newWidget(o.id + "_palTop");
+o.palTopSep = newWidget(o.id + "_palTopSep");
+o.statusBar = o.par.getStatusBar(o.statusBarId);
+o.toolboxBar = o.par.getToolboxBar(o.toolboxBarId);
+o.menuPalette = o.par.getMenuPalette(o.menuPaletteId);
+o.menuPalette.perspective = o;
+o.menuPalette.vertPadding=0;
+o.floatPalette = o.par.getFloatPalette(o.floatPaletteId);
+o.floatPalette.perspective = o;
+o.floatPalette.vertPadding=0;
+o.floatPalette.className = "floatPalette";
+o.leftPane = o.par.getLeftPane(o.leftPaneId);
+o.naviBar = newNaviBarWidget(o.id + "_tabs", _HorizTabBottom, WorkbenchPerspective_tabCB, WorkbenchPerspective_tabDblClickCB, 10, 10, WorkbenchPerspective_initTabBarMenu, null,false, true);
+o.naviBar.par = o;
+_currWorkbench.addMenu({menu:o.naviBar.getMenu()})
+o.naviBar.setUniqueTabContextMenu(true);
+o.contentFrame = o.par.getContentFrame(o.contentFrameId);
+o.findBar = new_FindBarWidget({id:o.id+"_fb",showHideCB:WorkbenchPerspective_showHideFindBarCB, getFrameCB:WorkbenchPerspective_getReportFrameCB});
+o.findBar.par=o;
+o.formulaBar = o.par.getFormulaBar(o.formulaBarId);
+o.formulaBar.perspective = o;
+o.isInitialized = false;
+o.contentFramePos={x:0,y:0}
+o.leftPanePos={x:0,y:0}
+o.contentFrameY=0
+o.leftPaneVertBarWidth=35+2+1;
+return o;
+}
+function WorkbenchPerspective_init()
+{
+var o = this;
+if (o.htmlWritten && o.layer==null)
+{
+// Super Class Init
+o.widgetInit();
+// Init toolbar container
+o.mainPal.init();
+o.mainPal.css.zIndex=1
+o.palTopImg.init();
+o.palTopSep.init();
+o.palTopImg.css.zIndex=1
+o.palTopSep.css.zIndex=1
+// init only the visible toolbars
+var palettes = o.palettes;
+for (var i=0; i<palettes.length; i++)
+{
+var palette = palettes[i];
+if (palette.display)
+{
+palette.init();
+palette.containerLayer = palette.layer.parentNode;
+}
+}
+// Init the sub widgets
+if (o.statusBar.layer==null)
+{
+o.statusBar.init();
+o.statusBar.css.zIndex=1
+}
+// Init the sub widgets
+if (o.toolboxBar.layer==null)
+{
+o.toolboxBar.init();
+o.toolboxBar.css.zIndex=1
+}
+if (o.menuPalette.layer==null)
+{
+o.menuPalette.init();
+o.menuPalette.css.margin="0px";
+o.menuPalette.css.zIndex=1
+}
+if (o.floatPalette.layer==null)
+{
+o.floatPalette.init();
+o.floatPalette.css.zIndex=2
+o.floatPalette.css.width="2px"
+setLayerTransp(o.floatPalette.layer, 80);
+}
+o.naviBar.init();
+var nCss = o.naviBar.css;
+nCss.position = "absolute";
+nCss.top = "-100px";
+nCss.zIndex=1
+o.findBar.init();
+nCss = o.findBar.css;
+nCss.position = "absolute";
+nCss.top = "-100px";
+nCss.zIndex=1
+//o.findBar.frame=o.getContentFrameWindow(); //get the frame when search because, this frame can change following drill mode 
+if (o.formulaBar.layer==null)
+{
+o.formulaBar.init();
+nCss = o.formulaBar.css;
+nCss.position = "absolute";
+nCss.zIndex=1
+if(o.formulaBar.initCB)
+o.formulaBar.initCB()
+}
+if (o.contentFrame.layer==null)
+{
+o.contentFrame.init();
+o.contentFrame.css.zIndex=-1 //mvidart: for the moment, it is the only way to see floatPalette on IE
+}
+o.menuBar.init();
+o.menuBar.css.overflow="visible";
+o.menuBar.css.width="";
+o.menuBar.css.zIndex=1
+o.menuBar.css.position = "absolute";
+if (o.leftPane.layer==null)
+{
+o.leftPane.init();
+o.leftPane.css.position = "absolute";
+o.leftPane.css.zIndex=1
+}
+if (o.par.leftZoneGrab.layer==null)
+{
+o.par.leftZoneGrab.init()
+o.par.leftZoneGrabBg.init()
+o.par.leftZoneGrab.css.zIndex=1
+o.par.leftZoneGrabBg.css.zIndex=1
+}
+o.isInitialized = true;
+// Resize to fit the frame
+o.resizeElements();
+}
+}
+function WorkbenchPerspective_setDisplay(disp)
+{
+var o = this;
+o.widgetSetDisplay(disp)
+o.mainPal.setDisplay(disp);
+o.palTopImg.setDisplay(disp);
+o.palTopSep.setDisplay(disp);
+o.statusBar.setDisplay(disp);
+o.toolboxBar.setDisplay(disp);
+o.menuPalette.setDisplay(disp);
+o.floatPalette.setDisplay(disp);
+o.naviBar.setDisplay(disp);
+o.findBar.setDisplay(disp);
+o.formulaBar.setDisplay(disp);
+o.contentFrame.setDisplay(disp);
+o.menuBar.setDisplay(disp);
+o.leftPane.setDisplay(disp);
+o.par.leftZoneGrab.setDisplay(disp);
+o.par.leftZoneGrabBg.setDisplay(disp);
+}
+function WorkbenchPerspective_getHTML()
+{
+var o = this;
+var s = new Array();
+o.htmlWritten = true;
+s[s.length] = '<div tabIndex="-1" class="workBenchPerspective" id="'+o.id+'">';
+s[s.length] = '</div>';
+s[s.length] = '<div tabIndex="-1" id="'+o.id+'_palTop" style="background-image:'+(_skin + "toolbox.png")+';overflow:hidden;position:absolute;top:-100px;"></div>'
+s[s.length] = '<div tabIndex="-1" class="topZoneSep" id="'+o.id + '_palTopSep"></div>';
+if (o.menuPalette.htmlWritten != true)
+{
+s[s.length] = o.menuPalette.getHTML();
+o.menuPalette.htmlWritten = true;
+}
+// Write the palettes (only the visible ones)
+s[s.length] = o.mainPal.beginHTML();
+var palettes = o.palettes;
+for (var i=0; i<palettes.length; i++)
+{
+var palette = palettes[i];
+s[s.length] = '<div id="'+palette.id+'_cont" style="display:'+(palette.display?'block':'none')+'">';
+if (palette.display)
+{
+s[s.length] = palette.getHTML();
+palette.htmlWritten = true;
+}
+s[s.length] = '</div>';
+}
+s[s.length] = o.mainPal.endHTML();
+if (o.toolboxBar.htmlWritten != true)
+{
+s[s.length] = o.toolboxBar.getHTML();
+o.toolboxBar.htmlWritten = true;
+}
+if (o.leftPane.htmlWritten != true)
+{
+s[s.length] = o.leftPane.getHTML();
+o.leftPane.htmlWritten = true;
+}
+if (o.par.leftZoneGrab.htmlWritten != true)
+{
+s[s.length] = '<div tabIndex="-1" id="'+o.par.leftZoneGrabBg.id+'" class="persGrab"></div>';
+s[s.length] = o.par.leftZoneGrab.getHTML();
+o.par.leftZoneGrab.htmlWritten = true;
+}
+if (o.formulaBar.htmlWritten != true)
+{
+s[s.length] = o.formulaBar.getHTML();
+o.formulaBar.htmlWritten=true;
+}
+if (o.contentFrame.htmlWritten != true)
+{
+s[s.length] = '<iframe frameBorder="0" onload="" tabIndex="0" class="persFrame" id="' + o.contentFrame.id + '" name="' + o.contentFrame.id + '" src="' + (o.contentFrameURL ? o.contentFrameURL : _skin + '../../empty.html') + '"></iframe>';
+//s[s.length] = o.contentFrame.getLabelForAriaHTMLTag()
+o.contentFrame.htmlWritten = true;
+}
+s[s.length] = o.findBar.getHTML();
+s[s.length] = o.naviBar.getHTML();
+if (o.statusBar.htmlWritten != true)
+{
+s[s.length] = o.statusBar.getHTML();
+o.statusBar.htmlWritten = true;
+}
+if (o.floatPalette.htmlWritten != true)
+{
+s[s.length] = o.floatPalette.getHTML();
+o.floatPalette.htmlWritten = true;
+}
+s[s.length] = o.menuBar.getHTML();
+return s.join('');
+}
+var resizeCounter = 0
+function WorkbenchPerspective_resizeElements()
+{
+var o=this;
+if (o.isInitialized&&(!_currWorkbench.isFreezeResize))
+{
+if (_ie) {
+_curWin.scrollLeft=0
+_curWin.scrollTop=0
+}
+_curWin.scrollTo(0,0)
+var w = winWidth(), h = winHeight();
+o.menuBar.setDisplay(o.menuBarVisible);
+o.mainPal.setDisplay(o.mainPalVisible);
+o.palTopImg.setDisplay(o.mainPalVisible || o.menuBarVisible);
+o.menuPalette.setDisplay(o.menuPaletteVisible);
+o.toolboxBar.setDisplay(o.toolboxBarVisible);
+o.floatPalette.setDisplay(o.floatPaletteVisible);
+o.leftPane.setDisplay(o.leftPaneAndBarVisible);
+o.leftPane.setRightPartDisplay(o.leftPaneVisible);
+o.findBar.setDisplay(o.findBarVisible);
+o.par.leftZoneGrab.setDisplay(o.leftGrabVisible);
+o.par.leftZoneGrabBg.setDisplay(o.leftGrabVisible);
+o.formulaBar.setDisplay(o.formulaBarVisible);
+// Resize the toolbars
+var menuBarH = (o.menuBarVisible ? o.menuBar.getHeight() : 0);
+var menuPaletteH = (o.menuPaletteVisible ? o.menuPalette.getHeight() : 0) - 2
+menuBarH = Math.max(menuBarH, menuPaletteH)+1
+var mainPalH = (o.mainPalVisible ? o.mainPal.getHeight() : 0);
+var toolboxBarH = (o.toolboxBarVisible ? o.toolboxBar.getHeight(): (o.menuBarVisible||o.mainPalVisible?3:0))
+var topZoneH = toolboxBarH + menuBarH + mainPalH + (o.menuBarVisible||o.mainPalVisible ? 0 : 0);
+// Resize the toolboxBar
+o.toolboxBar.resize(w);
+o.toolboxBar.move(0,menuBarH)
+o.mainPal.resize(w);
+// Menu Bar
+o.menuBar.move(0,0);
+var palX = (o.menuBarVisible ? o.menuBar.getWidth() - 4 : 0);
+o.menuPalette.move(palX,1);
+o.menuPalette.resize(Math.max(0, w-palX+1));
+// Palette & Menu background zone
+o.palTopImg.resize(w, topZoneH-1);
+o.palTopSep.resize(w);
+o.palTopSep.move(0,topZoneH-1);
+o.mainPal.move(0, menuBarH+toolboxBarH)
+o.palTopImg.move(0, 0);
+// Resize the statusbar
+var statusBarH = (o.statusBarVisible ? o.statusBar.getHeight() + 3: 3)
+o.statusBar.resize(w);
+o.statusBar.move(null, o.statusBarVisible ? (h - statusBarH + 2) : -1000);
+// midle zone dimensions
+var middleY = topZoneH;
+var middleH = h - topZoneH - statusBarH+4;
+// Resize the left pane
+var leftPaneX = 0;
+var leftPaneY = middleY;
+        /* vertical bar in the left panel should stay always visible */ 
+var leftPaneW = o.leftPaneAndBarVisible? (o.leftPaneVisible ? o.par.leftPaneW : o.leftPaneVertBarWidth) : 0; 
+var leftPaneH = middleH;
+o.leftPane.resize(leftPaneW+1, leftPaneH);
+o.leftPane.move(leftPaneX, leftPaneY);
+o.leftPanePos.x = leftPaneX+o.leftPaneVertBarWidth
+o.leftPanePos.y = leftPaneY+26
+// Resize the left grab
+var leftGrabW = -1;
+if (o.leftGrabVisible)
+{
+leftGrabW = 4;
+o.par.leftZoneGrab.resize(6, leftPaneH-2);
+o.par.leftZoneGrab.move(leftPaneX + leftPaneW - 1, leftPaneY-1);
+o.par.leftZoneGrabBg.resize(6, leftPaneH);
+o.par.leftZoneGrabBg.move(leftPaneX + leftPaneW - 1, leftPaneY-1);
+o.par.leftZoneGrab.setMinMax(80, w - 50);
+}
+// resize the content border
+var naviBarH = o.naviBarVisible ? o.naviBar.getHeight() : 0;
+var bordX = leftPaneX + leftPaneW + leftGrabW;
+var bordY = middleY;
+var bordH = middleH;
+var bordW = w - bordX;
+var findBarH = o.findBarVisible ? o.findBar.getHeight() : 0;
+var formulaBarH = o.formulaBarVisible ? (o.formulaBar.expanded?51:30) : 0;
+// resize the naviBar
+if (o.naviBarVisible)
+{
+o.naviBar.resize(bordW-1);
+o.naviBar.move(bordX+1, bordY + bordH - naviBarH - 2);
+}
+else
+{
+o.naviBar.resize(10);
+o.naviBar.move(-100,-100);
+}
+// resize the findBar
+if (o.findBarVisible)
+{
+o.findBar.resize(bordW-1);
+o.findBar.move(bordX+1, bordY + bordH - findBarH - naviBarH - 2);
+}
+else
+{
+o.findBar.resize(10);
+o.findBar.move(-100,-100);
+}
+//TODO: resize the formulaBar
+if (o.formulaBarVisible)
+{
+o.formulaBar.resize(bordW-1,formulaBarH-1);
+o.formulaBar.move(bordX, bordY);
+if(o.formulaBar.resizeCB)
+o.formulaBar.resizeCB(bordW-1,formulaBarH);
+}
+// resize the content iframe
+var contentFrameW = bordW-1;
+var contentFrameH = bordH-naviBarH-findBarH-formulaBarH-2;
+o.contentFrame.resize(contentFrameW, contentFrameH);
+//o.contentFrame.move(bordX+1, bordY);
+o.contentFrame.move(bordX+1, bordY+formulaBarH);
+o.contentFramePos.x = bordX+1
+//o.contentFramePos.y = bordY
+o.contentFramePos.y = bordY+formulaBarH
+// Floating palette
+if (o.floatPaletteVisible)
+{
+o.floatPalette.setDisplay(true);
+// Display if enough space is available
+var floatW = o.floatPalette.getWidth();
+var floatH = o.floatPalette.getHeight();
+if ((floatW < contentFrameW - 20) && (floatH < contentFrameH - 20))
+{
+o.floatPalette.move(bordX+contentFrameW-20-floatW, bordY+contentFrameH-20-floatH);
+}
+else
+{
+o.floatPalette.setDisplay(false);
+}
+}
+else
+{
+o.floatPalette.setDisplay(false);
+}
+}
+}
+function WorkbenchPerspective_showElement(elemName, show)
+{
+var o = this;
+if (o[elemName] != show)
+//if (eval("o." + elemName + "!= show"))
+{
+//eval("o." + elemName + "= show");
+o[elemName] = show
+o.resizeElements();
+}
+}
+function WorkbenchPerspective_setContentFrameURL(url, fillHistory)
+{
+var o = this;
+o.contentFrameURL = url
+if (o.contentFrame.layer)
+frameNav(o.contentFrame.id, url, fillHistory)
+}
+function WorkbenchPerspective_paneCB()
+{
+var pers = this.workbench.getPerspective()
+if (pers.paneChangeCB)
+{
+pers.paneChangeCB();
+}
+}
+function WorkbenchPerspective_minPaneCB()
+{
+var pers = _currWorkbench.getPerspective()
+if (pers)
+{
+pers.showLeftPane(false)
+pers.showLeftGrab(false)
+}
+}
+function WorkbenchPerspective_maxPaneCB()
+{
+var pers = _currWorkbench.getPerspective()
+if (pers)
+{
+pers.showLeftGrab(true)
+pers.showLeftPane(true)
+}
+}
+function WorkbenchPerspective_initTabBarMenu()
+{
+if (o.par.initTabBarCB)
+{
+o.par.initTabBarCB();
+}
+}
+function WorkbenchPerspective_tabCB()
+{
+var pers = this.par;
+if (pers.tabCB)
+pers.tabCB();
+}
+function WorkbenchPerspective_tabDblClickCB()
+{
+var sel = this.getSelection();
+if (sel)
+{
+var o=this, tab = this.items[sel.index], pers = this.par;
+if (pers.tabsDblclickCB)
+pers.tabsDblclickCB(tab)
+}
+}
+function WorkbenchPerspective_showHideFindBarCB(show)
+{
+var pers = this.par;
+if (pers.showHideFindBarCB)
+{
+pers.showHideFindBarCB(show)
+_currWorkbench.getAction("findText").check(show);
+}
+}
+function WorkbenchPerspective_getReportFrameCB()
+{
+var fr=null;
+var pers = this.par;
+if (pers.getReportFrameCB)
+fr = pers.getReportFrameCB();
+return fr;
+}
+function WorkbenchPerspective_addMenuInMenuBar(name, value, idx)
+{
+var o=this;
+var menuBarItem = o.menuBar.add(name, value, idx);
+var menu =  o.menuBar.getMenu(menuBarItem.idx);
+menu.fill = WorkbenchPerspective_fillMenu;
+return menu;
+}
+function WorkbenchPerspective_fillMenuBar(arrPrms)
+{
+var o=this, len = arrPrms.length;
+for (var i=0; i<len; i++)
+{
+var prms = arrPrms[i]
+var menu = o.addMenuInMenuBar(Widget_param(prms, "name", ""), Widget_param(prms, "value", ""));
+if (prms.children)
+menu.fill(prms.children)
+}
+}
+function WorkbenchPerspective_addGroup(prms)
+{
+var o=this;
+if (prms.expandCollapseCB==null)
+prms.expandCollapseCB = WorkbenchWidget_clickCB;
+var group = o.groups[o.groups.length] = new_PaletteGroupWidget(prms)
+group.value = Widget_param(prms, "value", "");
+group.actionId = Widget_param(prms, "actionId", "");
+group.parPers = o;
+//group.fill = paletteWidget_fill
+group.workbench = o.par;
+return group;
+}
+function WorkbenchPerspective_fillMenu(arrPrms)
+{
+var len=arrPrms.length;
+var menu = this;
+var work = _currWorkbench;
+var item = null;
+//var action = null;
+for (var i=0; i<len; i++)
+{
+var prms = arrPrms[i]||{actionId:'nullAction'};// JCC: if null widget, display it as "(null)" to see the error of the definition;
+item = null;
+if (window.Workbench_prepareBeforeCreateWidget)
+Workbench_prepareBeforeCreateWidget(prms)
+switch (prms.type)
+{
+case "check":
+item = menu.addCheck(prms.id ? prms.id : "", prms.text, prms.cb ? prms.cb : WorkbenchWidget_clickCB, prms.src, prms.dx, prms.dy, prms.disabled, prms.disDx, prms.disDy, prms.alt, prms.accelerator, prms.userData);
+break;
+case "separator":
+menu.addSeparator();
+break;
+default:
+item = menu.add(prms.id ? prms.id : "", prms.text, prms.cb ? prms.cb : WorkbenchWidget_clickCB, prms.src, prms.dx, prms.dy, prms.disabled, prms.disDx, prms.disDy, prms.alt, prms.accelerator, prms.userData);
+break;
+}
+if (item && prms.children)  
+{
+var subMenu = work.addMenu({value:prms.value});
+subMenu.fill(prms.children);
+item.attachSubMenu(subMenu);
+}
+Workbench_fillCommon(item, prms);
+}
+}
+function WorkbenchPerspective_resizeCB(e)
+{
+var workbench = _currWorkbench;
+// call old callback if any
+/*
+if (!_ie && workbench.oldWinResizeCB)
+{
+_curWin.onresize = workbench.oldWinResizeCB;
+_curWin.onresize(e)
+_curWin.onresize = WorkbenchPerspective_resizeCB;
+}
+*/
+var pers = workbench.getPerspective();
+if (pers)
+pers.resizeElements()
+}
+function WorkbenchPerspective_addPalette(prms)
+{
+var o = this;
+var palette = newPaletteWidget(generateDefaultLayerId());
+palette.name = Widget_param(prms, "name", "");
+palette.value = Widget_param(prms, "value", "");
+palette.display = Widget_param(prms, "display", true);
+palette.alwaysVisible = Widget_param(prms, "alwaysVisible", false)
+if (palette.alwaysVisible)
+palette.display = true;
+palette.perspective = o;
+palette.index = o.palettes.length;
+palette.htmlWritten = false;
+o.palettes[o.palettes.length] = palette;
+//palette.fill = paletteWidget_fill;
+return palette;
+}
+function WorkbenchPerspective_showPalette(indexOrName, show)
+{
+var o=this, palette = o.getPalette(indexOrName);
+if (palette.alwaysVisible)
+palette.display = true;
+if (palette.display != show)
+{
+palette.display = show;
+if (o.layer)
+{
+if (!palette.htmlWritten&&show)
+{
+palette.containerLayer = getLayer(palette.id+'_cont');
+palette.containerLayer.innerHTML = palette.getHTML();
+palette.htmlWritten=true
+palette.init();
+}
+palette.containerLayer.style.display = show ? "block" : "none";
+o.resizeElements();
+}
+}
+}
+function WorkbenchPerspective_initToolbarsMenu()
+{
+var o = this, pers = o.parentPerspective, palettes = pers.palettes, len = o.items.length;
+for (var i=0; i<len; i++)
+{
+var item = o.items[i];
+if (item.isPaletteCheck)
+item.check(palettes[parseInt(item.id)].display);
+}
+}
+function new_Action(prms)
+{
+return new WorkbenchAction(prms)
+}
+function WorkbenchAction(prms)
+{
+var o = this;
+    Object.extend(o, prms);
+// Parameters parsing
+o.actionId = o.id = Widget_param(prms, "id", "")
+o.defaultType   = Widget_param(prms, "defaultType",null)
+o.disabled      = Widget_param(prms, "disabled", false)
+o.displayed     = Widget_param(prms, "displayed", true)
+o.checked       = Widget_param(prms, "checked", false)
+o.value         = Widget_param(prms, "value","")
+o.tooltip       = Widget_param(prms, "tooltip", "")
+o.customTooltip = Widget_param(prms, "customTooltip", null)
+o.text          = Widget_param(prms, "text", "")
+o.accelerator   = Widget_param(prms, "accelerator", null)
+o.color         = Widget_param(prms, "color","")
+o.icon          = Widget_param(prms, "icon",null)
+o.children      = Widget_param(prms, "children",null)
+o.size          = Widget_param(prms, "size",null)
+o.width         = Widget_param(prms, "width",null)
+o.height        = Widget_param(prms, "height",null)
+o.triggerAction = Widget_param(prms, "triggerAction",true)
+o.userData        = Widget_param(prms, "userData",null)
+   o.menuType        = Widget_param(prms, "menuType",null) 
+    o.menuItemIconType= Widget_param(prms, "menuItemIconType",null)
+o.elastic = Widget_param(prms, "elastic",null)
+o.undef = false;
+o.workbench = _currWorkbench
+    //user right          
+    o.userRight={right:true, disabledIfNoRight:false, hideIfNoRight:false};
+// Private fields
+o.items = [];
+}
+WorkbenchAction.prototype = {
+    getUserRight : function()
+    {
+        var o=this;
+        return o.userRight;
+    }
+,setUserRight : function(enabled, disabledIfNoRight, hideIfNoRight)
+{
+    var o=this;
+    o.userRight.right               = enabled;
+    o.userRight.disabledIfNoRight   = disabledIfNoRight;
+    o.userRight.hideIfNoRight       = hideIfNoRight;
+    if (enabled)
+    {
+        o.internalSetDisabled(false);
+        o.internalSetDisplay(true);
+    }
+    else
+    {
+        o.internalSetDisabled(disabledIfNoRight);
+        o.internalSetDisplay(!hideIfNoRight);
+    }      
+}
+// Used to build other widgets from an action id:
+// Fill the parameters
+,defaultPrms : function(prms)
+{
+var o=this;
+if (prms.type==undefined)
+prms.type = o.defaultType
+for (i in o)
+{
+    if ((i!="id") &&       
+        (i!="defaultType") && 
+        (i!="items") && 
+        (i!="workbench") && 
+        (typeof(o[i])!="function"))
+        o.defautPrm(prms, i)  
+}
+}
+,defautPrm : function (prms, name)
+{
+if (prms[name]==undefined)
+prms[name] = this[name]
+}
+,addItem : function (item)
+{
+var o=this;
+o.items[o.items.length] = item;
+item.workbench = o.workbench;
+}
+// Public - Function to apply on all widget attached to the action
+,internalSetDisabled : function (d) {this.functionOnAction("setDisabled", [this.disabled = (d ? true : false)]);}
+,setDisabled : function (d) { this.internalSetDisabled((this.userRight.disabledIfNoRight&&!this.userRight.right)?true:d) }
+,internalSetDisplay : function(d) {this.functionOnAction("setDisplay", [this.displayed = (d ? true : false)]);}
+,setDisplay : function(d) {this.internalSetDisplay((this.userRight.hideIfNoRight&&!this.userRight.right)?false:d) }
+,setUndefined : function(d) {this.functionOnAction("setUndefined", [this.undef = (d ? true : false)]);}
+,check : function(c) {this.functionOnAction("check", [this.checked = (c ? true : false)]);}
+,setValue : function(v) {this.functionOnAction("setValue", [this.value = ((typeof(v) != 'undefined')? v : "")]);}
+,setTooltip : function (t) {this.functionOnAction("setTooltip", [this.tooltip = (t ? t : "")]);}
+,setCustomTooltip : function (t) {this.functionOnAction("setCustomTooltip", [this.customTooltip = t]);}
+,changeImg : function(dx,dy,src) {this.functionOnAction("changeImg", [dx,dy,src]); }
+,changeIcon : function(icn) {this.functionOnAction("changeIcon", [icn]); }
+,setAccelerator : function(k,mod,macMod) {this.functionOnAction("setAccelerator", [k,mod,macMod]); this.accelerator={key:k,modifier:mod,macModifier:macMod}}
+,setColor : function(color) {this.functionOnAction("setColor", [this.color = color]);}
+,setClickCallback : function(cb) {this.functionOnAction("setClickCallback", [cb]);}
+,updateButton : function (idx, checked) {this.functionOnAction("updateButton", [idx, checked]);}
+,setRoleAndLabelledBy : function(role, label, id) {this.functionOnAction("setRoleAndLabelledBy", [role, label, id]);}
+    ,internalUpdateRadioBtn : function (checked, idx, disable) {this.functionOnAction("updateRadioBtn", [checked, idx, disable]);}
+    ,updateRadioBtn : function (checked, idx, disable) { if (!this.userRight.disabledIfNoRight || this.userRight.right) this.internalUpdateRadioBtn(checked, idx,  disable );}
+// specific for textCombo
+,add : function (s,val,selected) {this.functionOnAction("add", [s, val, selected]);}
+,getSelection : function ()
+{
+var item = this.items[0];
+return (item)? item.getSelection():null
+}
+,getItemCount : function()
+{
+return this.items.length;
+}
+,getMenu : function (index)
+{
+index = index == null ? 0 : index
+var item = this.items[index];
+return (item)? item.getMenu():null
+}
+,setText : function (s) {this.functionOnAction("setText", [this.text = (s ? s : "")]);}
+,valueSelect : function (v) {this.functionOnAction("valueSelect", [v]);}
+,selectItem : function (item) {this.functionOnAction("selectItem", [item]);}
+,select : function (index) {this.functionOnAction("select", [index]);}
+,del : function(i) {this.functionOnAction("del", [i]);}
+,getItemByIndex : function (index)
+{
+    var item = this.items[0];
+    return (item)?item.getItemByIndex(index):null;
+}
+// Public - Get functions
+,isDisabled : function() {return this.disabled}
+,isDisplayed : function() {return this.displayed}
+,isUndefined : function() {return this.undef}
+,isChecked : function() {return this.checked}
+,getValue : function() {return this.value}
+,getTooltip : function() {return this.tooltip}
+,getCustomTooltip : function() {return this.customTooltip}
+,getText : function() {return this.text}
+,showFromSelectors : function (selection) // array of strings
+{
+var o=this, selectors=o.selectors
+if (selectors)
+{
+var visible=false
+if (selection)
+{
+for (var i=0; i<selectors.length; i++)
+{
+if ( selectors.select(selection)) {
+visible = true;
+break;
+}
+}
+}
+o.setDisplay(visible)
+}
+}
+// Private Methods
+,functionOnAction : function (funcName, arrParams)
+{
+var items = this.items, len = items.length;
+var strParams="", parLen = (arrParams ? arrParams.length : 0)
+if (parLen>2)
+{
+for (var i=0; i<parLen; i++)
+{
+strParams += (i>0 ? ",":"") + "arrParams[" + i + "]";
+}
+}
+for (var i=0; i<len; i++)
+{
+var item = items[i];
+if (item[funcName])
+{
+switch(parLen)
+{
+case 0:
+item[funcName]();
+break;
+case 1:
+item[funcName](arrParams[0]);
+break;
+case 2:
+item[funcName](arrParams[0], arrParams[1]);
+break;
+default:
+eval("item." + funcName + "("  + strParams + ")");
+break;
+}
+}
+}
+}
+// Set the focus on the first visible instance
+,setFocus : function()
+{
+var items = this.items
+for (var i=0;i<items.length; i++)
+{
+var widget = items[i], layer=widget.layer
+if (layer && isLayerDisplayed(layer) && (!widget.isDisabled()))
+{
+widget.focus()
+return
+}
+}
+}
+}
+function new_StatusBarWidget(prms)
+{
+prms.className = "statusBar";
+prms.height = 28;
+// Base class
+var o = new_PaletteWidget(prms);
+o.vertPadding=0;
+// Parameters parsing
+// Public methods
+o.setHTML=StatusBarWidget_setHTML;
+//o.fill = paletteWidget_fill;
+// Private fields
+o.innerHTML = "";
+return o;
+}
+function StatusBarWidget_setHTML(html)
+{
+var o=this;
+if (o.layer)
+o.layer.childNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[0].innerHTML = "<td>" + html + "</td>";
+else
+o.innerHTML = html;
+}
+if (_ie) setInterval("smartWorkbenchResize()", 500);
+function smartWorkbenchResize()
+{
+if (window._currWorkbench)
+{
+var pers = window._currWorkbench.getPerspective()
+if (pers && pers.layer) {
+var size = window.workBenchWinSize
+if (size == null) {
+size = window.workBenchWinSize = {
+w: -1,
+h: -1
+}
+}
+var w = winWidth(), h = winHeight();
+if ((size.w != w) || (size.h != h)) {
+pers.resizeElements();
+window.workBenchWinSize = {
+w: w,
+h: h
+}
+}
+}
+}
+}

@@ -1,0 +1,1064 @@
+/*
+=============================================================
+WebIntelligence(r) Report Panel
+Copyright(c) 2001-2005 Business Objects S.A.
+All rights reserved
+
+Use and support of this software is governed by the terms
+and conditions of the software license agreement and support
+policy of Business Objects S.A. and/or its subsidiaries. 
+The Business Objects products and technology are protected
+by the US patent number 5,555,403 and 6,247,008
+
+=============================================================
+*/if (WS._customization.enabled)
+{
+if (WS._customization.hasCustoFolder)
+{
+var custoFolders = WS._customization.folders;
+if (DS.docFolders != null)
+{
+var arrFolder = DS.docFolders.split('|');
+for (var i=0; i<arrFolder.length; i++)
+{
+var found = false;
+for (var j=0; j<custoFolders.length; j++)
+{
+if (custoFolders[j].id == arrFolder[i])
+{
+WS._customization.features = custoFolders[j].features;
+WS._customization.uielements = custoFolders[j].uielements;
+WS._customization.extensions = custoFolders[j].extensions;
+found = true;
+break;
+}
+}
+if (found)
+break;
+}
+}
+}
+for (var i=0; i<WS._customization.features.length; i++)
+{
+var feature = WS._customization.features[i];
+switch(feature)
+{
+case "PerspectiveReading":
+customization_append_related_UIElements("interactive.topRightZone.readingModeMenu");
+customization_append_related_UIElements("applicationMenu.switchAppliMode.switchToView");
+customization_append_related_UIElements("applicationMenu.switchAppliMode.pdfView");
+break;
+case "PerspectiveDesign":
+customization_append_related_UIElements("interactive.topRightZone.designModeMenu");
+customization_append_related_UIElements("applicationMenu.switchAppliMode.switchToInteractive");
+customization_append_related_UIElements("applicationMenu.switchAppliMode.structureView");
+break;
+case "Refresh":
+customization_append_related_UIElements("interactive.bars.misc.refreshAll");
+customization_append_related_UIElements("interactive.reportMenu.refreshAll");
+customization_append_related_UIElements("interactive.sectionMenu.refreshAll");
+customization_append_related_UIElements("interactive.dsDocumentMenu.refreshAll");
+customization_append_related_UIElements("interactive.dsSectionMenu.refreshAll");
+break;
+case "Drill":
+customization_append_related_UIElements("interactive.bars.interact.drillMenu");
+customization_append_related_UIElements("interactive.reportMenu.drill");
+customization_append_related_UIElements("interactive.sectionCellMenu.drillSubMenu");
+customization_append_related_UIElements("interactive.tableCellMenu.drillSubMenu");
+customization_append_related_UIElements("viewing.analysis.drillMenu");
+customization_append_related_UIElements("viewing.drillMenu");
+customization_append_related_UIElements("viewing.expandCollapseMenu.drill");
+customization_append_related_UIElements("viewing.chartExpandCollapseMenu.drill");
+break;
+}
+}
+for (var i=0; i<WS._customization.uielements.length; i++)
+{
+var uielement = WS._customization.uielements[i];
+switch(uielement)
+{
+case "shortcut.print":
+customization_append_related_UIElements("shortcut.printShortcut");
+customization_append_related_UIElements("shortcut.fakePrint");
+break;
+case "shortcut.save":
+customization_append_related_UIElements("shortcut.saveBtn");
+break;
+case "shortcut.refreshAll":
+customization_append_related_UIElements("shortcut.refreshAll2");
+customization_append_related_UIElements("shortcut.refreshDateStatus");
+break;
+}
+}
+}
+function apply_customization_uielement(webiElem, workbenchArea)
+{
+if (!WS._customization.enabled)
+return;
+if (webiElem == null)
+return;
+if (workbenchArea == null)
+return;
+for (var i=0; i<WS._customization.uielements.length; i++)
+{
+var key = WS._customization.uielements[i];
+if (key == null)
+continue;
+switch(workbenchArea)
+{
+case "uidefinition":
+switch(key)
+{
+case "statusbar":
+WS._showStatus = false;
+customization_hide_related_action("viewBtn", "showStatusBar");
+customization_hide_related_action("pdfBtn", "showStatusBar");
+break;
+case "leftpane":
+WS._showLeftPane = 2; 
+customization_hide_related_action("viewBtn", "leftPaneSubMenu");
+customization_hide_related_action("pdfBtn", "leftPaneSubMenu");
+break;
+case "reporttabs":
+customization_hide_related_action("viewBtn", "showReportTabs");
+break;
+case "formulabar":
+customization_hide_related_action("viewBtn", "showFormulaBar");
+break;
+}
+break;
+case "interactiveperspective":
+switch(key)
+{
+case "formulabar":
+webiElem.formulaBarVisible = false;
+break;
+case "smartnav":
+webiElem.floatPaletteVisible = false;
+}
+break;
+case "viewperspective":
+switch(key)
+{
+case "reporttabs":
+webiElem.naviBarVisible = false;
+break;
+case "smartnav":
+webiElem.floatPaletteVisible = false;
+break;
+}
+break;
+case "switchtoperspective":
+break;
+case "applicationmenu":
+switch(key)
+{
+case "applicationMenu":
+for (var j=0; j<webiElem.length; j++)
+{
+webiElem.splice(j, 1);
+j--;
+}
+break;
+default:
+for (var j=0; j<webiElem.length; j++)
+{
+var token = webiElem[j].actionId;
+if (token == null)
+continue;
+var isAppliMode = false;
+if (token.indexOf('switchAppliMode') >= 0)
+{
+token = "switchAppliMode";
+isAppliMode = true;
+}
+token = "applicationMenu." + token;
+if (token == key)
+{
+webiElem.splice(j, 1);
+customization_repair_menu(webiElem);
+break;
+}
+else if (isAppliMode && webiElem[j].children != null) 
+{
+var arr = webiElem[j].children;
+for (var k=0; k<arr.length; k++)
+{
+var actID = arr[k].actionId;
+var chd = token + "." + actID;
+if (chd == key)
+{
+arr.splice(k, 1);
+customization_repair_menu(arr);
+break;
+}
+}
+}
+}
+}
+break;
+case "viewingtoolbox":
+switch(key)
+{
+case "viewing.toolbox.viewBtn":
+for (var j=0; j<webiElem.length; j++)
+{
+if (webiElem[j].actionId != null && webiElem[j].actionId == "viewBtn")
+{
+webiElem.splice(j, 1);
+break;
+}
+}
+break;
+case "viewing.FileToolboxContent":
+for (var j=0; j<webiElem.length; j++)
+{
+if (webiElem[j].type != null && webiElem[j].type == "group" && webiElem[j].children != null && webiElem[j].children[0].actionId == "newDocument")
+{
+webiElem.splice(j, 1);
+break;
+}
+}
+break;
+case "viewing.leftTransverseGroup":
+for (var j=0; j<webiElem.length; j++)
+{
+if (webiElem[j].type != null && webiElem[j].type == "group" && webiElem[j].children != null && webiElem[j].children[0].actionId == "undo")
+{
+webiElem.splice(j, 1);
+break;
+}
+}
+break;
+case "viewing.analysis":
+for (var j=0; j<webiElem.length; j++)
+{
+if (webiElem[j].type != null && webiElem[j].type == "group" && webiElem[j].children != null && webiElem[j].children[0].actionId == "tdcReadingMenu")
+{
+webiElem.splice(j, 1);
+break;
+}
+}
+break;
+case "interactive.topRightZone":
+for (var j=0; j<webiElem.length; j++)
+{
+if (webiElem[j].type != null && webiElem[j].type == "lines")
+{
+webiElem.splice(j, 1);
+break;
+}
+}
+break;
+}
+break;
+case "viewinglefttoolbox":
+var iPos = key.lastIndexOf('.');
+var token = '';
+var parentKey = '';
+if (iPos >= 0)
+{
+parentKey = key.substring(0, iPos);
+token = key.substring(iPos + 1);
+}
+switch(parentKey)
+{
+case "viewing.FileToolboxContent":
+var arr = webiElem.viewing.FileToolboxContent;
+for (var j=0; j<arr.length; j++)
+{
+if (arr[j].actionId == token)
+{
+arr.splice(j, 1);
+customization_repair_menu(arr);
+break;
+}
+}
+break;
+case "viewing.leftTransverseGroup":
+var arr = webiElem.viewing.leftTransverseGroup;
+for (var j=0; j<arr.length; j++)
+{
+if (arr[j].actionId == token)
+{
+arr.splice(j, 1);
+customization_repair_menu(arr);
+break;
+}
+}
+break;
+case "viewing.analysis":
+var arr = webiElem.viewing.analysis;
+for (var j=0; j<arr.length; j++)
+{
+if (arr[j].actionId == token)
+{
+arr.splice(j, 1);
+customization_repair_menu(arr);
+break;
+}
+}
+break;
+}
+break;
+case "welcometoolbox":
+switch(key)
+{
+case "welcome.toolbox.viewBtn":
+for (var j=0; j<webiElem.length; j++)
+{
+if (webiElem[j].actionId != null && webiElem[j].actionId == "viewBtn")
+{
+webiElem.splice(j, 1);
+break;
+}
+}
+break;
+case "welcome.FileToolboxContent":
+for (var j=0; j<webiElem.length; j++)
+{
+if (webiElem[j].type != null && webiElem[j].type == "group" && webiElem[j].children != null && webiElem[j].children[0].actionId == "newDocument")
+{
+webiElem.splice(j, 1);
+break;
+}
+}
+break;
+case "viewing.leftTransverseGroup":
+for (var j=0; j<webiElem.length; j++)
+{
+if (webiElem[j].type != null && webiElem[j].type == "group" && webiElem[j].children != null && webiElem[j].children[0].actionId == "undo")
+{
+webiElem.splice(j, 1);
+break;
+}
+}
+break;
+case "viewing.analysis":
+for (var j=0; j<webiElem.length; j++)
+{
+if (webiElem[j].type != null && webiElem[j].type == "group" && webiElem[j].children != null && webiElem[j].children[0].actionId == "tdcReadingMenu")
+{
+webiElem.splice(j, 1);
+break;
+}
+}
+break;
+case "interactive.topRightZone.helpMenu":
+case "helpMenu":
+for (var j=0; j<webiElem.length; j++)
+{
+if (webiElem[j].actionId != null && webiElem[j].actionId == "helpMenu")
+{
+webiElem.splice(j, 1);
+break;
+}
+}
+break;
+}
+break;
+case "welcomelefttoolbox":
+var iPos = key.lastIndexOf('.');
+var token = '';
+var parentKey = '';
+if (iPos >= 0)
+{
+parentKey = key.substring(0, iPos);
+token = key.substring(iPos + 1);
+}
+if (parentKey == "welcome.FileToolboxContent")
+{
+var arr = webiElem.viewing.WelcomeToolboxContent;
+for (var j=0; j<arr.length; j++)
+{
+if (arr[j].actionId == token)
+{
+arr.splice(j, 1);
+customization_repair_menu(arr);
+break;
+}
+}
+}
+break;
+case "pdftoolbox":
+switch(key)
+{
+case "viewing.pdftoolbox.pdfBtn":
+for (var j=0; j<webiElem.length; j++)
+{
+if (webiElem[j].actionId != null && webiElem[j].actionId == "pdfBtn")
+{
+webiElem.splice(j, 1);
+customization_repair_menu(webiElem);
+break;
+}
+}
+break;
+case "interactive.topRightZone":
+for (var j=0; j<webiElem.length; j++)
+{
+if (webiElem[j].type != null && webiElem[j].type == "lines")
+{
+webiElem.splice(j, 1);
+break;
+}
+}
+break;
+}
+break;
+case "interactivetoolbox":
+switch(key)
+{
+case "interactive.FileToolboxContent":
+var arr = webiElem.interactive.leftToolbox;
+for (var j=0; j<arr.length; j++)
+{
+if (arr[j].value == "file")
+{
+arr.splice(j, 1);
+break;
+}
+}
+break;
+case "interactive.leftTransverseGroup":
+webiElem.interactive.leftTransverseGroup = [];
+break;
+case "interactive.FileSettings":
+var arr = webiElem.interactive.leftToolbox;
+for (var j=0; j<arr.length; j++)
+{
+if (arr[j].value == "settings")
+{
+arr.splice(j, 1);
+break;
+}
+}
+break;
+case "interactive.topRightZone":
+webiElem.interactive.topRightZone = [];
+break;
+}
+break;
+case "interactiverighttoolbox":
+var iPos = key.lastIndexOf('.');
+var token = '';
+var parentKey = '';
+if (iPos >= 0)
+{
+parentKey = key.substring(0, iPos);
+token = key.substring(iPos + 1);
+}
+if (parentKey == "interactive.topRightZone")
+{
+var arr = webiElem.interactive.topRightZone;
+for (var j=0; j<arr.length; j++)
+{
+if (token == "perspectives" && (arr[j].actionId == "readingModeMenu" || arr[j].actionId == "designModeMenu"))
+{
+arr.splice(j, 1);
+j--;
+}
+else if (arr[j].actionId == token)
+{
+arr.splice(j, 1);
+break;
+}
+}
+customization_repair_menu(arr);
+}
+break;
+case "interactivemidtoolbox":
+switch(key)
+{
+case "interactive.bars.insertTable":
+customization_hide_subTab("bars.insertTable", webiElem.interactive.toolboxes.reportElements);
+break;
+case "interactive.bars.insertCell":
+customization_hide_subTab("bars.insertCell", webiElem.interactive.toolboxes.reportElements);
+break;
+case "interactive.bars.insertSection":
+customization_hide_subTab("bars.insertSection", webiElem.interactive.toolboxes.reportElements);
+break;
+case "interactive.bars.insertMainChart":
+customization_hide_subTab("bars.insertMainChart", webiElem.interactive.toolboxes.reportElements);
+break;
+case "interactive.bars.insertMoreChart":
+customization_hide_subTab("bars.insertMoreChart", webiElem.interactive.toolboxes.reportElements);
+break;
+case "interactive.bars.elementTools":
+customization_hide_subTab("bars.elementTools", webiElem.interactive.toolboxes.reportElements);
+break;
+case "interactive.bars.position":
+customization_hide_subTab("bars.position", webiElem.interactive.toolboxes.reportElements);
+break;
+case "interactive.bars.linking":
+customization_hide_subTab("bars.linking", webiElem.interactive.toolboxes.reportElements);
+break;
+case "interactive.bars.tableItems":
+customization_hide_subTab("bars.tableItems", webiElem.interactive.toolboxes.reportElements);
+break;
+case "interactive.bars.tableBehaviors":
+customization_hide_subTab("bars.tableBehaviors", webiElem.interactive.toolboxes.reportElements);
+break;
+case "interactive.bars.sectionLayout":
+customization_hide_subTab("bars.sectionLayout", webiElem.interactive.toolboxes.reportElements);
+break;
+case "interactive.bars.sectionBehaviors":
+customization_hide_subTab("bars.sectionBehaviors", webiElem.interactive.toolboxes.reportElements);
+break;
+case "interactive.bars.chartBehaviors":
+customization_hide_subTab("bars.chartBehaviors", webiElem.interactive.toolboxes.reportElements);
+break;
+case "interactive.bars.freeCellBehaviors":
+customization_hide_subTab("bars.freeCellBehaviors", webiElem.interactive.toolboxes.reportElements);
+break;
+case "interactive.toolboxes.reportElements":
+delete webiElem.interactive.toolboxes.reportElements;
+break;
+case "interactive.Format.Font":
+customization_hide_subTab("bars.font", webiElem.interactive.toolboxes.format);
+break;
+case "interactive.Format.Border":
+customization_hide_subTab("bars.border", webiElem.interactive.toolboxes.format);
+break;
+case "interactive.Format.Cell":
+customization_hide_subTab("bars.cell", webiElem.interactive.toolboxes.format);
+break;
+case "interactive.Format.Style":
+customization_hide_subTab("bars.style", webiElem.interactive.toolboxes.format);
+break;
+case "interactive.Format.Numbers":
+customization_hide_subTab("bars.numbers", webiElem.interactive.toolboxes.format);
+break;
+case "interactive.Format.Alignment":
+customization_hide_subTab("bars.alignement", webiElem.interactive.toolboxes.format);
+break;
+case "interactive.Format.Size":
+customization_hide_subTab("bars.size", webiElem.interactive.toolboxes.format);
+break;
+case "interactive.Format.Padding":
+customization_hide_subTab("bars.padding", webiElem.interactive.toolboxes.format);
+break;
+case "interactive.Format.Tools":
+customization_hide_subTab("bars.formatTools", webiElem.interactive.toolboxes.format);
+break;
+case "interactive.Format.ChartItems":
+customization_hide_subTab("bars.chartStyle", webiElem.interactive.toolboxes.format);
+break;
+case "interactive.toolboxes.format":
+delete webiElem.interactive.toolboxes.format;
+break;
+case "interactive.toolboxes.data":
+delete webiElem.interactive.toolboxes.data;
+break;
+case "groups.dataProviders":
+case "groups.dataObjects":
+var child = webiElem.interactive.toolboxes.data.children;
+for (var j=0; j<child.length; j++) {
+if (child[j].actionId == key) {
+child.splice(j, 1);
+break;
+}
+}
+break;
+case "interactive.bars.dataProviders.editDP":
+case "interactive.bars.dataProviders.purgeDPMenu":
+case "interactive.bars.dataProviders.refreshDPMenu":
+customization_hide_item_from_childrenList(key, webiElem.interactive.bars.dataProviders);
+break;
+case "interactive.bars.dataObjects.newVariable":
+case "interactive.bars.dataObjects.mergeDimensions":
+customization_hide_item_from_childrenList(key, webiElem.interactive.bars.dataObjects);
+break;
+case "interactive.Analysis.Filters":
+customization_hide_subTab("bars.filter", webiElem.interactive.toolboxes.analysis);
+break;
+case "interactive.Analysis.DataTracking":
+customization_hide_subTab("bars.track", webiElem.interactive.toolboxes.analysis);
+break;
+case "interactive.Analysis.Display":
+customization_hide_subTab("bars.display", webiElem.interactive.toolboxes.analysis);
+break;
+case "interactive.Analysis.Conditional":
+customization_hide_subTab("bars.analysisConditional", webiElem.interactive.toolboxes.analysis);
+break;
+case "interactive.Analysis.Interact":
+customization_hide_subTab("bars.interact", webiElem.interactive.toolboxes.analysis);
+break;
+case "interactive.Analysis.Functions":
+customization_hide_subTab("bars.functions", webiElem.interactive.toolboxes.analysis);
+break;
+case "interactive.bars.interact.drillMenu":
+customization_hide_item_from_childrenList(key, webiElem.interactive.bars.interact);
+break;
+case "interactive.toolboxes.analysis":
+delete webiElem.interactive.toolboxes.analysis;
+break;
+case "interactive.PageSetup.Report":
+customization_hide_subTab("bars.report", webiElem.interactive.toolboxes.pageSetup);
+break;
+case "interactive.PageSetup.RenameReport":
+customization_hide_subTab("bars.rename", webiElem.interactive.toolboxes.pageSetup);
+break;
+case "interactive.PageSetup.MoveReport":
+customization_hide_subTab("bars.shift", webiElem.interactive.toolboxes.pageSetup);
+break;
+case "interactive.PageSetup.Page":
+customization_hide_subTab("bars.page", webiElem.interactive.toolboxes.pageSetup);
+break;
+case "interactive.PageSetup.Header":
+customization_hide_subTab("bars.header", webiElem.interactive.toolboxes.pageSetup);
+break;
+case "interactive.pageSetup.Footer":
+customization_hide_subTab("bars.footer", webiElem.interactive.toolboxes.pageSetup);
+break;
+case "interactive.PageSetup.FitToPage":
+customization_hide_subTab("bars.scaleToFit", webiElem.interactive.toolboxes.pageSetup);
+break;
+case "interactive.PageSetup.Margins":
+customization_hide_subTab("bars.margin", webiElem.interactive.toolboxes.pageSetup);
+break;
+case "interactive.PageSetup.Display":
+customization_hide_subTab("bars.reportViews", webiElem.interactive.toolboxes.pageSetup);
+break;
+case "interactive.toolboxes.pageSetup":
+delete webiElem.interactive.toolboxes.pageSetup;
+break;
+case "interactive.bars.misc.refreshAll":
+customization_hide_item_from_childrenList(key, webiElem.interactive.bars.misc);
+break;
+}
+break;
+case "interactivelefttoolbox":
+var iPos = key.lastIndexOf('.');
+var token = '';
+var parentKey = '';
+if (iPos >= 0)
+{
+parentKey = key.substring(0, iPos);
+token = key.substring(iPos + 1);
+}
+switch(parentKey)
+{
+case "interactive.FileToolboxContent":
+var arr = webiElem.interactive.FileToolboxContent;
+for (var j=0; j<arr.length; j++)
+{
+if (arr[j].actionId == token)
+{
+arr.splice(j, 1);
+customization_repair_menu(arr);
+break;
+}
+}
+break;
+case "interactive.leftTransverseGroup":
+var arr = webiElem.interactive.leftTransverseGroup;
+for (var j=0; j<arr.length; j++)
+{
+if (arr[j].actionId == token)
+{
+arr.splice(j, 1);
+customization_repair_menu(arr);
+break;
+}
+}
+break;
+case "interactive.FileSettings":
+var arr = webiElem.interactive.FileSettings;
+for (var j=0; j<arr.length; j++)
+{
+if (arr[j].actionId == token)
+{
+arr.splice(j, 1);
+customization_repair_menu(arr);
+break;
+}
+}
+break;
+}
+break;
+case "leftpane":
+for (var j=0; j<webiElem.length; j++)
+{
+var token = webiElem[j].value;
+if (token == null)
+continue;
+token = "leftpane." + token;
+if (token == key)
+{
+webiElem.splice(j, 1);
+break;
+}
+}
+break;
+case "statusbar":
+var arrKeys = [];
+arrKeys[arrKeys.length] = key; 
+if (key == "statusbar.pageMode")
+arrKeys[arrKeys.length] = "statusbar.quickMode";
+for (var j=0; j<arrKeys.length; j++)
+{
+for (var k=0; k<webiElem.length; k++)
+{
+var token = webiElem[k].actionId;
+if (token == null)
+continue;
+if (token == "refreshDateStatus" && key == "shortcut.refreshDateStatus")
+ webiElem[k].accelerator = null;
+token = "statusbar." + token;
+if (token == arrKeys[j])
+{
+webiElem.splice(k, 1);
+break;
+}
+}
+}
+break;
+case "viewingcontextualmenus":
+switch (key) 
+{
+case "viewing.expandCollapseMenu":
+break;
+case "viewing.expandCollapseMenu.drill":
+customization_hide_item_from_childrenList(key, webiElem.viewing.expandCollapseMenu);
+break;
+case "viewing.drillMenu":
+webiElem.viewing.drillMenu = [];
+break;
+case "viewing.chartExpandCollapseMenu":
+break;
+case "viewing.chartExpandCollapseMenu.drill":
+customization_hide_item_from_childrenList(key, webiElem.viewing.chartExpandCollapseMenu);
+break;
+}
+case "interactivecontextualmenus":
+switch (key) 
+{
+case "interactive.reportMenu":
+break;
+case "interactive.reportMenu.refreshAll":
+case "interactive.reportMenu.drill":
+customization_hide_item_from_childrenList(key, webiElem.interactive.reportMenu);
+break;
+case "interactive.sectionMenu":
+break;
+case "interactive.sectionMenu.refreshAll":
+customization_hide_item_from_childrenList(key, webiElem.interactive.sectionMenu);
+break;
+case "interactive.sectionCellMenu":
+break;
+case "interactive.sectionCellMenu.drillSubMenu":
+customization_hide_item_from_childrenList(key, webiElem.interactive.sectionCellMenu);
+break;
+case "interactive.tableCellMenu":
+break;
+case "interactive.tableCellMenu.drillSubMenu":
+customization_hide_item_from_childrenList(key, webiElem.interactive.tableCellMenu);
+break;
+case "interactive.dsDocumentMenu":
+break;
+case "interactive.dsDocumentMenu.refreshAll":
+customization_hide_item_from_childrenList(key, webiElem.interactive.dsDocumentMenu);
+break;
+case "interactive.dsSectionMenu":
+break;
+case "interactive.dsSectionMenu.refreshAll":
+customization_hide_item_from_childrenList(key, webiElem.interactive.dsSectionMenu);
+break;
+}
+break;
+}
+}
+}
+function customization_hide_item_from_childrenList(key, obj)
+{
+var iPos = key.lastIndexOf('.');
+var token = '';
+var parentKey = '';
+if (iPos >= 0)
+{
+parentKey = key.substring(0, iPos);
+token = key.substring(iPos + 1);
+}
+var arr = obj.children;
+if (arr == null)
+arr = obj;
+for (var j = 0; j < arr.length; j++)
+{
+if (arr[j].actionId == token)
+{
+arr.splice(j, 1);
+customization_repair_menu(arr);
+break;
+}
+}
+}
+function customization_hide_subTab(key, obj)
+{
+var child = obj.children;
+for (var i=0; i<child.length; i++) {
+if (child[i].actionId == key) {
+child.splice(i, 1);
+break;
+}
+else if (child[i].children != null) {
+var found = false;
+var n = child[i].children;
+for (var j=0; j<n.length; j++) {
+if (n[j].value == key) {
+n.splice(j, 1);
+found = true;
+break;
+}
+}
+if (found) {
+if (n.length == 0) {
+child.splice(i, 1);
+}
+break;
+}
+}
+}
+}
+function customization_hide_related_action(actID, subActID)
+{
+if (actID != null && subActID != null)
+{
+for (var i=0; i<webi.actions.length; i++)
+{
+if (webi.actions[i].id != null && webi.actions[i].id == actID)
+{
+var cn = webi.actions[i].children;
+if (cn != null)
+{
+for (var j=0; j<cn.length; j++)
+{
+if (cn[j].actionId != null && cn[j].actionId == subActID)
+{
+cn.splice(j, 1);
+break;
+}
+}
+customization_repair_menu(cn);
+}
+break;
+}
+}
+}
+}
+function apply_customization_feature(actions)
+{
+if (!WS._customization.enabled)
+return;
+if (actions == null)
+return;
+for (var i=0; i<WS._customization.features.length; i++)
+{
+var key = WS._customization.features[i];
+if (key == null)
+continue;
+switch(key)
+{
+case "Refresh":
+var arr = ["refreshAll", "refreshAll2", "refreshDateStatus", "refreshPDF", "refreshDPMenu"];
+customization_remove_action(actions, arr);
+break;
+case "PerspectiveDesignData":
+var arr = ["designModeMenu", "switchToInteractive"];
+customization_remove_action(actions, arr);
+break;
+case "Drill":
+var arr = ["drill", "drillMenu", "drillSubMenu"];
+customization_remove_action(actions, arr);
+break;
+}
+}
+}
+function apply_customization_feature_behavior(workbenchArea)
+{
+if (!WS._customization.enabled)
+return;
+for (var i=0; i<WS._customization.features.length; i++)
+{
+var key = WS._customization.features[i];
+if (key == null)
+continue;
+switch(workbenchArea)
+{
+case "viewdocument":
+switch(feature)
+{
+case "PerspectiveReading":
+WS.strViewType = (WS.strViewType == 'H' && isEnableUserRight(WS._usrEditDocumentFormatting))?'I':WS.strViewType;
+break;
+case "PerspectiveDesign":
+WS.strViewType = (WS.strViewType == 'I')?'H':WS.strViewType;
+break;
+case "Drill":
+break;
+}
+break;
+}
+}
+}
+function apply_customization_shortcut(actions)
+{
+if (!WS._customization.enabled)
+return;
+if (actions == null)
+return;
+if (WS._customization.uielements == null)
+return;
+for (var i=0; i<WS._customization.uielements.length; i++)
+{
+var key = WS._customization.uielements[i];
+if (key == null)
+continue;
+var iPos = key.indexOf('.');
+if (iPos >= 0)
+{
+var parentKey = key.substring(0, iPos);
+if (parentKey != 'shortcut')
+continue;
+var actionId = key.substring(iPos + 1);
+for (var j=0; j<actions.length; j++)
+{
+if (actionId == actions[j].id)
+{
+actions[j].accelerator = null;
+WS._customization.uielements.splice(i, 1);
+i--;
+break;
+}
+}
+}
+}
+}
+function apply_customization_dataSource(qpArea, qpItem, extraParams)
+{
+if (qpArea == null || qpItem == null)
+return;
+if (!WS._customization.enabled)
+return;
+if (WS._customization.uielements == null)
+return;
+for (var i=0; i<WS._customization.uielements.length; i++)
+{
+var key = WS._customization.uielements[i];
+if (key != null)
+{
+switch(qpArea)
+{
+case "ds":
+var token = "chooseDSType";
+if (key.indexOf(token) == 0)
+{
+if (key == token)
+qpItem.items = [];
+else
+{
+for (var j=0; j<qpItem.items.length; j++)
+{
+var itemKey = token + "." + qpItem.items[j].value;
+if (itemKey == key)
+qpItem.items.splice(j, 1);
+}
+}
+}
+break;
+case "qpToolbar":
+var token = "querypanel.toolbar";
+if (key.indexOf(token) == 0)
+{
+if (key == token)
+qpItem.children = [];
+else if (key == (token  + ".addquery"))
+qpItem.children.splice(0, 1);
+}
+break;
+case "qpAddquery":
+var token = "querypanel.toolbar.addquery.";
+if (key.indexOf(token) == 0 && extraParams != null)
+{
+var iPos = key.lastIndexOf('.');
+var dsType = key.substring(iPos + 1);
+if (extraParams[dsType] != null)
+{
+var idx = extraParams[dsType];
+qpItem[idx] = false;
+}
+}
+break;
+}
+}
+}
+}
+function customization_remove_action(actions, arr)
+{
+items = arr.length;
+for (var i=0; i<actions.length; i++)
+{
+if (items == 0)
+break;
+items = 0;
+for (var j=0; j<arr.length; j++)
+{
+if (arr[j] == null)
+continue;
+items++;
+if (arr[j] == actions[i].id)
+{
+actions.splice(i, 1);
+i--;
+arr[j] = null;
+break;
+}
+}
+}
+}
+function customization_repair_menu(arr)
+{
+var menuOk = false;
+var maxLoop = 100;
+var iCpt = 0;
+while (!menuOk && iCpt<maxLoop)
+{
+menuOk = true;
+var isPrevSep = false;
+for (var i=0; i<arr.length; i++)
+{
+if (arr[i].type != null && arr[i].type == "separator")
+{
+if (i==0 || i==(arr.length-1) || isPrevSep)
+{
+arr.splice(i, 1);
+menuOk = false;
+break;
+}
+else
+isPrevSep = true;
+}
+else
+isPrevSep = false;
+}
+iCpt++;
+}
+}
+function customization_append_related_UIElements(uielement)
+{
+var found = false;
+for (var i=0; i<WS._customization.uielements.length; i++)
+{
+if (WS._customization.uielements[i] == uielement)
+{
+found = true;
+break;
+}
+}
+if (!found)
+{
+var len = WS._customization.uielements.length;
+WS._customization.uielements[len+1] = uielement;
+}
+}

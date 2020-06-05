@@ -1,0 +1,1355 @@
+/*
+=============================================================
+WebIntelligence(r) Report Panel
+Copyright(c) 2001-2005 Business Objects S.A.
+All rights reserved
+
+Use and support of this software is governed by the terms
+and conditions of the software license agreement and support
+policy of Business Objects S.A. and/or its subsidiaries. 
+The Business Objects products and technology are protected
+by the US patent number 5,555,403 and 6,247,008
+
+=============================================================
+*/function isParentHidden(elt)
+{
+    if (!elt)
+        return false;
+    else
+    if (elt.isHide)
+        return true;
+    else     
+        return isParentHidden(elt.parent);      
+}
+function evalContextPalettes(elts)
+{
+var len = elts ? elts.length : 0
+var type = isCompositeSelection(elts)
+if (len == 1) 
+{
+var elt = elts[0]
+var table = isTableBlock(elt)
+var graph = isGraphBlock(elt)
+var tableCell = isTableCell(elt)
+var freeCell = isFreeCell(elt) || isCellInSection(elt);
+var section = (elt.className == "section")
+        var isHide= false
+if (!isStructure) {
+isHide = (typeof(elt.isHide)!="undefined")?elt.isHide:false;
+        if (!isHide)
+        {
+            isHide=isParentHidden(elt.parent);
+        }
+         }
+_currWorkbench.getAction("groups.onTableSelected").setDisplay(tableCell && !isHide);
+_currWorkbench.getAction("groups.onFreeCell").setDisplay(freeCell && !isHide);
+_currWorkbench.getAction("groups.ReportElementOnChart").setDisplay(graph && !isHide);
+_currWorkbench.getAction("groups.formatChartStyle").setDisplay(graph && !isHide);
+_currWorkbench.getAction("groups.ReportElementOnTable").setDisplay((table||tableCell) && !isHide);
+_currWorkbench.getAction("groups.ReportElementOnSection").setDisplay(section && !isHide);
+} 
+else 
+{
+_currWorkbench.getAction("groups.onTableSelected").setDisplay(false);
+_currWorkbench.getAction("groups.onFreeCell").setDisplay(false);
+_currWorkbench.getAction("groups.ReportElementOnChart").setDisplay(false);
+_currWorkbench.getAction("groups.formatChartStyle").setDisplay(false);
+_currWorkbench.getAction("groups.ReportElementOnTable").setDisplay(type.isSameTable);
+_currWorkbench.getAction("groups.ReportElementOnSection").setDisplay(false);
+}
+}
+function viewFillLeftPane(leftPane)
+{
+webi.leftpane=
+[
+{
+value:"docinfo", text:"Document Summary",
+url:_root+"language/"+_lang+"/html/overview.html",
+icon:leftPaneImg(0)
+},
+{
+value:"reportmap", text:"Navigation Map", 
+url:_root+"language/"+_lang+"/html/reportMap.html", 
+icon:leftPaneImg(1)
+},
+{
+value:"inputForm", text:"Input Controls",                                    
+url:_root+"language/"+_lang+"/html/inputFormsPane.html",  
+icon:leftPaneImg(3)
+},
+{
+value:"quickFilter", text:"User Prompt Input",
+url:_root+"language/"+_lang+"/html/quickPrompts.html",
+icon:leftPaneImg(4)
+},
+{
+value:"resultObj", text:"Available Objects",                                
+url:_root+"language/"+_lang+"/html/ajaxResultObjects.html",
+icon:leftPaneImg(2)
+}, 
+{
+value:"filtmap", text:"Document Structure and Filters",
+url:_root+"language/"+_lang+"/html/ajaxDocumentStructure.html",
+icon:leftPaneImg(6)
+},
+{
+value:"debugWOM", text:"Debug WOM",
+url:_root+"html/debugWOM.html",
+icon:leftPaneImg(0)
+}, 
+{
+value:"debugSettings", text:"User and Document Right",
+url:_root+"html/settings.html",
+icon:leftPaneImg(0)
+},
+{
+value:"traceDom", text:"traceDom",
+url:_root+"html/traceDomPane.html",
+icon:leftPaneImg(0)
+}     
+]
+apply_customization(webi.leftpane, "leftpane");
+leftPane.fill(webi.leftpane);
+}
+webi.interactive.bars = {}
+webi.interactive.bars.CMOn1ReportElement = {text:"Context Menus On 1 Report Element", value:'bars.CMOn1ReportElement', children:[
+ {actionId:"contextMenu.body"}
+,{type:"separator"}
+,{actionId:"contextMenu.section"}
+,{actionId:"contextMenu.sectionCell"}
+,{type:"separator"}
+,{actionId:"contextMenu.vTable"}
+,{actionId:"contextMenu.tableCell"}
+,{type:"separator"}
+,{actionId:"contextMenu.freeCell"}
+]}
+webi.interactive.bars.CMOnNReportElements = {text:"On Multiple Elements", value:'bars.CMOnNReportElements', children:[
+{actionId:"contextMenu.NContainers"}
+,{type:"separator"}
+,{actionId:"contextMenu.NNonContainers"}
+,{type:"separator"}
+,{actionId:"contextMenu.NCells"}
+]}
+webi.interactive.bars.CMOnFrame = {text:"On Frame", value:'bars.CMOnFrame', children:[
+{actionId:"contextMenu.ApplicationFrame"}
+,{actionId:"contextMenu.TabStrip"}
+,{actionId:"contextMenu.reportTab"}
+]}
+webi.interactive.bars.insertData = 
+{text:"Retrieve Data From", value:'bars.insertData', children:[
+{actionId:"newQueryFromUniverse", text:'Universe'}
+,{actionId:"newQueryFromExcel", text:'Excel'}
+,{actionId:"newQueryFromWS", text:'WS'}
+,{actionId:"PQuery", text:'PQuery'}
+]}
+webi.interactive.bars.dataProviders = 
+{text:"Data Providers", value:'bars.dataProviders', children:[
+{actionId:"editDP"}
+,{actionId:"purgeDPMenu"}
+,{type:"separator"}
+,{actionId:"refreshDPMenu"}
+]}
+webi.interactive.bars.dataObjects = 
+{text:"Data Objects", value:'bars.dataProviders', children:[
+ {actionId:"newVariable"}
+,{type:"separator"}
+,{actionId:"mergeDimensions"}
+]}
+webi.interactive.bars.report=
+{text:"Report", value:"bars.report", children:[
+ {actionId:"addReport"}
+,{actionId:"duplicateReport", text:"Duplicate Report"}
+,{actionId:"deleteReport", text:""}
+]}
+webi.interactive.bars.shift=
+{text: "Move Report", value: "bars.shift", children: [
+ {actionId: "moveReportLeft" }
+,{actionId: "moveReportRight" }
+]}
+webi.interactive.bars.rename=
+{text:"Rename Report", value:"bars.rename", children:[
+{actionId:"reportName", text:''}
+]}
+webi.interactive.bars.page=
+{text:"Page", value:"bars.page", children:[
+ {actionId:"pageOrientationMenu"}
+,{actionId:"pageFormat", text:''}
+]}
+webi.interactive.bars.scaleToFit=
+{text:"Scale to Page", value:"bars.scaleToFit", children:[
+        {actionId:"fitToWidthLabel"}
+,{actionId:"fitToWidth", width:65}
+        ,{actionId:"fitToHeightLabel"}
+,{actionId:"fitToHeight", width:65}
+        ,{type:"separator"}
+        ,{actionId:"toScalingLabel"}        
+        ,{actionId:"toScaling", maxChar:4, width:45}
+]}
+webi.interactive.bars.margin=
+{text: "Margins", value: "bars.margin", children: [
+ {actionId: "topMargin"}
+ ,{actionId:"topMarginField"}
+,{actionId: "bottomMargin"}
+        ,{actionId:"bottomMarginField"}
+,{actionId: "leftMargin"}
+        ,{actionId:"leftMarginField"}
+,{actionId: "rightMargin"}
+        ,{actionId:"rightMarginField"}
+]}
+webi.interactive.bars.header={text:"Header", value:"bars.header", children:[
+ {actionId:"displayPageHeader"}
+    ,{type:"separator"}
+,{actionId:"pageHFHeightLabel"}
+,{actionId:"pageHeaderHeight"} 
+ ,{actionId:"pageHFHeightUnit"}
+]}
+webi.interactive.bars.footer={text:"Footer", value:"bars.footer", children:[
+{actionId:"displayPageFooter"}
+    ,{type:"separator"}
+,{actionId:"pageHFHeightLabel"}
+,{actionId:"pageFooterHeight"}
+        ,{actionId:"pageHFHeightUnit"}
+]}
+webi.interactive.bars.reportElementsPageBreak={text:"Page Break", value:"bars.reportElementsPageBreak", children:[
+ {actionId:"startOnNewPage"} 
+ ,{actionId:"avoidPageBreaks"}
+]}
+webi.interactive.bars.reportElementsRepetition={text:"Repetition", value:"bars.reportElementsRepetition", children:[
+  {actionId:"repeatOnEveryPage", text:''}
+   ,{actionId:"repeatHeaderOnPages", text:''}
+   ,{actionId:"repeatFooterOnPages", text:''}
+  ]}
+webi.interactive.bars.insertTable={text:"Tables", value:"bars.insertTable", children:[
+ {actionId:"insertVertTableMenu", text:''}
+,{actionId:"insertHoriTableMenu", text:''}
+,{actionId:"insertCrossTableMenu", text:''}
+,{actionId:"insertFormMenu", text:''}
+]}
+webi.interactive.bars.insertCell={text: "Cell", value: "bars.insertCell", children: [
+ {actionId: "insertBlankCell", text: 'Blank' }
+,{actionId: "insertCellMenu", text: 'Pre-Defined'}
+]}
+webi.interactive.bars.insertSection={text:"Section", value:"bars.insertSection", children:[
+ {actionId:"insertSection"} 
+]}
+webi.interactive.bars.insertMainChart={text:"Chart", value:"bars.insertMainChart", children:[
+ {actionId:"insertColumnChartMenu", text:''}
+,{actionId:"insertLineChartMenu", text:''}
+,{actionId:"insertPieChartMenu", text:''}
+], comment:"Revoir toutes les icones"}
+webi.interactive.bars.insertMoreChart={text:"Other", value:"bars.insertMoreChart", children:[
+ {actionId:"insertBarChartMenu", text:''}
+,{actionId:"insertPointChartMenu", text:''}
+,{actionId:"insertOtherChartMenu", text:'More'}
+], comment:"Revoir toutes les icones"}
+webi.interactive.bars.linking={text: "Linking", value: "bars.linking", children: [
+        {actionId: "insertLinkMenu"}
+,{actionId: "docLinkMenu" }
+        ,{actionId: "elementLinkMenu" }
+]}
+webi.interactive.bars.insertControls={text: "to do", value: "bars.insertControls", children: [
+ {actionId: "insertControlMenu", text: 'Controls' }
+,{type:"separator"}
+,{actionId: "insertLinkMenu",text: 'Links'}
+]}
+webi.interactive.bars.insertGraphics={text:"Graphics", value:"bars.insertGraphics", children:[
+ {actionId:"insertPicture", text:'Picture...'}
+]}
+webi.interactive.bars.position={text:"Position", value:"bars.position", children:[
+ {actionId:"layeringBtn"}
+,{actionId:"alignBtn"}
+]}
+webi.interactive.bars.elementTools={text: "Tools", value: "bars.elementTools", children: [
+{actionId: "turntoMenu", text: 'Turn Into'}
+,{type:"separator"}
+,{actionId:"setAsSection"}
+]}
+webi.interactive.bars.chartItems={text: "Chart Items", value: "bars.chartItems", children: [
+{actionId: "chooseTitleLocation"}
+,{actionId: "chartLegendMenu"}
+,{actionId: "chartAxisMenu"}
+,{actionId: "chartDataValuesMenu"}
+]}
+webi.interactive.bars.chartBehaviors={text: "Behaviors", value: "bars.chartBehaviors", children: [
+ {actionId: "simpleHideMenu"}
+,{type:"separator"}
+,{actionId:'pageBreakMenu'}
+,{type:"separator"}
+        ,{actionId:'repeatChartBtn'}
+]}
+webi.interactive.bars.chartSpecifics={text: "Specifics", value: "bars.chartSpecifics", children: [
+ {actionId: "stackMenu"}
+,{type:"separator"}
+,{actionId: "barGapDecrease", text: '', icontype:_midGroupL16}
+,{actionId: "barGapIncrease", text: '', icontype:_midGroupR16}
+,{type:"separator", isSpace:true}
+,{actionId: "seriesGapDecrease", text: '', icontype:_midGroupL16}
+,{actionId: "seriesGapIncrease", text: '', icontype:_midGroupR16}
+]}
+webi.interactive.bars.tableItems={text: "Table Layout", value: "bars.tableItems", children: [
+{actionId: "breakBtn"}
+,{type:"separator"}
+,{actionId: "insertRowOrColumnMenu"}
+,{type:"separator"}
+,{actionId: "vTableHeaderMenu"}
+       ,{actionId: "vTableFooterMenu"}   
+        ,{actionId: "hTableHeaderMenu"}
+       ,{actionId: "hTableFooterMenu"} 
+        ,{actionId: "xTableVHeaderMenu"}
+        ,{actionId: "xTableHHeaderMenu"}
+       ,{actionId: "xTableVFooterMenu"}         
+       ,{actionId: "xTableHFooterMenu"}    
+]}
+webi.interactive.bars.tableBehaviors={text: "Behaviors", value: "bars.tableBehaviors", children: [
+{actionId: "hideMenu"}
+,{type:"separator"}
+,{actionId:'pageBreakMenu'}
+        ,{type:"separator"}
+        ,{actionId: "repeatMenu"}
+]}
+webi.interactive.bars.sectionLayout={text: "Section Layout", value: "bars.sectionLayout", children: [
+        {actionId:'sectionMinHeightLabel'}
+    ,{actionId:'sectionMinimumHeight'}
+        ,{actionId:'pageHFHeightUnit'}
+]}
+webi.interactive.bars.sectionBehaviors={text: "Behaviors", value: "bars.sectionBehaviors", children: [    
+{actionId: "sectionHideMenu"}
+,{type:"separator"}
+        ,{actionId:'pageBreakMenu'}
+]}
+webi.interactive.bars.sectionSpecifics={text: "Specifics", value: "bars.sectionSpecifics", children: [
+ {actionId: "setBookmark", text: 'Bookmark' }
+]}
+webi.interactive.bars.font={text:"Font", value:"bars.font", children:[
+ {actionId:"fontName", margin:0, width:113, text:""}
+,{actionId:"fontSize", width:30}
+,{type:"separator", isSpace:true}
+,{actionId:"increaseFontSize", icontype:_midGroupL16, text:""}
+,{actionId:"decreaseFontSize", icontype:_midGroupR16, text:""}
+]}
+webi.interactive.bars.formatTools={text:"Tools", value:"bars.formatTools", children:[
+  {actionId:"formatPainter", text:""}
+        ,{type:"separator"}
+        ,{actionId:"formatBtn" ,text:""}
+        ,{actionId:"resetToDefaultFmtBtn", text:""}
+]}
+webi.interactive.bars.border={text:"Border", value:"bars.border", children:[
+  {actionId:"bordersBtn", text:""}
+ ,{actionId:"borderColor", text:""}
+]}
+webi.interactive.bars.style = {text:"Style", value:"bars.style", children: [
+ {actionId:"bold", icontype:_midGroupL16, text:""}
+,{actionId:"italic", icontype:_midGroupM16, type:"check", text:""}
+,{actionId:"under", icontype:_midGroupM16, type:"check", text:""}
+,{actionId:"strikethrough", icontype:_midGroupR16, type:"check", text:""}
+,{type:"separator", isSpace:true}
+,{actionId:"fontColor", text:""}
+,{type:"separator"}
+,{actionId:"bgColor", text:""}
+        ,{actionId:"bgimgBtn", text:""}      
+]}
+webi.interactive.bars.analysisConditional = {text:"Conditional", value:'bars.analysisConditional', children:[
+ {actionId:"appliedFormattingRulesMenu"}
+]}
+webi.interactive.bars.padding = {text:"Padding", value:'bars.padding', children:[
+ {actionId:"horizLabel"}
+        ,{actionId:"horizontalPadding"}
+,{actionId:"vertLabel"}
+        ,{actionId:"verticalPadding"}
+        ,{actionId:"pageHFHeightUnit"}
+]}
+webi.interactive.bars.size = {text:"Size", value:'bars.size', children:[
+ {actionId:"fitToWidthLabel"}
+        ,{actionId:"widthField"}
+,{actionId:"fitToHeightLabel"}
+        ,{actionId:"heightField"}
+        ,{actionId:"pageHFHeightUnit"}
+]}
+webi.interactive.bars.alignement = {text:"Alignment", value:"bars.alignement", children: [
+{actionId:"leftAlign", icontype:_midGroupL16, text:""}
+,{actionId:"centerAlign", icontype:_midGroupM16, text:""}
+,{actionId:"rightAlign", icontype:_midGroupR16, text:""}
+,{type:"separator", isSpace:true}
+,{actionId:"topAlign", icontype:_midGroupL16, text:""}
+,{actionId:"middleAlign", icontype:_midGroupM16, text:""}
+,{actionId:"bottomAlign", icontype:_midGroupR16, text:""}
+,{type:"separator", isSpace:true}
+,{actionId:"wrapText", text:''}
+]}
+webi.interactive.bars.cell= {text:"Cell", value:"bars.cell", children: [
+        {actionId:"mergeOrSplit"}
+,{type:"separator"}
+,{actionId:"clearCellMenu"}
+]}
+webi.interactive.bars.numbers= {text:"Numbers", value:"bars.numbers", children: [
+        {actionId:"formatNumberCurrencyMenu"}
+        ,{type:"separator"}
+        ,{actionId:"formatPercent"}
+        ,{type:"separator"}
+,{actionId:"changeNumberFormat"}
+]}
+webi.interactive.bars.chartPalette = {text:"Palette", value:"bars.chartPalette", children: [
+{actionId:"paletteMenu"}
+,{type:"separator"}
+,{actionId:"chartStyleMenu"}
+]}
+webi.interactive.bars.chartBackground = {text:"Background*", value:"bars.chartBackground", children: [
+ null
+]}
+webi.interactive.bars.freeCellBehaviors = {text:"Cell Behaviors", value:"bars.freeCellBehaviors", children: [
+    {actionId: "simpleHideMenu"}
+,{type:"separator"}
+,{actionId:'pageBreakMenu'}
+,{type:"separator"}
+        ,{actionId:'repeatFreeCellBtn'}
+]}
+webi.interactive.bars.chartStyle = {text:"Chart Style", value:"bars.chartStyle", children: [
+ {actionId:"paletteMenu"}
+        ,{actionId:"dualPaletteMenu"}
+        ,{type:"separator"}
+        ,{actionId:"chartStyleMenu"}        
+        ,{type:"separator"}        
+        ,{actionId:"formatChartBtn"}       
+]}
+webi.interactive.bars.box={text:"Box", value:"bars.box", children:[
+{actionId:"bgColor", text:""}
+ ,{actionId:"bgimgBtn", text:""}
+,{type:"separator", isSpace:true}
+,{actionId:"borderColor", text:""}
+,{actionId:"bordersBtn", text:""}
+]}
+webi.interactive.bars.filter = 
+{text:"Filters", value:"bars.filter", children:[
+  {actionId:"filterBtn"}
+        ,{type:"separator"}
+ ,{actionId:"rankingBtn"}
+ ,{type:"separator"}
+,{actionId: "insertControlMenu"}
+]}
+webi.interactive.bars.customFilters = 
+{text:"Custom Filters", value:'bars.customFilters', children:[
+ {actionId: "topBottomChoiceMenu", text: 'Top'}
+ ,{actionId:"changeRankValue", text:""}
+ ,{actionId:"chooseRankReference"}
+ ,{type:"separator"}
+ ,{actionId:"parettoSlider"}
+]}
+webi.interactive.bars.track = 
+{text:"Data Tracking", value:'bars.track', children:[            
+         {actionId: "tdcOnOff" }
+        ,{type:"separator"}
+    ,{actionId: "tdcMenu" }
+]}
+webi.interactive.bars.display = {text:"Display", value:"bars.display", children: [
+        {actionId: "groupingBtn"}
+        ,{type:"separator"}
+,{actionId: "breakBtn", text: 'Break' }
+ ,{type:"separator"}
+,{actionId: "sortMenu", text: 'Sort' }
+]}
+webi.interactive.bars.interact = {text:"Interact", value:'bars.interact', children:[
+{actionId: "drillMenu" }
+,{actionId:"drillLite"}
+,{actionId: "foldUnfold"}
+]}
+webi.interactive.bars.interactOld = {text:"Interact", value:'bars.interactOld', children:[
+ {actionId: "breakBtn", text: 'Break' }
+ ,{type:"separator"}
+,{actionId: "sortMenu", text: 'Sort' }
+ ,{type:"separator"}
+,{actionId: "foldUnfold"}
+ ,{type:"separator"}
+,{actionId: "drill", text: 'Drill' }
+]}
+webi.interactive.bars.functions = {text:"Functions", value:'bars.functions', children:[
+  {actionId:"addSumMenu"}
+ ,{actionId:"calcCount"}
+ ,{actionId:"addCalculationMenu"}
+]}
+webi.interactive.bars.formulaBar = {text:"", value:'bars.formulaBar', children:[
+ {actionId: "showFormulaBar", text:""} 
+]}
+webi.interactive.bars.advancedTools = {text:"Advanced Tools", value:'bars.advancedTools', children:[
+{actionId:"advancedAnalysisMenu"}
+,{actionId:"predictiveMenu"}
+,{actionId:"alertingServicesDB"}
+]}
+webi.interactive.bars.formulaToolbar =
+[
+{actionId:"formulaEditor"}
+,{actionId:"variableCreation"}
+,{actionId:"formulaCancel"}
+,{actionId:"formulaOK"}
+,{actionId:"formulaText"}
+,{actionId:"formulaExpandCollapse"}
+]
+webi.interactive.bars.layout={text:"Layout", children:[
+{actionId:"layeringBtn"}
+ ,{type:"separator"}
+ ,{actionId:"alignBtn"}
+]}
+webi.interactive.bars.scale={text:"Report Scale to Fit", children:[
+{actionId:"scaleWidth"}
+,{actionId:"scaleWidthCombo"}
+,{actionId:"scaleHeight"}
+,{actionId:"scaleHeightCombo"}
+]}
+webi.interactive.bars.calculations= {text:"Calculations", value:'bar.calculations', children:[
+]}
+webi.interactive.bars.reportViews={text:"Display", value:'bars.reportViews', children:[
+        {actionId:"pageMode"}
+ ,{type:"separator"}
+,{actionId:"quickMode", text:"Quick Display"}
+        ,{actionId:"pageDisplayMax"}
+        ,{actionId:"pageRows"}
+    ,{actionId:"pageRowsLabel"}
+        ,{actionId:"pageColumn"}
+        ,{actionId:"pageColumnLabel"}
+]}
+webi.interactive.bars.misc={text:"misc", children:[
+ {actionId:"refreshAll"}
+,{actionId:"removeReportElement"}
+]}
+webi.interactive.bars.notDefined={text:"(Not Defined)", children:[
+null
+]}
+webi.interactive.toolboxes = {};
+webi.interactive.toolboxes.pageSetup =
+ {value:"toolboxes.pageSetup", text:"Page Setup", children:[
+{actionId:"groups.reportAndCo", children:[
+webi.interactive.bars.report
+            ,webi.interactive.bars.rename
+,webi.interactive.bars.shift
+    ]}
+,{actionId:"groups.pageAndCo", children:[
+webi.interactive.bars.page
+        ,webi.interactive.bars.header
+            ,webi.interactive.bars.footer           
+]}
+,{actionId:"groups.ScaleToPage", children:[
+            webi.interactive.bars.scaleToFit
+,webi.interactive.bars.margin
+    ,webi.interactive.bars.reportViews   
+]}
+]}
+webi.interactive.toolboxes.reportElements =
+{value:"toolboxes.reportElements", text:"Report Elements", children:[
+{actionId:"groups.insertTableCellsSection", children:[
+webi.interactive.bars.insertTable
+,webi.interactive.bars.insertCell
+,webi.interactive.bars.insertSection
+]}
+,{actionId:"groups.chartsControlsGraphics", children:[
+webi.interactive.bars.insertMainChart
+,webi.interactive.bars.insertMoreChart
+]}
+,{actionId:"groups.positionTools", children:[
+ webi.interactive.bars.elementTools
+,webi.interactive.bars.position
+,webi.interactive.bars.linking
+]}
+        ,{actionId:"groups.onFreeCell", children:[          
+    webi.interactive.bars.freeCellBehaviors
+]}
+,{actionId:"groups.ReportElementOnChart", children:[
+webi.interactive.bars.chartBehaviors
+]}
+,{actionId:"groups.ReportElementOnTable", children:[
+ webi.interactive.bars.tableItems
+,webi.interactive.bars.tableBehaviors
+]}
+,{actionId:"groups.ReportElementOnSection", children:[
+            webi.interactive.bars.sectionLayout
+,webi.interactive.bars.sectionBehaviors
+]}
+]}
+webi.interactive.toolboxes.format =
+{value:"toolboxes.format", text:"Formatting", children:[
+{actionId:"groups.fontAndCo", children:[
+webi.interactive.bars.font
+,webi.interactive.bars.border
+            ,webi.interactive.bars.cell
+]}
+,{actionId:"groups.styleAndCo", children: [
+webi.interactive.bars.style
+,webi.interactive.bars.numbers
+]}
+,{actionId:"groups.alignementAndCo", children: [
+webi.interactive.bars.alignement
+            ,webi.interactive.bars.size
+            ,webi.interactive.bars.padding          
+]}        
+        ,{actionId:"group.formatTools", children: [
+        webi.interactive.bars.formatTools  
+]}
+,{actionId:"groups.formatChartStyle", children: [
+        webi.interactive.bars.chartStyle 
+]}
+]}
+webi.interactive.toolboxes.data =
+{value:"toolboxes.data", text:"Data Access ", children:[
+{actionId:"groups.dataProviders", children: [
+ webi.interactive.bars.dataProviders
+]}
+,{actionId:"groups.dataObjects", children: [
+  webi.interactive.bars.dataObjects
+]}
+]}
+webi.interactive.toolboxes.analysis =
+{value:"toolboxes.analysis", text:"Analysis", children:[
+{actionId:"groups.filterAndCo", children: [
+ webi.interactive.bars.filter
+,webi.interactive.bars.track
+]}
+,{actionId:"groups.analyseAndCo", children: [
+ webi.interactive.bars.display
+,webi.interactive.bars.analysisConditional
+]}
+,{actionId:"groups.interactAndCo", children: [
+ webi.interactive.bars.interact
+,webi.interactive.bars.functions
+]}
+        ,{actionId:"group.formulaBar", children: [
+        webi.interactive.bars.formulaBar  
+]}
+]}
+webi.interactive.toolboxes.contextualMenus =
+{value:"toolboxes.contextualMenus", text:" ", children:[
+{actionId:"groups.CM1", children: [
+ webi.interactive.bars.CMOn1ReportElement
+ ,webi.interactive.bars.CMOnNReportElements
+]} 
+,{actionId:"groups.CM2", children: [
+ webi.interactive.bars.CMOnFrame
+]}
+]}
+apply_customization(webi, "interactivemidtoolbox");
+webi.interactive.midToolbox= 
+[
+webi.interactive.toolboxes.reportElements
+,webi.interactive.toolboxes.format
+,webi.interactive.toolboxes.data
+,webi.interactive.toolboxes.analysis
+    ,webi.interactive.toolboxes.pageSetup
+]
+webi.interactive.leftTransverseGroup=
+[
+{actionId:"undo", text:''}
+,{actionId:"redo", text:''}
+,{type:"separator"}
+,{actionId:"cut", text:''}
+,{actionId:"copy", text:''}
+,{actionId:"paste", text:'', userData:{noCoords:true}}
+,{type:"separator"}
+,{actionId:"removeReportElement", text:''}
+,{type:"separator"}
+,{actionId:"editDP", text:''}
+,{actionId:"refreshAll", text:''}
+]
+webi.interactive.FileToolboxContent=
+[
+ {actionId:"newDocument", margin:0, text:''}
+ ,{actionId:"openDocument", margin:0, text:''}
+,{actionId:"saveBtn", text:''}
+ ,{type:"separator"}
+ ,{actionId:"print", margin:0, text:''} 
+ ,{actionId:"findText", type:"check", text:''}
+,{type:"separator"}
+,{actionId:"historyBtn", margin:0, text:''} 
+,{actionId:"exportMenu", margin:0, text:''} 
+,{actionId:"sendto", margin:0, text:''}
+]
+webi.interactive.FileSettings=
+[
+{actionId:"viewBtn", margin:0}
+,{actionId:"docProps"}
+,{actionId:"preferences"}
+]
+apply_customization(webi, "interactivelefttoolbox");
+webi.interactive.leftToolbox=
+[
+{value:"file", text:"File", children:
+webi.interactive.FileToolboxContent
+}
+ ,{value:"settings", text:"Properties", children:
+webi.interactive.FileSettings
+}
+]
+webi.interactive.topRightZone=
+[ 
+    {margin:0, actionId:"readingModeMenu"}   
+    ,{margin:0, actionId:"designModeMenu"}
+,{type:"separator", isSpace:true}
+,{margin:0, actionId:"helpMenu", text:""}
+]
+apply_customization(webi, "interactiverighttoolbox");
+webi.interactive.customToolbox=
+[
+{value:"favoritesToolbox", text:"Favorites", children:
+[
+ webi.interactive.bars.defaultFavorites
+]
+}
+]
+apply_customization(webi, "interactivetoolbox");
+webi.interactive.chartMiniSortSubMenu=
+[
+ {actionId:"noSortBis"}
+ ,{actionId:"ascendingSortBis"}
+ ,{actionId:"descendingSortBis"}
+]
+webi.interactive.chartMenu=
+[
+{actionId:"chartHierarchicalNavig"} 
+ ,{type:"separator"},
+{actionId:"cut"},{actionId:"copy"},{actionId:"paste"}
+ ,{type:"separator"}
+ ,{actionId:"removeReportElement"}
+ ,{type:"separator"} 
+  ,{actionId:"turnInto"}   
+,{actionId:"editReportElement"}
+     ,{actionId:"navigationBlock"}
+     ,{type:"separator"}     
+     ,{actionId:"filterSubMenu"}
+ ,{actionId:"sortChartSubMenu"}      
+     ,{actionId:"hideSubMenu", text:"Hide"} 
+     ,{type:"separator"}
+     ,{actionId:"orderSubMenu"}
+     ,{actionId:"align1ElementSubMenu"}
+,{actionId:"formatChart"}
+]
+webi.interactive.chartRegionMenu=
+[
+{actionId:"chartHierarchicalNavig"} 
+ ,{type:"separator"}
+,{actionId:"cut"}
+,{actionId:"copy"}
+,{actionId:"paste"}
+,{type:"separator"}
+ ,{actionId:"turnInto"}   
+,{actionId:"editReportElement"}
+,{actionId:"sortChartSubMenu"}      
+    ,{type:"separator"} 
+    ,{actionId:"seriesColors"}
+,{type:"separator"}  
+    ,{actionId:"formatDataSeries"}
+]
+webi.interactive.formatChartRegionMenu=
+[
+{actionId:"formatChart", text:"Edit Chart Properties"}
+,{actionId:"formatChartTitle" ,text:"Format Chart Title..."}
+,{actionId:"formatChartLegend" ,text:"Format Chart Legend..."}
+ ,{actionId:"formatChartLegendTitle" ,text:"Format Chart Legend Title..."}   
+,{actionId:"formatChartCategoryAxis" ,text:"Format Chart Category Axis..."}
+,{actionId:"formatChartCategoryAxisTitle" ,text:"Format Chart Category Axis Title..."}      
+    ,{actionId:"formatChartValue" ,text:"Format Chart Value..."} 
+,{actionId:"formatChartValueTitle" ,text:"Format Chart Value Title..."}
+,{actionId:"formatChartPlotArea" ,text:"Format Chart Plot Area..."}
+]
+webi.interactive.tableMenu=
+[   
+    {actionId:"cut"},{actionId:"copy"},{actionId:"paste"}
+    ,{type:"separator"}
+    ,{actionId:"removeReportElement"}
+    ,{type:"separator"}    
+    ,{actionId:"turnInto"}       
+    ,{actionId:"editReportElement"}
+    ,{actionId:"navigationBlock"}
+    ,{type:"separator"}
+    ,{actionId:"filterSubMenu"} 
+,{actionId:"sortChartSubMenu"} 
+    ,{actionId:"breakSubMenu"}
+    ,{actionId:"hideSubMenu"} 
+    ,{type:"separator"}
+    ,{actionId:"orderSubMenu"}
+    ,{actionId:"align1ElementSubMenu"}
+    ,{actionId:"formatTable"}    
+]
+webi.interactive.pageHeaderMenu=
+[
+    {actionId:"cut"},{actionId:"copy"},{actionId:"paste", userData:{noCoords:false}}
+,{type:"separator"}
+,{actionId:"insertAReportEltInPageHFSubMenu"}
+    ,{actionId:"hideElement"}
+,{type:"separator"}
+,{actionId:"formatHeader"}
+]
+webi.interactive.pageFooterMenu=
+[
+    {actionId:"cut"},{actionId:"copy"},{actionId:"paste", userData:{noCoords:false}}
+,{type:"separator"}
+,{actionId:"insertAReportEltInPageHFSubMenu"}
+    ,{actionId:"hideElement"}
+,{type:"separator"}
+,{actionId:"formatFooter"}
+]
+webi.interactive.reportMenu=
+[
+    {actionId:"cut"},{actionId:"copy"},{actionId:"paste", userData:{noCoords:false}}
+,{type:"separator"}
+,{actionId:"insertAReportElementSubMenu"}
+,{type:"separator"}
+,{actionId:"refreshAll", text:'Refresh'}
+,{actionId:"structureView"}
+,{actionId:"switchToInteractive", text:"Show Results"} 
+,{type:"separator"}
+,{actionId:"drill"}
+,{actionId:"filterSubMenu"} 
+,{type:"separator"}
+,{actionId:"formatReport"}
+]
+webi.interactive.sectionMenu=
+[   
+     {actionId:"cut"},{actionId:"copy"},{actionId:"paste", userData:{noCoords:false}}
+,{type:"separator"}
+,{actionId:"insertAReportElementSubMenu"}
+ ,{actionId:"removeReportElement"}
+,{type:"separator"}
+,{actionId:"editSection"}
+,{type:"separator"}
+,{actionId:"refreshAll", text:'Refresh'}
+,{actionId:"reportMenuWhenSectionSelected"}
+,{type:"separator"}
+,{actionId:"filterSubMenu"} 
+,{actionId:"sortSubMenu"}
+,{actionId:"sectionHideSubMenu"} 
+,{type:"separator"}
+,{actionId:"formatSection"}
+]
+webi.interactive.sectionCellMenu=
+[
+{actionId:"tableHierarchicalNavig"}
+,{type:"separator"}
+    ,{actionId:"cut"},{actionId:"copy"},{actionId:"paste"}
+    ,{type:"separator"}
+    ,{actionId:"deleteSectionCell"}
+    ,{actionId:"clearContents"}
+    ,{type:"separator"}
+    ,{actionId:"editFormula"}      
+    ,{actionId:"navigation"}
+    ,{type:"separator"}
+,{actionId:"drillSubMenu"} 
+    ,{actionId:"filterSubMenu"} 
+    ,{actionId:"rankingSubMenu"}
+    ,{actionId:"sortSubMenu"}
+    ,{actionId:"simpleHideSubMenu"} 
+    ,{type:"separator"}
+    ,{actionId:"orderSubMenu"}
+    ,{actionId:"align1ElementSubMenu"}
+    ,{actionId:"appliedFormattingRulesSubMenu"}
+    ,{actionId:"formatFontSubMenu"}
+    ,{actionId:"formatCell"}
+]
+webi.interactive.freeCellMenu=
+[
+     {actionId:"cut"},{actionId:"copy"},{actionId:"paste"}
+    ,{type:"separator"}
+    ,{actionId:"deleteCell"}
+    ,{actionId:"clearContents"}
+    ,{type:"separator"}
+    ,{actionId:"editFormula"}
+    ,{actionId:"navigation"} 
+    ,{type:"separator"}
+    ,{actionId:"orderSubMenu"}
+    ,{actionId:"align1ElementSubMenu"}
+    ,{actionId:"formatFontSubMenu"}
+    ,{actionId:"formatCell"}
+]
+webi.interactive.tableCellMenu=
+[
+{actionId:"tableHierarchicalNavig"}
+,{type:"separator"}
+    ,{actionId:"cut"},{actionId:"copy"},{actionId:"paste"}
+    ,{type:"separator"}
+    ,{actionId:"insertIntoTable.OverTextDimCell"}
+    ,{actionId:"insertIntoTable.OverMeasureCell"}
+    ,{actionId:"deleteTableCell"}
+,{actionId:"mergeOrSplit"}
+    ,{actionId:"clearContents"}
+    ,{type:"separator"}
+,{actionId:"setAsSection"}
+    ,{actionId:"turnCellTableInto", text:"Turn Into", children:[
+        {type:"separator"}
+        ,{actionId:"turntoVTable"}   
+        ,{actionId:"turntoHTable"}           
+        ,{actionId:"turntoXTable"} 
+    ,{type:"separator"}
+     ,{actionId:"turnToColumn"}
+     ,{actionId:"turnToLine"}
+     ,{actionId:"turnToPie"}
+    ,{type:"separator"}
+     ,{actionId:"turnto", text:"More Transformations..."}
+    ]
+    }
+    ,{actionId:"editFormula"}
+    ,{actionId:"navigation" }
+    ,{type:"separator"}
+    ,{actionId:"drillSubMenu"} 
+    ,{actionId:"customGroup"}
+    ,{actionId:"filterSubMenu"} 
+    ,{actionId:"rankingSubMenu"}
+    ,{actionId:"sortSubMenu"}
+,{actionId:"sortChartSubMenu"}
+    ,{actionId:"breakSubMenu"}
+    ,{actionId:"hideSubMenu"} 
+    ,{type:"separator"}
+    ,{actionId:"appliedFormattingRulesSubMenu"}
+    ,{actionId:"formatFontSubMenu"}
+    ,{actionId:"formatCell"}
+]
+webi.interactive.multiReportEltsMenu=
+[
+    {actionId:"cut"},{actionId:"copy"},{actionId:"paste"}
+    ,{type:"separator"}
+    ,{actionId:"removeReportElement"}
+    ,{type:"separator"}
+    ,{actionId:"orderSubMenu"}
+    ,{actionId:"align1ElementSubMenu"}   
+]
+webi.interactive.multiCellsMenu=
+[
+    {actionId:"cut"},{actionId:"copy"},{actionId:"paste"}
+    ,{type:"separator"} 
+    ,{actionId:"insertIntoTable", text:"Insert", children:[
+        {actionId:"insertRowAbove", text:"Insert Rows Above"}
+        ,{actionId:"insertRowBelow", text:"Insert Rows Below"}
+        ,{actionId:"insertColumnOnLeft", text:"Insert Columns on Left"}
+        ,{actionId:"insertColumnOnRight", text:"Insert Columns on Right"}
+        ]}
+    ,{actionId:"deleteCell"}
+    ,{actionId:"mergeOrSplit"}
+    ,{actionId:"clearContents"}
+    ,{type:"separator"}
+    ,{actionId:"turnCellTableInto", text:"Turn Into", children:[
+        {actionId:"turntoVTable", text:"Vertical Table"}   
+        ,{actionId:"turntoHTable", text:"Horizontal Table"}           
+        ,{actionId:"turntoXTable", text:"Cross Table"}
+        ,{type:"separator"}
+        ,{actionId:"turnToColumn"}
+        ,{actionId:"turnToLine"}
+        ,{actionId:"turnToPie"}
+        ,{type:"separator"}
+        ,{actionId:"turnto", text:"More Transformations..."}
+        ]}
+    ,{type:"separator"} 
+    ,{actionId:"align1ElementSubMenu"}
+    ,{actionId:"formatFontSubMenu"}
+    ,{actionId:"formatCell"}
+]
+webi.interactive.dsChartMenu=
+[
+ {actionId:"removeReportElement"} 
+ ,{type:"separator"} 
+  ,{actionId:"turnInto"}
+,{actionId:"editReportElement"}
+     ,{actionId:"navigationBlock"}
+     ,{type:"separator"}     
+     ,{actionId:"filterSubMenu"} 
+     ,{actionId:"hideSubMenu", text:"Hide"} 
+     ,{type:"separator"}
+ ,{actionId:"orderSubMenu"}
+     ,{actionId:"formatChart"}
+]
+webi.interactive.dsTableMenu=
+[           
+    {actionId:"removeReportElement"}    
+    ,{type:"separator"}    
+    ,{actionId:"turnInto"}       
+    ,{actionId:"editReportElement"}
+    ,{actionId:"navigationBlock"}
+    ,{type:"separator"}        
+    ,{actionId:"filterSubMenu"} 
+    ,{actionId:"hideSubMenu"} 
+    ,{type:"separator"}
+    ,{actionId:"orderSubMenu"}   
+    ,{actionId:"formatTable"}    
+]
+webi.interactive.dsHeaderMenu=
+[    
+    {actionId:"hideElement"}
+,{type:"separator"}
+,{actionId:"formatHeader"}
+]
+webi.interactive.dsFooterMenu=
+[
+    {actionId:"hideElement"}
+,{type:"separator"}
+,{actionId:"formatFooter"}
+]
+webi.interactive.dsDocumentMenu=
+[
+{actionId:"addReport"}
+   ,{type:"separator"}
+,{actionId:"refreshAll", text:'Refresh'}
+]
+webi.interactive.dsReportMenu=
+[  
+{actionId:"addReport"}
+,{actionId:"duplicateReport"}
+,{actionId:"deleteReport"}
+,{type:"separator"}
+,{actionId:"renameReport"}
+,{actionId:"moveReport", text:"Move Report" ,children:[
+                    {actionId:"moveReportFirst"}
+           ,{actionId:"moveReportLeft", text:"Previous", icon:{}}
+           ,{actionId:"moveReportRight", text:"Next", icon:{}}
+           ,{actionId:"moveReportLast"}
+           ]}
+,{type:"separator"}
+,{actionId:"filterSubMenu"} 
+,{type:"separator"}
+,{actionId:"formatReport"}
+]
+webi.interactive.dsSectionMenu=
+[        
+ {actionId:"removeReportElement"} 
+,{type:"separator"}
+,{actionId:"editSection"}
+,{type:"separator"}
+,{actionId:"refreshAll", text:'Refresh'}
+,{type:"separator"}
+,{actionId:"filterSubMenu"} 
+,{actionId:"sectionHideSubMenu"} 
+,{type:"separator"}
+,{actionId:"formatSection"}
+]
+webi.interactive.dsCellMenu=
+[    
+    {actionId:"deleteCell"}    
+    ,{type:"separator"}
+    ,{actionId:"editFormula"}
+    ,{actionId:"navigation"}
+    ,{actionId:"simpleHideSubMenu"}  
+    ,{type:"separator"}
+,{actionId:"orderSubMenu"}
+    ,{actionId:"formatCell"}
+]
+webi.interactive.dsFilterMenu=
+[  
+{actionId:"dsRemoveFilter",text:"Remove Filter",icon:toolboxImg(312)}
+    ,{type:"separator"}
+,{actionId:"dsEditFilter",text:"Edit Filter",icon:toolboxImg(310)}  
+]
+apply_customization(webi, "interactivecontextualmenus");
+webi.viewing.FileToolboxContent=
+[
+ {actionId:"newDocument", margin:0, text:''}
+ ,{actionId:"openDocument", margin:0, text:''}
+,{actionId:"saveBtn", text:''}
+ ,{type:"separator"}
+ ,{actionId:"print", margin:0, text:''} 
+ ,{actionId:"findText", type:"check", text:''}
+,{type:"separator"}
+,{actionId:"historyBtn", margin:0, text:''} 
+,{actionId:"exportMenu", margin:0, text:''} 
+,{actionId:"sendto", margin:0, text:''}
+]
+webi.viewing.analysis=
+[  
+ {actionId:"tdcReadingMenu"}  
+ ,{actionId:"drillMenu"}  
+ ,{actionId:"drillLite"}
+,{actionId:"freezeHeaders"}
+ ,{actionId:"foldUnfold"}
+]
+webi.viewing.leftTransverseGroup=
+[
+{actionId:"undo", text:''}
+,{actionId:"redo", text:''}
+,{type:"separator"}
+,{actionId:"refreshDPMenu", text:''}
+]
+apply_customization(webi, "viewinglefttoolbox");
+webi.viewing.WelcomeToolboxContent=
+[
+ {actionId:"newDocument", margin:0, text:''}
+ ,{actionId:"openDocument", margin:0, text:''}
+,{actionId:"saveBtn", text:''}
+ ,{type:"separator"}
+ ,{actionId:"print", margin:0, text:''} 
+ ,{actionId:"findText", type:"check", text:''}
+,{type:"separator"}
+,{actionId:"historyBtn", margin:0, text:''} 
+,{actionId:"exportMenu", margin:0, text:''} 
+,{actionId:"sendto", margin:0, text:''}
+]
+apply_customization(webi, "welcomelefttoolbox");
+webi.viewing.pickerMenu=
+[
+{actionId:"selectReportPart"}
+]
+webi.viewing.partMenu=
+[
+{actionId:"unSelectReportPart"}
+]
+webi.viewing.drillMenu=
+[
+{id:"drillDown", actionId:"drillDown", text:"Drill Down to"},
+{id:"drillUp", actionId:"drillUp", text:"Drill Up to"},
+{id:"drillUpSubMenu", actionId:"drillUpSubMenu"},
+{id:"drillDownSubMenu", actionId:"drillDownSubMenu"},
+{type:"separator"},
+{id:"drillBy", text:"Drill By..."},
+{type:"separator"},
+{id:"drill",actionId:"drill", text:""}
+]
+webi.viewing.expandCollapseMenu=
+[
+{id:"tableHierarchicalNavig", actionId:"tableHierarchicalNavig", text:"Hierarchical Navigation",children:[
+{id:"expandChildren", actionId:"expandChildren", text:"Expand Children"},
+{id:"expandDescendent", actionId:"expandDescendent", text:"Expand Descendant"},
+{id:"collapseChildren", actionId:"collapseChildren", text:"Collapse Children"},
+{id:"symetric", actionId:"symetric", text:"Symmetric",children:[
+{id:"symetricExpandChildren", actionId:"symetricExpandChildren", text:"Expand Children" }
+,{id:"symetricExpandDescendent",actionId:"symetricExpandDescendent", text:"Expand Descendant"}
+,{id:"symetricCollapseChildren",actionId:"symetricCollapseChildren", text:"Collapse Children"}
+]}, 
+{id:"expandCollapseAll", actionId:"expandCollapseAll", text:"All",children:[
+{id:"expandAllHierarchies",actionId:"expandAllHierarchies", text:"Expand All Hierarchies" }
+,{id:"collapseAllHierarchies",actionId:"collapseAllHierarchies", text:"Collapse All Hierarchies"}
+]},
+{id:"drillFocus", actionId:"drillFocus", text:"Drill Focus",children:[
+{id:"ecDrillDown",actionId:"ecDrillDown", text:"Drill Down"}
+,{id:"ecDrillUp", actionId:"ecDrillUp", text:"Drill Up" }
+]},
+{id:"expandLevel", actionId:"expandLevel", text:"Default level expansion",
+children:[
+          {id:"expandLevelNone",defaultType:"check",actionId:"expandLevelNone",text:"None"}
+          ,{id:"expandLevel1",defaultType:"check",actionId:"expandLevel1",text:"1"}
+          ,{id:"expandLevel2",defaultType:"check",actionId:"expandLevel2",text:"2"}
+          ,{id:"expandLevel3",defaultType:"check",actionId:"expandLevel3",text:"3"}
+          ,{id:"expandLevel4",defaultType:"check",actionId:"expandLevel4",text:"4"}
+          ,{type:"separator"}
+          ,{id:"expandLevelMore",defaultType:"check",actionId:"expandLevelMore",text:"More..."}          
+          ]}
+]}
+,{id:"drill", actionId:"drill", text:"Drill"}
+]
+webi.viewing.chartExpandCollapseMenu=
+[
+{id:"chartHierarchicalNavig", actionId:"chartHierarchicalNavig", text:"Hierarchical Navigation",children:[
+{id:"chart_expandChildren", actionId:"chart_chart_expandChildren", text:"Expand Children"},
+{id:"chart_expandDescendent", actionId:"chart_expandDescendent", text:"Expand Descendant"},
+{id:"chart_collapseChildren", actionId:"chart_collapseChildren", text:"Collapse Children"},
+{id:"chart_symetric", actionId:"chart_symetric", text:"Symmetric",children:[
+{id:"chart_symetricExpandChildren", actionId:"chart_symetricExpandChildren", text:"Expand Children" }
+,{id:"chart_symetricExpandDescendent",actionId:"chart_symetricExpandDescendent", text:"Expand Descendant"}
+,{id:"chart_symetricCollapseChildren",actionId:"chart_symetricCollapseChildren", text:"Collapse Children"}
+]}, 
+{id:"chart_expandCollapseAll", actionId:"chart_expandCollapseAll", text:"All",children:[
+{id:"chart_expandAllHierarchies",actionId:"chart_expandAllHierarchies", text:"Expand All Hierarchies" }
+,{id:"chart_collapseAllHierarchies",actionId:"chart_collapseAllHierarchies", text:"Collapse All Hierarchies"}
+]},
+{id:"chart_drillFocus", actionId:"chart_drillFocus", text:"Drill Focus",children:[
+{id:"chart_ecDrillDown",actionId:"chart_ecDrillDown", text:"Drill Down"}
+,{id:"chart_ecDrillUp", actionId:"chart_ecDrillUp", text:"Drill Up" }
+]},
+{id:"chart_expandLevel", actionId:"chart_expandLevel", text:"Default level expansion",
+children:[
+          {id:"chart_expandLevelNone",defaultType:"check",actionId:"chart_expandLevelNone",text:"None"}
+          ,{id:"chart_expandLevel1",defaultType:"check",actionId:"chart_expandLevel1",text:"1"}
+          ,{id:"chart_expandLevel2",defaultType:"check",actionId:"chart_expandLevel2",text:"2"}
+          ,{id:"chart_expandLevel3",defaultType:"check",actionId:"chart_expandLevel3",text:"3"}
+          ,{id:"chart_expandLevel4",defaultType:"check",actionId:"chart_expandLevel4",text:"4"}
+          ,{type:"separator"}
+          ,{id:"chart_expandLevelMore",defaultType:"check",actionId:"chart_expandLevelMore",text:"More..."}
+          ]}
+]}
+,{id:"drill", actionId:"drill", text:"Drill"}
+]
+apply_customization(webi, "viewingcontextualmenus");
+function viewFillStatusBar(statusBar)
+{
+webi.statusbar=
+[
+{type:"icon", actionId:"marketPlace", defaultType:"icon", icon:toolboxImg('marketplace.png'), text:"", customTooltip:{title:"SAP Marketplace",text:"Get partner extensions..."}},
+{type:"separator", isSpace:true},
+{type:"customCombo", actionId:"reportsCombo", iconType:_icon16NoRight, arrowType:_iconArrowNoLeft, elastic:true, tooltip:"Change Report"},
+{type:"rightZone"},
+{actionId:"trackStatus"},
+{type:"separator", isSpace:true},
+{actionId:"pageNavGroup", type:"lines", children: 
+[
+{icontype:_midGroupL16, actionId:"firstIcn"},
+{icontype:_midGroupM16, actionId:"previousIcn"}, 
+{icontype:_midGroupM16, actionId:"pageNumberStatus"},
+{icontype:_midGroupM16, actionId:"pageNumber", type:"intField", text:"", displayed:false},
+{icontype:_midGroupM16, actionId:"nextIcn"},
+{icontype:_midGroupR16, actionId:"lastIcn"}
+]
+},
+{type:"separator", isSpace:true},
+{actionId:"quickMode", icontype:_midGroupL16, text:""},
+{actionId:"pageMode", icontype:_midGroupR16, text:""},
+{type:"separator", isSpace:true},
+{actionId:"zoomCombo", type:"textCombo", tooltip:"Zoom", width:45, maxChar:4},
+{type:"separator", isSpace:true},
+{actionId:"refreshDateStatus", accelerator:{key:"r", modifier:_ctrl, macModifier:_meta}, type:"icon", text:" ", src:'images/main/galleries/icon16x16gallery1b.png', dx:16, disDy:208}
+]
+apply_customization(webi.statusbar, "statusbar");
+statusBar.fill(webi.statusbar);
+}
+function viewFillPalette(pal)
+{
+webi.viewing.toolbox=
+[
+ {type:"separator", isSpace:true}
+ ,{actionId:"viewBtn", text:"Web Intelligence"}
+ ,{type:"separator", isSpace:true}
+ ,{type:"group", size:"gtsmall", children:webi.viewing.FileToolboxContent}
+ ,{type:"separator", isSpace:true}
+ ,{type:"group", size:"gtsmall", children:webi.viewing.leftTransverseGroup}
+ ,{type:"separator", isSpace:true}
+ ,{type:"group", actionId:"viewToolboxZone", size:"gtsmall", children:webi.viewing.analysis}
+ ,{type:"rightZone"}
+ ,{type:"lines", rowHeight:20, children: webi.interactive.topRightZone }
+]
+apply_customization(webi.viewing.toolbox, "viewingtoolbox");
+pal.fill(webi.viewing.toolbox);
+}
+function welcomeFillPalette(pal)
+{
+webi.welcometoolbox=
+[
+ {type:"separator", isSpace:true}
+ ,{actionId:"viewBtn", text:"Web Intelligence"}
+ ,{type:"separator", isSpace:true} 
+ ,{type:"group", size:"gtsmall", children:webi.viewing.WelcomeToolboxContent}
+ ,{type:"separator", isSpace:true}
+ ,{type:"group", size:"gtsmall", children:webi.viewing.leftTransverseGroup}
+ ,{type:"separator", isSpace:true}
+ ,{type:"group", actionId:"viewToolboxZone", size:"gtsmall", children:webi.viewing.analysis}
+ ,{type:"rightZone"}
+,{actionId:"helpMenu", text:""}
+]
+apply_customization(webi.welcometoolbox, "welcometoolbox");
+pal.fill(webi.welcometoolbox);
+}
+function pdfFillPalette(pal)
+{
+webi.viewing.pdftoolbox=
+[
+ {type:"separator", isSpace:true}
+ ,{actionId:"pdfBtn", text:"Web Intelligence"}
+ ,{type:"separator", isSpace:true}
+ ,{type:"rightZone"}
+ ,{type:"lines", rowHeight:20, children: webi.interactive.topRightZone }
+]
+apply_customization(webi.viewing.pdftoolbox, "pdftoolbox");
+pal.fill(webi.viewing.pdftoolbox);
+}
+function viewPerspectivePaletteMenu(menu)
+{
+webi.viewing.applicationMenu=
+[
+{actionId:"switchAppliMode1", text:"Application mode", children:[
+{actionId:"switchToView"}
+,{actionId:"switchToInteractive"}
+,{actionId:"structureView"}
+,{actionId:"pdfView"}
+]}
+,{type:"separator"}
+,{actionId:"drillLite"}
+,{actionId:"foldUnfold", type:"check", icon:null}
+,{type:"separator"}
+,{actionId:"showToolbar"}
+,{actionId:"leftPaneSubMenu"}
+,{actionId:"showReportTabs", text:"Report Tabs", type:"check"}
+,{actionId:"showStatusBar", text:"Status Bar", type:"check"}
+]
+apply_customization(webi.viewing.applicationMenu, "applicationmenu");
+menu.fill(webi.viewing.applicationMenu);
+}
+function interactivePerspectivePaletteMenu(menu)
+{
+webi.interactive.applicationMenu=
+[
+{actionId:"switchAppliMode2", text:"Application mode", children:[
+{actionId:"switchToView"}
+,{actionId:"switchToInteractive"}
+,{actionId:"structureView"}
+,{actionId:"pdfView"}
+]}
+,{type:"separator"}
+,{actionId:"drillLite"}
+,{actionId:"foldUnfold", type:"check", icon:null}
+,{actionId:"showFormulaBar", type:"check"}
+,{type:"separator"}
+,{actionId:"leftPaneSubMenu"}
+,{actionId:"showReportTabs", text:"Report Tabs", type:"check"}
+,{actionId:"showStatusBar", text:"Status Bar", type:"check"}
+]
+apply_customization(webi.interactive.applicationMenu, "applicationmenu");
+menu.fill(webi.interactive.applicationMenu);
+}
+function viewPDFPaletteMenu(menu)
+{
+webi.viewing.pdfApplicationMenu=
+[
+{actionId:"switchAppliMode3", text:"Application mode", children:[
+{actionId:"switchToView"}
+,{actionId:"switchToInteractive"}
+,{actionId:"structureView"}
+,{actionId:"pdfView"}
+]}
+,{type:"separator"},
+{actionId:"leftPaneSubMenu"},
+{actionId:"showReportTabs", text:"Report Tabs", type:"check"},
+{actionId:"showStatusBar", text:"Status Bar", type:"check"}
+]
+apply_customization(webi.viewing.pdfApplicationMenu, "applicationmenu");
+menu.fill(webi.viewing.pdfApplicationMenu);
+}
+function interactiveCreateSortMenu(pers)
+{
+var menu = pers.addMenu({value:"chartVarsMenu", beforeShowCB:initChartVarsMenu})
+}
+function createFilterMenu(m)
+{
+m.fill(
+[ 
+ {id:"filterMenuItem", actionId:"filter", text:"Add Filter", src:"images/main/report.gif"},
+ {id:"removeFilterMenuItem", actionId:"removeFilter", text:"Remove Filter", src:"images/main/report.gif", dx:12*16}
+ ]
+ );
+ filterMenuItem = m.getItemByID("filterMenuItem");
+ removeFilterMenuItem = m.getItemByID("removeFilterMenuItem");
+}
+mainDevelopmentShortcuts = [
+,webi.interactive.midToolbox
+]
+webi.interactive.reportTabMenu=
+[
+{actionId:"addReport"}
+,{actionId:"duplicateReport"}
+,{actionId:"deleteReport"}
+,{type:"separator"}
+,{actionId:"renameReport"}
+,{actionId:"moveReport", text:"Move Report" ,children:[
+         {actionId:"moveReportFirst"}
+,{actionId:"moveReportLeft", text:"Previous", icon:{}}
+,{actionId:"moveReportRight", text:"Next", icon:{}}
+,{actionId:"moveReportLast"}
+]}
+,{type:"separator"}
+,{actionId:"formatReport"}
+]
+apply_customization(webi, "uidefinition");
+function apply_customization(webi, uiElement)
+{
+if (typeof(apply_customization_uielement) != "undefined")
+{
+apply_customization_uielement(webi, uiElement);
+}
+if (typeof(apply_extension_uielement) != "undefined")
+{
+apply_extension_uielement(webi, uiElement);
+}
+}
+function apply_extension(webi, uiElement, extraParams)
+{
+if (typeof(apply_extension_uielement) != "undefined")
+{
+apply_extension_uielement(webi, uiElement, extraParams);
+}
+}

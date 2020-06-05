@@ -1,0 +1,51 @@
+/*
+©2010 - 2013 SAP AG or an SAP affiliate company.  All rights reserved.
+ 
+SAP and other SAP products and services mentioned herein as well as their respective logos are trademarks or registered trademarks of SAP AG in Germany and other countries.  Please see http://www.sap.com/corporate-en/legal/copyright/index.epx#trademark for additional trademark information and notices.
+*/
+
+/* Right unit header */
+.yui-skin-sam .yui-layout div.yui-layout-unit-right div.yui-layout-hd {
+    background:         url(sprite.png) repeat-x 0 0px;
+    height:             25px;
+}
+
+/* Right unit Close Button */
+.yui-skin-sam .yui-layout div.yui-layout-unit-right div.yui-layout-hd .close {
+    /*@noflip*/ background:         transparent url(sprite.png) no-repeat 0 -25px;
+    border:             none;
+    width:              12px;
+    top:                5px;
+}
+
+/* The handle to open the right unit */
+.yui-layout-unit .openRightPanel {
+    cursor: pointer;
+    background-color: #C4D2E3;
+    /* @rtl_translation background-image: url(right_handle_in_RTL.png)*/
+    background-image: url(right_handle_in.png);
+    background-repeat: no-repeat;
+    background-position: 0px 0px;
+    display: block;
+    position: absolute;
+    right: 1px;
+    top: 45%;
+    width: 12px;
+    height: 27px;
+}
+
+/* The handle to close the right unit */
+.yui-layout-unit .closeRightPanel{
+    cursor: pointer;
+    background-color: #C4D2E3;
+    /* @rtl_translation background-image: url(right_handle_out_RTL.png)*/
+    background-image: url(right_handle_out.png);
+    background-repeat: no-repeat;
+    background-position: 0px 0px;
+    display: block;
+    position: absolute;
+    left: 5px;
+    top: 45%;
+    width: 12px;
+    height: 27px;
+}

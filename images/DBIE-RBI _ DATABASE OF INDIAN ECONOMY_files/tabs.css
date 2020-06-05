@@ -1,0 +1,113 @@
+
+/* root element for tabs  */
+ul.tabs { 
+	list-style:none; 
+	margin:0 !important; 
+	padding:0;	
+	border-bot tom:1px solid #666;	
+	/*height:30px;*/
+}
+
+/* single tab */
+ul.tabs li { 
+	float:left;	 
+	text-indent:0;
+	padding:0;
+	margin:0 !important;
+	list-style-image:none !important;
+	list-style-type:none;
+}
+
+/* link inside the tab. uses a background image */
+ul.tabs a { 
+	/*background:#b6b6b6;*/
+	background:url(../images/blue_01.gif) no-repeat -420px -62px;
+	/*background-color:#cccccc;
+	border:solid 1px #333333;*/
+	border-bottom:none;
+	font-size:12px;
+	font-weight:bold;
+	display:block;
+	height: 30px;  
+	line-height:30px;
+	width: 134px;
+	text-align:center;	
+	text-decoration:none;
+	color:#40431d;
+	padding:0px;
+	margin:0px;	
+	position:relative;
+	top:1px;
+}
+
+ul.tabs a:active {
+	outline:none;		
+}
+
+/* when mouse enters the tab move the background image */
+ul.tabs a:hover {
+    margin:0px;
+	padding:0px;
+	background-position: -420px -0px;
+	/*background-color:#333333;*/
+	font-size:12px;
+	font-weight:bold;
+	display:block;
+	height: 30px;  
+	line-height:30px;
+	width: 134px;
+	text-align:center;	
+	text-decoration:none;	
+	color:#000000;	
+}
+
+/* active tab uses a class name "selected". its highlight is also done by moving the background image. */
+ul.tabs a.selected, ul.tabs a.selected:hover, ul.tabs li.selected a {
+	background-position: -420px -31px;
+	/*background-color:#7e7678;*/
+	cursor:default !important; 
+	color:#fff !important;
+}
+
+/* Different widths for tabs: use a class name: w1, w2, w3 or w2 */
+
+
+/* width 1 */
+
+
+/*ul.tabs a.s 			{ background-position: -553px 0; width:81px; }
+ul.tabs a.s:hover 	{ background-position: -553px -31px; }
+ul.tabs a.s.selected  { background-position: -553px -62px; }*/
+
+/* width 2 */
+/*ul.tabs a.l 			{ background-position: -248px -0px; width:174px; }
+ul.tabs a.l:hover 	{ background-position: -248px -31px; }
+ul.tabs a.l.selected  { background-position: -248px -62px; }*/
+
+
+/* width 3 */
+/*ul.tabs a.xl 			{ background-position: 0 -0px; width:248px; }
+ul.tabs a.xl:hover 	{ background-position: 0 -31px; }
+ul.tabs a.xl.selected { background-position: 0 -62px; }*/
+
+
+ul.tabs a.s 			{ background-position: -553px -62px; width:81px; }
+ul.tabs a.s:hover 	{ background-position: -553px -0px; }
+ul.tabs a.s.selected  { background-position: -553px -31px; }
+
+/* width 2 */
+ul.tabs a.l 			{ background-position: -248px -62px; width:174px; }
+ul.tabs a.l:hover 	{ background-position: -248px -0px; }
+ul.tabs a.l.selected  { background-position: -248px -31px; }
+
+
+/* width 3 */
+ul.tabs a.xl 			{ background-position: 0 -62px; width:248px; }
+ul.tabs a.xl:hover 	{ background-position: 0 -0px; }
+ul.tabs a.xl.selected { background-position: 0 -31px; }
+
+/* initially all panes are hidden */ 
+.panes .pane {
+	display:none;		
+}
+

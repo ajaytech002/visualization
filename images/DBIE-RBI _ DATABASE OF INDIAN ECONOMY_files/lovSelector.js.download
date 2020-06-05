@@ -1,0 +1,3496 @@
+/*
+=============================================================
+WebIntelligence(r) Report Panel
+Copyright(c) 2001-2005 Business Objects S.A.
+All rights reserved
+
+Use and support of this software is governed by the terms
+and conditions of the software license agreement and support
+policy of Business Objects S.A. and/or its subsidiaries. 
+The Business Objects products and technology are protected
+by the US patent number 5,555,403 and 6,247,008
+
+=============================================================
+*/var _lovZone_listWidth=250;
+var _lovZone_LlistNbLine=10;
+var _lovZone_LlistMinNbLine=3;
+var _lovZone_RlistNbLine=15;
+var _lovZone_treeHeight=100;
+var _lovZoneHeight=200;
+var _chunkSize = 1000;
+var filterConstantSep=";";
+var _OperandInputLen=150;
+var _OperandCalendarTxtLen=150;
+var ASPXExt=".aspx";
+var PromptType={
+    common:0,
+    free:1,
+    constrained:2
+}  
+var PromptSelectionType=
+{
+    Mono:0,
+    Multi:1
+}
+var SelectionType=
+{
+    SINGLE_VALUE:0,
+    MULTI_VALUE:1,
+    INTERVAL:2,       
+    COMPLEX:3,
+    SKIPPED:4 
+}
+var _lovRightZoneType={
+    basic:0,
+    twoTextFields:1,
+    oneTextField:2,
+    none:3,
+    customized:4
+};
+var _NbOfPromptSelType=2;
+var _filterConstantSep=";";
+var ComparisonOperator =
+{
+    EQUAL:0,
+    NOT_EQUAL:1,
+    GREATER:2,  
+    GREATER_OR_EQUAL:3,
+    LESS:4,
+    LESS_OR_EQUAL:5,
+    BETWEEN: 6,
+    NOT_BETWEEN:7,
+    IN_LIST:8,
+    NOT_IN_LIST:9,
+    IS_NULL:10,
+    NOT_IS_NULL:11,
+IS_ANY:12  
+}
+var ComparisonOperatorArr =
+[
+    ComparisonOperator.EQUAL,
+    ComparisonOperator.NOT_EQUAL,
+    ComparisonOperator.GREATER,  
+    ComparisonOperator.GREATER_OR_EQUAL,
+    ComparisonOperator.LESS,
+    ComparisonOperator.LESS_OR_EQUAL,
+    ComparisonOperator.BETWEEN,
+    ComparisonOperator.NOT_BETWEEN,
+    ComparisonOperator.IN_LIST,
+    ComparisonOperator.NOT_IN_LIST,
+    ComparisonOperator.IS_NULL,
+    ComparisonOperator.NOT_IS_NULL
+]
+var ComparisonOperatorLabel =
+[
+    "Equal to",
+    "Not Equal to",
+    "Greater than",  
+    "Greater than or Equal to",
+    "Less than",
+    "Less than or Equal to",
+    "Between",
+    "Not Between",
+    "In List",
+    "Not In List",
+    "Is Null",
+    "Is not Null"
+];
+var DisplayComparisonOperands =
+[
+    [true, false, 1],
+    [true, false, 1],
+    [true, false, 1],  
+    [true, false, 1],
+    [true, false, 1],
+    [true, false, 1],
+    [true, true, 2],
+    [true, true, 2],
+    [true, false, 1],
+    [true, false, 1],
+    [false, false, 0],
+    [false, false, 0],
+[false, false, 0]
+];
+var qryComparisonOperator =
+{
+    EQUAL:0,
+    NOT_EQUAL:1,
+    GREATER:2,  
+    GREATER_OR_EQUAL:3,
+    LESS:4,
+    LESS_OR_EQUAL:5,
+    BETWEEN: 6,
+    NOT_BETWEEN:7,
+    IN_LIST:8,
+    NOT_IN_LIST:9,
+    IS_NULL:10,
+    NOT_IS_NULL:11,   
+    LIKE:12,
+    NOT_LIKE:13,
+    BOTH:14,
+    EXCEPT:15,    
+    EXISTS:16,
+    NULL:17
+}
+var qryComparisonOperatorArr =
+[
+    qryComparisonOperator.EQUAL,
+    qryComparisonOperator.NOT_EQUAL,
+    qryComparisonOperator.GREATER,  
+    qryComparisonOperator.GREATER_OR_EQUAL,
+    qryComparisonOperator.LESS,
+    qryComparisonOperator.LESS_OR_EQUAL,
+    qryComparisonOperator.BETWEEN,
+    qryComparisonOperator.NOT_BETWEEN,
+    qryComparisonOperator.IN_LIST,
+    qryComparisonOperator.NOT_IN_LIST,
+    qryComparisonOperator.IS_NULL,
+    qryComparisonOperator.NOT_IS_NULL,      
+    qryComparisonOperator.LIKE,
+    qryComparisonOperator.NOT_LIKE,
+    qryComparisonOperator.BOTH,
+    qryComparisonOperator.EXCEPT,    
+    qryComparisonOperator.EXISTS,
+    qryComparisonOperator.NULL
+];
+var qryComparisonOperatorLabel =
+[
+    "Equal to",
+    "Not Equal to",
+    "Greater than",  
+    "Greater than or Equal to",
+    "Less than",
+    "Less than or Equal to",
+    "Between",
+    "Not Between",
+    "In List",
+    "Not In List",
+    "Is Null",
+    "Is not Null",
+    "Matches pattern",
+    "Different from pattern",
+    "Both",
+    "Except",
+    "EXISTS",
+    "NULL"
+];
+var qryDisplayComparisonOperands =
+[
+    [true, false, 1],
+    [true, false, 1],
+    [true, false, 1],  
+    [true, false, 1],
+    [true, false, 1],
+    [true, false, 1],
+    [true, true, 2],
+    [true, true, 2],
+    [true, false, 1],
+    [true, false, 1],
+    [false, false, 0],
+    [false, false, 0],
+    [true, false, 1],
+    [true, false, 1],
+    [true, true, 2],
+    [true, false, 1],
+    [true, false, 1],
+    [true, false, 1]
+];
+var DataSourceMemberSelectionMode=
+{
+drill:0,
+complex:1
+}
+var _pathNameSep="\\";
+function duplicateLov(srcLovValue)
+{
+    var lovValue={};
+    if (srcLovValue)
+    {           
+        Object.extend(lovValue, srcLovValue);                       
+        var srcPath=srcLovValue.path;
+        if (srcPath && srcPath.length)
+        {
+            lovValue.path=arrayObjectClone(srcPath);                         
+        }
+    } 
+    return lovValue;           
+}
+function duplicateLovArr(srcLovArr)
+{
+    var destLovArr=[];
+    for (var i=0; i<srcLovArr.length; i++)
+    {
+        destLovArr[i]= duplicateLov(srcLovArr[i]);
+    }
+    return destLovArr;
+}
+function removeLov(lovList)
+{ 
+    var selArr=lovList.getMultiSelection();            
+    if (!selArr.length) return;
+    var found;
+    for (var i=0; i<selArr.length; i++)
+    {          
+        if (selArr[i].value.isBexUIExtraValue) continue;
+        found=lovList.findByValueAndKey(selArr[i].value);
+        if (found)
+        {
+            lovList.del(found.index);
+        }                
+    } 
+}
+function buildLovArr(lovArr)
+{
+    var arr=[];
+    for (var i=0; i<lovArr.length; i++)
+    {
+        arr[arr.length]={value:lovArr[i], row:[lovArr[i].caption]};
+    }
+    return arr;
+}
+function  buildStringFromLov(arr) 
+{            
+    var str = "";
+    for (var i = 0;i < arr.length;i++) 
+    {     
+        var caption=arr[i].caption;
+        if (caption==null) continue;
+        if (caption=="")
+        {
+            caption=_emptyValueLab;
+        }
+        if (i == 0)
+        str = caption;
+        else
+        { 
+        str=str+_filterConstantSep+caption;
+        }
+    }
+    return str;
+}
+function getTextSegmentHTMLCB(treeitem, segmentIndex, displayOption)
+{             
+    if (segmentIndex>1) return null;
+    var i=0;
+    var a=[];
+    if (segmentIndex==0)
+    {
+        var cls, str=(treeitem.isHTML?treeitem.name:convStr(treeitem.name));  
+        if (treeitem.userData && treeitem.userData.overfetch)
+        {
+            cls="lovKey"
+        }
+        else
+        {
+            if (displayOption==LovDisplayOption.caption)
+            {
+            }
+            else
+            if (displayOption==LovDisplayOption.key)
+            {
+                str=(treeitem.userData && treeitem.userData.key)?treeitem.userData.key:treeitem.name;    
+            }
+            cls="wsNoWrap";
+        }
+        a[i++]='<span class='+(cls)+'>';                
+        a[i++]=str;                
+        a[i++]='</span>';                            
+    }
+    else
+    if (segmentIndex==1)
+    {            
+        a[i++]='<span class="lovKey">';                                        
+        if (displayOption==LovDisplayOption.caption_key)
+        {
+            if (treeitem.userData && treeitem.userData.key)
+            {
+                a[i++]=getDisplayedKeyHtmlStr(treeitem.userData.key);  
+            }                    
+        }
+        else
+        if (displayOption==LovDisplayOption.caption)
+        {
+            a[i++]="";
+        }
+        a[i++]='</span>';                           
+    }
+    return a.join("");     
+}
+function updateDisplayOptionInTree(treeitem, displayOption)
+{       
+    if (!treeitem.domElem || !treeitem.userData) return;             
+    var lyrTd=treeitem.domElem;        
+    if (!lyrTd || lyrTd.childNodes.length<1) return;
+    var str="";
+    switch (displayOption)
+    {
+        case LovDisplayOption.caption:  
+        case LovDisplayOption.key:  
+        { 
+            if (lyrTd.childNodes[0])
+            {   
+                if (typeof(lyrTd.childNodes[0].innerHTML)!="undefined")     
+                {
+                    if (displayOption==LovDisplayOption.caption)
+                    {
+                    if(treeitem.userData && treeitem.userData.fullName)
+                    str=treeitem.userData.fullName;   
+                    else
+                    str=(treeitem.userData && treeitem.userData.caption)?treeitem.userData.caption:treeitem.name;                      
+                    }     
+                    else
+                    {
+                        str=(treeitem.userData && treeitem.userData.key)?treeitem.userData.key:treeitem.name;  
+                    }
+                    lyrTd.childNodes[0].innerHTML=convStr(str);
+                }                    
+            }
+            if (lyrTd.childNodes[1])
+            {                    
+                lyrTd.childNodes[1].innerHTML="";                              
+            }                    
+            break;
+        }
+        case LovDisplayOption.caption_key:   
+        {
+            if (lyrTd.childNodes[0])
+            {        
+                if (typeof(lyrTd.childNodes[0].innerHTML)!="undefined")
+                {
+                if(treeitem.userData && treeitem.userData.fullName)
+                str=treeitem.userData.fullName;   
+                else
+                str=(treeitem.userData && treeitem.userData.caption)?treeitem.userData.caption:treeitem.name;                      
+                    lyrTd.childNodes[0].innerHTML=convStr(str);
+                }
+            }
+            if (lyrTd.childNodes[1])
+            {          
+                if (treeitem.userData && treeitem.userData.key)
+                {
+                    str=getDisplayedKeyHtmlStr(treeitem.userData.key);
+                }
+                else
+                {
+                    str="";
+                }          
+                lyrTd.childNodes[1].innerHTML=str;                                              
+            }                    
+            break;                                                        
+        }            
+    }       
+} 
+function updateUnxDisplayOptionInTree(treeitem, displayOption)
+{       
+    if (!treeitem.domElem || !treeitem.userData) return;
+    var lyrTd=treeitem.domElem;        
+    if (!lyrTd || lyrTd.childNodes.length<1) return;
+    var str="";
+    switch (displayOption)
+    {
+        case LovDisplayOption.caption: 
+        {
+        str=(treeitem.userData && treeitem.userData.caption)?treeitem.userData.caption:(treeitem.userData.fullName?treeitem.userData.fullName:treeitem.name);  
+        lyrTd.innerHTML=convStr(str);
+            break;
+        } 
+        case LovDisplayOption.key:  
+        { 
+            str=(treeitem.userData && treeitem.userData.key)?treeitem.userData.key:(treeitem.userData.fullName?treeitem.userData.fullName:treeitem.name); 
+            lyrTd.innerHTML=convStr(str);
+            break;
+         }
+        case LovDisplayOption.caption_key:   
+        {
+        str=(treeitem.userData && treeitem.userData.caption)?treeitem.userData.caption:(treeitem.userData.fullName?treeitem.userData.fullName:treeitem.name);
+        str+=treeitem.userData.key?" "+treeitem.userData.key :"";                      
+        lyrTd.innerHTML=convStr(str);
+            break;                                                        
+        }            
+    }  
+} 
+function prepareExpandUntilObj()
+{
+    var o=this;
+    o.expandAsynUnderway=false;
+    o.expandObj=new Object;
+    o.expandObj.selMemArr=new Array;
+    o.expandObj.selMemArrIndex=0;
+    o.expandObj.memPathArr=null;
+    o.expandObj.memPathArrIndex=0; 
+    o.expandObj.currentTreeItem=null;
+    o.expandObj.select=false;  
+}
+function initExpandAction(select)
+{   
+    var o=this;
+    o.expandAsynUnderway=false;                     
+    o.expandObj.selMemArr.clear();               
+    o.expandObj.selMemArrIndex=0;
+    o.expandObj.memPathArr=null;
+    o.expandObj.memPathArrIndex=0; 
+    o.expandObj.currentTreeItem=null;    
+    o.expandObj.select=select;       
+}         
+function expandUntil()
+{ 
+    var o=this;
+    initExpandAction.call(o, false);    
+    if (!o.getExpandSelMembersArray()) return;  
+    var  expandObj= o.expandObj                                                  
+    while ( expandObj.selMemArrIndex < expandObj.selMemArr.length)
+    {                                                                                                     
+        o.expandOneSelectedMember(expandObj.selMemArr[expandObj.selMemArrIndex]); 
+        if (o.expandAsynUnderway) return;   
+        expandObj.selMemArrIndex++;                               
+    } 
+    o.expandAsynUnderway=false;    
+}
+function expandOneSelectedMember(item, treeWidget, pathArr)
+{
+    var o=this;
+    o.expandAsynUnderway=false;                                  
+    var treeitem=item;
+    if (!treeitem)       
+    {
+        treeitem=treeWidget;
+        for (var i=0; i<pathArr.length; i++)
+        {                 
+            treeitem=openOneSegment.call(o, treeitem, pathArr, i);
+            if (o.expandAsynUnderway) return; 
+            if (!treeitem) break;                                                                                                     
+        }           
+    }  
+    if (treeitem)
+        treeitem.expandParent();                         
+    return treeitem;            
+}
+function initAsynExpandAction(treeitem, pathArr, index)
+{ 
+    var o=this;
+    o.expandAsynUnderway=true;
+    o.expandObj.memPathArr=pathArr;
+    o.expandObj.memPathArrIndex=index; 
+    o.expandObj.currentTreeItem=treeitem;    
+}
+function openOneSegment(treeitem, pathArr, i)
+{     
+    var o=this;
+    o.expandAsynUnderway=false;  
+    if (!treeitem) return null;
+    var treeView= treeitem.treeView?treeitem.treeView:treeitem;
+    treeView.setIsEqualCB(o.searchBranchCB);   
+    treeitem=treeitem.findByData(pathArr[i]);
+    if (treeitem && treeitem.sub.length==0 && treeitem.isIncomplete)            
+    {                   
+        initAsynExpandAction.call(o, treeitem, pathArr, i);
+        treeitem.init();
+        if (treeitem.querycompleteCB)
+            treeitem.querycompleteCB();                                                                                                           
+    } 
+    return treeitem;
+}
+function asynExpandUntilCB()
+{     
+    var o=this;
+    var expandObj=o.expandObj;
+    var selMemArr=expandObj.selMemArr;       
+    var pathArr=expandObj.memPathArr;    
+    if (!pathArr) return;
+    var pathArrIndex=++expandObj.memPathArrIndex;        
+    var currentTreeItem=expandObj.currentTreeItem;    
+    if ((pathArrIndex+1)>=pathArr.length) 
+    {
+        if (currentTreeItem)
+            currentTreeItem.expandParent();    
+        if ((expandObj.selMemArrIndex+1) >=selMemArr.length) 
+        {
+            o.expandAsynUnderway=false;
+            if (expandObj.select && currentTreeItem)
+                currentTreeItem.select(false,null,true);    
+            return;
+        }
+        o.expandAsynUnderway=false;     
+        while (!o.expandAsynUnderway && (++expandObj.selMemArrIndex) <selMemArr.length)     
+        {                                                
+            o.expandOneSelectedMember(selMemArr[expandObj.selMemArrIndex]);       
+        }       
+        return;                            
+    }     
+    expandObj.currentTreeItem=openOneSegment.call(o, currentTreeItem, pathArr, pathArrIndex);
+}
+function isBexQuery()
+{
+var o=this;
+return (typeof(o.lovZoneInfo.dsMemberSelectionMode)!="undefined" &&
+o.lovZoneInfo.dsMemberSelectionMode!=null && 
+o.lovZoneInfo.dsMemberSelectionMode==DataSourceMemberSelectionMode.drill)?true:false;
+}
+LovLeftZone=function(lovZoneInfo)
+{
+    this.lovZoneInfo=lovZoneInfo;
+    var id=lovZoneInfo.id?lovZoneInfo.id:'_LovLeftZone_';    
+    this.isPartialResult=false;
+    this.lastRefreshDate="";
+    this.isWithKey=false;
+    this.getLovWidgetInfo();
+    this.lovTreeCBInfo={    getMembersUrl:p._root + "ajaxIncGetLov"+ p._appExt, 
+                            ajaxParamsFn: this.ajaxParamsFn, 
+                            xtraNodeInfoCB:this.xtraNodeInfoCB,
+                            userUpdateTreeNodeCB:this.userUpdateTreeNodeCB,
+                            postCB:this.membersPostCB,
+                            getSelTreeItemCB:this.getSelTreeItemCB,
+                            showKeyCB:this.showKeyInTreeCB,
+                            getTextSegmentHTMLCB:this.getTreeItemTextSegmentHTMLCB,
+                            showTooltip:(typeof(lovZoneInfo.showTooltip)!="undefined")?lovZoneInfo.showTooltip:true,
+                            getTooltipCB:this.getTreeTooltipCB};
+    this.lovWidget= new_ExtendedLovWidget({ id:"lovWidget"+id,                                           
+                                            label:"",                                         
+                                            w:lovZoneInfo.lovContentWidth?lovZoneInfo.lovContentWidth:_lovZone_listWidth,
+                                            lines:lovZoneInfo.lovContent_nbLine?lovZoneInfo.lovContent_nbLine:_lovZone_LlistNbLine,
+                                            showText:this.showText, 
+                                            showRefresh:this.showRefresh,
+                                            moveCB:this.moveChunkCB, 
+                                            refreshCB:this.refreshLovCB, 
+                                            searchCB:this.searchLovCB, 
+                                            dblClickCB:this.dblClickLovContentCB,                                 
+                                            multi:this.multi,
+                                            enterCB:this.enterLovCB,
+                                            showDate:this.showDate,
+                                            showTextOnly:this.showTextOnly,
+                                            sortCB: this.sortCB,                                           
+                                            viewMode:this.viewMode,                                           
+                                            clickTreeCB:this.clickLovTreeCB,
+                                            doubleClickTreeCB:this.dblClickLovContentCB,
+                                            showKeyInListCB:this.showKeyInListCB,
+noTreeHeader:((typeof(lovZoneInfo.noTreeHeader)!="undefined")?lovZoneInfo.noTreeHeader:false),
+                                            lovTreeCBInfo:this.lovTreeCBInfo,
+                                            keyUpCB: this.calendarKeyUpCB,
+                                            sortLovTreeCB:this.sortCB});                                     
+    this.lovWidget.userData=this;
+    this.disabled=false;
+    this.divId="lovDiv"+id;
+    this.divLyr=null;          
+    this.expandAllUnderway=false;
+    this.isLovDelegatedSearch=false;
+    prepareExpandUntilObj.call(this);     
+    this.invokeLoadAndExpandUntil=false;  
+    this.param = null; 
+    this.arrEvts=new Array();
+    if (p._appExt != ASPXExt)
+{
+if (p.newObserverOneEvent)
+{
+this.arrEvts[this.arrEvts.length]= p.newObserverOneEvent(p._EVT_PROCESS_LOV_CONTEXTS,this.refreshLovCB);
+}
+}
+    this.NullValue= typeof(this.lovZoneInfo.NullValue)!="undefined"?this.lovZoneInfo.NullValue:false;
+}
+LovLeftZone.prototype = {
+    init:function()
+    {
+        var o=this;
+        o.lovWidget.init();                 
+        o.divLyr=getLayer(o.divId);
+        o.updateUI(o.lovZoneInfo);               
+    },
+    getHTML:function()
+    {
+        var o=this;                                
+        var i=0;
+        var arr=[];  
+        var padding = (_ie9R?';padding-'+(_rtl ? 'left' : 'right')+':9px"':'');
+        arr[i++]=   '<table cellpadding="0" border="0" cellspacing="0"><tbody>';                                                            
+        arr[i++]=   '<tr><td><div id="'+o.divId+'" style="overflow:hidden' + padding +'">';                   
+        arr[i++]=        o.lovWidget.getHTML();            
+        arr[i++]=   '</div></td></tr>';                                       
+        arr[i++]=   '</tbody></table>';
+        return arr.join('');                
+    },
+    cleanUp:function()
+    {
+        var o=this;
+        o.lovWidget.cleanUp();
+    },            
+    //for input form in the left pane of the viewer
+    loadAndExpandUntil:function(lovZoneInfo, pathNameArr, keyArr)
+    {
+        var o=this;
+        o.setExpandUntilInfo(pathNameArr, keyArr);
+        o.invokeLoadAndExpandUntil=true;
+        o.updateUI(lovZoneInfo);        
+    },
+    //when the operator changes, dont update list of values
+    change:function(lovZoneInfo)
+    {         
+        var o=this;                                               
+        if (lovZoneInfo)
+        {
+            o.lovZoneInfo=lovZoneInfo;
+            o.getLovWidgetInfo();                  
+        var showSearch= true;        
+        if (typeof(o.lovZoneInfo.customLovContent)!="undefined")
+        {
+            showSearch=false;
+        }
+        else
+        if (typeof(o.lovZoneInfo.showSearch)!="undefined")
+        {
+            //in query panel, for hierarchy it's hidden by default
+            showSearch=o.lovZoneInfo.showSearch;
+        }
+        /*change(label,w,lines,         
+         showText,showRefresh,moveCB,
+         refreshCB,searchCB,
+dblClickCB,multi,enterCB,
+showDate,showTextOnly, viewMode, 
+showSearch, 
+isWithKey, 
+lovDisplayOption)*/
+        o.lovWidget.change( /*label*/null,/*w*/null,/*lines*/null,
+                            /*showText*/o.showText, /*showRefresh*/o.showRefresh,/*moveCB*/null,
+                            /*refreshCB*/null, /*searchCB*/null,
+                            /*dblClickCB*/null, /*multi*/o.multi,/*enterCB*/null, 
+                            /*showDate*/o.showDate, /*showTextOnly*/o.showTextOnly, /*viewMode*/o.viewMode, 
+/*showSearch*/showSearch, 
+                            /*isWithKey*/o.isWithKey,
+                            /*lovDisplayOption*/o.lovZoneInfo.lovDisplayOption);                                                     
+        }
+    },
+    DisplayFilterLOVBeforeUseMsg:function()
+    {
+        var o=this;  
+        o.lovWidget.showDelegateSearch(true);
+        o.setLovMessage("Use search criteria to retrieve values.\n\nThe search is case sensitive. Here are examples of search criteria:\nSearch = a* -> retrieves all values starting by \"a\".\nSearch = *a -> retrieves all values finishing by \"a\".\nSearch = a*a -> retrieves all values starting and finishing by \"a\".\nSearch = a*a* -> retrieves all values starting by \"a\" and containing one more \"a\"."); 
+        o.lovWidget.setDisplayShowKeyIcn(false); // BOEWEBI-8753  Do not show KEY button when displaying message
+    },
+    isParentNotFilled:function()
+    {
+        var o=this;  
+        return (typeof(o.lovZoneInfo.parentNotFilled)!="undefined" && (o.lovZoneInfo.parentNotFilled==true));    
+    },
+    //when the filter/prompt changes, reload the list of values
+    updateUI:function(lovZoneInfo)
+    {
+        var o=this;                                
+        o.lovWidget.cleanUp();                
+        o.change(lovZoneInfo);
+        var parentNotFilled= o.isParentNotFilled();                            
+        //parentNotFilled
+        if (parentNotFilled)
+        {
+            var lovMsg="List of Values for current prompt requires values for following prompts:";
+            if (typeof(o.lovZoneInfo.lovMsg)!="undefined")
+            {
+                lovMsg= o.lovZoneInfo.lovMsg;   
+            }                     
+            o.setLovMessage(lovMsg);                               
+        }
+        else
+        //filterLOVBeforeUse
+        if (typeof(o.lovZoneInfo.filterLOVBeforeUse)!="undefined" && o.lovZoneInfo.filterLOVBeforeUse==true)
+        {              
+            o.DisplayFilterLOVBeforeUseMsg();                 
+        }
+        else               
+        if (!o.showTextOnly)       
+        {        
+            //refreshLOVFirst: true/false. omitted: false  
+            if (typeof(o.lovZoneInfo.refreshLOVFirst)=="undefined" || o.lovZoneInfo.refreshLOVFirst==false)
+            {
+                o.setLovMessage("To see the content of the list, click the Refresh values button.");                       
+            }            
+            else
+            {
+                //load lov
+                o.loadLov();
+                o.setDisabled(o.lovZoneInfo.disabled);
+            }
+        }
+        if ((lovZoneInfo.dataType==_dataType.date || lovZoneInfo.dataType==_dataType.dateTime) && lovZoneInfo.dateFormat)
+        {
+            o.lovWidget.setFormatDate(lovZoneInfo.dateFormat);
+            o.lovWidget.dateField.setHelpTxt(lovZoneInfo.dateFormat);
+            o.lovWidget.setDateTooltip(lovZoneInfo.dateFormat);
+        }
+        // ADAPT01632331 : Wrong list of default values in prompt panel window for bex query
+        if (typeof(lovZoneInfo.lovInfo) !=  "undefined" && lovZoneInfo.lovInfo && typeof(lovZoneInfo.lovInfo.isWithKey) != 'undefined')
+        {
+            o.isWithKey=lovZoneInfo.lovInfo.isWithKey;
+        }
+        //search field   
+        var searchWidget=o.getLovSearchWidget();        
+        searchWidget.setDisabled(false/*parentNotFilled*/); //ADAPT01653226: always enable search
+        o.eraseSearchTxt();                                      
+        o.updateSearchWidget(lovZoneInfo.lovInfo);          
+    },
+    eraseSearchTxt:function()
+    {
+        var o=this;
+        var searchWidget=o.getLovSearchWidget();        
+        if (searchWidget)
+        {
+            searchWidget.setSearchValue("");
+        }
+    },
+    displayChunk:function(b)
+    {
+        var o=this;
+        o.lovWidget.chunkCombo.setDisplay(b);  
+        o.lovWidget.chunkLabel.setDisplay(b);
+        o.lovWidget.prevChunkIcn.setDisplay(b);
+        o.lovWidget.chunkCombo.setDisplay(b);
+        o.lovWidget.nextChunkIcn.setDisplay(b);
+        if (!b){
+        o.lovWidget.chunkCombo.del();
+        }
+        o.lovWidget.updateWidget();
+    },
+    loadLov:function()
+    {
+        var o=this;
+        if (typeof(o.lovZoneInfo.customLovContent)!="undefined")
+        {            
+            o.setLovContent(o.lovZoneInfo.customLovContent);
+        }
+        else
+        {                              
+            o.getFromSDK();
+        }
+        return;
+    },
+    getUrlParams:function(extraParam)
+    {
+        var o=this;               
+        var updateParam = new Object;
+        //ADAPT01646771: for the next chunk, send back the last search pattern
+        if (o.param !=null && typeof(o.param.chunks) !="undefined" && o.param.chunks && o.param.chunks.length>1)
+        {
+        updateParam = o.getSearchLovParam(null);
+        updateParam.sSearchPattern = o.param.sSearchPattern; //erase with the pattern used to retrieve the last result and not the new one
+        }
+        updateParam.isQueryLov = o.lovZoneInfo.isQueryLov?o.lovZoneInfo.isQueryLov:false;                                        
+        updateParam.Uuid = o.lovZoneInfo.Uuid;  
+        updateParam.sEmptyLab = _emptyValueLab;                     
+        updateParam.iDPIndex =  o.lovZoneInfo.iDPIndex?o.lovZoneInfo.iDPIndex:""  ;                                                                                             
+        if ( p.urlParamsNoBID)
+        {                                              
+            var queryParams=p.urlParamsNoBID((typeof(strEntry)!="undefined")?strEntry:((typeof(p.strEntry)!="undefined")?p.strEntry:null)).toQueryParams();
+            Object.extend(updateParam, queryParams);
+        }                         
+        //for search, sort
+        if (extraParam)
+        {
+            Object.extend(updateParam, extraParam);
+        }            
+        //for profile lov dlg
+        if (typeof(o.lovZoneInfo.extraParam)!="undefined")
+        {
+            Object.extend(updateParam, o.lovZoneInfo.extraParam);
+            if (typeof(strEntry)!="undefined")
+            {
+                updateParam.sEntry=strEntry;
+            }
+        }
+        return updateParam;
+    },
+    buildRestUrl: function (extraParam) {
+        var o = this;
+        if (typeof (o.lovZoneInfo.Uuid) == "undefined") return;
+        p.wt(true);
+        var depth = "&deps="
+        if (extraParam && extraParam.sPV) {
+            depth = depth + extraParam.sPV;
+        }
+        var widx = o.lovWidget.getWidgetIdx();
+        var lastAction = (extraParam) ? extraParam.sAction : "R";
+        var isQueryLov = (extraParam) ? extraParam.isQueryLov : "false";
+        var urlLov = p._root + "../../../_vti_bin/AnalyticalReporting/ReportEngine.svc/lovValues/" + documentId + "?prompt=" + o.lovZoneInfo.promptName + "&chunkIndex=0" + depth;
+        var lovSetting = "&lovSettings=";
+        var path = "&path=";
+        var isRefresh = "false";
+        if (lastAction == "T") { 
+            lovSetting += "{refresh:" + isRefresh + ",lovSort:{ sortColumnIndex:" + extraParam.colIndex + ",sortType:" + (extraParam.sortType + 1) + "}}";
+        }
+        else if (lastAction == "S") {  
+            lovSetting = lovSetting + "{refresh:" + isRefresh + ",lovSearch:{ pattern:" + extraParam.sSearchPattern + ",isDelagateSearch:" + (((extraParam.isSearchOnDB) == "no") ? false : true) + ",isCaseSensitive:" + (((extraParam.sCaseSensitive) == "no") ? false : true) + "}}";
+        }
+        else if (isQueryLov && extraParam.membersArr) { 
+            var jsonLov = eval("(" + extraParam.membersArr + ")");
+            path = path + "["
+            for (var i = 0; i < jsonLov.length; i++) {
+                path = path + "{\"caption\":\"" + jsonLov[i]["key"] + "\"}";
+                if (i < jsonLov.length - 1) {
+                    path = path + ",";
+                }
+                else
+                { path = path + "]" }
+            }
+        }
+        return updateParam = {
+            "url": urlLov,
+            "postCB": o.loadLovCB,
+            "ajaxErrorCB": o.lovAjaxErrorCB,
+            "lastAction": lastAction,
+            "lovSetting": lovSetting,
+            "path": path,
+            "widx": widx
+        };
+    },
+    lovAjaxErrorCB: function () {
+    }, 
+    getFromSDK: function(extraParam) 
+    {
+        var o = this;               
+        if (typeof(o.lovZoneInfo.Uuid)=="undefined") return;
+        if (typeof(topfs)!="undefined" && topfs.wt)
+        {
+            topfs.wt()
+        }
+        else
+        if (p.wt)
+        {
+            p.wt();
+        }
+        if (p._appExt != ASPXExt){
+            var updateParam=o.getUrlParams(extraParam);
+            var url = p._root + "ajaxIncGetLov" + p._appExt;             
+            updateParam.url=url;               
+            updateParam.postCB=o.loadLovCB;
+            updateParam.widx=o.lovWidget.getWidgetIdx();
+            updateParam.ajaxErrorCB=p.manageAjaxError;
+        }
+        else
+        {
+            var params = o.getUrlParams(extraParam);
+            var updateParam = this.buildRestUrl(params);
+        }
+        if (typeof ( o.lovZoneInfo.setLovSelectorCB) !="undefined" &&  o.lovZoneInfo.setLovSelectorCB !=null){
+        var lovSelector = o;
+        lovSelector.lovParam = updateParam;
+        o.lovZoneInfo.setLovSelectorCB(lovSelector);
+        }
+        if (typeof ( o.lovZoneInfo.getFromWorkflowCB) !="undefined" &&  o.lovZoneInfo.getFromWorkflowCB !=null){
+        var from = o.lovZoneInfo.getFromWorkflowCB();
+        if (from =="fromQPQueryFilter")
+        {
+        updateParam.fromQPQueryFilter = "yes";
+        if (typeof(updateParam.sAction) == "undefined")
+        {
+        updateParam.sAction = "R";
+        }
+        }else if (from=="fromRunQuery")
+        {
+        updateParam.fromRunQuery = "yes";
+        }else if (from =="fromQPPreview")
+        {
+        updateParam.fromQPPreview = "yes";
+        }
+        }
+        if (o.hasNullValue())
+        {
+        updateParam.sNullValueLab = _nullValueLab;
+        }
+        ajaxUpdater(updateParam, p._appExt != ASPXExt);                
+    },
+    getLovSearchWidget:function()
+    {
+        var o=this;
+        return o.lovWidget.getLovSearch();
+    },
+    updateSearchWidget:function(lovInfo)
+    {
+        var o=this;                            
+        if (!lovInfo) return;       
+        var searchWidget=o.getLovSearchWidget();
+        searchWidget.setSearchInKeyAllowed(lovInfo.searchInKeyAllowed);
+        searchWidget.setSearchOnDBAllowed(lovInfo.searchOnDBAllowed); 
+        searchWidget.checkAndDisableSearchOnDBAllowed(lovInfo.searchOnDBAllowed && lovInfo.isHierarchical);  
+        o.isLovDelegatedSearch=lovInfo.isLovDelegatedSearch;       
+        searchWidget.setSearchMandatory(lovInfo.isLovDelegatedSearch); 
+        searchWidget.setDelegateSearch(lovInfo.isLovDelegatedSearch); 
+        searchWidget.updateSearchIconDisabled();
+        if ( (lovInfo.forcePatternToUppercase) &&  ( lovInfo.searchOnDBAllowed || lovInfo.isLovDelegatedSearch) )searchWidget.setCaseSensitive(false);
+if (typeof(lovInfo.showSearch)!="undefined")    
+        {         
+            var showSearch=lovInfo.showSearch;                                                     
+            searchWidget.setDisplay(lovInfo.showSearch);         
+        }                  
+return showSearch
+    },
+    getLovWidgetInfoFromSDK:function(jsObj)
+    {
+        var o=this;
+        o.lovWidget.columnBound=0;
+        if (typeof(jsObj.columnBound)!="undefined")
+        {
+            o.lovWidget.columnBound=jsObj.columnBound;
+        }
+        if (typeof(jsObj.isPartialResult)!="undefined")
+        {        
+            o.isPartialResult=jsObj.isPartialResult;
+        }
+        o.lovWidget.isHierarchical=false;
+        if (typeof(jsObj.isHierarchical)!="undefined")
+        {                                   
+            o.lovWidget.viewMode=o.viewMode=(jsObj.isHierarchical==false)?LovViewMode.list:LovViewMode.tree;                        
+            o.lovWidget.isHierarchical= jsObj.isHierarchical;                     
+        }
+if (typeof ( o.lovZoneInfo.isLovWithKeyCB) !="undefined" &&  o.lovZoneInfo.isLovWithKeyCB !=null)
+        {
+            o.isWithKey = o.lovZoneInfo.isLovWithKeyCB(o.lovZoneInfo.promptIndex);
+        }
+        if (typeof(o.isWithKey)!="undefined")
+        {                              
+            var displayKey=false;
+            if (typeof(o.lovZoneInfo.displayKeyIcon)=="undefined" || o.lovZoneInfo.displayKeyIcon)
+            {
+                displayKey=jsObj.isWithKey && (typeof(jsObj.values)!="undefined" && jsObj.values.size()>0); 
+            }                                                      
+            o.lovWidget.setDisplayShowKeyIcn(displayKey);                     
+            o.lovWidget.setDisplayTextField(o.showText);                       
+            if (jsObj.isWithKey!=null)
+            {
+            o.isWithKey=jsObj.isWithKey;            
+            }
+            if (o.lovZoneInfo.isWithKeyCB)
+            {
+                o.lovZoneInfo.isWithKey=o.isWithKey;
+                o.lovZoneInfo.isWithKeyCB(o.lovZoneInfo);
+            }
+        }
+        if ((o.lovZoneInfo.isQueryLov || o.fromQueryPanel()) && typeof(jsObj.lastRefreshDate)!="undefined")      
+        {        
+            o.lastRefreshDate= jsObj.lastRefreshDate;          
+        }
+        else
+        {
+            o.lastRefreshDate="";
+        }    
+        var searchWidget=o.getLovSearchWidget();
+        searchWidget.setDisabled(false);                
+        var showSearch = o.updateSearchWidget(jsObj);               
+o.lovZoneInfo.showSearch = showSearch
+        if (typeof(jsObj.selectMode)!="undefined")
+        {                                                                     
+            o.lovWidget.setSelectMode(jsObj.selectMode);                     
+        }
+    },
+    loadLovCB:function(jsObj)
+    {
+        var o=this.userData;
+    if (p._appExt != ASPXExt){
+    if (p.hideWt)
+    {
+    p.hideWt();
+    }
+}
+        if (!jsObj) return;               
+        if (!jsObj.message)
+        {
+            o.updateLovContent(jsObj);
+            if (!jsObj.isHierarchical){
+            o.displayChunk(typeof(jsObj.chunks) != "undefined" && jsObj.chunks
+                   && typeof(jsObj.values) != "undefined" && jsObj.values && jsObj.values.length > 0);
+            }
+        }                                   
+        if (o.lovZoneInfo.lovActionCB)
+        {
+            o.lovZoneInfo.lovActionCB(jsObj);
+        }
+if (o.invokeLoadAndExpandUntil)
+{
+    o.invokeLoadAndExpandUntil=false;
+    o.expandUntil();
+}
+o.param = jsObj;
+if (o.param.values){ 
+o.param.values = null;
+}
+    },
+    hasNullValue:function()
+    {
+    var o=this;
+    return o.NullValue;
+    },
+    updateLovContent:function(jsObj)
+    {
+        var o=this;
+        if (!jsObj) return;   
+        if (p._appExt != ASPXExt){
+        o.getLovWidgetInfoFromSDK(jsObj); 
+        }
+        else
+        {
+        o.getLovWidgetInfoFromSDK(jsObj.Lov); 
+        }   
+        if (o.isLovDelegatedSearch && (jsObj.lastAction.indexOf("S")<0) && (jsObj.lastAction.indexOf("C")<0))  
+        {
+            o.DisplayFilterLOVBeforeUseMsg();
+            return;
+        }
+        if (jsObj.chunks && jsObj.lastAction && jsObj.lastAction!="C" && jsObj.lastAction!="CT")
+        {
+            if (!jsObj.isHierarchical)          
+            {                               
+                o.lovWidget.fillChunk(jsObj.chunks, jsObj.chunkIndexes);
+            }                
+        }
+        if (p._appExt != ASPXExt){
+        if(jsObj.chunks && jsObj.isHierarchical &&  jsObj.chunks.length>1){
+        o.setChunkHierLovContent(jsObj);
+        }else{
+         o.setLovContent(jsObj.values, jsObj.columns);  
+        }
+        }
+        else
+        {
+        o.setLovContent(jsObj.Lov.values, jsObj.Lov.columns); 
+        }       
+    },
+    setLovContent:function(arr, columnArr)
+    {
+        var o=this;  
+        if (typeof(o.lovZoneInfo.promptType)=="undefined" ||
+            o.lovZoneInfo.promptType==PromptType.common || 
+            o.lovZoneInfo.promptType==PromptType.constrained)                             
+        {          
+            o.lovWidget.showPartialResult(o.isPartialResult);
+            if (o.lastRefreshDate!="")
+            {
+                o.lovWidget.setLovDate(o.lastRefreshDate, _lovLastRefreshDate);
+            }                       
+            o.lovWidget.fillLovContent(arr, columnArr);                       
+        }            
+    },
+    setChunkHierLovContent:function(jsObj)
+    {
+    var o=this;  
+    o.lovWidget.lovTree.deleteAll();
+o.lovWidget.showLovContainer(true);
+    fillChunkInTreeView.call(o.lovWidget,o.getLovTree() , jsObj.chunks, jsObj.chunkIndexes);
+    var columnArr = jsObj.columns;
+        if (columnArr && columnArr.length>=1 && columnArr[0].title)
+        {
+            o.lovWidget.lovTree.setHeaderText(columnArr[0].title);   
+            o.lovWidget.lovTree.setHeaderSort(columnArr[0].sortType);
+        }
+    o.lovWidget.lovTree.rebuildHTML();
+},
+    fromQueryPanel:function()
+    {
+        var o=this;
+        return (typeof(o.lovZoneInfo.extraParam)!="undefined" && typeof(o.lovZoneInfo.extraParam.qpDPId)!="undefined");
+    },
+    getLovWidgetInfo:function()
+    {
+        var o=this;
+        o.showDate=false;
+        o.isWithKey=((typeof(o.lovZoneInfo.isWithKey)!="undefined") && (o.lovZoneInfo.isWithKey==true))?true:false;         
+        if (o.isWithKey)
+        {
+            o.showText=false;
+        }
+        else
+        {
+            o.showText=((typeof(o.lovZoneInfo.promptType)!="undefined") && (o.lovZoneInfo.promptType==PromptType.constrained))?false:true; 
+        }
+        if (o.showText)
+        {
+            o.showDate=(typeof(o.lovZoneInfo.dataType)!="undefined" && (o.lovZoneInfo.dataType==_dataType.date || o.lovZoneInfo.dataType==_dataType.dateTime))?true:false;
+            if (o.showDate)
+                o.showText=false; 
+        }
+o.isLovDelegatedSearch = false;
+if (typeof(o.lovZoneInfo.lovInfo)!="undefined" && o.lovZoneInfo.lovInfo!=null)
+{
+o.isLovDelegatedSearch = o.lovZoneInfo.lovInfo.isLovDelegatedSearch;
+}
+        if (o.isLovDelegatedSearch)
+        {
+            o.showRefresh=false;
+        }
+        else
+        {         
+            var b= ((typeof(o.lovZoneInfo.isQueryLov)=="undefined") || (o.lovZoneInfo.isQueryLov==false))
+var bIsFromQP = o.fromQueryPanel()
+b = b && !bIsFromQP
+            b=b || (typeof(o.lovZoneInfo.promptType)!="undefined") && (o.lovZoneInfo.promptType==PromptType.free);
+            b=b|| (typeof(o.lovZoneInfo.customLovContent)!="undefined");
+            o.showRefresh=b?false:((typeof(o.lovZoneInfo.showRefresh)!="undefined")?o.lovZoneInfo.showRefresh:true);               
+        }           
+o.multi=true
+if (typeof(o.lovZoneInfo.selectionType) == "number") { 
+        o.multi = (PromptSelectionType.Mono != o.lovZoneInfo.selectionType)
+}              
+        o.showTextOnly=(typeof(o.lovZoneInfo.promptType)!="undefined" && o.lovZoneInfo.promptType==PromptType.free)?true:false;                 
+        o.viewMode=(typeof(o.lovZoneInfo.lovContentViewMode)=="undefined")?LovViewMode.list:o.lovZoneInfo.lovContentViewMode;      
+        o.disabled=(typeof(o.lovZoneInfo.disabled)!="undefined")?o.lovZoneInfo.disabled:false;                         
+    },
+    getChunkIndex:function()
+    {
+        var o=this;
+        var chunkSel=o.lovWidget.getChunkSelection();        
+        if (!chunkSel) return null;              
+        return (chunkSel.value && chunkSel.value!="null" && chunkSel.value!="")?chunkSel.value:chunkSel.index*_chunkSize;
+    },
+    moveChunkCB:function()
+    {
+        var o=this.userData;                      
+        var chunkIndex=o.getChunkIndex();
+        if (chunkIndex!=null && chunkIndex>=0)
+        {
+            var param={"chunkIndex":(""+chunkIndex), "sAction":"C"};
+            var sortTypeInfo=o.lovWidget.getFirstSortType();
+            if (sortTypeInfo!=null)
+            {                           
+                param.sAction="CT"; 
+                param.sortType=sortTypeInfo.sortType;
+                param.colIndex=sortTypeInfo.colIndex;               
+            }
+            o.getFromSDK(param);  
+        }
+    },     
+    refreshLovCB:function(evt,data)
+    {
+        var o= data !=null? data.userData: this.userData;             
+        o.displayChunk(false);
+        o.eraseSearchTxt();    
+        var param={"sAction":"R"};
+        if (typeof ( o.lovZoneInfo.getPromptsResponsesCB) !="undefined" &&  o.lovZoneInfo.getPromptsResponsesCB !=null){
+            var promptsResp = o.lovZoneInfo.getPromptsResponsesCB();
+            if(promptsResp.length > 0){
+                   param.sPV = promptsResp.toJSON();
+            }
+        }
+        if (data !=null && o.contexts !=null && o.contexts.value !=null){
+        param.contexts = o.contexts.value;
+        }
+        param.hasNP =  o.lovZoneInfo.hasNP;
+        o.getFromSDK(param);               
+    },
+    getSearchValue:function()
+    {   
+        var o=this;              
+        var searchWidget=o.getLovSearchWidget();  
+        return searchWidget.getSearchValue();                   
+    },
+    checkSearchEntry:function(searchWidget)
+    {
+    var o=this;
+    var searchTxt=o.getSearchValue(); 
+    var bSearchTxtIsBlank = searchTxt=="";
+        if (o.isLovDelegatedSearch && bSearchTxtIsBlank)
+        {
+        searchWidget.updateSearchIconDisabled();
+        return null;
+        }
+        if (bSearchTxtIsBlank)
+        {
+        searchTxt = "*";
+        }
+    return searchTxt;
+    },
+    getSearchLovParam:function(srcParam)
+    {
+        var o=this;
+        if (typeof(o.lovZoneInfo.customLovContent)!="undefined") return null;
+        var searchWidget=o.getLovSearchWidget();  
+        var searchTxt=o.checkSearchEntry(searchWidget);    
+        if (searchTxt==null) return null;
+        var sCaseSensitive=searchWidget.isCaseSensitive()?"yes":"no";     
+        var param={"sAction":"S", "sSearchPattern":searchTxt, "sCaseSensitive":sCaseSensitive};               
+        if (searchWidget.searchInKeyAllowed())
+        {
+            param.isSearchInKey=searchWidget.isSearchInKey()?"yes":"no";
+        }
+        param.isSearchOnDB=searchWidget.isSearchOnDB()?"yes":"no";                      
+if (srcParam)               
+        {          
+            Object.extend(srcParam, param);
+        } 
+        return param;  
+    },
+    searchLovCB:function()
+    {
+        var o=this.par.userData;              
+        var param=o.getSearchLovParam();
+        if (param !=null && typeof ( o.lovZoneInfo.getPromptsResponsesCB) !="undefined" &&  o.lovZoneInfo.getPromptsResponsesCB !=null){
+        var promptsResp = o.lovZoneInfo.getPromptsResponsesCB();
+        if(promptsResp.length > 0){
+        param.sPV = promptsResp.toJSON();
+        }
+    }
+        if (param)
+        {         
+        o.getFromSDK(param);    
+        }
+    },
+    sortCB:function(col)
+    {    
+        var o=this.par.userData;
+        if (typeof(o.lovZoneInfo.customLovContent)!="undefined") return;
+        if (o.disabled || col < 0) return;
+        var sortType=o.lovWidget.getColumnSortType(col);
+        if (sortType==null || sortType==-1)
+            sortType=0;
+        else    
+        if (sortType==0) 
+            sortType=1;   
+        else
+        if (sortType==1)
+            sortType=-1;             
+        var param={"sAction":"T", "sortType":sortType, "colIndex":col};             
+        var searchTxt=o.getSearchValue();
+        if (!searchTxt.blank())
+        {
+            o.getSearchLovParam(param);       
+            param.sAction="ST";
+        }
+        o.getFromSDK(param);           
+    },
+    setLovRightZone:function(lovRightZone)
+    {
+        this.lovRightZone=lovRightZone;
+    },
+    dblClickLovContentCB:function()
+    {
+        var o=this.userData;
+        var arr=new Array();
+        o.getLovContent(arr);        
+        if (o.lovRightZone)
+        {        
+            o.lovRightZone.addLov(arr);
+            if (p && p.eventManager)
+            {
+                p.eventManager.notify(p._EVT_ADD_LOV,o);
+            }
+        }       
+    },
+    enterLovCB:function()
+    {
+        var o=this.userData;
+        var arr=new Array();
+        o.getManualEntryValue(arr);
+        if (o.lovRightZone)
+        {
+            if (o.lovRightZone.getDataType() == _dataType.num)
+            {
+            o.checkNumberField(arr, function()
+                {
+                    o.lovRightZone.addLov(arr);
+                    if (p && p.eventManager)
+                        p.eventManager.notify(p._EVT_ADD_LOV,o);
+        });
+            }
+            else
+            {
+                o.lovRightZone.addLov(arr);
+                if (p && p.eventManager)
+                    p.eventManager.notify(p._EVT_ADD_LOV,o);
+            }
+        }
+    },
+checkNumberField:function(val, cb)
+{
+    if (p._appExt == ASPXExt)
+    {
+    if (cb != null)
+cb();
+    return;
+       }
+    var o = this;
+    var s = '';
+    var isArr = Object.isArray(val);
+    if (isArr)
+    s = val.toJSON();
+    else
+    s = val;
+ajaxUpdater({
+widx: o.lovWidget.widx, 
+url: _skin + "../../ajaxCheckNumber.jsp",
+pScale: s,
+isArray: isArr,
+sEmptyLab: _emptyValueLab,
+sNullValueLab: _nullValueLab,
+postCB:function(json)
+{
+if (json && !json.isValidNumber)
+{
+if (o.keepMEValue != null)
+o.lovWidget.setTextValue(o.keepMEValue);
+var btn = null, tabIndexAttrib = null; keyUpHandler = null;
+var alertDlg = topfs.showAlertDialog(topfs._ERR_INVALID_NUMERIC_FORMAT, topfs._ERR_DEFAULT, 2, function()
+{
+btn.setAttribute("tabindex", tabIndexAttrib);
+btn.onkeyup = keyUpHandler;
+});
+if (alertDlg)
+{
+btn = alertDlg.getOKBtn().layer;
+hasAttrib = btn.getAttribute("tabindex");
+btn.setAttribute("tabindex", "0");
+safeSetFocus(btn);
+keyUpHandler = btn.onkeyup;
+btn.onkeyup = function(e)
+{
+eventCancelBubble(e);
+alertDlg.defaultBtn.executeCB();
+return false;
+}
+}
+}
+else if (cb != null)
+cb();
+o.keepMEValue = null;
+}
+}, true);
+},
+    getManualEntryValue:function(arr)
+    {
+        var o=this;
+        if (typeof(o.lovZoneInfo.promptType)=="undefined"    || 
+            o.lovZoneInfo.promptType==PromptType.common ||
+            o.lovZoneInfo.promptType==PromptType.free)
+        {
+            var s;
+            if (o.showDate)
+            {
+                s=o.lovWidget.getDateValue();
+                if (!o.lovWidget.dateField.isDateValid)  return;
+                o.lovWidget.setDateValue("");
+            }
+            else
+            {
+                s=o.lovWidget.getTextValue();                
+                o.keepMEValue = s;
+                o.lovWidget.setTextValue("");
+            }
+            if (s && s!="")
+            {      
+if (s.indexOf(";;")>=0)
+{
+    var emptyValue=_emptyValueLab;
+                    arr[arr.length]={value:{caption:emptyValue}, row:[emptyValue]};
+}
+else
+{
+                    if (o.multi)
+                    {
+var iPos=0;
+for (var i=0;i<s.length;i++)
+{
+var c=s.charAt(i);
+if (c==';')
+{
+if (i==0)
+iPos=i+1;
+else if (s.charAt(i-1)!='\\')
+{
+var ss=s.substring(iPos, i).replace(/\\;/g, ';');
+arr[arr.length]={value:{caption:ss}, row:[ss]};
+iPos=i+1;
+}
+}
+}
+if (iPos<s.length)
+{
+var ss=s.substring(iPos).replace(/\\;/g, ';');
+arr[arr.length]={value:{caption:ss}, row:[ss]};
+}
+                    }
+else
+{
+arr[arr.length]={value:{caption:s}, row:[s]};
+} 
+}
+            }                
+        }    
+    },
+    getLovContent:function(arr) 
+    {
+        var o=this;
+        if (typeof(o.lovZoneInfo.promptType)=="undefined" ||
+            o.lovZoneInfo.promptType==PromptType.common || 
+            o.lovZoneInfo.promptType==PromptType.constrained)
+        {
+            o.lovWidget.getLOVSelection(arr);                      
+        }            
+    },
+    getSelArr:function()
+    {        
+        var o=this;
+        var arr=new Array();
+        o.getManualEntryValue(arr);
+        o.getLovContent(arr);              
+        return arr;
+    },   
+    setLovMessage:function(msg)    
+    {
+        var o=this; 
+        o.lovWidget.setLovMessage(msg);        
+        o.lovWidget.showLovMessage(true);
+    },
+    setDisabled:function(d)
+    {
+        var o=this;
+        if (typeof(d)=="undefined" || (o.disabled==d)) return;              
+        o.disabled=d;
+        o.lovWidget.setDisabled(d);
+    },
+    resize:function(w, h)
+    {
+        var o=this;               
+        o.divLyr.style.width=w+"px";
+        var lines=o.lovZoneInfo.lovContent_nbLine?o.lovZoneInfo.lovContent_nbLine:_lovZone_LlistNbLine;
+        if (o.lovWidget.lovList && h)
+        {
+            var lovList=o.lovWidget.lovList;
+            var itemH=(lovList.rowHeight!=null && lovList.rowHeight>0)?lovList.rowHeight:14;
+            var offsetH=0;
+            if (lovList.keepOffsetH==null)
+            {
+                offsetH=Math.max(1,h-lovList.h+2*itemH);
+                lovList.keepOffsetH=offsetH;
+            }
+            else
+                offsetH=lovList.keepOffsetH;
+            var lines=Math.max(Math.round(Math.abs(h-offsetH)/itemH),_lovZone_LlistMinNbLine);
+        }
+        o.lovWidget.resize(w, lines);
+    },
+    clickLovTreeCB:function()
+    {
+        var o=this.userData; 
+    },
+    ajaxParamsFn:function(treeitem)
+    {
+        var lovWidget=treeitem.treeView.userData;        
+        var o=lovWidget.userData;            
+        var membersObj=getMembersArr(treeitem);         
+        var urlParams=o.getUrlParams(membersObj);      
+        if (p._appExt == ASPXExt){        
+                var urlRestParams = o.buildRestUrl(urlParams);
+                urlRestParams.lastAction = "F"; 
+                urlParams = urlRestParams;
+        } 
+        return urlParams;
+    },
+    userUpdateTreeNodeCB:function(treeitem, jsObj) 
+    {
+        var lovWidget= treeitem.treeView.userData; 
+        if (jsObj.isHierarchical && jsObj.chunks && (jsObj.chunks.length>1))
+        {           
+            fillChunkInTreeView.call(lovWidget, treeitem, jsObj.chunks, jsObj.chunkIndexes);      
+        }
+        else
+        {
+            fillTreeItems.call(lovWidget, treeitem, jsObj.values);         
+        }            
+    },
+    xtraNodeInfoCB:function(treeitem)
+    {   
+        var iconId= (typeof(treeitem.userData.chunkIndex)!="undefined")?41:38;                  
+        var iconSelId=(typeof(treeitem.userData.chunkIndex)!="undefined")?40:38;                  
+        treeitem.iconId=iconId;
+treeitem.iconSelId=iconSelId;
+treeitem.expanded=false;
+var treeView=treeitem.treeView;
+if (treeView && treeView.userData && treeView.userData.userData)
+{
+    var o=treeView.userData.userData;
+    if (o.lovZoneInfo && o.lovZoneInfo.additionalXtraNodeInfoCB)
+    {
+        buildTreeItemPath(treeitem);
+        var pathObj=o.buildTreeItemWholePathObj(treeitem);
+        treeitem.userData.pathName=pathObj.nameArr.join(_pathNameSep);
+        o.lovZoneInfo.additionalXtraNodeInfoCB(treeitem);
+    }
+}
+    },
+    membersPostCB:function()
+    {    
+        var lovWidget=this.treeView.userData;        
+        var o=lovWidget.userData;                          
+if (o.expandAllUnderway)
+{
+    o.expandLovTree();                                            
+        }
+        else
+        if (o.expandAsynUnderway)
+        {
+            asynExpandUntilCB.call(o); 
+        }
+        else
+        if (typeof(topfs)!="undefined" && topfs.hideWt)
+        {
+            topfs.hideWt();
+        }
+        else        
+        if (p.hideWt)
+    {
+    p.hideWt();
+    }     
+if (p.eventManager) {
+p.eventManager.notify(p._EVT_TREE_LOADED, o)
+}    
+    },
+    buildWholePathCB:function(par, pathObj)
+    {
+        if (!par || !par.userData || (typeof(par.userData.chunkIndex)!="undefined")) return;
+        arrayAdd(pathObj,'pathArr',par.userData,0);               
+        arrayAdd(pathObj,'nameArr',par.userData.caption,0);                                     
+    },
+    buildTreeItemWholePathObj:function(treeitem)
+    {
+        var o=this;
+        var pathObj={pathArr:[treeitem.userData], nameArr:[treeitem.userData.caption]};
+        treeitem.updateAncestors(o.buildWholePathCB, pathObj);     
+        return pathObj;
+    },
+    getSelTreeItemCB:function(treeitem)
+    {
+        var lovWidget=treeitem.treeView.userData;        
+        var o=lovWidget.userData;  
+        var sel;     
+        if (o.lovZoneInfo && typeof(o.lovZoneInfo.isHierarchyConstantOperandSupported)!="undefined")
+        {                      
+            if (!o.lovZoneInfo.isHierarchyConstantOperandSupported)
+            {
+                return {value:treeitem.userData, row:[treeitem.userData.caption]}; 
+            }
+        }
+        if (lovWidget.selectMode==SelectMode.any_level || o.lovWidget.isHierarchical)
+        {
+            var pathObj=o.buildTreeItemWholePathObj(treeitem);
+            var value=Object.clone(treeitem.userData);            
+            pathObj.pathArr.pop();
+            if (pathObj.pathArr.length>0)
+            {
+            value.path= pathObj.pathArr;                   
+            }
+            sel={value:value, row:[pathObj.nameArr.join(_pathNameSep)]}  
+        }
+        else
+        if (lovWidget.selectMode==SelectMode.only_leaf)
+        {
+            sel={value:treeitem.userData, row:[treeitem.userData.caption]}   
+        }
+        return sel;
+    },
+    updateLovDisplayInTree:function(treeitem, lovDisplayOption)
+    {
+        var o=this;
+        updateDisplayOptionInTree(treeitem, lovDisplayOption);                       
+    },
+    getLovTree:function()
+    {
+        var o=this;
+        return  o.lovWidget.lovTree;
+    },
+    updateOnDisplayOption:function(lovDisplayOption)
+    {
+        var o=this;           
+        o.lovWidget.displayOption=lovDisplayOption;
+        var lovTree=o.getLovTree();
+        if (typeof(topfs)!="undefined" && topfs.wt)
+        {
+            topfs.wt()
+        }
+        else
+        if (p.wt)
+        {
+            p.wt();
+        }      
+        lovTree.updateAllOfTreeItems(o.updateLovDisplayInTree, lovDisplayOption); 
+        if (o.lovZoneInfo.setLovDisplayOptionCB)
+        {
+            o.lovZoneInfo.lovDisplayOption=lovDisplayOption;
+            o.lovZoneInfo.setLovDisplayOptionCB(o.lovZoneInfo);
+        }        
+    if (typeof(topfs)!="undefined" && topfs.hideWt)
+        {
+            topfs.hideWt();
+        }
+        else
+        if (p.hideWt)
+        {
+            p.hideWt();
+        }              
+    },
+    showKeyInTreeCB:function(lovTree, lovDisplayOption)
+    {
+        var lovWidget=lovTree.userData;
+        var o=lovWidget.userData;                             
+        o.updateOnDisplayOption(lovDisplayOption);
+    },
+    getTreeItemTextSegmentHTMLCB:function(treeitem, segmentIndex)
+    {
+        var lovWidget=this.userData;
+        var displayOption=lovWidget.displayOption;
+        var o=lovWidget.userData;  
+        return getTextSegmentHTMLCB(treeitem, segmentIndex, displayOption);              
+    },
+    getTreeTooltipCB:function(treeitem)
+    {
+        var title=treeitem.userData.caption?treeitem.userData.caption:treeitem.name;
+        var text=treeitem.userData.key?treeitem.userData.key:null;
+        return {title:title, text:text};
+    },
+    showKeyInListCB:function(lovList, lovDisplayOption)
+    {
+        var lovWidget=lovList.par;
+        var o=lovWidget.userData;               
+        if (typeof(topfs)!="undefined" && topfs.wt)
+        {
+            topfs.wt()
+        }
+        else
+        if (p.wt)
+        {
+            p.wt();
+        }            
+        var nbRow=lovList.getCount();        
+        for (var i=0; i<nbRow; i++)        
+        {
+            var keyLyr=lovList.getSegmentLyrInColumn(i, lovWidget.columnBound, 1);
+            if (!keyLyr) continue;                      
+            switch (lovDisplayOption)
+            {
+                case LovDisplayOption.caption:  
+                    keyLyr.innerHTML="";
+                    break;
+                case LovDisplayOption.caption_key:   
+                {                    
+                    var row=lovList.getRow(i);
+                    if (row.value && row.value.key)
+                    {                      
+                        keyLyr.innerHTML=getDisplayedKeyHtmlStr(row.value.key); 
+                    }
+                    break;
+                }                    
+            }
+        }   
+        if (o.lovZoneInfo.setLovDisplayOptionCB)
+        {
+            o.lovZoneInfo.lovDisplayOption=lovDisplayOption;
+            o.lovZoneInfo.setLovDisplayOptionCB(o.lovZoneInfo);
+        }       
+        if (typeof(topfs)!="undefined" && topfs.hideWt)
+        {
+            topfs.hideWt();
+        }
+        else
+        if (p.hideWt)
+        {
+            p.hideWt();
+        }            
+    },
+    expandLovTree:function()
+    {
+        var o=this;
+        if (typeof(topfs)!="undefined" && topfs.wt)
+        {
+            topfs.wt()
+        }
+        else
+        if (p.wt)
+        {
+            p.wt();
+        }
+        o.expandAllUnderway=false;
+        o.getLovTree().updateAllOfTreeItems(o.expandTreeItem, o);        
+        if (o.expandAllUnderway==false)
+        {
+            if (typeof(topfs)!="undefined" && topfs.hideWt)
+            {
+                topfs.hideWt();
+            }
+            else
+            if (p.hideWt)
+            {
+                p.hideWt();
+            }
+        }
+    },
+    expandTreeItem:function(treeitem, prms)
+    {
+        var o=prms;
+        if (o.expandAllUnderway) return;
+        if (treeitem && treeitem.sub.length==0 && treeitem.isIncomplete) 
+        {
+            o.expandAllUnderway=true;
+            treeitem.init();                       
+            if (treeitem.querycompleteCB)
+                treeitem.querycompleteCB(); 
+        }             
+    },
+    setExpandUntilInfo:function(pathNameArr, keyArr)
+    {
+        var o=this;
+        if (!pathNameArr || !keyArr || 
+            !pathNameArr.length || !keyArr.length ||
+            pathNameArr.length!=keyArr.length) return;
+        o.expandObj.pathNameArr=pathNameArr;
+        o.expandObj.keyArr=keyArr;          
+    },
+    expandUntil:function(pathNameArr, keyArr)
+    {
+        var o=this;                     
+        if (typeof(pathNameArr)!="undefined" && typeof(keyArr)!="undefined")
+        {
+            o.setExpandUntilInfo(pathNameArr, keyArr);
+        }
+        if (o.expandObj.keyArr)
+        {
+            expandUntil.call(o);
+        }            
+    },       
+    getExpandSelMembersArray:function()
+    {
+        var o=this;
+        o.expandObj.selMemArr=o.expandObj.keyArr;
+        return o.expandObj.selMemArr;
+    },
+    expandOneSelectedMember:function(treeitemKey)
+    {
+        var o=this;
+        var index=o.expandObj.selMemArr.indexOf(treeitemKey);
+        if (index<0) return null;
+        o.expandObj.memPathArr= o.expandObj.pathNameArr[index].split(_pathNameSep.substr(0,1));
+        var lovTree=o.getLovTree();
+        var treeitem=lovTree.findInData(treeitemKey, "key");
+        return expandOneSelectedMember.call(o, treeitem, lovTree, o.expandObj.memPathArr);  
+    },
+    searchBranchCB:function(treeitemName, treeItemUserData)
+    {
+        return (treeitemName==treeItemUserData.caption)?true:false;
+    },
+    toggleTreeItem:function(treeitem, prms)
+    {
+        var o=prms;
+        TreeWidget_toggleCB(treeitem.id);
+    },
+    toggleLovTree:function()               
+    {
+        var o=this;              
+        o.getLovTree().updateAllOfTreeItems(o.toggleTreeItem, o);       
+    },
+    calendarKeyUpCB:function()
+    {
+        return;
+    },
+    detachEvents:function()
+    {
+    var o=this;
+    for (var i=0; i<o.arrEvts.length; i++)
+    {
+    p.eventManager.detach(o.arrEvts[i]);
+    }
+    return null;
+    }
+}
+var _titleLabel_count=0;
+LovRightZone= Class.create({
+    initialize: function(prms) 
+    {           
+        this.lovLeftZone=prms.lovLeftZone;
+        this.lovZoneInfo=prms.lovZoneInfo;
+        this.updateLovCB=this.lovZoneInfo.updateLovCB;       
+        this.selWidth=this.lovZoneInfo.lovSelectionWidth?this.lovZoneInfo.lovSelectionWidth:_lovZone_listWidth;                                                        
+        this.id= this.lovZoneInfo.id?this.lovZoneInfo.id+"_RightZone_":'_RightZone_';                    
+        this.disabled=false;
+        this.widgetsArr=[];
+        this.titleLabel=new_LabelWidget({id:this.id+"titleLabel_"+_titleLabel_count++, hasMargin:false});    
+        this.widgetsArr[this.widgetsArr.length]=this.titleLabel;
+        this.resizeWidgetsArrLen=this.widgetsArr.length;
+        this.addRemoveBtnZoneWidth=25+10;
+    },
+    init:function()
+    {               
+    },
+    getDataType:function()
+    {
+        var o=this;
+        return (typeof(o.lovZoneInfo.dataType)!="undefined")?o.lovZoneInfo.dataType:_dataType.txt;
+    },
+    getBtnZoneWidth:function()
+    {
+        return this.addRemoveBtnZoneWidth;
+    },    
+    cleanUp:function()
+    {      
+        var o=this;
+        o.titleLabel.setText("")
+    },       
+    getHTML:function()
+    {        
+        return "";                        
+    },
+    setDisabled:function(d)
+    {
+        var o=this;               
+        o.disabled=d;
+        var len=o.widgetsArr.length;
+        var widget;
+        for (var i=0; i<len; i++)
+        {
+            widget=o.widgetsArr[i];
+            if (widget.isDisplayed())         
+            {                           
+                widget.setDisabled(d);   
+            }                
+        }
+    },
+    isEqualCB:function(lookFor, value)
+    {
+        var o=(this.lovLeftZone)?this:this.userData;
+        var isWithKey=false;
+        if (o.lovLeftZone)
+        {
+            isWithKey= o.lovLeftZone.isWithKey; 
+        }        
+        if (!lookFor || !value || value=="" || value.isBexUIExtraValue) return false;
+        if ((isWithKey || lookFor.path && value.path) && lookFor.key && value.key)
+        {           
+            return ( lookFor.key==value.key)?true:false;
+        }
+        if (lookFor.path && value.path)
+        {
+            if (lookFor.path.length==value.path.length)
+            {
+                for (var i=0; i<lookFor.path.length; i++)
+                {
+                    if (lookFor.path[i].caption!=value.path[i].caption) return false;
+                }
+                return (lookFor.caption==value.caption)?true:false;
+            }
+            return false;
+        }
+        if (typeof(lookFor.caption)!="undefined" && typeof(value.caption)!="undefined")
+        {
+            if (value.caption=="" && lookFor.caption==_emptyValueLab ||
+                lookFor.caption=="" && value.caption==_emptyValueLab)
+                return true;
+            else
+            {                
+                return (lookFor.caption==value.caption)?true:false;
+            }
+        }
+        if (lookFor && value) 
+        {
+            return (lookFor==value)?true:false;
+        }
+        return false;
+    },
+    addLov:function(arr)   
+    {
+        var o=this;
+        if (o.disabled || !arr.length) return;
+        var added=o.addDefaultLov(arr);
+        if (added)
+        {
+        o.alertLovChange();
+        }        
+    },
+    alertLovChange:function()
+    {
+        var o=this;
+        if (o.updateLovCB)
+        {
+            var lovArr=o.getLovSelection();
+            if (lovArr)
+            {
+            var addPrms= new Object();
+            addPrms.isDateIntervalValid = o.getIsDateIntervalValid();
+                o.updateLovCB(lovArr, o.lovZoneInfo,addPrms);
+            }                
+        }        
+    },
+    addDefaultLov:function(arr)  
+    {                                           
+    },  
+    disableOKButton:function()
+    {                                  
+    },           
+    getLovSelection:function()
+    {
+    },
+    getSelType:function()
+    {
+        var o=this;  
+        o.selType= ((typeof(o.lovZoneInfo.selectionType)!="undefined") && (o.lovZoneInfo.selectionType==PromptSelectionType.Mono))?PromptSelectionType.Mono:PromptSelectionType.Multi;    
+    },
+    updateTitle:function()
+    {
+        var o=this;
+        var d=(typeof(o.lovZoneInfo.rightTitle)!="undefined")?true:false;
+        o.titleLabel.setDisplay(d);
+        if (d)
+        {
+            o.titleLabel.setText(o.lovZoneInfo.rightTitle);
+        }
+    },
+    handleEmptyValueInCaption:function(lov)
+    {
+        var o=this;
+        if (typeof(lov.path)=="undefined")
+        {
+if(lov.caption=="")
+return _emptyValueLab;
+else if(lov.caption==null)
+return "";
+else
+           return lov.caption;
+        }
+        var path=lov.path;
+        var captionArr= lov.caption.split(_pathNameSep.substr(0,1)); 
+        var len=0;
+        if(path == null)return lov.caption;
+        if (path.length != null)len=path.length;
+        if (captionArr.length != len) return lov.caption;
+        for (var i=0; i<path.length; i++)
+        {
+            if (path[i].caption=="")
+            {
+                captionArr[i]=_emptyValueLab;  
+            }
+        }
+        return captionArr.join(_pathNameSep);
+    },
+    updateUI:function(lovZoneInfo)
+    {
+        var o=this;
+        if (lovZoneInfo)
+        {
+            o.lovZoneInfo=lovZoneInfo;
+            o.updateLovCB=lovZoneInfo.updateLovCB;
+        }
+        o.cleanUp();    
+        o.getSelType();  
+        o.disabled=o.lovZoneInfo.disabled;     
+        o.updateTitle();
+        if (o.lovZoneInfo.defaultValues)
+        {
+            var arr=[]
+            var defaultLovArr=o.lovZoneInfo.defaultValues; 
+            var lov;         
+            var isWithKey=o.lovLeftZone.isWithKey;
+            for (var i=0; i<defaultLovArr.length; i++)
+            {
+                lov=defaultLovArr[i];                                     
+                if (lov && typeof(lov.caption)!="undefined")
+                {              
+                    var caption=o.handleEmptyValueInCaption(lov);                                                                                            
+                    var value={key: (lov.key?lov.key:null), caption:caption};
+                    if (typeof(lov.captionValue)!="undefined")
+                    {
+                        value.captionValue=lov.captionValue;   
+                    }
+                    if (typeof(lov.path)!="undefined" && lov.path)
+                    {
+                        value.path=arrayObjectClone(lov.path);
+                    }
+                    arr[arr.length]={value:value, row:[caption]}
+                }
+            }
+            o.addLov(arr);      
+        }
+        o.disableOKButton();  
+    },
+    resize:function(w, h)
+    {
+        var o=this;
+        var widget;
+        for (var i=0; i<o.resizeWidgetsArrLen; i++)
+        {
+            widget=o.widgetsArr[i];
+            if (widget)         
+            {                           
+                widget.resize(w);   
+                if (widget.setLines && h)
+                {
+                    var itemH=(widget.rowHeight!=null && widget.rowHeight>0)?widget.rowHeight:14;
+                    var offsetH=0;
+                    if (widget.keepOffsetH==null)
+                    {
+                        offsetH=h-widget.h;
+                        widget.keepOffsetH=offsetH;
+                    }
+                    else
+                        offsetH=widget.keepOffsetH;
+var lines=Math.max(Math.round(Math.abs(h-offsetH)/itemH),_lovZone_LlistMinNbLine);   
+                    widget.setLines(lines);
+                }
+            }                
+        }            
+    },
+    resetCB:function()
+    {
+        var o=this.userData.rightZone;        
+        var index=this.userData.index;
+        o.textArr[index].value="";
+        o.alertLovChange();
+        o.disableOKButton();
+        this.setTooltip('');
+    },
+    enterCB:function()
+    {
+        var o=this.par.userData.rightZone;                 
+        o.alertLovChange();
+        o.disableOKButton();       
+    },
+    keyUpCB:function()
+    {
+        var o=this.userData.rightZone;                 
+o.alertLovChange(); 
+        o.disableOKButton(); 
+        this.setTooltip(this.getSearchValue());      
+    },
+    getDateArrayToCompare:function() {
+    var o=this;
+    var dateArr = new Array(2);
+    if (o){
+    dateArr = o.dateArr? o.dateArr: new Array(2);
+    }
+    return dateArr;
+    },
+    checkDateConsistency:function(){
+    var o = this;
+    var dateArr = o.getDateArrayToCompare();
+    var ajaxCheckDateUrl = "";
+    if (p._appExt == ASPXExt){
+    ajaxCheckDateUrl=_skin + "../../../viewer/ajaxFormatDate.aspx";
+       }
+    else
+    {
+    ajaxCheckDateUrl =_skin + "../../ajaxCheckDate.jsp";
+    }
+    if (p._appExt == ASPXExt) 
+    {
+    ajaxKeyDateUpdater({
+    widx: typeof(dateArr[0])!="undefined" && dateArr[0].getWidgetIdx?dateArr[0].getWidgetIdx():0, 
+    url: ajaxCheckDateUrl, 
+    date1: typeof(dateArr[0])!="undefined" && typeof(dateArr[0].text)!="undefined"?dateArr[0].text.getValue():"",
+date2: typeof(dateArr[1])!="undefined" && typeof(dateArr[1].text)!="undefined"?dateArr[1].text.getValue():"",
+    postCB:o.postAjaxCheckDateCB
+    })
+    }
+    else
+    {
+    ajaxUpdater({
+    widx: typeof(dateArr[0])!="undefined" && dateArr[0].getWidgetIdx?dateArr[0].getWidgetIdx():0, 
+    url: ajaxCheckDateUrl, 
+    date1: typeof(dateArr[0])!="undefined" && typeof(dateArr[0].text)!="undefined"?dateArr[0].text.getValue():"",
+    date2: typeof(dateArr[1])!="undefined" && typeof(dateArr[1].text)!="undefined"?dateArr[1].text.getValue():"",
+    postCB:o.postAjaxCheckDateCB
+    })
+    }
+    },
+    postAjaxCheckDateCB:function(ajxObj){
+    var o = this.userData.rightZone;
+    if ( typeof(ajxObj.interval) != "undefined") o.setIsDateIntervalValid(ajxObj.interval);
+    o.alertLovChange();  
+    o.disableOKButton();  
+    },
+    setIsDateIntervalValid:function(b){
+    var o = this;
+    o.isDateIntervalValid = b;  
+    },
+    getIsDateIntervalValid:function(){
+    var o = this;
+    return o.isDateIntervalValid;  
+    },
+    changeDateCB:function()
+    {
+        var o=this.userData.rightZone;      
+        o.checkDateConsistency();
+    },         
+    enterDateCB:function()
+    {
+        var o=this.userData.rightZone;  
+        o.checkDateConsistency();
+    },
+    addOneLov:function(data, index)  
+    {   
+        var o=this;        
+        var added=0;   
+        var dataType=o.getDataType();
+        if (dataType==_dataType.date || dataType==_dataType.dateTime)
+        {
+            added=o.addOneDateLov(data, index); 
+        }
+        else
+        {
+            added=o.addOneTxtLov(data, index);
+        }
+        o.disableOKButton();                                         
+        return added;                                                         
+    },  
+    getColumnBoundRow:function(row)
+    {
+        var o=this;
+        var rowToAdd;        
+        var columnBound=o.lovLeftZone.lovWidget.columnBound;
+        if (row.length >1 && columnBound>0 && row.length>columnBound)
+        {
+            rowToAdd=[row[columnBound]];
+        }
+        else      
+        {
+            rowToAdd=row;
+        }       
+        return rowToAdd;  
+    },
+    addOneTxtLov:function(data, index)  
+    {   
+        var o=this;        
+        var added=0;                        
+        if (index>= o.textArr.length) return added;          
+        if ((data!=null) && !o.findCB(data.value, index)) 
+        {                                  
+            var treeSearchWidget= o.textArr[index];
+            treeSearchWidget.value=data.value;
+            var rowToAdd=o.getColumnBoundRow(data.row);
+            treeSearchWidget.setSearchValue(rowToAdd[0]);
+            treeSearchWidget.setTooltip(rowToAdd[0]);
+            added++;                                                                        
+        }                                                  
+        return added;                                                         
+    },  
+    addOneDateLov:function(data, index)  
+    {   
+        var o=this;        
+        var added=0;                        
+        if (index> o.dateArr.length) return added;          
+        if ((data!=null) && !o.findCB(data.value, index)) 
+        {                                                
+            o.dateArr[index].value=data.value;
+            var rowToAdd=o.getColumnBoundRow(data.row);
+            o.dateArr[index].setValue(rowToAdd[0]);
+           o.dateArr[index].isDateValid=(o.dateArr[index].isDateChecked)?o.dateArr[index].isDateValid:true;
+           if (o.lovZoneInfo.defaultValues != null && o.lovZoneInfo.defaultValues[0] != null && o.lovZoneInfo.defaultValues[0].isDateChecked)
+           {
+           var dv = o.lovZoneInfo.defaultValues[0];
+           var dtWdg = o.dateArr[index];
+           dtWdg.checkDate = dv.checkDate;
+           dtWdg.isDateValid = dv.isDateValid;
+           dtWdg.isDateChecked = dv.isDateChecked;
+           }
+            added++;                                                                        
+        }                                                  
+        return added;                                                         
+    },
+    getLovSelectionOnDataType:function()
+    {         
+        var o=this;
+        var dataType=o.getDataType();
+        if (dataType==_dataType.date || dataType==_dataType.dateTime)
+        {
+            return o.getDateLovSelection();
+        }
+        else
+        {
+            return o.getTxtLovSelection();
+        }
+    },
+    getTxtLovSelection:function()
+    {         
+        var o=this;
+        var len=o.textArr.length;
+        var arrSel=new Array(len); 
+        var value; 
+        var txt;
+        var dataType=o.getDataType();
+        for (var i=0; i<len; i++)
+        {
+            txt=o.textArr[i].getSearchValue();
+            if (dataType==_dataType.num && isNaN(txt.replace(/,/, "")))
+            {
+                return null;
+            }
+            value=o.textArr[i].value;        
+            var lov={caption:txt};            
+            if (value.key)
+            {
+                lov.key=value.key;
+            }    
+            arrSel[i]=lov;
+        }                                     
+        return arrSel;
+    },
+    setCaptionValue:function(value, lov)
+    {
+        var o=this;                                                                    
+        var captionValue=null;
+        if (!value) return;
+        if (typeof(value.caption)!="undefined" && value.caption!=null && value.caption!="" &&
+            typeof(lov.caption)!="undefined" && lov.caption!=value.caption)
+        {                
+            captionValue=value.caption;   
+        } 
+        else
+        if (typeof(value.captionValue)!="undefined" && value.captionValue!=null && value.captionValue!="" &&
+            typeof(lov.caption)!="undefined" && lov.caption!=value.captionValue)
+        {
+            captionValue=value.captionValue;   
+        }
+        if (captionValue!=null)
+        {
+            lov.captionValue=captionValue;   
+        }
+    },
+    getDateLovSelection:function()
+    {         
+        var o=this;
+        var len=o.dateArr.length;
+        var arrSel=new Array(len); 
+        var value;                     
+        for (var i=0; i<len; i++)
+        {
+            value=o.dateArr[i].value;
+            var lov={caption:o.dateArr[i].getValue()};
+            if (value.key)
+            {
+                lov.key=value.key;
+            }    
+            o.setCaptionValue(value, lov);
+            if (o.dateArr[i].checkDate){
+                lov.checkDate = o.dateArr[i].checkDate;
+                lov.isDateValid = o.dateArr[i].isDateValid;
+                lov.isDateChecked = o.dateArr[i].isDateChecked;
+            }
+            arrSel[i]=lov;
+        }                                     
+        return arrSel;
+    },
+    cleanUpOnDataType:function()
+    {      
+        var o=this;
+        for (var i=0; i<o.textArr.length; i++)
+        {
+             o.textArr[i].setSearchValue(""); 
+             o.textArr[i].value=""; 
+             o.dateArr[i].setValue("");                                                        
+             o.dateArr[i].value="";                                                         
+        }                            
+    },
+    displayOnDataType:function()
+    {
+        var o=this;
+        var dataType=o.getDataType();
+        var displayDate=(dataType==_dataType.date || dataType==_dataType.dateTime)?true:false;            
+        for (var i=0; i<o.textArr.length; i++)
+        {                      
+            o.dateArr[i].setDisplay(displayDate);
+            o.textArr[i].setDisplay(!displayDate);
+        }        
+    }
+})
+LovRightZone_Basic=Class.create(LovRightZone, {
+    initialize: function($super, prms)
+    {            
+        $super(prms);                 
+        var lovZoneInfo=this.lovZoneInfo;
+        var id=this.id+"basic";
+        this.getSelType();      
+        this.lovSelTxt=new_TextFieldWidget({id:"lrz_selInput_"+id, 
+                                        width:this.selWidth, 
+                                        noMargin:true});    
+        this.lovSelTxt.setReadOnly(true);  
+        this.lovSelTxt.setDisabled(false); 
+        this.widgetsArr[this.widgetsArr.length]=this.lovSelTxt;
+        this.lovSelList=new_MultiColumnList({id:"lrz_selList_"+id, 
+                                            multi:true, 
+    dblClickCB:this.selListdblClickCB,
+                                            noHeader:true, 
+                                            showTooltip:true,
+                                            getTooltipCB:this.getListTooltipCB,
+                                            w:this.selWidth,
+                                            keyDownCB:this.listKeyUpCB});
+        this.lovSelList.setIsEqualCB(this.isEqualCB);
+        this.lovSelList.userData=this;
+        this.lovSelList.setCustomTooltipWidget(new_ChildrenCustomTooltipWidget({id:id+"_customTooltip",win:_curWin, tipWidth:300}));
+        this.widgetsArr[this.widgetsArr.length]=this.lovSelList;
+        this.lovSelList.setLines(lovZoneInfo.lovSel_nbLine?lovZoneInfo.lovSel_nbLine:_lovZone_RlistNbLine);                                        
+        this.lovSelArr=new Array(_NbOfPromptSelType);
+        this.lovSelArr[PromptSelectionType.Mono]= this.lovSelTxt;
+        this.lovSelArr[PromptSelectionType.Multi]= this.lovSelList;                              
+        this.resizeWidgetsArrLen=this.widgetsArr.length;
+        this.arrowAdd=new_ButtonWidget({id:"lrz_arrowAdd_"+id, label:">", clickCB:this.clickAddCB, width:8});
+        this.arrowAdd.userData=this; 
+        this.widgetsArr[this.widgetsArr.length]=this.arrowAdd;
+        this.arrowRemove=new_ButtonWidget({id:"lrz_arrowRemove_"+id, label:"<", clickCB: this.clickRemoveCB, width:8});
+        this.arrowRemove.userData=this;  
+        this.widgetsArr[this.widgetsArr.length]=this.arrowRemove;
+    },
+    init:function()
+    {
+        var o=this;
+        for (var i=0; i<o.widgetsArr.length; i++)
+        {
+            o.widgetsArr[i].init();
+        }   
+    },
+    cleanUp:function($super)
+    {
+        var o=this;  
+        $super();  
+        o.lovSelTxt.setValue("");
+        o.lovSelTxt.setTooltip("");
+        o.lovSelTxt.userData=null;
+        o.lovSelList.del();
+    }, 
+    getSelType:function()
+    {
+        var o=this;  
+        o.selType= ((typeof(o.lovZoneInfo.selectionType)!="undefined") && (o.lovZoneInfo.selectionType==PromptSelectionType.Mono))?PromptSelectionType.Mono:PromptSelectionType.Multi;    
+    },
+    getHTML:function()
+    {
+        var o=this;                         
+        var arr=[];
+        var i=0;
+var right = _rtl ? 'left' : 'right'
+        arr[i++]=   '<table cellpadding="0" border="0" cellspacing="0"><tbody>';
+        arr[i++]=   '<tr>'
+        arr[i++]=   '<td style="padding-'+right+':10px;" valign="top">'+                                   
+                        '<table cellpadding="0" border="0" cellspacing="0"><tbody>'+
+                            '<tr><td style="padding-top:20px;">';
+        arr[i++]=               o.arrowAdd.getHTML();                                    
+        arr[i++]=           '</td></tr>';   
+        arr[i++]=           '<tr><td style="padding-top:3px;">';                               
+        arr[i++]=               o.arrowRemove.getHTML();    
+        arr[i++]=           '</td></tr>'+   
+                        '</tbody></table>';                          
+        arr[i++]=   '</td>';
+        arr[i++]=   '<td valign="top">'+    
+                        '<table cellpadding="0" border="0" cellspacing="0"><tbody>';                                                              
+        arr[i++]=       '<tr><td style="padding-bottom:3px;">';                               
+        arr[i++]=           o.titleLabel.getHTML();
+        arr[i++]=       '</td></tr>';    
+        arr[i++]=       '<tr>'+                                                                                            
+                        '<td>';
+        arr[i++]=           o.lovSelTxt.getHTML(); 
+        arr[i++]=       '</td>'+
+                        '</tr>';   
+        arr[i++]=       '<tr>'+          
+                        '<td>';                               
+        arr[i++]=           o.lovSelList.getHTML();  
+        arr[i++]=       '</td>'+                                
+                        '</tr>';   
+        arr[i++]=       '</tbody></table>';                                   
+        arr[i++]=   '</td>';
+        arr[i++]=   '</tr>';                                        
+        arr[i++]=   '</tbody></table>';
+        return arr.join('');;                
+    },      
+    findCB:function(lookForValue)
+    {
+        var o=this;
+        var found;
+        if (o.selType==PromptSelectionType.Mono)
+        {
+            found=o.isEqualCB(lookForValue, o.lovSelTxt.userData);                                             
+        }
+        else
+        if (o.selType==PromptSelectionType.Multi)
+        {        
+            found=o.lovSelList.findByValueAndKey(lookForValue);
+        }
+        return found;
+    },
+    addMonoLovCB:function(value, row)
+    {
+        var o=this;
+        var rowToAdd=o.getColumnBoundRow(row);
+        if (rowToAdd[0]!="")
+        {
+            o.lovSelTxt.userData=value;
+            o.lovSelTxt.setValue(rowToAdd[0]);
+            o.lovSelTxt.setTooltip(rowToAdd[0]);                       
+        }
+    },
+    addMultiLovCB:function(value, row)
+    {
+        var o=this;
+        var rowToAdd=o.getColumnBoundRow(row);
+        if (value.isBexUIExtraValue)
+        {
+            o.lovSelList.addRow(value, false, rowToAdd, [{clsArr:["bexQueryUIExtraLovValue"]}]);
+        }
+        else
+        {
+            o.lovSelList.addRow(value, false, rowToAdd);
+        }
+    },          
+    addDefaultLov:function(arr)  
+    {
+        var o=this;
+        var added=false;
+        if (!arr || !arr.length) return added;              
+        var dataType=o.getDataType();   
+        if (o.selType==PromptSelectionType.Mono)
+        {  
+        if (o.lovLeftZone.lovWidget.isHierarchical==false && dataType==_dataType.num && (arr[0].row[0].indexOf("NaN")==0))
+            {
+                return added;      
+            }
+            if (!o.findCB(arr[0].value)) 
+            {
+                o.addMonoLovCB(arr[0].value, arr[0].row);                 
+                added=true;                                                                        
+            }                
+        }
+        else
+        {           
+            for (var i=0; i<arr.length; i++)
+            {   
+            if (o.lovLeftZone.lovWidget.isHierarchical==false && dataType==_dataType.num && (arr[i].row[0].indexOf("NaN")==0))
+                {
+                    continue;      
+                }   
+                if (!o.findCB(arr[i].value)) 
+                {   
+                    o.addMultiLovCB(arr[i].value, arr[i].row);  
+                    added=true;                      
+                }                    
+            }
+            o.updateBexLovSelection();
+        } 
+        o.disableOKButton();  
+        return added;                                        
+    },
+removeOneBexUIExtraValue:function()
+    {
+        var o=this;
+        if (o.selType!=PromptSelectionType.Multi) return false;
+        var nc=o.lovSelList.getCount();
+        for (var i=0; i<nc; i++)
+        {
+            var value=o.lovSelList.getValue(i);
+            if (value.isBexUIExtraValue)
+            {
+                o.lovSelList.del(i);
+return true;
+            }
+        }
+        return false;
+    },      
+    removeBexUIExtraValues:function()
+    {
+        var o=this;
+        if (o.selType!=PromptSelectionType.Multi) return;
+var removeOne=true;
+do 
+{
+removeOne=o.removeOneBexUIExtraValue();
+}
+while (removeOne);      
+    },      
+    updateBexLovSelection:function()
+    {
+        var o=this;
+        if (!isBexQuery.call(o)) return;
+        o.removeBexUIExtraValues();
+        var lovArr=o.getLovSelection();
+        var extraUIArr=getBexQueryUIExtraValues(lovArr);
+        if (!extraUIArr) return;
+        for (var i=0; i<extraUIArr.length; i++)
+        {
+            var extraUI=extraUIArr[i];
+            o.addMultiLovCB(extraUI.value, extraUI.row);
+        }
+    },
+    clickAddCB:function()
+    {
+        var o=this.userData;
+        var arr=o.lovLeftZone.getSelArr();
+        if (o.lovLeftZone.lovWidget.isHierarchical==false && o.getDataType()==_dataType.num)
+        {
+        o.lovLeftZone.checkNumberField(arr, function()
+        {
+        o.addLov(arr);
+            if (p && p.eventManager)
+            {
+                p.eventManager.notify(p._EVT_ADD_LOV,o);
+            }
+        });
+        }
+        else
+        {
+        o.addLov(arr);
+        if (p && p.eventManager)
+        {
+            p.eventManager.notify(p._EVT_ADD_LOV,o);
+        }
+        }
+    },   
+    clickRemoveCB:function()
+    {
+        var o=this.userData;
+        if (o.selType==PromptSelectionType.Mono)
+        {
+            o.lovSelTxt.setValue("");
+            o.lovSelTxt.setTooltip("");
+            o.lovSelTxt.userData=null;
+        }
+        else
+        if (o.selType==PromptSelectionType.Multi)
+        {        
+            removeLov( o.lovSelList);      
+            o.updateBexLovSelection();                               
+        }
+        o.disableOKButton();   
+        o.alertLovChange();       
+    },
+    disableOKButton:function()
+    {
+        var o=this;  
+        var dlgOkBtn=o.lovZoneInfo.dlgOkBtn;        
+        if (!dlgOkBtn) return;
+        var dis=true;        
+        if (o.selType==PromptSelectionType.Mono)
+        {
+            var s=o.lovSelTxt.getValue();
+            if (s && s!="")
+                dis=false;
+        }
+        else
+            if (o.selType==PromptSelectionType.Multi)
+            {                                                   
+                if (o.lovSelList.getCount()>0)
+                    dis=false;
+            } 
+            dlgOkBtn.setDisabled(dis);                 
+        },
+    selListdblClickCB:function()
+    {
+        var o=this.userData;  
+        removeLov(o.lovSelList); 
+        o.updateBexLovSelection(); 
+        o.disableOKButton();   
+        o.alertLovChange()
+    },  
+    listKeyUpCB:function(e)
+    {
+    var k=eventGetKey(e);
+    if (eventGetKey(e) == 32) 
+    {
+    var o=this.userData;  
+        removeLov(o.lovSelList); 
+        o.updateBexLovSelection(); 
+        o.disableOKButton();   
+        o.alertLovChange();
+        if(o.lovSelList.getCount()==0)
+        safeSetFocus(o.arrowRemove.btn);
+    }
+    },
+    getLovSelection:function()
+    {
+        var o=this;
+        var arrSel=new Array;        
+        if (o.selType==PromptSelectionType.Mono)
+        {
+            var s=o.lovSelTxt.getValue();        
+            if (s!="")
+            {           
+                var userData=o.lovSelTxt.userData;                                            
+                var lov={caption:s}
+                if (userData.key)
+                {
+                    lov.key=userData.key;
+                }    
+                if (userData.path)
+                {
+                    lov.path=arrayObjectClone(userData.path);     
+                }
+                o.setCaptionValue(userData, lov);
+                arrSel[arrSel.length]=lov;                
+            }
+        }
+        else
+        if (o.selType==PromptSelectionType.Multi)
+        {
+            var nc=o.lovSelList.getCount();
+            for (var i=0; i<nc; i++)
+            {                        
+                var row=o.lovSelList.getRow(i);
+                if (row.cols[0]!="")
+                {                        
+                    var value=row.value;
+if (value.isBexUIExtraValue) continue;
+                    var lov={caption:row.cols[0]};
+                    if (value.key)
+                        lov.key=value.key;
+                    if (value.path)
+                        lov.path=value.path;
+                    if (value.level)
+                        lov.level=value.level;
+                    o.setCaptionValue(value, lov);
+                    arrSel[arrSel.length]=lov;                    
+                }
+            }                   
+        }
+        return arrSel;
+    },
+    updateUI:function($super, lovZoneInfo)
+    {
+        var o=this;              
+        $super(lovZoneInfo);                         
+        for (var i=0; i<_NbOfPromptSelType; i++)
+        {
+            o.lovSelArr[i].setDisplay((i==o.selType)?true:false);          
+        }  
+        if (lovZoneInfo && typeof(lovZoneInfo.disabled)!="undefined")
+        {
+            o.setDisabled(lovZoneInfo.disabled);                             
+        }
+    },
+    getListTooltipCB:function(row)
+    {
+        var o=this.userData;
+        var key=row.value.key?("\nKey:"+row.value.key):"";
+        var title=row.value.caption;
+        var index=title.lastIndexOf('\\');
+        if (index>0)
+        {
+            title=title.substring(index+1); 
+        }
+        var text=row.value.key?"From:"+row.cols[0]+key:null;
+        return {title:title, text:text};
+    }  
+})
+LovRightZone_2TextFields= Class.create(LovRightZone, {
+    initialize: function($super, prms) 
+    {                        
+        $super(prms);           
+        var id=this.id+"2TextFields_";
+        this.textArr=new Array(2);
+        this.addBtnArr=new Array(2);
+        this.dateArr=new Array(2);
+        var field;
+        for (var i=0; i<this.textArr.length; i++)
+        {
+            field=new_TreeSearchWidget({id:(id+"txt"+i), 
+                                        width:this.selWidth, 
+                                        keyUpCB:this.keyUpCB,
+                                        resetCB:this.resetCB, 
+                                        enterCB:this.enterCB, 
+                                        helpText:"Enter a value"}); 
+            field.getSearchField().setReadOnly(true);           
+            field.getSearchField().setDisabled(true);
+            field.userData={index:i, rightZone:this};                                   
+            this.textArr[i]=field;                                
+            this.widgetsArr[this.widgetsArr.length]=field;   
+            field=new_CalendarTextFieldButton({ id:(id+"date"+i), 
+                                                width:Math.max(0,this.selWidth-1), 
+                                                noMargin:true,
+                                                keyUpCB:this.enterDateCB,
+                                                changeCB:this.changeDateCB,                                             
+                                                enterCB:this.enterDateCB }); 
+            field.userData={index:i, rightZone:this};                                   
+            if (this.lovZoneInfo.dateFormat)
+            {
+                field.setFormatInfo(this.lovZoneInfo.dateFormat);
+                field.setHelpTxt(this.lovZoneInfo.dateFormat);
+                field.setTooltip(this.lovZoneInfo.dateFormat);
+            }
+            this.dateArr[i]=field;                                
+            this.widgetsArr[this.widgetsArr.length]=field;   
+        }     
+        this.andLabel=new_LabelWidget({id:this.id+"andLabel", hasMargin:false}); 
+        this.widgetsArr[this.widgetsArr.length]=this.andLabel;
+        this.resizeWidgetsArrLen=this.widgetsArr.length;
+        for (var i=0; i<this.addBtnArr.length; i++)
+        {                       
+            this.addBtnArr[i]=new_ButtonWidget({id:(id+"_add_"+i), label:">", clickCB:this.clickAddCB, width:10});
+            this.addBtnArr[i].userData={index:i, rightZone:this}; 
+            this.widgetsArr[this.widgetsArr.length]=this.addBtnArr[i];
+        }       
+    },
+    init:function()
+    {           
+        var o=this;
+        for (var i=0; i<o.widgetsArr.length; i++)
+        {
+            o.widgetsArr[i].init();                                                                     
+        }                
+    },
+    setDisplayByDataType:function()
+    {
+        var o=this;
+        o.displayOnDataType();
+        var bReadOnly=(typeof(o.lovZoneInfo.promptType)!="undefined" && o.lovZoneInfo.promptType==PromptType.constrained)?true:false;              
+        var dataType=o.getDataType();
+        if (dataType==_dataType.date || dataType==_dataType.dateTime)
+        {            
+            var dateField;
+            for (var i=0; i<o.dateArr.length; i++)
+            {
+                dateField=o.dateArr[i];
+                dateField.getTextField().setReadOnly(bReadOnly);
+                dateField.getCalendarBtn().setDisabled(bReadOnly);
+            }
+        }
+        else
+        {
+            var txtField;
+            for (var i=0; i<o.textArr.length; i++)
+            {
+                txtField=o.textArr[i];
+                txtField.getSearchField().setReadOnly(bReadOnly);
+            }
+        } 
+    },
+    cleanUp:function($super)
+    {      
+        var o=this;
+        $super();  
+        o.cleanUpOnDataType();
+    },       
+    getHTML:function()
+    {            
+        var o=this;
+var left = _rtl ? 'right' : 'left'
+var right = _rtl ? 'left' : 'right'
+        var arr=[];
+        var i=0;
+        arr[i++]=   '<table cellpadding="0" border="0" cellspacing="0"><tbody>';
+        arr[i++]=   '<tr><td>&nbsp;</td><td colspan=2 align="'+left+'" style="padding-bottom:3px;">';
+        arr[i++]=   o.titleLabel.getHTML();
+        arr[i++]=   '</td></tr>';
+        arr[i++]=   '<tr>';
+        arr[i++]=       '<td valign="top" style="padding-'+right+':10px;">';                                  
+        arr[i++]=       o.addBtnArr[0].getHTML();                       
+        arr[i++]=       '</td>';
+        arr[i++]=       '<td valign="top">';    
+        arr[i++]=       o.textArr[0].getHTML();                               
+        arr[i++]=       '</td>';
+        arr[i++]=       '<td valign="top" align="'+left+'">';    
+        arr[i++]=       o.dateArr[0].getHTML();                               
+        arr[i++]=       '</td>';
+        arr[i++]=   '</tr>';     
+        arr[i++]=   '<tr><td>&nbsp;</td><td colspan=2 align="'+left+'" style="padding-top:15px;">'+o.andLabel.getHTML()+'</td></tr>';
+        arr[i++]=   '<tr>';
+        arr[i++]=       '<td valign="top" style="padding-top:5px;padding-right:10px;">';                                   
+        arr[i++]=        o.addBtnArr[1].getHTML();                          
+        arr[i++]=       '</td>';
+        arr[i++]=       '<td valign="top" style="padding-top:5px;">';    
+        arr[i++]=        o.textArr[1].getHTML();                                   
+        arr[i++]=       '</td>';
+        arr[i++]=       '<td valign="top" align="'+left+'" style="padding-top:5px;">';    
+        arr[i++]=       o.dateArr[1].getHTML();                                   
+        arr[i++]=       '</td>';
+        arr[i++]=   '</tr>';                                             
+        arr[i++]=   '</tbody></table>';
+        return arr.join('');                
+    },      
+    findCB:function(lookForValue, index)
+    {
+        var o=this;     
+        var dataType=o.getDataType();                 
+        return o.isEqualCB(lookForValue, (dataType==_dataType.date || dataType==_dataType.dateTime)?o.dateArr[index].value:o.textArr[index].value);                                                     
+    },
+    addDefaultLov:function(arr)  
+    {   
+        var o=this;        
+        var added=0;
+        var len=arr.length;                           
+        for (var i=0; i<len; i++)
+        {                        
+            added+=o.addOneLov(arr[i], i);                               
+        }
+        o.disableOKButton();  
+        return (added>0)?true:false;                                                         
+    },  
+    disableOKButton:function()
+    {             
+        var o=this;  
+        var dlgOkBtn=o.lovZoneInfo.dlgOkBtn;        
+        if (!dlgOkBtn) return;
+        var dis=false;        
+        var dataType=o.getDataType(); 
+        var s;      
+        if (dataType==_dataType.date || dataType==_dataType.dateTime)
+        {
+            var dateField;
+            for (var i=0; i<o.dateArr.length; i++)
+            {
+                dateField=o.dateArr[i];                
+                s=dateField.getValue();
+                if (!s || s=="")
+                {
+                    dis=true;
+                    break;
+                }              
+            }        
+        }
+        else
+        {
+            var txtField;
+            for (var i=0; i<o.textArr.length; i++)
+            {
+                txtField=o.textArr[i];
+                s=txtField.getSearchValue();                
+                if (!s || s=="")
+                {
+                    dis=true;
+                    break;
+                }
+            }
+        }              
+        dlgOkBtn.setDisabled(dis);                            
+    },           
+    getLovSelection:function()
+    {         
+        var o=this;
+        return o.getLovSelectionOnDataType();
+    },
+    updateUI:function($super, lovZoneInfo)
+    {
+        var o=this;             
+        $super(lovZoneInfo);   
+        var s=(typeof(o.lovZoneInfo.endLabel)!="undefined")?o.lovZoneInfo.endLabel:'and';       
+        o.andLabel.setText(s);
+        o.setDisplayByDataType();
+        var dataType=o.getDataType();
+        var b=(typeof(o.lovZoneInfo.promptType)!="undefined" && o.lovZoneInfo.promptType==PromptType.free)?true:false;              
+        for (var i=0; i<o.addBtnArr.length; i++)
+        {
+            o.addBtnArr[i].setDisplay(!b);
+        }
+        if (typeof(o.lovZoneInfo.disabled)!="undefined")
+        {
+            o.setDisabled(lovZoneInfo.disabled);                             
+        }                     
+        if ((dataType==_dataType.date || dataType==_dataType.dateTime ) && lovZoneInfo.dateFormat)
+        {
+            var dateField;
+            for (var i=0; i<o.dateArr.length; i++)
+            {
+                dateField=o.dateArr[i];
+                dateField.setFormatInfo(lovZoneInfo.dateFormat);
+                dateField.setHelpTxt(lovZoneInfo.dateFormat);
+                dateField.setTooltip(lovZoneInfo.dateFormat);
+            }
+        }
+    },
+    clickAddCB:function()
+    {
+        var o=this.userData.rightZone;        
+        var index=this.userData.index;
+        var arr=o.lovLeftZone.getSelArr();
+        if (o.addOneLov(arr[0], index))
+        {        
+            o.alertLovChange();                       
+        }            
+    }    
+})
+LovRightZone_oneTextField= Class.create(LovRightZone, {
+    initialize: function($super, prms) 
+    {                        
+        $super(prms);           
+        var id=this.id+"oneTextField_";
+        this.textArr=new Array(1);       
+        this.dateArr=new Array(1);
+        var field;
+        for (var i=0; i<this.textArr.length; i++)
+        {
+            field=new_TreeSearchWidget({ id:(id+"txt"+i), 
+                                            width:this.selWidth, 
+                                            keyUpCB:this.keyUpCB,
+                                            resetCB:this.resetCB, 
+                                            enterCB:this.enterCB, 
+                                            helpText:"Enter a value"});               
+            field.userData={index:i, rightZone:this};                                   
+            this.textArr[i]=field;                                
+            this.widgetsArr[this.widgetsArr.length]=field;  
+            field=new_CalendarTextFieldButton({ id:(id+"date"+i), 
+                                                width:this.selWidth, 
+                                                noMargin:true,
+                                                keyUpCB:this.enterDateCB,
+                                                changeCB:this.changeDateCB,                                             
+                                                enterCB:this.enterDateCB }); 
+            field.userData={index:i, rightZone:this};                                   
+            this.dateArr[i]=field;                                
+            this.widgetsArr[this.widgetsArr.length]=field;            
+        }       
+        this.resizeWidgetsArrLen=this.widgetsArr.length;                
+    },
+    init:function()
+    {           
+        var o=this;
+        for (var i=0; i<o.widgetsArr.length; i++)
+        {
+            o.widgetsArr[i].init();                                                        
+        } 
+    },
+    cleanUp:function($super)
+    {      
+        var o=this;
+        $super();
+        o.cleanUpOnDataType();                       
+    },       
+    getHTML:function()
+    {            
+        var o=this;
+        var i=0;
+        var arr=[];
+var left = _rtl ? 'right' : 'left'
+        arr[i++]=   '<table cellpadding="0" border="0" cellspacing="0"><tbody>';
+        arr[i++]=   '<tr><td align="'+left+'" style="padding-bottom:3px;">';
+        arr[i++]=       o.titleLabel.getHTML();
+        arr[i++]=   '</td></tr>';   
+        arr[i++]=   '<tr>';                    
+        arr[i++]=        '<td align="'+left+'">';                                  
+        arr[i++]=           o.textArr[0].getHTML();                        
+        arr[i++]=           o.dateArr[0].getHTML();                        
+        arr[i++]=        '</td>';                                            
+        arr[i++]=   '</tr>';     
+        arr[i++]=   '</tbody></table>';
+        return arr.join('');                
+    },      
+    findCB:function(lookForValue, index)
+    {
+        return false;
+    },
+    addDefaultLov:function(arr)  
+    {   
+        var o=this;        
+        var added=0;
+        var len=arr.length;                           
+        if (len>0)
+        {                        
+            added+=o.addOneLov(arr[0], 0);                               
+        }
+        o.disableOKButton();  
+        return (added>0)?true:false;                                                         
+    },  
+    disableOKButton:function()
+    {    
+        var o=this;  
+        var dlgOkBtn=o.lovZoneInfo.dlgOkBtn;        
+        if (!dlgOkBtn) return;
+        var dis=false;        
+        var dataType=o.getDataType(); 
+        var s;      
+        if (dataType==_dataType.date || dataType==_dataType.dateTime)
+        {
+            var dateField;
+            for (var i=0; i<o.dateArr.length; i++)
+            {
+                dateField=o.dateArr[i];                
+                s=dateField.getValue();
+                if (!s || s=="")
+                {
+                    dis=true;
+                    break;
+                }              
+            }        
+        }
+        else
+        {
+            var txtField;
+            for (var i=0; i<o.textArr.length; i++)
+            {
+                txtField=o.textArr[i];
+                s=txtField.getSearchValue();                
+                if (!s || s=="")
+                {
+                    dis=true;
+                    break;
+                }
+            }
+        }              
+        dlgOkBtn.setDisabled(dis);                                                    
+    },           
+    getLovSelection:function()
+    {         
+        var o=this;
+        return o.getLovSelectionOnDataType();
+    },
+    updateUI:function($super, lovZoneInfo)
+    {
+        var o=this;             
+        $super(lovZoneInfo);   
+        o.displayOnDataType(); 
+        if (typeof(o.lovZoneInfo.disabled)!="undefined")
+        {
+            o.setDisabled(lovZoneInfo.disabled);                             
+        }
+        var dataType=o.getDataType();
+        if (lovZoneInfo.dateFormat && (dataType==_dataType.date || dataType==_dataType.dateTime))
+        {
+            var dateField;
+            for (var i=0; i<o.dateArr.length; i++)
+            {
+                dateField=o.dateArr[i];
+                dateField.setFormatInfo(lovZoneInfo.dateFormat);
+                dateField.setHelpTxt(lovZoneInfo.dateFormat);
+                dateField.setTooltip(lovZoneInfo.dateFormat);
+            }
+        }                     
+    }
+})
+ValueSelector=function(lovZoneInfo)
+{
+    this.id=lovZoneInfo.id?lovZoneInfo.id:"ValueSelector";
+    this.lovZoneInfo=lovZoneInfo;         
+    this.lovLeftZone=new LovLeftZone(lovZoneInfo);        
+    this.lovLeftZoneTdId="lovLeftZoneTd_"+this.id;
+    this.lovLeftZoneTdLyr=null;
+    this.rightZonesArr=[];
+    this.rightZonesArr[this.rightZonesArr.length]=new LovRightZone_Basic({lovZoneInfo:lovZoneInfo, lovLeftZone:this.lovLeftZone});
+    this.rightZonesArr[this.rightZonesArr.length]=new LovRightZone_2TextFields({lovZoneInfo:lovZoneInfo, lovLeftZone:this.lovLeftZone});
+    this.rightZonesArr[this.rightZonesArr.length]=new LovRightZone_oneTextField({lovZoneInfo:lovZoneInfo, lovLeftZone:this.lovLeftZone});
+    this.rightZonesArr[this.rightZonesArr.length]=new LovRightZone_none({lovZoneInfo:lovZoneInfo, lovLeftZone:this.lovLeftZone});
+    this.rightZonesIdArr=[];
+    for (var i=0; i<this.rightZonesArr.length; i++)
+    {
+        this.rightZonesIdArr[this.rightZonesIdArr.length]="lovRightZone_"+i+"_"+this.id;      
+    } 
+    this.rightZonesLyrArr=[];      
+    this.titleLabel=new_LabelWidget({id:this.id+"isNullTitleLabel", hasMargin:false}); 
+    this.customizedZoneHash=new Hash();     
+}
+ValueSelector.prototype = {
+    init:function()
+    {
+        var o=this;              
+        o.titleLabel.init();
+        o.lovLeftZone.init();
+        for (var i=0; i<o.rightZonesArr.length; i++)
+        {
+            o.rightZonesArr[i].init();
+        }
+        for (var i=0; i<o.rightZonesArr.length; i++)
+        {
+            o.rightZonesLyrArr[i]=getLayer(o.rightZonesIdArr[i]);
+        }
+        o.lovLeftZoneTdLyr=getLayer(o.lovLeftZoneTdId);
+        o.updateRightZone(o.lovZoneInfo);
+    },
+    getHTML:function()
+    {
+        var o=this;          
+        var pLeft = (_ie?'8px':'4px');
+var left = _rtl ? 'right' : 'left'
+var right = _rtl ? 'left' : 'right'
+        var align=(typeof(o.lovZoneInfo.isQueryLov)!="undefined" && o.lovZoneInfo.isQueryLov==true)?"center":left;            
+        var i=0;
+        var arr=[];
+        arr[i++]='<table cellpadding="0" border="0" cellspacing="0" width="100%"><tbody>';
+        arr[i++]=   '<tr><td>'+o.titleLabel.getHTML()+'</td></tr>';
+        arr[i++]=   '<tr>'+
+                        '<td valign="top" id="'+o.lovLeftZoneTdId+'">';                   
+        arr[i++]=       o.lovLeftZone.getHTML();             
+        arr[i++]=       '</td>';
+        arr[i++]=       '<td id="'+o.rightZonesIdArr[_lovRightZoneType.basic]+'" valign="top" style="display:none;padding-'+left+':'+pLeft+';">';                   
+        arr[i++]=       o.rightZonesArr[_lovRightZoneType.basic].getHTML();             
+        arr[i++]=       '</td>';                   
+        arr[i++]=       '<td id="'+o.rightZonesIdArr[_lovRightZoneType.twoTextFields]+'" valign="middle" align="'+align+'" style="display:none;padding-'+left+':'+pLeft+';">';                   
+        arr[i++]=       o.rightZonesArr[_lovRightZoneType.twoTextFields].getHTML();             
+        arr[i++]=       '</td>';             
+        arr[i++]=       '<td  id="'+o.rightZonesIdArr[_lovRightZoneType.oneTextField]+'" align="'+align+'" valign="middle" style="display:none;padding-'+left+':'+pLeft+';">';                   
+        arr[i++]=       o.rightZonesArr[_lovRightZoneType.oneTextField].getHTML();             
+        arr[i++]=       '</td>';                                                                                                       
+        arr[i++]=   '</tr>';                                        
+        arr[i++]='</tbody></table>';
+        return arr.join('');;                
+    },
+    updateUI:function(lovZoneInfo)
+    {
+        var o=this;               
+        o.lovZoneInfo=lovZoneInfo;               
+        o.getRightZoneType(lovZoneInfo);
+        if (o.rightZoneType!=_lovRightZoneType.customized)
+        {      
+            o.lovLeftZone.userData=lovZoneInfo.userData;      
+            o.lovLeftZone.updateUI(lovZoneInfo);
+        }
+        o.updateRightZone(lovZoneInfo);            
+    },
+    updateLovContent:function(jsObj)
+    {
+        var o=this;
+        o.lovLeftZone.updateLovContent(jsObj);
+    },
+    setLovContent:function(arr, titleArr)
+    {
+        var o=this; 
+        o.lovLeftZone.setLovContent(arr, titleArr);  
+    },
+    getSelection:function()
+    {       
+        var o=this;
+        return o.rightZonesArr[o.rightZoneType].getLovSelection();
+    },
+    setLovMessage:function(msg)    
+    {
+        var o=this; 
+        o.lovLeftZone.setLovMessage(msg);
+    },
+    updateSearchWidget:function(lovInfo)
+    {
+        var o=this;
+        return o.lovLeftZone.updateSearchWidget(lovInfo);
+    },
+    getFromSDK: function(extraPrm) 
+    {
+        var o=this; 
+        o.lovLeftZone.getFromSDK(extraPrm);
+    },
+    getLovWidget:function()
+    {
+        var o=this;
+        return o.lovLeftZone.lovWidget;
+    },
+    clearUp:function()
+    {
+        var o=this;
+        o.lovLeftZone.cleanUp();
+        for (var i=0; i<o.rightZonesArr.length; i++)
+        {
+            o.rightZonesArr[i].cleanUp();                       
+        }       
+    },    
+    cleanUp:function()
+    {
+        var o=this;
+        o.cleanUpCustomizedZones();
+        o.clearUp();
+        for (var i=0; i<o.rightZonesLyrArr.length; i++)
+        {
+            o.rightZonesLyrArr[i]=null;  
+        }
+        o.rightZonesLyrArr.length=0;
+        for (var i=0; i<o.rightZonesArr.length; i++)
+        {                      
+            o.rightZonesArr[i]=null;
+        }                
+        o.rightZonesArr.length=0;  
+        o.lovLeftZone=null;        
+        o.lovLeftZoneTdLyr=null;
+    },    
+    cleanUpCustomizedZones:function()
+    {
+        var o=this;
+        var par=o.lovLeftZoneTdLyr.parentNode;  
+        o.customizedZoneHash.each(function(pair) {         
+            var customizedInfo =pair.value;                               
+            if (customizedInfo && customizedInfo.layer)
+            {
+                par.removeChild(customizedInfo.layer);
+            }                
+        });    
+        o.customizedZoneHash=null;    
+    },
+    getRightZoneType:function(lovZoneInfo)
+    {
+        var o=this;
+        o.rightZoneType=(typeof(lovZoneInfo.rightZoneType)!="undefined")?lovZoneInfo.rightZoneType:_lovRightZoneType.basic;        
+    },
+    change:function(lovZoneInfo)
+    {
+        var o=this;   
+        o.lovZoneInfo=lovZoneInfo;        
+        o.lovLeftZone.change(lovZoneInfo);
+        o.updateRightZone(lovZoneInfo);
+    },
+    updateRightZone:function(lovZoneInfo)
+    {
+        var o=this;               
+        var dlgOkBtn=o.lovZoneInfo.dlgOkBtn;  
+        o.getRightZoneType(lovZoneInfo); 
+        o.hideCustomizedZones();
+        if (o.rightZoneType==_lovRightZoneType.customized)
+        {
+            o.setDisplayRightZone();    
+            o.updateCustomizedZone();
+            return;
+        }
+        else      
+        if (o.rightZoneType!=_lovRightZoneType.none)
+        {        
+            o.lovLeftZone.setLovRightZone(o.rightZonesArr[o.rightZoneType]);
+            if (lovZoneInfo.userData)  
+                o.rightZonesArr[o.rightZoneType].userData=lovZoneInfo.userData;
+            o.rightZonesArr[o.rightZoneType].updateUI(lovZoneInfo);  
+        }else if (dlgOkBtn != null){           
+            dlgOkBtn.setDisabled(false);                 
+        }
+        o.setDisplayRightZone();     
+    },
+    isLeftZoneVisible:function()
+    {
+        var o=this;
+        return (o.lovLeftZoneTdLyr && o.lovLeftZoneTdLyr.style.display=="none")?false:true; 
+    },
+    setDisplayRightZone:function()
+    {
+        var o=this;
+        var show;
+        var b=(typeof(o.lovZoneInfo.rightTitle)!="undefined" && 
+               typeof(o.lovZoneInfo.rightZoneType)!="undefined" &&
+               o.lovZoneInfo.rightZoneType==_lovRightZoneType.none)?true:false;  
+        o.titleLabel.setDisplay(b);
+        if (b)
+        {
+            o.titleLabel.setText(o.lovZoneInfo.rightTitle);
+        }
+        b=( typeof(o.lovZoneInfo.promptType)!="undefined" && 
+            o.lovZoneInfo.promptType==PromptType.free && 
+            typeof(o.lovZoneInfo.rightZoneType)!="undefined" &&
+            o.lovZoneInfo.rightZoneType==_lovRightZoneType.twoTextFields)?true:false;     
+        b=b || (o.rightZoneType==_lovRightZoneType.oneTextField || 
+                o.rightZoneType==_lovRightZoneType.none ||
+                o.rightZoneType==_lovRightZoneType.customized);
+        o.lovLeftZoneTdLyr.style.display=b?"none":""; 
+        for (var i=0; i<o.rightZonesLyrArr.length; i++)
+        {
+            show=(o.rightZoneType==i)?true:false;
+            if( o.rightZonesLyrArr[i] != null)
+            o.rightZonesLyrArr[i].style.display=show?"":"none"; 
+        }
+    },
+    updateCustomizedZone:function()
+    {
+        var o=this;
+        if (typeof(o.lovZoneInfo.customizedInfo)=="undefined") return;
+        var id=o.lovZoneInfo.customizedInfo.id;
+        if (typeof(id)=="undefined") return;
+        var customizedZoneInfo=o.customizedZoneHash.get(id);         
+        if (customizedZoneInfo)
+        {
+            if (customizedZoneInfo.layer)
+            {
+                customizedZoneInfo.layer.style.display="";    
+            }    
+        }
+        else
+        if (o.lovZoneInfo.customizedInfo.getHTMLCB && o.lovZoneInfo.customizedInfo.initCB)
+        {
+            var par=o.lovLeftZoneTdLyr.parentNode;            
+            var tdElt = _curDoc.createElement("td");
+            par.appendChild(tdElt);   
+            tdElt.id=id; 
+            tdElt.innerHTML=o.lovZoneInfo.customizedInfo.getHTMLCB();
+            o.lovZoneInfo.customizedInfo.initCB();                    
+            o.customizedZoneHash.set(id,{   
+                                            layer:getLayer(id),
+                                            resizeCB:o.lovZoneInfo.customizedInfo.resizeCB
+                                        });       
+        }
+    },
+    hideCustomizedZones:function()
+    {
+        var o=this;
+        o.customizedZoneHash.each(function(pair) {         
+            var customizedInfo =pair.value;                               
+            if (customizedInfo && customizedInfo.layer)
+            {
+                customizedInfo.layer.style.display="none";         
+            }                
+        });        
+    },  
+    resizeCustomizedZones:function(w, h)
+    {
+        var o=this;
+        o.customizedZoneHash.each(function(pair) {         
+            var customizedInfo =pair.value;                               
+            if (customizedInfo && customizedInfo.layer)
+            {
+                if (w!=null && !isNaN(w))
+                {
+                    customizedInfo.layer.style.width=w+"px"; 
+                }
+                if (h!=null && !isNaN(h))
+                {                    
+                    customizedInfo.layer.style.height=h+"px";           
+                } 
+                if (customizedInfo.resizeCB)
+                {
+                    customizedInfo.resizeCB(w, h);
+                }                   
+            }                
+        });        
+    },
+    setDisabled:function(d)
+    {
+        var o=this;                              
+        o.lovLeftZone.setDisabled(d);
+        o.rightZonesArr[o.rightZoneType].setDisabled(d);
+    },
+    resizeRightZone:function(w, h)
+    {
+        var o=this;
+        for (var i=0; i<o.rightZonesArr.length; i++)
+        {
+            o.rightZonesArr[i].resize(w, h);
+        }
+        o.resizeCustomizedZones(2*w,h);
+    },   
+    getBtnZoneWidth:function()
+    {
+        var o=this;
+        return o.rightZonesArr[_lovRightZoneType.basic].getBtnZoneWidth(); 
+    }, 
+    getLovSearchWidget:function()
+    {
+        var o=this;
+        return o.lovLeftZone.getLovSearchWidget();
+    },
+    resize:function(w, h)
+    {
+        var o=this;
+        var btnWidth=o.getBtnZoneWidth();
+        if (w<btnWidth+15+2) return;
+        var halfW=parseInt((w-btnWidth-15)/2);
+        o.lovLeftZone.resize(halfW, h);             
+        o.resizeRightZone(halfW, h);        
+    } 
+}
+function isAncestorInLov(ancestor, path)
+{      
+    if (!path || !path.length) return false;
+    var ancestor_path= ancestor.path;
+    if (ancestor_path)
+    {
+    var ancestor_len=ancestor_path.length;              
+    if ((ancestor_len+1)<=path.length)
+    {                   
+        for (var i=0; i<ancestor_len; i++)
+        {
+            if (ancestor_path[i].key!=path[i].key) return false;                    
+        }    
+            return (path[ancestor_len].key==ancestor.key)?true:false;
+        }
+    }
+    else
+    {
+        return (ancestor.key==path[0].key)?true:false; 
+    }   
+    return false;
+}
+function hasAnyAncestor(lov, lovArr)
+{
+    for (var i=0; i<lovArr.length; i++)
+    {
+        if (isAncestorInLov(lovArr[i], lov.path)) return i;    
+    }
+    return -1;
+}
+function getBexQueryUIExtraValues(lovArr)
+{   
+    if (!lovArr || lovArr.length<=1) return null;
+    var extraValuesArr=[];
+    for (var i=0; i<lovArr.length; i++)
+    {
+        var ancestorIndex=hasAnyAncestor(lovArr[i], lovArr);
+        if (ancestorIndex==-1) continue;
+        getAncestorChildrenSelection(lovArr[i], lovArr[ancestorIndex], extraValuesArr);
+    }
+    return extraValuesArr;
+}
+function getAncestorChildrenSelection(lov, topAncestor, extraValuesArr)
+{
+    var lovPath=lov.path;
+    if (!lovPath) return;
+    for (var i= lovPath.length-1; i>-1; i--)
+    {
+        var ancestor=lovPath[i];
+        for (var k=0; k< extraValuesArr.length; k++)
+        {
+            if (ancestor.key==extraValuesArr[k].value.key) return;
+        } 
+        var caption="Children of"+" "+ancestor.caption;
+        var value={caption:caption , key:ancestor.key, isBexUIExtraValue:true};      
+        var ancestorIndex=-1;
+        for (var k=0; k<lovPath.length; k++)
+        {
+            if (lovPath[k].key==ancestor.key)
+            {
+                ancestorIndex=k; 
+                break;
+            }       
+        }        
+        var len=(ancestorIndex>=0)?(ancestorIndex+1):lovPath.length;        
+        value.path=arrayObjectClone(lovPath, len);           
+        var row=[caption];
+        extraValuesArr.push({value:value, row:row});
+        if (topAncestor.key==ancestor.key)
+        {
+            return;
+        }
+    }  
+}
+LovRightZone_none=Class.create(LovRightZone, {
+  initialize: function($super, prms)
+  {            
+      $super(prms);                 
+      var lovZoneInfo=this.lovZoneInfo;
+      var id=this.id+"None";
+      this.getSelType();      
+      this.lovSelArr=new Array(_NbOfPromptSelType);
+      this.lovSelArr[PromptSelectionType.Mono]= this.lovSelTxt;
+      this.lovSelArr[PromptSelectionType.Multi]= this.lovSelList;                              
+  },
+  init:function()
+  {
+  },
+  cleanUp:function($super)
+  {
+  }, 
+  getSelType:function()
+  {
+      var o=this;  
+      o.selType= ((typeof(o.lovZoneInfo.selectionType)!="undefined") && (o.lovZoneInfo.selectionType==PromptSelectionType.Mono))?PromptSelectionType.Mono:PromptSelectionType.Multi;    
+  },
+  getHTML:function()
+  {
+  },      
+  findCB:function(lookForValue)
+  {
+  },
+  addMonoLovCB:function(value, row)
+  {
+  },
+  addMultiLovCB:function(value, row)
+  {
+  },          
+  addDefaultLov:function(arr)  
+  {
+  },
+removeOneBexUIExtraValue:function()
+  {
+  },      
+  removeBexUIExtraValues:function()
+  {
+  },      
+  updateBexLovSelection:function()
+  {
+  },
+  clickAddCB:function()
+  {
+  },      
+  clickRemoveCB:function()
+  {
+  },
+  disableOKButton:function()
+  {
+  },
+  selListdblClickCB:function()
+  {
+  },      
+  getLovSelection:function()
+  {
+     return "";
+  },
+  updateUI:function($super, lovZoneInfo)
+  {
+  },
+  getListTooltipCB:function(row)
+  {
+  }    
+})

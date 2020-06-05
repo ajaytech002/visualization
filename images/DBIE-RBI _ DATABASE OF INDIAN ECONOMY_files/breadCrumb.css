@@ -1,0 +1,47 @@
+#breadCrumb {
+    margin: 20px 0 0;
+    font-size: 12px;
+	position: relative;
+}
+
+#breadCrumb ul {
+    list-style: none outside none;
+    margin: 0;
+    padding: 0;
+}
+
+#breadCrumb ul li {
+    background: url("../images/icon_arrow_right_lightblue.gif") no-repeat scroll right center transparent;
+    padding: 0 15px 0 0;
+    display: inline;
+}
+
+#breadCrumb ul li span {
+	margin-left: 2px;	
+}
+
+#breadCrumb ul li:hover {
+	cursor: default;
+}
+#breadCrumb ul li a {
+    color: #488AC7;
+    font-weight: bold;
+    text-decoration: none;
+    text-transform: capitalize;
+}
+
+#breadCrumb ul li.first a {
+    background: url("../images/IconHome.gif") no-repeat transparent;
+    height: 16px !important;
+    padding: 0 0 0 18px;
+}
+
+#breadCrumb ul li.first a:hover {
+    background-position: 0 -16px;
+}
+
+#breadCrumb ul li.last {
+    background: none repeat scroll 0 0 transparent;
+    margin: 0;
+    padding: 0;
+}
